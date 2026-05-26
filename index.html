@@ -746,24 +746,25 @@ const fleet = [
       Seat_Belts: false
     }
   },
-  {
-    number: "82 / UWW 2X",
-    description: "Enviro400",
-    route: "No Branding / Red",
-   features: {
-      USB_A: false,
-      USB_C: false,
-      Power_Outlets: false,
-      Handrails: true,
-      Route_Display: false,
-      Emergency_Exits: true,
-      CCTV: true,
-      WiFi: false,
-      Luggage_Racks: false,
-      Seat_Belts: false
-    }
+{
+  number: "82 / UWW 2X",
+  description: "Enviro400",
+  route: "No Branding / Red",
+  features: {
+    USB_A: false,
+    USB_C: false,
+    Power_Outlets: false,
+    Handrails: true,
+    Route_Display: false,
+    Emergency_Exits: true,
+    CCTV: true,
+    WiFi: false,
+    Luggage_Racks: false,
+    Seat_Belts: false
   }
+}
 ];
+
 const tbody = document.getElementById('fleet-list');
 
 fleet.forEach((bus) => {
@@ -772,22 +773,16 @@ fleet.forEach((bus) => {
   row.onclick = () => {
     const next = row.nextElementSibling;
     if (next && next.classList.contains('details')) {
-      next.style.display = next.style.display === 'none' ? 'table-row' : 'none';
+      next.style.display =
+        next.style.display === 'none' ? 'table-row' : 'none';
     }
   };
 
-  const numberTd = document.createElement('td');
-  numberTd.textContent = bus.number;
-
-  const descTd = document.createElement('td');
-  descTd.textContent = bus.description;
-
-  const routeTd = document.createElement('td');
-  routeTd.textContent = bus.route;
-
-  row.appendChild(numberTd);
-  row.appendChild(descTd);
-  row.appendChild(routeTd);
+  row.innerHTML = `
+    <td>${bus.number}</td>
+    <td>${bus.description}</td>
+    <td>${bus.route}</td>
+  `;
 
   tbody.appendChild(row);
 
@@ -795,59 +790,28 @@ fleet.forEach((bus) => {
   detailRow.className = 'details';
   detailRow.style.display = 'none';
 
-  const detailTd = document.createElement('td');
-  detailTd.colSpan = 3;
-
   const f = bus.features;
 
-  detailTd.innerHTML = `
-    <strong>Description:</strong> ${bus.description}<br/>
-    <strong>Route:</strong> ${bus.route}<br/><br/>
-    <strong>Features:</strong>
-    <ul style="list-style: none; padding: 0;">
-      <li>USB A ports: <span style="color: ${f.USB_A ? 'green' : 'red'};">${f.USB_A ? 'Yes' : 'No'}</span></li>
-      <li>USB C ports: <span style="color: ${f.USB_C ? 'green' : 'red'};">${f.USB_C ? 'Yes' : 'No'}</span></li>
-      <li>Power outlets: <span style="color: ${f.Power_Outlets ? 'green' : 'red'};">${f.Power_Outlets ? 'Yes' : 'No'}</span></li>
-      <li>Handrails and grab handles: <span style="color: ${f.Handrails ? 'green' : 'red'};">${f.Handrails ? 'Yes' : 'No'}</span></li>
-      <li>Digital route display: <span style="color: ${f.Route_Display ? 'green' : 'red'};">${f.Route_Display ? 'Yes' : 'No'}</span></li>
-      <li>Emergency exits: <span style="color: ${f.Emergency_Exits ? 'green' : 'red'};">${f.Emergency_Exits ? 'Yes' : 'No'}</span></li>
-      <li>CCTV cameras: <span style="color: ${f.CCTV ? 'green' : 'red'};">${f.CCTV ? 'Yes' : 'No'}</span></li>
-      <li>Wi-Fi hotspot: <span style="color: ${f.WiFi ? 'green' : 'red'};">${f.WiFi ? 'Yes' : 'No'}</span></li>
-      <li>Luggage racks: <span style="color: ${f.Luggage_Racks ? 'green' : 'red'};">${f.Luggage_Racks ? 'Yes' : 'No'}</span></li>
-      <li>Seat belts: <span style="color: ${f.Seat_Belts ? 'green' : 'red'};">${f.Seat_Belts ? 'Yes' : 'No'}</span></li>
-    </ul>
+  detailRow.innerHTML = `
+    <td colspan="3">
+      <strong>Description:</strong> ${bus.description}<br/>
+      <strong>Route:</strong> ${bus.route}<br/><br/>
+
+      <strong>Features:</strong>
+      <ul style="list-style: none; padding: 0;">
+        <li>USB A ports: <span style="color:${f.USB_A ? 'green' : 'red'};">${f.USB_A ? 'Yes' : 'No'}</span></li>
+        <li>USB C ports: <span style="color:${f.USB_C ? 'green' : 'red'};">${f.USB_C ? 'Yes' : 'No'}</span></li>
+        <li>Power outlets: <span style="color:${f.Power_Outlets ? 'green' : 'red'};">${f.Power_Outlets ? 'Yes' : 'No'}</span></li>
+        <li>Handrails: <span style="color:${f.Handrails ? 'green' : 'red'};">${f.Handrails ? 'Yes' : 'No'}</span></li>
+        <li>Route display: <span style="color:${f.Route_Display ? 'green' : 'red'};">${f.Route_Display ? 'Yes' : 'No'}</span></li>
+        <li>Emergency exits: <span style="color:${f.Emergency_Exits ? 'green' : 'red'};">${f.Emergency_Exits ? 'Yes' : 'No'}</span></li>
+        <li>CCTV: <span style="color:${f.CCTV ? 'green' : 'red'};">${f.CCTV ? 'Yes' : 'No'}</span></li>
+        <li>WiFi: <span style="color:${f.WiFi ? 'green' : 'red'};">${f.WiFi ? 'Yes' : 'No'}</span></li>
+        <li>Luggage racks: <span style="color:${f.Luggage_Racks ? 'green' : 'red'};">${f.Luggage_Racks ? 'Yes' : 'No'}</span></li>
+        <li>Seat belts: <span style="color:${f.Seat_Belts ? 'green' : 'red'};">${f.Seat_Belts ? 'Yes' : 'No'}</span></li>
+      </ul>
+    </td>
   `;
 
-  detailRow.appendChild(detailTd);
   tbody.appendChild(detailRow);
 });
-
-</body>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Lynx Routes</title>
-</head>
-
-<body>
-
-<h1>Lynx Routes</h1>
-
-<div style="margin:20px;">
-  <a href="index.html"
-     style="
-       display:inline-block;
-       padding:12px 20px;
-       background:#e60000;
-       color:white;
-       text-decoration:none;
-       border-radius:8px;
-       font-weight:bold;">
-     Back to Fleet List
-  </a>
-</div>
-
-</body>
-</html>
