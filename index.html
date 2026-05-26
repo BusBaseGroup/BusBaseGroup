@@ -6,80 +6,97 @@
 <title>Full Bus List with Details</title>
 
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
-    margin: 0;
-    padding: 20px;
-  }
-
-  header {
-    text-align: center;
-    margin-bottom: 30px;
-  }
-
-  h1 {
-    color: #333;
-  }
-
-  .fleet-container {
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-
-  thead {
-    background-color: #007bff;
-  }
-
-  th {
-    padding: 15px;
-    color: #fff;
-    font-weight: normal;
-    text-align: left;
-  }
-
-  tbody {
-    display: block;
-  }
-
-  tr {
-    display: table;
-    width: 100%;
-    table-layout: fixed;
-    cursor: pointer;
-  }
-
-  td {
-    padding: 12px 15px;
-    border-top: 1px solid #eee;
-  }
-
-  tr:hover {
-    background-color: #f1f1f1;
-  }
-
-  .details {
-    display: none;
-    background: #f9f9f9;
-  }
-
-  .details td {
-    padding: 10px 15px;
-    border-top: 1px solid #ccc;
-  }
+/* your CSS stays the same */
 </style>
 </head>
 
 <body>
+
+<header>
+  <h1>Full LynxBus List (Updated Fleet)</h1>
+  <p>Click on a bus row to see detailed features.</p>
+</header>
+
+<div class="fleet-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Fleet Number</th>
+        <th>Description</th>
+        <th>Route Branding</th>
+      </tr>
+    </thead>
+
+    <tbody id="fleet-list"></tbody>
+  </table>
+</div>
+
+<!-- BUTTON (keep it OUTSIDE script, inside body) -->
+<div style="margin:20px;">
+  <a href="routes.html"
+     style="display:inline-block;padding:12px 20px;background:#e60000;color:white;text-decoration:none;border-radius:8px;font-weight:bold;">
+     View Routes
+  </a>
+</div>
+
+<script>
+const fleet = [ /* your fleet stays exactly the same */ ];
+
+const tbody = document.getElementById('fleet-list');
+
+fleet.forEach((bus) => {
+  const row = document.createElement('tr');
+
+  row.onclick = () => {
+    const next = row.nextElementSibling;
+    if (next && next.classList.contains('details')) {
+      next.style.display = next.style.display === 'none' ? 'table-row' : 'none';
+    }
+  };
+
+  const numberTd = document.createElement('td');
+  numberTd.textContent = bus.number;
+
+  const descTd = document.createElement('td');
+  descTd.textContent = bus.description;
+
+  const routeTd = document.createElement('td');
+  routeTd.textContent = bus.route;
+
+  row.appendChild(numberTd);
+  row.appendChild(descTd);
+  row.appendChild(routeTd);
+
+  tbody.appendChild(row);
+
+  const detailRow = document.createElement('tr');
+  detailRow.className = 'details';
+  detailRow.style.display = 'none';
+
+  const detailTd = document.createElement('td');
+  detailTd.colSpan = 3;
+
+  const f = bus.features;
+
+  detailTd.innerHTML = `
+    <strong>Description:</strong> ${bus.description}<br/>
+    <strong>Route:</strong> ${bus.route}<br/><br/>
+    <strong>Features:</strong>
+    <ul style="list-style:none;padding:0;">
+      <li>USB A: ${f.USB_A ? 'Yes' : 'No'}</li>
+      <li>USB C: ${f.USB_C ? 'Yes' : 'No'}</li>
+      <li>Power: ${f.Power_Outlets ? 'Yes' : 'No'}</li>
+      <li>WiFi: ${f.WiFi ? 'Yes' : 'No'}</li>
+    </ul>
+  `;
+
+  detailRow.appendChild(detailTd);
+  tbody.appendChild(detailRow);
+});
+</script>
+
+</body>
+</html>
 
 <header>
   <h1>Full LynxBus List (Updated Fleet)</h1>
