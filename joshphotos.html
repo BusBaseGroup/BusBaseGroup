@@ -4,62 +4,114 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Photo Gallery with Upload</title>
+
   <style>
     body {
       font-family: Arial, sans-serif;
       text-align: center;
       background-color: #f0f0f0;
     }
+
     h1 {
       margin-top: 20px;
     }
+
+    #uploadForm {
+      margin: 20px;
+    }
+
+    button {
+      padding: 10px 15px;
+      cursor: pointer;
+    }
+
     .gallery {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       margin: 20px;
+      gap: 15px;
     }
+
     .gallery img {
       max-width: 300px;
-      margin: 10px;
       border: 2px solid #ccc;
       border-radius: 8px;
-    }
-    /* Style for upload form */
-    #uploadForm {
-      margin: 20px;
+      background: white;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
   </style>
 </head>
+
 <body>
+
   <h1>Josh Hambling's Photography</h1>
-  
+
   <!-- Upload form -->
   <form id="uploadForm">
     <input type="file" id="imageUpload" accept="image/*" />
-    <button type="button" onclick="addImage()">Upload Image</button>
+    <button type="button" onclick="uploadImage()">Upload Image</button>
   </form>
-  
-  <!-- Gallery display -->
+
+  <!-- Gallery -->
   <div class="gallery" id="gallery"></div>
-  
+
   <script>
-    // This script allows adding uploaded images to the gallery temporarily
-    function addImage() {
-      const input = document.getElementById('imageUpload');
-      const file = input.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          const img = document.createElement('img');
-          img.src = e.target.result;
-          document.getElementById('gallery').appendChild(img);
-        }
-        reader.readAsDataURL(file);
-      } else {
-        alert('Please select an image to upload.');
+    const cloudName = "dlquvrodn";
+    const uploadPreset = "BusBase Photos";
+
+    // Load saved images from localStorage
+    loadImages();
+
+    function uploadImage() {
+      const file = document.getElementById("imageUpload").files[0];
+
+      if (!file) {
+        alert("Please select an image first.");
+        return;
       }
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", uploadPreset);
+
+      fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        method: "POST",
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.secure_url) {
+          displayImage(data.secure_url);
+          saveImage(data.secure_url);
+          document.getElementById("imageUpload").value = "";
+        } else {
+          alert("Upload failed.");
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Upload error.");
+      });
+    }
+
+    function displayImage(url) {
+      const img = document.createElement("img");
+      img.src = url;
+      document.getElementById("gallery").appendChild(img);
+    }
+
+    function saveImage(url) {
+      let images = JSON.parse(localStorage.getItem("gallery")) || [];
+      images.push(url);
+      localStorage.setItem("gallery", JSON.stringify(images));
+    }
+
+    function loadImages() {
+      let images = JSON.parse(localStorage.getItem("gallery")) || [];
+      images.forEach(displayImage);
     }
   </script>
+
 </body>
 </html>
