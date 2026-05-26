@@ -6,9 +6,17 @@
 
 <style>
 body {
-  font-family: Arial;
+  font-family: Arial, sans-serif;
   text-align: center;
   background: #f0f0f0;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
 .gallery {
@@ -16,87 +24,119 @@ body {
   flex-wrap: wrap;
   justify-content: center;
   gap: 15px;
-  padding: 20px;
+  padding: 20px 0;
 }
 
 .card {
   background: white;
   padding: 10px;
   border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-img {
+.card img {
+  display: block;
   width: 300px;
+  max-width: 100%;
   border-radius: 8px;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+button {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  background: #0077cc;
+  color: white;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #005fa3;
+}
+
+#message {
+  margin-top: 10px;
+  color: #333;
 }
 </style>
 </head>
 
 <body>
-
-<h1>Shared Photo Gallery</h1>
-
-<input type="file" id="file">
-<button onclick="uploadImage()">Upload</button>
-
-<div class="gallery" id="gallery"></div>
+<div class="container">
+  <h1>Shared Photo Gallery</h1>
+  <div class="controls">
+    <input type="file" id="file" accept="image/*">
+    <button id="addPhoto">Add Photo</button>
+  </div>
+  <p id="message">Choose a photo file and click Add Photo to preview it in the gallery.</p>
+  <div class="gallery" id="gallery"></div>
+</div>
 
 <script>
-const cloudName = "dlquvrodn";
-const uploadPreset = "galleryupload";
-const tag = "busbase_gallery";
+const gallery = document.getElementById('gallery');
+const message = document.getElementById('message');
+const fileInput = document.getElementById('file');
+const addPhotoButton = document.getElementById('addPhoto');
 
-// Upload image
-async function uploadImage() {
-  const file = document.getElementById("file").files[0];
-  if (!file) return alert("Select a file");
+const sampleImages = [
+  'https://picsum.photos/seed/landscape1/600/400',
+  'https://picsum.photos/seed/landscape2/600/400',
+  'https://picsum.photos/seed/portrait1/600/400',
+  'https://picsum.photos/seed/portrait2/600/400',
+  'https://picsum.photos/seed/nature1/600/400',
+  'https://picsum.photos/seed/nature2/600/400'
+];
 
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("upload_preset", uploadPreset);
-  formData.append("tags", tag);
-
-  const res = await fetch(
-    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-    {
-      method: "POST",
-      body: formData
-    }
-  );
-
-  const data = await res.json();
-
-  if (data.secure_url) {
-    loadImages();
-  } else {
-    alert("Upload failed");
-  }
+function createCard(src, alt = 'Photo') {
+  const card = document.createElement('div');
+  card.className = 'card';
+  const image = document.createElement('img');
+  image.src = src;
+  image.alt = alt;
+  card.appendChild(image);
+  return card;
 }
 
-// Load ALL images from Cloudinary
-async function loadImages() {
-  const res = await fetch(
-    `https://res.cloudinary.com/${cloudName}/image/list/${tag}.json`
-  );
-
-  const data = await res.json();
-
-  const gallery = document.getElementById("gallery");
-  gallery.innerHTML = "";
-
-  data.resources.forEach(img => {
-    const card = document.createElement("div");
-    card.className = "card";
-
-    const image = document.createElement("img");
-    image.src = img.secure_url;
-
-    card.appendChild(image);
+function renderGallery() {
+  gallery.innerHTML = '';
+  sampleImages.forEach((src, index) => {
+    const card = createCard(src, `Sample photo ${index + 1}`);
     gallery.appendChild(card);
   });
 }
 
-loadImages();
+addPhotoButton.addEventListener('click', () => {
+  const file = fileInput.files[0];
+  if (!file) {
+    message.textContent = 'Please choose a photo file first.';
+    return;
+  }
+
+  if (!file.type.startsWith('image/')) {
+    message.textContent = 'Only image files are allowed.';
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    sampleImages.unshift(event.target.result);
+    if (sampleImages.length > 12) sampleImages.pop();
+    renderGallery();
+    message.textContent = 'Photo added!';
+    fileInput.value = '';
+  };
+  reader.readAsDataURL(file);
+});
+
+renderGallery();
 </script>
 
 </body>
