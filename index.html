@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fleet List</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    margin: 0;
+    padding: 20px;
+  }
+  header {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  h1 {
+    color: #333;
+  }
+  .fleet-container {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  thead {
+    background-color: #007bff;
+  }
+  th {
+    padding: 15px;
+    color: #fff;
+    font-weight: normal;
+    text-align: left;
+  }
+  tbody {
+    display: block;
+  }
+  tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    cursor: pointer;
+  }
+  td {
+    padding: 12px 15px;
+    border-top: 1px solid #eee;
+  }
+  tr:hover {
+    background-color: #f1f1f1;
+  }
+  /* hidden details section */
+  .details {
+    display: none;
+    background: #f9f9f9;
+  }
+  .details td {
+    padding: 10px 15px;
+    border-top: 1px solid #ccc;
+  }
+  /* Style for the extra info textarea */
+  .extra-info {
+    width: 100%;
+    height: 80px;
+    margin-top: 8px;
+    resize: vertical;
+    padding: 8px;
+    font-family: Arial, sans-serif;
+  }
+  /* Responsive mobile style */
+  @media(max-width: 600px){
+    table, thead, tbody, tr, td, th {
+      display: block;
+    }
+    thead {
+      display: none;
+    }
+    tr {
+      margin-bottom: 20px;
+    }
+    td {
+      padding: 10px;
+      position: relative;
+      padding-left: 50%;
+    }
+    td::before {
+      position: absolute;
+      top: 10px;
+      left: 15px;
+      width: 45%;
+      padding-right: 10px;
+      font-weight: bold;
+      content: attr(data-label);
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Fleet List</h1>
+  <p>Click on a bus for more info and add notes</p>
+</header>
+<div class="fleet-container">
+  <table>
+    <thead>
+      <tr>
+        <th>Fleet Number</th>
+        <th>Vehicle Description</th>
+        <th>Route Branding</th>
+      </tr>
+    </thead>
+    <tbody id="fleet-list"></tbody>
+  </table>
+</div>
+
+<script>
+// Your full fleet data
+const fleet = [
+  { number: '3 / YJ55 BKG', description: 'Optare Tempo', route: 'No Branding / Red' },
+  { number: '4 / FX12MUB', description: 'Mercedes-Benz Citaro O530', route: 'the loop (44)' },
+  { number: '7 / YJ56 WVA', description: 'Optare Tempo', route: 'No Branding / Red' },
+  { number: '11 / YJ07 VSK', description: 'Optare Tempo', route: 'No Branding / Red' },
+  { number: '12 / YJ07 VSL', description: 'Optare Tempo', route: 'No Branding / Red' },
+  { number: '13 / YJ07 VSM', description: 'Optare Tempo', route: 'No Branding / Red' },
+  { number: '14 / YJ07 VSN', description: 'Optare Tempo', route: 'No Branding / Red' },
+  { number: '15 / FD54 JYA', description: 'Optare Tempo', route: 'No Branding / Red' },
+  { number: '19 / FD54 JYF', description: 'Optare Tempo', route: 'No Branding / Red' },
+  { number: '21 / YJ60 KAA', description: 'Optare Tempo', route: 'No Branding / Red' },
+  { number: '22 / YJ60 KAE', description: 'Optare Tempo', route: 'No Branding / Red' },
+  { number: '23 / YJ60 KAK', description: 'Optare Tempo', route: 'No Branding / Red' },
+  { number: '24 / YJ60 KAO', description: 'Optare Tempo', route: 'No Branding / Red' },
+  { number: '25 / YJ60 KAU', description: 'Optare Tempo', route: 'No Branding / Red' },
+  { number: '26 / YJ60 KAX', description: 'Optare Tempo', route: 'No Branding / Red' },
+  { number: '27 / YJ60 KBF', description: 'Optare Tempo', route: 'No Branding / Red' },
+  { number: '28 / T28 KLN', description: 'Optare Tempo', route: 'No Branding / Red' },
+  { number: '29 / T29 KLN', description: 'Optare Tempo', route: 'No Branding / Red' },
+  { number: '30 / MX30 ELH', description: 'Optare Tempo', route: 'No Branding / Red' },
+  { number: '31 / YY24 EKZ', description: 'ADL Enviro200 MMC', route: '34/35/36' },
+  { number: '32 / YY24 ELC', description: 'ADL Enviro200 MMC', route: '34/35/36' },
+  { number: '33 / YY24 ELH', description: 'ADL Enviro200 MMC', route: '34/35/36' },
+  { number: '34 / YY24 ELJ', description: 'ADL Enviro200 MMC', route: '34/35/36' },
+  { number: '35 / YX75 LCL', description: 'ADL Enviro200 MMC', route: '34/35/36' },
+  { number: '36 / YX75 KVF', description: 'ADL Enviro200 MMC', route: '34/35/36' },
+  { number: '37 / YX75 KVG', description: 'ADL Enviro200 MMC', route: '34/35/36' },
+  { number: '52 / LJ53 BFU', description: 'VDL/DAF DB250 Wright Pulsar Gemini', route: 'No Branding / Grey' },
+  { number: '53 / LJ53 BGU', description: 'VDL/DAF DB250 Wright Pulsar Gemini', route: 'No Branding / Grey' },
+  { number: '54 / LJ04 LDL', description: 'VDL/DAF DB250 Wright Pulsar Gemini', route: 'No Branding / Grey' },
+  { number: '61 / SK21 FNG', description: 'ADL Enviro400 MMC', route: 'Coastliner 36' },
+  { number: '62 / SK21 FNH', description: 'ADL Enviro400 MMC', route: 'Coastliner 36' },
+  { number: '63 / YX22 OLN', description: 'ADL Enviro400 MMC', route: 'Coastliner 36' },
+  { number: '64 / YX72 OLO', description: 'ADL Enviro400 MMC', route: 'Coastliner 36' },
+  { number: '65 / YX72 OLP', description: 'ADL Enviro400 MMC', route: 'Coastliner 36' },
+  { number: '66 / YX23 OSE', description: 'ADL Enviro400 MMC', route: 'Coastliner 36' },
+  { number: '67 / YX73 PHJ', description: 'ADL Enviro400 MMC', route: '34/35/36' },
+  { number: '81 / DU61 FVY', description: 'ADL Enviro400', route: 'No Branding / Red' },
+  { number: '82 / UWW 2X', description: 'ADL Enviro400', route: 'No Branding / Red' },
+];
+
+const tbody = document.getElementById('fleet-list');
+
+fleet.forEach(bus => {
+  const row = document.createElement('tr');
+  row.onclick = () => {
+    const next = row.nextElementSibling;
+    if(next && next.classList.contains('details')){
+      next.style.display = next.style.display === 'table-row' ? 'none' : 'table-row';
+    }
+  };
+
+  // Main row cells
+  const numberCell = document.createElement('td');
+  numberCell.setAttribute('data-label', 'Fleet Number');
+  numberCell.textContent = bus.number;
+
+  const descCell = document.createElement('td');
+  descCell.setAttribute('data-label', 'Description');
+  descCell.textContent = bus.description;
+
+  const routeCell = document.createElement('td');
+  routeCell.setAttribute('data-label', 'Route');
+  routeCell.textContent = bus.route;
+
+  row.appendChild(numberCell);
+  row.appendChild(descCell);
+  row.appendChild(routeCell);
+  tbody.appendChild(row);
+
+  // Hidden extra info row
+  const detailRow = document.createElement('tr');
+  detailRow.className = 'details';
+  detailRow.style.display = 'none';
+
+  const detailCell = document.createElement('td');
+  detailCell.colSpan = 3;
+  detailCell.innerHTML = `
+    <strong>Description:</strong> ${bus.description}<br/>
+    <strong>Route:</strong> ${bus.route}<br/>
+    <label for="extra-${bus.number}"><strong>More Info:</strong></label>
+    <textarea id="extra-${bus.number}" class="extra-info" placeholder="Add more info here..."></textarea>
+  `;
+  detailRow.appendChild(detailCell);
+  tbody.appendChild(detailRow);
+});
+</script>
+</body>
+</html>
