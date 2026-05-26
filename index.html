@@ -747,7 +747,6 @@ const fleet = [
     }
   }
 ];
-
 const tbody = document.getElementById('fleet-list');
 
 fleet.forEach((bus) => {
@@ -783,6 +782,7 @@ fleet.forEach((bus) => {
   detailTd.colSpan = 3;
 
   const f = bus.features;
+
   detailTd.innerHTML = `
     <strong>Description:</strong> ${bus.description}<br/>
     <strong>Route:</strong> ${bus.route}<br/><br/>
@@ -800,28 +800,10 @@ fleet.forEach((bus) => {
       <li>Seat belts: <span style="color: ${f.Seat_Belts ? 'green' : 'red'};">${f.Seat_Belts ? 'Yes' : 'No'}</span></li>
     </ul>
   `;
+
   detailRow.appendChild(detailTd);
   tbody.appendChild(detailRow);
 });
-<style>
-.btn {
-    display: inline-block;
-    padding: 12px 20px;
-    background: #e60000;
-    color: white;
-    text-decoration: none;
-    border-radius: 8px;
-    font-weight: bold;
-}
-.btn:hover {
-    background: #b80000;
-}
-</style>
-</head>
-
-<body>
-
-...your page content...
 
 </script>
 
@@ -829,4 +811,3 @@ fleet.forEach((bus) => {
 
 </body>
 </html>
-
