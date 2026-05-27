@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Disclaimer | BusBase</title>
+<link rel="icon" href="busbase-logo-removebg-preview.png">
+
+<style>
+:root {
+  --bg: #07111f;
+  --panel: #101c2e;
+  --panel2: #14243a;
+  --text: #f4f7fb;
+  --muted: #b6c2d1;
+  --blue: #2563eb;
+  --blue2: #1d4ed8;
+  --border: rgba(255,255,255,0.08);
+}
+
+body.light {
+  --bg: #eef3f8;
+  --panel: #ffffff;
+  --panel2: #f8fbff;
+  --text: #172033;
+  --muted: #5b6678;
+  --blue: #00509e;
+  --blue2: #003366;
+  --border: rgba(0,0,0,0.08);
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: radial-gradient(circle at top, #10213a, var(--bg));
+  color: var(--text);
+}
+
+body.light {
+  background: linear-gradient(to bottom, #eef3f8, #dce7f2);
+}
+
+header {
+  background: #020617;
+  text-align: center;
+  padding: 24px 16px;
+}
+
+body.light header {
+  background: #003366;
+}
+
+.site-logo {
+  max-width: 260px;
+  width: 80%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+nav {
+  background: var(--blue2);
+  text-align: center;
+  padding: 12px;
+}
+
+nav a,
+nav button {
+  color: white;
+  text-decoration: none;
+  margin: 6px 12px;
+  font-weight: bold;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 15px;
+  display: inline-block;
+}
+
+nav a:hover,
+nav button:hover,
+nav .active {
+  color: #cce5ff;
+}
+
+main {
+  max-width: 950px;
+  margin: 30px auto;
+  padding: 20px;
+}
+
+.page-title,
+.info-card {
+  background: linear-gradient(135deg, var(--panel), var(--panel2));
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 26px;
+  margin-bottom: 22px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+}
+
+.page-title h1,
+.info-card h2 {
+  margin: 0 0 10px;
+}
+
+.page-title p,
+.info-card p,
+.info-card li {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.warning { border-left: 8px solid #f0ad4e; }
+.contact { border-left: 8px solid #2563eb; }
+.help { border-left: 8px solid #28a745; }
+.info { border-left: 8px solid #8b5cf6; }
+
+.official-link {
+  display: inline-block;
+  margin-top: 15px;
+  background: var(--blue);
+  color: white;
+  text-decoration: none;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-weight: bold;
+}
+
+.official-link:hover {
+  background: var(--blue2);
+}
+
+footer {
+  text-align: center;
+  padding: 20px;
+  color: var(--muted);
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <img src="busbase-logo-removebg-preview.png" alt="BusBase" class="site-logo">
+</header>
+
+<nav>
+  <a href="index.html">Fleet List</a>
+  <a href="routes.html">Routes</a>
+  <a href="departures.html">Live Departures</a>
+  <a href="upcoming.html">Upcoming Changes</a>
+  <a href="updates.html">Website Updates</a>
+  <a href="stats.html">Fleet Statistics</a>
+  <a href="disclaimer.html" class="active">Disclaimer</a>
+  <button type="button" class="theme-toggle" onclick="toggleTheme()">☀️ Light Mode</button>
+</nav>
+
+<main>
+
+<section class="page-title">
+  <h1>Disclaimer & Contact Information</h1>
+  <p>Important information about BusBase and official LynxBus customer service enquiries.</p>
+</section>
+
+<section class="info-card warning">
+  <h2>BusBase is Independent</h2>
+  <p>
+    BusBase is an independent enthusiast-created website built for fleet information,
+    route references, service updates and transport enthusiasts.
+  </p>
+  <p>
+    BusBase is <strong>not officially affiliated with LynxBus</strong>, nor is it operated,
+    managed, endorsed or supported by LynxBus.
+  </p>
+  <p>
+    Any references to LynxBus, fleet vehicles, services, routes or operational information
+    are displayed for informational and enthusiast purposes only.
+  </p>
+</section>
+
+<section class="info-card contact">
+  <h2>Contact LynxBus Directly For Official Enquiries</h2>
+
+  <p>Please contact <strong>LynxBus directly</strong> for:</p>
+
+  <ul>
+    <li>Lost property</li>
+    <li>Ticket or fare issues</li>
+    <li>Refund requests</li>
+    <li>Complaints</li>
+    <li>Official timetable enquiries</li>
+    <li>Accessibility assistance</li>
+    <li>Service disruptions</li>
+    <li>Recruitment enquiries</li>
+    <li>Business partnerships</li>
+  </ul>
+
+  <p>
+    BusBase cannot recover lost property, process ticket refunds,
+    investigate complaints, or provide official LynxBus customer service.
+  </p>
+
+  <a href="https://www.lynxbus.co.uk/contact-us" target="_blank" class="official-link">
+    Contact LynxBus Officially
+  </a>
+</section>
+
+<section class="info-card help">
+  <h2>Things BusBase Can Help With</h2>
+
+  <p>BusBase can help with general enthusiast and information-based queries such as:</p>
+
+  <ul>
+    <li>Fleet list information</li>
+    <li>Vehicle identification</li>
+    <li>Bus registration lookups</li>
+    <li>Route information shown on BusBase</li>
+    <li>Upcoming changes listed on the website</li>
+    <li>Website bugs or incorrect information</li>
+    <li>Suggestions for new features</li>
+    <li>General enthusiast discussions about LynxBus vehicles and services</li>
+  </ul>
+</section>
+
+<section class="info-card info">
+  <h2>Information Accuracy</h2>
+
+  <p>
+    BusBase aims to keep fleet and route information as accurate as possible,
+    however LynxBus services, vehicle allocations, fleet movements and operational
+    details may change at any time.
+  </p>
+
+  <p>
+    If you are travelling, always check the official LynxBus website before making your journey.
+  </p>
+</section>
+
+<section class="info-card">
+  <h2>Website Feedback</h2>
+
+  <p>
+    If you spot incorrect fleet information, broken pages, outdated route details
+    or missing vehicles, feedback helps improve BusBase.
+  </p>
+</section>
+
+</main>
+
+<footer>
+  BusBase Fleet Information
+</footer>
+
+<script>
+function toggleTheme(){
+  const isLight = document.body.classList.toggle('light');
+  localStorage.setItem('busbaseTheme', isLight ? 'light' : 'dark');
+  updateThemeButton();
+}
+
+function updateThemeButton(){
+  const btn = document.querySelector('.theme-toggle');
+  if(btn){
+    btn.textContent = document.body.classList.contains('light')
+      ? '🌙 Dark Mode'
+      : '☀️ Light Mode';
+  }
+}
+
+(function(){
+  if(localStorage.getItem('busbaseTheme') === 'light'){
+    document.body.classList.add('light');
+  }
+  updateThemeButton();
+})();
+</script>
+
+</body>
+</html>
