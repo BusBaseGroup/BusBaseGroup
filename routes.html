@@ -6,16 +6,42 @@
 <title>Lynx Bus Routes | BusBase</title>
 
 <style>
+:root {
+    --bg: linear-gradient(to bottom, #eef3f8, #dce7f2);
+    --text: #222;
+    --header: #003366;
+    --nav: #00509e;
+    --card: #ffffff;
+    --muted: #555;
+    --shadow: rgba(0,0,0,0.08);
+    --detail: #f8fbff;
+    --border: #dbe8f5;
+    --input-border: #c6d7e8;
+}
+
+body.dark {
+    --bg: linear-gradient(to bottom, #111827, #1f2937);
+    --text: #f3f4f6;
+    --header: #020617;
+    --nav: #0f172a;
+    --card: #1e293b;
+    --muted: #cbd5e1;
+    --shadow: rgba(0,0,0,0.35);
+    --detail: #334155;
+    --border: rgba(255,255,255,0.10);
+    --input-border: rgba(255,255,255,0.18);
+}
+
 body {
     font-family: 'Segoe UI', Arial, sans-serif;
-    background: linear-gradient(to bottom, #eef3f8, #dce7f2);
+    background: var(--bg);
     margin: 0;
     padding: 0;
-    color: #222;
+    color: var(--text);
 }
 
 header {
-    background: #003366;
+    background: var(--header);
     color: white;
     padding: 25px;
     text-align: center;
@@ -32,20 +58,28 @@ header p {
 }
 
 nav {
-    background: #00509e;
+    background: var(--nav);
     text-align: center;
     padding: 12px;
 }
 
-nav a {
+nav a,
+nav button {
     color: white;
     text-decoration: none;
     margin: 0 15px;
     font-weight: bold;
     transition: 0.2s;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+    padding: 0;
 }
 
-nav a:hover {
+nav a:hover,
+nav button:hover {
     color: #cce5ff;
 }
 
@@ -56,11 +90,21 @@ nav a:hover {
 }
 
 .intro-card {
-    background: white;
+    background: var(--card);
     border-radius: 14px;
     padding: 20px;
     margin-bottom: 20px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 15px var(--shadow);
+}
+
+.intro-card h2,
+.route-header h2 {
+    color: #003366;
+}
+
+body.dark .intro-card h2,
+body.dark .route-header h2 {
+    color: #e5e7eb;
 }
 
 .search {
@@ -69,10 +113,16 @@ nav a:hover {
     padding: 14px 16px;
     margin: 0 0 22px;
     font-size: 16px;
-    border: 1px solid #c6d7e8;
+    border: 1px solid var(--input-border);
     border-radius: 12px;
     outline: none;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    background: var(--card);
+    color: var(--text);
+    box-shadow: 0 2px 8px var(--shadow);
+}
+
+.search::placeholder {
+    color: var(--muted);
 }
 
 .search:focus {
@@ -80,19 +130,19 @@ nav a:hover {
 }
 
 .route {
-    background: white;
+    background: var(--card);
     margin-bottom: 16px;
     border-left: 8px solid #00509e;
     border-radius: 14px;
     overflow: hidden;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 15px var(--shadow);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .route:hover {
     transform: translateY(-3px);
-    box-shadow: 0 7px 20px rgba(0,0,0,0.12);
+    box-shadow: 0 7px 20px var(--shadow);
 }
 
 .route-header {
@@ -102,20 +152,19 @@ nav a:hover {
 .route-header h2 {
     margin: 0 0 8px;
     font-size: 1.35em;
-    color: #003366;
 }
 
 .meta {
     font-size: 0.95em;
-    color: #555;
+    color: var(--muted);
     line-height: 1.5;
 }
 
 .details {
     display: none;
     padding: 16px 20px 20px;
-    background: #f8fbff;
-    border-top: 1px solid #dbe8f5;
+    background: var(--detail);
+    border-top: 1px solid var(--border);
 }
 
 .open .details {
@@ -133,7 +182,13 @@ nav a:hover {
     margin-top: 10px;
 }
 
-.new {
+body.dark .tag {
+    background: #334155;
+    color: #e5e7eb;
+}
+
+.new,
+body.dark .new {
     background: #f0ad4e;
     color: white;
 }
@@ -141,13 +196,14 @@ nav a:hover {
 footer {
     text-align: center;
     padding: 20px;
-    background: #003366;
+    background: var(--header);
     color: white;
     margin-top: 40px;
 }
 
 @media (max-width: 650px) {
-    nav a {
+    nav a,
+    nav button {
         display: block;
         margin: 8px 0;
     }
@@ -176,6 +232,8 @@ footer {
     <a href="routes.html">Routes</a>
     <a href="upcoming.html">Upcoming Changes</a>
     <a href="updates.html">Website Updates</a>
+    <a href="stats.html">Fleet Statistics</a>
+    <button type="button" onclick="toggleDarkMode()" id="themeBtn">Dark Mode</button>
 </nav>
 
 <div class="container">
@@ -194,6 +252,28 @@ footer {
 </footer>
 
 <script>
+function toggleDarkMode() {
+    document.body.classList.toggle('dark');
+    const isDark = document.body.classList.contains('dark');
+    localStorage.setItem('darkMode', isDark ? 'true' : 'false');
+
+    const button = document.getElementById('themeBtn');
+    if (button) {
+        button.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+    }
+}
+
+function applySavedTheme() {
+    const isDark = localStorage.getItem('darkMode') === 'true';
+    document.body.classList.toggle('dark', isDark);
+
+    const button = document.getElementById('themeBtn');
+    if (button) {
+        button.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+    }
+}
+
+applySavedTheme();
 
 const routes = [
 
@@ -425,7 +505,6 @@ r.to.toLowerCase().includes(q)
 });
 
 render(routes);
-
 </script>
 
 </body>

@@ -14,8 +14,8 @@
     --card: #ffffff;
     --muted: #666;
     --shadow: rgba(0,0,0,0.08);
-    --detail: #f8fbff;
 }
+
 body.dark {
     --bg: linear-gradient(to bottom, #111827, #1f2937);
     --text: #f3f4f6;
@@ -24,7 +24,6 @@ body.dark {
     --card: #1e293b;
     --muted: #cbd5e1;
     --shadow: rgba(0,0,0,0.35);
-    --detail: #334155;
 }
 
 body {
@@ -54,15 +53,23 @@ nav {
     padding: 12px;
 }
 
-nav a, nav button {
+nav a,
+nav button {
     color: white;
     text-decoration: none;
     margin: 0 15px;
     font-weight: bold;
     transition: 0.2s;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+    padding: 0;
 }
 
-nav a:hover, nav button:hover {
+nav a:hover,
+nav button:hover {
     color: #cce5ff;
 }
 
@@ -98,6 +105,10 @@ h2 {
     color: #003366;
 }
 
+body.dark h2 {
+    color: #e5e7eb;
+}
+
 .meta {
     font-size: 0.95em;
     color: var(--muted);
@@ -112,39 +123,6 @@ footer {
     color: white;
     margin-top: 40px;
 }
-
-
-nav button, .dark-toggle {
-    color: white;
-    text-decoration: none;
-    margin: 0 15px;
-    font-weight: bold;
-    transition: 0.2s;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-family: inherit;
-    font-size: inherit;
-}
-
-body.dark h2,
-body.dark .intro-card h2,
-body.dark .route-header h2 {
-    color: #e5e7eb;
-}
-
-body.dark td {
-    border-bottom-color: rgba(255,255,255,0.12);
-}
-
-body.dark tbody tr:not(.details):hover,
-body.dark .route:hover,
-body.dark .update-card:hover,
-body.dark .update-entry:hover,
-body.dark .stat-card:hover {
-    background-color: rgba(255,255,255,0.04);
-}
-
 </style>
 </head>
 
@@ -159,7 +137,8 @@ body.dark .stat-card:hover {
     <a href="routes.html">Routes</a>
     <a href="upcoming.html">Upcoming Changes</a>
     <a href="updates.html">Website Updates</a>
-    <button type="button" class="dark-toggle" onclick="toggleDarkMode()">Dark Mode</button>
+    <a href="stats.html">Fleet Statistics</a>
+    <button type="button" onclick="toggleDarkMode()" id="themeBtn">Dark Mode</button>
 </nav>
 
 <div class="container">
@@ -170,7 +149,12 @@ body.dark .stat-card:hover {
 
     <div class="update-card confirmed">
         <h2>Confirmed Changes</h2>
-        <p>Lynx has confirmed that they are no longer serving The Buttlands in Wells-Next-The-Sea. They Have also announced the new route 44 'the loop' which operates Mon-Sat and it loops from King's Lynn Bus Station, South Wootoon, Knights Hill Queen Elizabeth Hospital and Hardwick, This stars on the 1st of June. For more information, please visit the Lynx website. https://www.lynxbus.co.uk/service-changes-1st-june-2026</p>
+        <p>
+            Lynx has confirmed that they are no longer serving The Buttlands in Wells-next-the-Sea.
+            They have also announced the new route 44 <strong>"The Loop"</strong>, operating Monday–Saturday,
+            looping via King's Lynn Bus Station, South Wootton, Knights Hill, Queen Elizabeth Hospital, and Hardwick.
+            This starts on <strong>1 June 2026</strong>.
+        </p>
     </div>
 
     <div class="update-card expected">
@@ -184,30 +168,24 @@ body.dark .stat-card:hover {
     BusBase Fleet Information
 </footer>
 
-
 <script>
 function toggleDarkMode() {
     document.body.classList.toggle('dark');
     const isDark = document.body.classList.contains('dark');
-    localStorage.setItem('darkMode', isDark ? 'true' : 'false');
+    localStorage.setItem('darkMode', isDark);
 
-    const button = document.querySelector('.dark-toggle');
-    if (button) {
-        button.textContent = isDark ? 'Light Mode' : 'Dark Mode';
-    }
+    document.getElementById('themeBtn').textContent =
+        isDark ? 'Light Mode' : 'Dark Mode';
 }
 
-function applySavedTheme() {
-    const isDark = localStorage.getItem('darkMode') === 'true';
-    document.body.classList.toggle('dark', isDark);
+window.onload = function () {
+    const savedDark = localStorage.getItem('darkMode') === 'true';
 
-    const button = document.querySelector('.dark-toggle');
-    if (button) {
-        button.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+    if (savedDark) {
+        document.body.classList.add('dark');
+        document.getElementById('themeBtn').textContent = 'Light Mode';
     }
-}
-
-applySavedTheme();
+};
 </script>
 
 </body>
