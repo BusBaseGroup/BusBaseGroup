@@ -4,68 +4,34 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Fleet Statistics | BusBase</title>
+<link rel="icon" href="busbase-logo-removebg-preview.png">
 <style>
-
-:root {
-  --bg: radial-gradient(circle at left 35%, rgba(148,163,184,.38), transparent 26%), linear-gradient(135deg,#020817 0%,#0b1220 52%,#111827 100%);
-  --text:#f8fafc;
-  --muted:#cbd5e1;
-  --header:#061a35;
-  --nav:#073b82;
-  --nav2:#05265a;
-  --card:rgba(30,41,59,.78);
-  --card-solid:#1e293b;
-  --border:rgba(226,232,240,.35);
-  --table-line:rgba(226,232,240,.14);
-  --shadow:rgba(0,0,0,.38);
-  --accent:#1d6fe9;
+:root{
+  color-scheme:dark;
+  --bg:#080b12;--bg-2:#0d1220;--surface:rgba(255,255,255,.075);--surface-2:rgba(255,255,255,.11);--surface-3:rgba(255,255,255,.045);
+  --text:#f6f8ff;--muted:#9ca8bd;--line:rgba(255,255,255,.12);--line-strong:rgba(255,255,255,.18);
+  --accent:#56f0c4;--accent-2:#5b8cff;--accent-3:#b76cff;--warning:#ffbf69;--good:#4ade80;--danger:#fb7185;
+  --shadow:0 24px 80px rgba(0,0,0,.38);--radius:26px;--radius-sm:16px;
 }
-body.light {
-  --bg: radial-gradient(circle at left 35%, rgba(148,163,184,.30), transparent 26%), linear-gradient(135deg,#edf5ff 0%,#dcecff 48%,#eef5ff 100%);
-  --text:#07122b;
-  --muted:#40516c;
-  --header:#061a35;
-  --nav:#073b82;
-  --nav2:#05265a;
-  --card:rgba(255,255,255,.88);
-  --card-solid:#ffffff;
-  --border:rgba(15,23,42,.16);
-  --table-line:rgba(15,23,42,.13);
-  --shadow:rgba(15,23,42,.16);
-  --accent:#0969da;
+body.light{
+  color-scheme:light;
+  --bg:#f5f7fb;--bg-2:#eaf0f8;--surface:rgba(255,255,255,.82);--surface-2:rgba(255,255,255,.95);--surface-3:rgba(10,20,40,.045);
+  --text:#101828;--muted:#5d6b82;--line:rgba(16,24,40,.12);--line-strong:rgba(16,24,40,.18);
+  --accent:#00a884;--accent-2:#3366ff;--accent-3:#7c3aed;--shadow:0 24px 70px rgba(16,24,40,.14);
 }
-*{box-sizing:border-box}
-body{margin:0;font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
-.brand-header{background:linear-gradient(180deg,#061a35,#020817);padding:18px 16px 16px;text-align:center;box-shadow:0 10px 35px rgba(0,0,0,.35)}
-.logo{width:190px;max-width:62vw;height:auto;display:block;margin:0 auto;filter:drop-shadow(0 4px 10px rgba(0,0,0,.45));}
-nav{background:linear-gradient(180deg,var(--nav),var(--nav2));display:flex;justify-content:center;align-items:center;gap:26px;padding:13px 16px;flex-wrap:wrap;box-shadow:0 8px 22px rgba(0,0,0,.22)}
-nav a,nav button{color:#fff;text-decoration:none;font-weight:800;font-size:15px;background:none;border:0;cursor:pointer;font-family:inherit;padding:7px 0;position:relative;}
-nav a.active::after{content:"";position:absolute;left:0;right:0;bottom:-13px;height:3px;background:#fff;border-radius:999px;}
-.theme-toggle{background:rgba(2,8,23,.55)!important;border:1px solid rgba(255,255,255,.10)!important;border-radius:9px!important;padding:9px 17px!important;box-shadow:0 4px 12px rgba(0,0,0,.24)}
-main{max-width:1160px;margin:0 auto;padding:46px 22px 50px;}
-.page-title{text-align:center;margin-bottom:30px;}
-.page-title h1{font-size:clamp(2rem,4vw,3.2rem);line-height:1.1;margin:0 0 12px;font-weight:900;letter-spacing:-.04em;}
-.page-title p{margin:0;color:var(--muted);font-weight:700;font-size:1.05rem;}
-.card,.intro-card,.update-card,.update-entry,.stat-card,.route{background:var(--card);border:1px solid var(--border);border-radius:18px;box-shadow:0 18px 45px var(--shadow);backdrop-filter:blur(12px);}
-footer{background:rgba(2,8,23,.66);border-top:1px solid rgba(255,255,255,.08);color:#fff;text-align:center;font-weight:900;padding:21px;margin-top:18px;}
-.badge,.tag{display:inline-block;border-radius:8px;background:#0b67db;color:#fff;font-weight:900;padding:6px 11px;font-size:.86rem}.new{background:#16a34a!important}.planned{background:#f59e0b!important}
-@media(max-width:700px){.logo{width:145px}nav{gap:12px}nav a,nav button{font-size:13px}.theme-toggle{padding:7px 12px!important}main{padding:30px 14px}.page-title h1{font-size:2rem}}
-
-
-.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:32px}.stat-card{padding:22px;display:grid;grid-template-columns:56px 1fr;align-items:center;gap:16px}.stat-icon{font-size:2rem}.stat-card h2{margin:0 0 4px;color:var(--muted);font-size:.95rem}.stat-number{font-size:2rem;font-weight:950}.table-wrap{overflow-x:auto;border-radius:18px;box-shadow:0 18px 45px var(--shadow);border:1px solid var(--border)}table{width:100%;border-collapse:collapse;background:var(--card);min-width:680px}th{background:#05265a;color:#fff;text-align:left;padding:15px 18px}td{padding:14px 18px;border-bottom:1px solid var(--table-line);font-weight:700}.section-title{font-size:1.45rem;margin:0 0 14px}@media(max-width:850px){.stats-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:560px){.stats-grid{grid-template-columns:1fr}}
-
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;background:radial-gradient(circle at 12% 8%,rgba(86,240,196,.18),transparent 28%),radial-gradient(circle at 92% 0%,rgba(91,140,255,.18),transparent 28%),linear-gradient(135deg,var(--bg),var(--bg-2));color:var(--text)}
+body::before{content:"";position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.028) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.028) 1px,transparent 1px);background-size:44px 44px;mask-image:linear-gradient(to bottom,black,transparent 82%);pointer-events:none}.app-shell{display:grid;grid-template-columns:292px minmax(0,1fr);min-height:100vh}.sidebar{position:sticky;top:0;height:100vh;padding:24px;border-right:1px solid var(--line);background:rgba(8,11,18,.72);backdrop-filter:blur(24px);display:flex;flex-direction:column;gap:22px}body.light .sidebar{background:rgba(255,255,255,.68)}.brand{display:flex;align-items:center;gap:14px;padding:12px;border:1px solid var(--line);border-radius:24px;background:var(--surface)}.brand img{width:58px;height:58px;object-fit:contain}.brand-kicker{font-size:.76rem;font-weight:900;text-transform:uppercase;letter-spacing:.16em;color:var(--accent)}.brand-name{font-size:1.24rem;font-weight:950;letter-spacing:-.04em}.brand-sub{font-size:.82rem;color:var(--muted);font-weight:700;margin-top:2px}.nav{display:grid;gap:9px}.nav a,.theme-toggle{display:flex;align-items:center;gap:11px;width:100%;min-height:46px;padding:12px 14px;border-radius:16px;border:1px solid transparent;background:transparent;color:var(--muted);text-decoration:none;font:800 14px/1.1 inherit;cursor:pointer}.nav a:hover,.theme-toggle:hover{background:var(--surface);color:var(--text);border-color:var(--line)}.nav a.active{background:linear-gradient(135deg,rgba(86,240,196,.18),rgba(91,140,255,.16));color:var(--text);border-color:rgba(86,240,196,.35);box-shadow:0 10px 28px rgba(86,240,196,.08)}.nav a.active::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 18px var(--accent)}.sidebar-note{margin-top:auto;padding:16px;border:1px solid var(--line);border-radius:20px;background:var(--surface-3);color:var(--muted);font-size:.86rem;line-height:1.45;font-weight:700}.content{min-width:0;padding:32px}.hero,.page-title{position:relative;overflow:hidden;margin:0 0 24px;padding:34px;border:1px solid var(--line);border-radius:32px;background:linear-gradient(135deg,var(--surface-2),var(--surface));box-shadow:var(--shadow);backdrop-filter:blur(22px);text-align:left}.hero::after,.page-title::after{content:"";position:absolute;right:-70px;top:-80px;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(86,240,196,.28),transparent 68%)}.page-title h1,.hero h1{position:relative;margin:0 0 10px;font-size:clamp(2.25rem,5vw,4.4rem);line-height:.95;letter-spacing:-.065em;font-weight:950}.page-title p,.hero p{position:relative;max-width:760px;margin:0;color:var(--muted);font-size:1.05rem;line-height:1.65;font-weight:700}.card,.intro-card,.update-card,.update-entry,.stat-card,.route,.departure-card,.info-card{background:linear-gradient(180deg,var(--surface),var(--surface-3));border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 18px 48px rgba(0,0,0,.18);backdrop-filter:blur(18px)}.intro-card{padding:24px;margin-bottom:22px}.intro-card h2,.info-card h2,.departure-card h2,.update-card h2{margin:0 0 9px;letter-spacing:-.03em}.intro-card p,.info-card p,.info-card li,.departure-card p,.update-card p,.update-entry p,.meta,.note,.updated{color:var(--muted);line-height:1.65;font-weight:650}.badge,.tag,.update-pill{display:inline-flex;align-items:center;border-radius:999px;background:linear-gradient(135deg,var(--accent-2),var(--accent-3));color:white;font-weight:950;padding:7px 12px;font-size:.78rem}.new{background:var(--good)!important}.planned{background:var(--warning)!important;color:#1f1300!important}.search,input.search{width:100%;padding:17px 19px;border-radius:18px;border:1px solid var(--line);background:var(--surface);color:var(--text);box-shadow:0 14px 36px rgba(0,0,0,.14);font-size:1rem;margin-bottom:22px;outline:none}.search:focus{border-color:rgba(86,240,196,.55);box-shadow:0 0 0 4px rgba(86,240,196,.12)}.search::placeholder{color:var(--muted)}.table-wrap{overflow-x:auto;border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--line)}table{width:100%;border-collapse:collapse;background:var(--surface);min-width:720px}th{background:rgba(255,255,255,.09);color:var(--text);text-align:left;padding:17px 20px;font-size:.84rem;text-transform:uppercase;letter-spacing:.08em}td{padding:16px 20px;border-bottom:1px solid var(--line);font-weight:750}tbody tr:not(.details):hover{background:rgba(86,240,196,.08);cursor:pointer}.details td{background:rgba(86,240,196,.06);border-left:7px solid var(--accent);font-weight:550}.details ul{list-style:none;padding:0;margin:12px 0 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:9px}.details li{padding:9px 11px;border-radius:14px;background:var(--surface-3);border:1px solid var(--line)}.chev,.route-arrow{color:var(--muted);font-size:1.4rem}.stats-grid,.departure-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px;margin-bottom:32px}.stat-card{padding:22px;display:grid;grid-template-columns:58px 1fr;align-items:center;gap:16px}.stat-icon{width:58px;height:58px;border-radius:20px;display:grid;place-items:center;background:linear-gradient(135deg,rgba(86,240,196,.16),rgba(91,140,255,.16));font-size:1.9rem}.stat-card h2{margin:0 0 4px;color:var(--muted);font-size:.88rem;text-transform:uppercase;letter-spacing:.08em}.stat-number{font-size:2.1rem;font-weight:950}.section-title{font-size:1.45rem;margin:0 0 14px;letter-spacing:-.03em}.departure-card{padding:24px}.departure-card a,.official-link{display:inline-flex;align-items:center;justify-content:center;margin-top:6px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#041018;text-decoration:none;padding:12px 16px;border-radius:14px;font-weight:950}.route{display:grid;grid-template-columns:96px 1fr 126px 32px;align-items:center;margin-bottom:14px;overflow:hidden}.route-date{height:100%;background:linear-gradient(180deg,rgba(86,240,196,.15),rgba(91,140,255,.12));border-left:7px solid var(--accent);display:flex;flex-direction:column;justify-content:center;align-items:center;min-height:108px;font-weight:950}.route-date strong{font-size:1.9rem;line-height:1}.route-date span{font-size:.8rem;color:var(--muted);text-align:center}.route-header{padding:22px 18px}.route-header h2{margin:0 0 7px;font-size:1.25rem}.details{display:none;grid-column:1/-1;border-top:1px solid var(--line);padding:18px 22px;background:rgba(255,255,255,.035)}.open .details{display:block}.route-tag{text-align:center}.changes{max-width:900px}.update-card{display:grid;grid-template-columns:76px 1fr;gap:22px;align-items:start;padding:28px;margin-bottom:18px}.confirmed{border-left:7px solid var(--good)}.expected{border-left:7px solid var(--warning)}.icon-circle{width:58px;height:58px;border-radius:20px;display:grid;place-items:center;font-size:1.8rem;font-weight:950;background:var(--surface-3);border:1px solid var(--line)}.timeline{position:relative;max-width:860px}.timeline:before{content:"";position:absolute;left:36px;top:8px;bottom:8px;width:4px;background:linear-gradient(var(--accent),var(--accent-2));border-radius:999px}.update-entry{display:grid;grid-template-columns:86px 1fr 90px;gap:18px;align-items:center;margin-bottom:14px;padding:18px 18px 18px 100px;position:relative}.update-entry:before{content:"";position:absolute;left:27px;width:22px;height:22px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 7px rgba(86,240,196,.14)}.date{font-weight:950;text-align:center;line-height:1.05;color:var(--text)}.date strong{display:block;font-size:1.45rem}.status{justify-self:end}.info-card{padding:26px;margin-bottom:18px}.warning{border-left:7px solid var(--warning)}.contact{border-left:7px solid var(--accent-2)}.help{border-left:7px solid var(--good)}.info{border-left:7px solid var(--accent-3)}footer{margin-top:28px;color:var(--muted);font-weight:800;text-align:center;padding:20px}.footer-link{color:var(--accent);text-decoration:none}@media(max-width:980px){.app-shell{grid-template-columns:1fr}.sidebar{position:relative;height:auto}.brand{max-width:520px}.content{padding:18px}.nav{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}.sidebar-note{display:none}}@media(max-width:720px){.page-title,.hero{padding:26px}.page-title h1,.hero h1{font-size:2.35rem}.route{grid-template-columns:76px 1fr 28px}.route-tag{grid-column:2;margin:0 18px 16px;text-align:left}.route-date{min-height:92px}.timeline:before,.update-entry:before{display:none}.update-entry{grid-template-columns:1fr;padding:20px}.date{text-align:left}.status{justify-self:start}.update-card{grid-template-columns:1fr}.content{padding:14px}.brand img{width:48px;height:48px}}
 </style>
 </head>
 <body>
-<header class="brand-header">
-  <img class="logo" src="busbase-logo-removebg-preview.png" alt="BusBase logo">
-</header>
-<nav>
-  <a href="index.html" class="">Fleet List</a><a href="routes.html" class="">Routes</a><a href="depart.html" class="">Departures</a><a href="upcoming.html" class="">Upcoming Changes</a><a href="updates.html" class="active">Website Updates</a><a href="stats.html" class="">Fleet Statistics</a>
-  <button type="button" class="theme-toggle" onclick="toggleTheme()">☀️ Light Mode</button>
-</nav>
-<main>
-  <section class="page-title">
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><img src="busbase-logo-removebg-preview.png" alt="BusBase logo"><div><div class="brand-kicker">BusBase</div><div class="brand-name">Fleet Nexus</div><div class="brand-sub">Modern LynxBus reference</div></div></div>
+      <nav class="nav"><a href="index.html">Fleet Nexus</a><a href="routes.html">Routes</a><a href="depart.html">Live Departures</a><a href="upcoming.html">Upcoming Changes</a><a href="updates.html">Website Updates</a><a href="stats.html" class="active">Statistics</a><a href="disclaimer.html">Disclaimer</a><button type="button" class="theme-toggle" onclick="toggleTheme()">☀️ Light Mode</button></nav>
+      <div class="sidebar-note">Modernised interface with cleaner cards, smoother spacing, responsive navigation and saved light/dark mode.</div>
+    </aside>
+    <main class="content">
+      <section class="page-title">
     <h1>Fleet Statistics</h1>
     <p>BusBase LynxBus fleet overview</p>
   </section>
@@ -81,10 +47,10 @@ footer{background:rgba(2,8,23,.66);border-top:1px solid rgba(255,255,255,.08);co
 <div class="table-wrap"><table><thead><tr><th>Vehicle Type</th><th>Number in Fleet</th></tr></thead><tbody>
 <tr><td>Optare Tempo</td><td>18</td></tr><tr><td>ADL Enviro200 MMC</td><td>7</td></tr><tr><td>VDL DB250 Gemini</td><td>3</td></tr><tr><td>Enviro400 MMC</td><td>7</td></tr><tr><td>Enviro400</td><td>2</td></tr><tr><td>Mercedes-Benz Citaro O530</td><td>1</td></tr>
 </tbody></table></div>
-</main>
-<footer>BusBase Fleet Information</footer>
+      <footer>BusBase Fleet Information • <a class="footer-link" href="disclaimer.html">Disclaimer & Contact</a></footer>
+    </main>
+  </div>
 <script>
-
 function toggleTheme(){
   const isLight=document.body.classList.toggle('light');
   localStorage.setItem('busbaseTheme',isLight?'light':'dark');
@@ -98,8 +64,6 @@ function updateThemeButton(){
   if(localStorage.getItem('busbaseTheme')==='light') document.body.classList.add('light');
   updateThemeButton();
 })();
-
-
 </script>
 </body>
 </html>
