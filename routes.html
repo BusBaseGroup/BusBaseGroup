@@ -2,110 +2,196 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Lynx Bus Routes - Full Network</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lynx Bus Routes | BusBase</title>
 
 <style>
 body {
-  font-family: Arial, sans-serif;
-  background: #f4f4f4;
-  margin: 0;
-  padding: 20px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(to bottom, #eef3f8, #dce7f2);
+    margin: 0;
+    padding: 0;
+    color: #222;
 }
 
-h1 {
-  text-align: center;
+header {
+    background: #003366;
+    color: white;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2.2em;
+}
+
+header p {
+    margin: 8px 0 0;
+}
+
+nav {
+    background: #00509e;
+    text-align: center;
+    padding: 12px;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin: 0 15px;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+nav a:hover {
+    color: #cce5ff;
+}
+
+.container {
+    max-width: 950px;
+    margin: 30px auto;
+    padding: 20px;
+}
+
+.intro-card {
+    background: white;
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
 }
 
 .search {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 20px;
-  font-size: 16px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px 16px;
+    margin: 0 0 22px;
+    font-size: 16px;
+    border: 1px solid #c6d7e8;
+    border-radius: 12px;
+    outline: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-/* CARD */
+.search:focus {
+    border-color: #00509e;
+}
+
 .route {
-  background: white;
-  margin-bottom: 10px;
-  border-left: 5px solid #ff6600;
-  border-radius: 6px;
-  overflow: hidden;
-  cursor: pointer;
+    background: white;
+    margin-bottom: 16px;
+    border-left: 8px solid #00509e;
+    border-radius: 14px;
+    overflow: hidden;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.route:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 7px 20px rgba(0,0,0,0.12);
 }
 
 .route-header {
-  padding: 15px;
+    padding: 18px 20px;
 }
 
 .route-header h2 {
-  margin: 0;
-  font-size: 18px;
+    margin: 0 0 8px;
+    font-size: 1.35em;
+    color: #003366;
 }
 
 .meta {
-  font-size: 14px;
-  color: #555;
+    font-size: 0.95em;
+    color: #555;
+    line-height: 1.5;
 }
 
-/* DROPDOWN */
 .details {
-  display: none;
-  padding: 0 15px 15px 15px;
-  background: #fafafa;
-  border-top: 1px solid #eee;
+    display: none;
+    padding: 16px 20px 20px;
+    background: #f8fbff;
+    border-top: 1px solid #dbe8f5;
 }
 
 .open .details {
-  display: block;
+    display: block;
 }
 
-/* TAG */
 .tag {
-  display: inline-block;
-  padding: 3px 8px;
-  background: #eee;
-  border-radius: 4px;
-  font-size: 12px;
-  margin-top: 8px;
+    display: inline-block;
+    padding: 5px 10px;
+    background: #e7f1fb;
+    color: #003366;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: bold;
+    margin-top: 10px;
 }
 
 .new {
-  background: #ff6600;
-  color: white;
+    background: #f0ad4e;
+    color: white;
 }
 
-/* BACK BUTTON */
-.back-btn {
-  display: block;
-  width: 100%;
-  margin-top: 25px;
-  padding: 14px;
-  background: #d60000;
-  color: white;
-  text-align: center;
-  font-size: 16px;
-  border-radius: 6px;
-  text-decoration: none;
+footer {
+    text-align: center;
+    padding: 20px;
+    background: #003366;
+    color: white;
+    margin-top: 40px;
 }
 
-.back-btn:hover {
-  background: #b80000;
+@media (max-width: 650px) {
+    nav a {
+        display: block;
+        margin: 8px 0;
+    }
+
+    header h1 {
+        font-size: 1.7em;
+    }
+
+    .container {
+        margin: 15px auto;
+        padding: 14px;
+    }
 }
 </style>
 </head>
 
 <body>
 
-<h1>Lynx Bus Routes (Full Network)</h1>
+<header>
+    <h1>Lynx Bus Routes</h1>
+    <p>Full network route guide</p>
+</header>
 
-<input class="search" id="search" placeholder="Search routes...">
+<nav>
+    <a href="index.html">Fleet List</a>
+    <a href="routes.html">Routes</a>
+    <a href="upcoming.html">Upcoming Changes</a>
+    <a href="updates.html">Website Updates</a>
+</nav>
 
-<div id="routes"></div>
+<div class="container">
+    <div class="intro-card">
+        <h2>Route Network</h2>
+        <p>Search or click a route card to view route details, frequency and extra notes.</p>
+    </div>
 
-<a href="index.html">Back to Fleet List</a> |
-<a href="upcoming.html">View Upcoming Changes</a>
-<a href="updates.html">Website Updates</a>
-</a>
+    <input class="search" id="search" placeholder="Search by route, place or destination...">
+
+    <div id="routes"></div>
+</div>
+
+<footer>
+    BusBase Fleet Information
+</footer>
 
 <script>
 
