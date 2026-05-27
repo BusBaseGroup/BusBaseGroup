@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fleet Statistics | BusBase</title>
+
+<style>
+:root {
+    --bg: linear-gradient(to bottom, #eef3f8, #dce7f2);
+    --text: #222;
+    --header: #003366;
+    --nav: #00509e;
+    --card: #ffffff;
+    --muted: #666;
+    --shadow: rgba(0,0,0,0.08);
+}
+
+body.dark {
+    --bg: linear-gradient(to bottom, #111827, #1f2937);
+    --text: #f3f4f6;
+    --header: #020617;
+    --nav: #0f172a;
+    --card: #1e293b;
+    --muted: #cbd5e1;
+    --shadow: rgba(0,0,0,0.35);
+}
+
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: var(--bg);
+    margin: 0;
+    padding: 0;
+    color: var(--text);
+}
+
+header {
+    background: var(--header);
+    color: white;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2.2em;
+}
+
+nav {
+    background: var(--nav);
+    text-align: center;
+    padding: 12px;
+}
+
+nav a, nav button {
+    color: white;
+    text-decoration: none;
+    margin: 0 12px;
+    font-weight: bold;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+}
+
+nav a:hover, nav button:hover {
+    color: #cce5ff;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 30px auto;
+    padding: 20px;
+}
+
+.intro {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 15px var(--shadow);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.stat-card {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 22px;
+    box-shadow: 0 4px 15px var(--shadow);
+    border-left: 8px solid #00509e;
+    transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+}
+
+.stat-card h2 {
+    margin: 0 0 10px 0;
+    color: var(--muted);
+    font-size: 1em;
+}
+
+.stat-number {
+    font-size: 2.2em;
+    font-weight: bold;
+    color: var(--text);
+}
+
+.section-title {
+    margin-top: 35px;
+    color: var(--text);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px var(--shadow);
+}
+
+th {
+    background: var(--header);
+    color: white;
+    padding: 14px;
+    text-align: left;
+}
+
+td {
+    padding: 14px;
+    border-bottom: 1px solid rgba(128,128,128,0.25);
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    background: var(--header);
+    color: white;
+    margin-top: 40px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>Fleet Statistics</h1>
+    <p>BusBase LynxBus fleet overview</p>
+</header>
+
+<nav>
+    <a href="index.html">Fleet List</a>
+    <a href="routes.html">Routes</a>
+    <a href="upcoming.html">Upcoming Changes</a>
+    <a href="updates.html">Website Updates</a>
+    <a href="stats.html">Fleet Statistics</a>
+    <button onclick="toggleDarkMode()">Dark Mode</button>
+</nav>
+
+<div class="container">
+
+    <div class="intro">
+        <h2>Fleet Overview</h2>
+        <p>This page gives a quick summary of the current LynxBus fleet listed on BusBase.</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h2>Total Vehicles</h2>
+            <div class="stat-number">35</div>
+        </div>
+
+        <div class="stat-card">
+            <h2>Single Deckers</h2>
+            <div class="stat-number">25</div>
+        </div>
+
+        <div class="stat-card">
+            <h2>Double Deckers</h2>
+            <div class="stat-number">10</div>
+        </div>
+
+        <div class="stat-card">
+            <h2>USB Equipped</h2>
+            <div class="stat-number">14</div>
+        </div>
+
+        <div class="stat-card">
+            <h2>Route Display Equipped</h2>
+            <div class="stat-number">17</div>
+        </div>
+
+        <div class="stat-card">
+            <h2>Luggage Rack Equipped</h2>
+            <div class="stat-number">7</div>
+        </div>
+    </div>
+
+    <h2 class="section-title">Vehicle Type Breakdown</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Vehicle Type</th>
+                <th>Number in Fleet</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td>Optare Tempo</td><td>18</td></tr>
+            <tr><td>ADL Enviro200 MMC</td><td>7</td></tr>
+            <tr><td>VDL DB250 Gemini</td><td>3</td></tr>
+            <tr><td>Enviro400 MMC</td><td>7</td></tr>
+            <tr><td>Enviro400</td><td>2</td></tr>
+            <tr><td>Mercedes-Benz Citaro O530</td><td>1</td></tr>
+        </tbody>
+    </table>
+
+</div>
+
+<footer>
+    BusBase Fleet Information
+</footer>
+
+<script>
+function toggleDarkMode() {
+    document.body.classList.toggle('dark');
+    localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+}
+
+if (localStorage.getItem('darkMode') === 'true') {
+    document.body.classList.add('dark');
+}
+</script>
+
+</body>
+</html>
