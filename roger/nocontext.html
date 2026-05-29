@@ -1,1 +1,189 @@
-No Context Rog3rBot Coming Soon!
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>No Context Roger | BusBase</title>
+<style>
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f6f7fb;color:#172033}
+.wrap{max-width:1100px;margin:auto;padding:24px}
+.hero,.panel,.card{background:white;border-radius:22px;box-shadow:0 8px 30px #0001}
+.hero{padding:28px;margin-bottom:18px}
+.logo{max-height:70px;margin-bottom:12px}
+h1{margin:0;color:#172033;font-size:38px}
+.sub{color:#667085;margin-top:8px}
+.nav{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
+.nav a{background:#e8eefc;color:#174ea6;text-decoration:none;border-radius:999px;padding:10px 16px;font-weight:700}
+.nav a.active{background:#174ea6;color:white}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:18px 0}
+.card{padding:18px}
+.card b{display:block;font-size:30px;color:#174ea6;margin-top:5px}
+.panel{padding:28px;text-align:center}
+.status{font-size:34px;font-weight:900;color:#174ea6;margin:25px 0}
+button{background:#174ea6;color:white;border:0;border-radius:999px;padding:14px 22px;font-size:17px;font-weight:800;cursor:pointer;margin:6px}
+button:hover{opacity:.9}
+#birdBox{display:none;margin:20px auto}
+#birdBox img{max-width:430px;width:100%;border-radius:18px;box-shadow:0 8px 25px #0002}
+input[type=range]{width:260px}
+.footer{text-align:center;color:#667085;margin-top:20px}
+@media(max-width:700px){.grid{grid-template-columns:repeat(2,1fr)}h1{font-size:28px}.status{font-size:24px}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<section class="hero">
+  <img class="logo" src="/logo.png" alt="BusBase Logo" onerror="this.style.display='none'">
+  <h1>BusBase | No Context Roger</h1>
+  <p class="sub">Built by enthusiasts, for enthusiasts — now with absolutely no context.</p>
+
+  <div class="nav">
+    <a href="/">Fleet List</a>
+    <a href="/routes">View Routes</a>
+    <a href="/statistics">Statistics</a>
+    <a href="/upcoming-changes">Upcoming Changes</a>
+    <a href="/site-updates">Site Updates</a>
+    <a class="active" href="/roger/nocontext/">No Context Roger</a>
+  </div>
+</section>
+
+<section class="grid">
+  <div class="card">Clips loaded<b id="loaded">0</b></div>
+  <div class="card">Clips played<b id="played">0</b></div>
+  <div class="card">Context found<b>0%</b></div>
+  <div class="card">Chaos level<b id="chaos">0</b></div>
+</section>
+
+<section class="panel">
+  <h2>What’s Roger Saying Next?</h2>
+  <p class="sub">Press the button for a random No Context Roger audio clip.</p>
+
+  <div id="status" class="status">Press the button...</div>
+
+  <div id="birdBox">
+    <img src="images/the-best-bird.png" alt="The Best Bird">
+  </div>
+
+  <button onclick="newClip()">What’s Roger Saying Next?</button>
+  <button onclick="togglePlay()" id="playBtn">▶ Play</button>
+
+  <p class="sub">Volume</p>
+  <input id="volume" type="range" min="0" max="1" step="0.01" value="1">
+
+  <audio id="audio"></audio>
+</section>
+
+<div class="footer">BusBase | No Context Roger</div>
+
+</div>
+
+<script>
+const clips = [
+  {file:"roger-no-context-001.mp3"},
+  {file:"roger-no-context-002.mp3"},
+  {file:"roger-no-context-003.mp3"},
+  {file:"roger-no-context-004.mp3"},
+  {file:"roger-no-context-005.mp3"},
+  {file:"roger-no-context-006.mp3"},
+  {file:"roger-no-context-007.mp3"},
+  {file:"roger-no-context-008.mp3"},
+  {file:"roger-no-context-009.mp3"},
+  {file:"roger-no-context-010.mp3"},
+  {file:"roger-no-context-011.mp3"},
+  {file:"roger-no-context-012.mp3"},
+  {file:"roger-no-context-013.mp3"},
+  {file:"roger-no-context-014.mp3"},
+  {file:"roger-no-context-015.mp3"},
+  {file:"roger-no-context-016.mp3"},
+  {file:"roger-no-context-017.mp3"},
+  {file:"roger-no-context-018.mp3"},
+  {file:"roger-no-context-019.mp3"},
+  {file:"roger-no-context-020.mp3"},
+  {file:"roger-no-context-021.mp3"},
+  {file:"roger-no-context-022.mp3"},
+  {file:"roger-no-context-023.mp3"},
+  {file:"roger-no-context-024.mp3"},
+  {file:"roger-no-context-025.mp3"},
+  {file:"roger-no-context-026.mp3"},
+  {file:"roger-no-context-027.mp3"},
+  {file:"roger-no-context-028.mp3"},
+  {file:"roger-no-context-029.mp3"},
+  {file:"roger-no-context-030.mp3"},
+  {file:"roger-no-context-031.mp3"},
+  {file:"roger-no-context-032.mp3"},
+  {file:"roger-no-context-033.mp3"},
+  {file:"roger-no-context-034.mp3"},
+  {file:"roger-no-context-035.mp3"},
+  {file:"roger-no-context-036.mp3"},
+  {file:"roger-no-context-037.mp3"},
+  {file:"roger-no-context-038.mp3"},
+  {file:"roger-no-context-039.mp3"},
+  {file:"roger-no-context-040.mp3"},
+  {file:"roger-no-context-041.mp3"},
+  {file:"roger-no-context-042.mp3"},
+  {file:"roger-no-context-043.mp3"},
+  {file:"roger-no-context-044.mp3"},
+  {file:"roger-no-context-045.mp3"},
+  {file:"roger-no-context-046.mp3"},
+  {file:"roger-no-context-047.mp3"},
+  {file:"roger-no-context-048.mp3"},
+  {file:"roger-no-context-049.mp3"},
+  {file:"roger-no-context-050.mp3"},
+  {file:"roger-no-context-051.mp3"},
+  {file:"roger-no-context-052.mp3"},
+  {file:"roger-no-context-053.mp3"},
+  {file:"roger-no-context-054.mp3"},
+  {file:"roger-no-context-055.mp3"},
+  {file:"roger-no-context-056.mp3"},
+  {file:"roger-no-context-057.mp3"},
+  {file:"roger-no-context-058.mp3"},
+  {file:"roger-no-context-059.mp3"},
+  {file:"roger-no-context-060.mp3"},
+  {file:"roger-no-context-061.mp3"}
+];
+
+const audio=document.getElementById("audio");
+const status=document.getElementById("status");
+const playBtn=document.getElementById("playBtn");
+const birdBox=document.getElementById("birdBox");
+let last=-1, played=0;
+
+document.getElementById("loaded").textContent=clips.length;
+
+function newClip(){
+  let i;
+  do{i=Math.floor(Math.random()*clips.length)}while(i===last&&clips.length>1);
+  last=i;
+
+  audio.pause();
+  audio.currentTime=0;
+  audio.src=clips[i].file;
+  audio.load();
+
+  status.textContent="🎙️ No Context Roger #"+String(i+1).padStart(3,"0");
+  birdBox.style.display = clips[i].bird ? "block" : "none";
+
+  audio.play();
+  playBtn.textContent="⏸ Pause";
+
+  played++;
+  document.getElementById("played").textContent=played;
+  document.getElementById("chaos").textContent=Math.floor(Math.random()*999);
+}
+
+function togglePlay(){
+  if(!audio.src){newClip();return}
+  if(audio.paused){audio.play();playBtn.textContent="⏸ Pause"}
+  else{audio.pause();playBtn.textContent="▶ Play"}
+}
+
+document.getElementById("volume").addEventListener("input",e=>{
+  audio.volume=e.target.value;
+});
+
+audio.addEventListener("ended",()=>playBtn.textContent="▶ Play");
+</script>
+
+</body>
+</html>
