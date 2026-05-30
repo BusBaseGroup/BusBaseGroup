@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Higher or Lower</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+  background: radial-gradient(circle at center, #60a5fa 0%, #1e3a8a 75%);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.game {
+  width: 95%;
+  max-width: 520px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 28px;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 25px 60px rgba(0,0,0,.45);
+}
+
+h1 {
+  font-size: 42px;
+  margin: 0 0 10px;
+}
+
+.subtitle {
+  color: #dbeafe;
+  margin-bottom: 25px;
+}
+
+.table {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 35px;
+  margin: 25px 0;
+  flex-wrap: wrap;
+}
+
+.card {
+  width: 150px;
+  height: 215px;
+  background: white;
+  color: #111;
+  border-radius: 16px;
+  border: 3px solid #eee;
+  box-shadow: 0 16px 30px rgba(0,0,0,.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64px;
+  font-weight: bold;
+}
+
+.deck {
+  position: relative;
+  width: 150px;
+  height: 215px;
+  border-radius: 16px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  border: 3px solid #fff;
+  box-shadow: 0 16px 30px rgba(0,0,0,.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 22px;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.deck:hover {
+  transform: translateY(-8px) scale(1.03);
+}
+
+.deck::before,
+.deck::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: white;
+  border-radius: 16px;
+  z-index: -1;
+}
+
+.deck::before {
+  transform: translate(10px, 10px);
+}
+
+.deck::after {
+  transform: translate(5px, 5px);
+}
+
+.deck-pattern {
+  border: 2px solid rgba(255,255,255,.7);
+  width: 110px;
+  height: 170px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.buttons {
+  margin: 25px 0;
+}
+
+button {
+  border: none;
+  padding: 14px 30px;
+  margin: 8px;
+  border-radius: 999px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  color: white;
+  transition: 0.2s;
+}
+
+button:hover {
+  transform: scale(1.06);
+}
+
+.higher {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+.lower {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.message {
+  min-height: 32px;
+  font-size: 20px;
+  color: white;
+}
+
+.reset {
+  background: #1d4ed8;
+  margin-top: 15px;
+}
+
+.popup {
+  position: fixed;
+  top: 25px;
+  left: 50%;
+  transform: translateX(-50%) scale(0);
+  background: white;
+  color: #111;
+  padding: 16px 28px;
+  border-radius: 14px;
+  font-size: 20px;
+  font-weight: bold;
+  box-shadow: 0 12px 30px rgba(0,0,0,.35);
+  transition: 0.25s;
+  z-index: 999;
+}
+
+.popup.show {
+  transform: translateX(-50%) scale(1);
+}
+</style>
+</head>
+
+<body>
+
+<div class="popup" id="popup">Wrong, Game Over</div>
+
+<div class="game">
+  <h1>🃏 Higher or Lower</h1>
+  <p class="subtitle">Guess if the next card will be higher or lower.</p>
+
+  <div class="table">
+    <div class="card" id="card">?</div>
+
+    <div class="deck" id="deck">
+      <div class="deck-pattern">DRAW</div>
+    </div>
+  </div>
+
+  <div class="buttons">
+    <button class="higher" onclick="choose('higher')">Higher</button>
+    <button class="lower" onclick="choose('lower')">Lower</button>
+  </div>
+
+  <div class="message" id="message">
+    Click the deck to start.
+  </div>
+
+  <button class="reset" onclick="resetGame()">Reset</button>
+</div>
+
+<script>
+const cards = [
+  { name: "A", value: 1 },
+  { name: "2", value: 2 },
+  { name: "3", value: 3 },
+  { name: "4", value: 4 },
+  { name: "5", value: 5 },
+  { name: "6", value: 6 },
+  { name: "7", value: 7 },
+  { name: "8", value: 8 },
+  { name: "9", value: 9 },
+  { name: "10", value: 10 },
+  { name: "J", value: 11 },
+  { name: "Q", value: 12 },
+  { name: "K", value: 13 }
+];
+
+let currentCard = null;
+let playerGuess = null;
+
+function randomCard() {
+  return cards[Math.floor(Math.random() * cards.length)];
+}
+
+function showCard(card) {
+  document.getElementById("card").textContent = card.name;
+}
+
+function choose(choice) {
+  if (!currentCard) {
+    document.getElementById("message").textContent =
+      "Draw your first card first.";
+    return;
+  }
+
+  playerGuess = choice;
+
+  document.getElementById("message").textContent =
+    "Now click the deck.";
+}
+
+function showPopup() {
+  const popup = document.getElementById("popup");
+
+  popup.classList.add("show");
+
+  setTimeout(() => {
+    popup.classList.remove("show");
+  }, 1800);
+}
+
+document.getElementById("deck").addEventListener("click", function () {
+  if (!currentCard) {
+    currentCard = randomCard();
+    showCard(currentCard);
+    document.getElementById("message").textContent =
+      "Choose Higher or Lower.";
+    return;
+  }
+
+  if (!playerGuess) {
+    document.getElementById("message").textContent =
+      "Choose Higher or Lower first.";
+    return;
+  }
+
+  const nextCard = randomCard();
+
+  showCard(nextCard);
+
+  let win = false;
+
+  if (playerGuess === "higher" && nextCard.value > currentCard.value) {
+    win = true;
+  }
+
+  if (playerGuess === "lower" && nextCard.value < currentCard.value) {
+    win = true;
+  }
+
+  if (nextCard.value === currentCard.value) {
+    document.getElementById("message").textContent =
+      "🤝 Tie! Same value.";
+  } else if (win) {
+    document.getElementById("message").textContent =
+      "🎉 Correct! Pick again.";
+  } else {
+    document.getElementById("message").textContent =
+      "❌ Wrong!";
+    showPopup();
+  }
+
+  currentCard = nextCard;
+  playerGuess = null;
+});
+
+function resetGame() {
+  currentCard = null;
+  playerGuess = null;
+
+  document.getElementById("card").textContent = "?";
+  document.getElementById("message").textContent =
+    "Click the deck to start.";
+}
+</script>
+
+</body>
+</html>
