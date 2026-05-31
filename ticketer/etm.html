@@ -1359,7 +1359,9 @@ renderMessages();
       seenReplies.add(docSnap.id);
 
       const reply = docSnap.data();
-      alert("Office reply: " + reply.body);
+      if (typeof window.receiveOfficeReply === "function") {
+  window.receiveOfficeReply(reply.body);
+}
     });
   };
 
