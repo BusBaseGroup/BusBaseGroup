@@ -603,40 +603,40 @@
     let basket = [];
     let lastTransaction = null;
 
-    const ticketData = {
-      standard: [
-        ['Adult Single', 2.40, 'standard'],
-        ['Adult Return', 4.20, 'standard'],
-        ['Adult Weekly', 18.00, 'standard'],
-        ['Short Hop', 1.50, 'standard'],
-        ['Group Day', 7.50, 'standard'],
-        ['Night Single', 3.00, 'invalid']
-      ],
-      child: [
-        ['Child Single', 1.20, 'child'],
-        ['Child Return', 2.10, 'child'],
-        ['School Single', 0.90, 'child'],
-        ['Child Weekly', 9.00, 'child'],
-        ['Under 5', 0.00, 'child'],
-        ['Child Day', 3.00, 'child']
-      ],
-      period: [
-        ['Day', 5.50, 'period'],
-        ['7-Day', 20.00, 'period'],
-        ['28-Day', 65.00, 'period'],
-        ['Multi Journey', 12.00, 'period'],
-        ['Paper Weekly', 18.00, 'period'],
-        ['Off Peak Day', 4.40, 'invalid']
-      ],
-      concession: [
-        ['Conc. Pass', 0.00, 'concession'],
-        ['Companion', 0.00, 'concession'],
-        ['Out of Hours Add Fare', 0.50, 'concession'],
-        ['Manual Conc.', 0.00, 'concession'],
-        ['Punch Ticket', 0.00, 'concession'],
-        ['Authority Special', 0.00, 'concession']
-    ]
-    ];
+const ticketData = {
+  standard: [
+    ['Adult Single', 2.40, 'standard'],
+    ['Adult Return', 4.20, 'standard'],
+    ['Adult Weekly', 18.00, 'standard'],
+    ['Short Hop', 1.50, 'standard'],
+    ['Group Day', 7.50, 'standard'],
+    ['Night Single', 3.00, 'invalid']
+  ],
+  child: [
+    ['Child Single', 1.20, 'child'],
+    ['Child Return', 2.10, 'child'],
+    ['School Single', 0.90, 'child'],
+    ['Child Weekly', 9.00, 'child'],
+    ['Under 5', 0.00, 'child'],
+    ['Child Day', 3.00, 'child']
+  ],
+  period: [
+    ['Day', 5.50, 'period'],
+    ['7-Day', 20.00, 'period'],
+    ['28-Day', 65.00, 'period'],
+    ['Multi Journey', 12.00, 'period'],
+    ['Paper Weekly', 18.00, 'period'],
+    ['Off Peak Day', 4.40, 'invalid']
+  ],
+  concession: [
+    ['Conc. Pass', 0.00, 'concession'],
+    ['Companion', 0.00, 'concession'],
+    ['Out of Hours Add Fare', 0.50, 'concession'],
+    ['Manual Conc.', 0.00, 'concession'],
+    ['Punch Ticket', 0.00, 'concession'],
+    ['Authority Special', 0.00, 'concession']
+  ]
+};
     
     let currentMessageType = 'Driver';
     let selectedMessageIndex = 0;
