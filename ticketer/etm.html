@@ -1482,17 +1482,21 @@ window.receiveOfficeReply = receiveOfficeReply;
   };
 
   let seenReplies = new Set();
+  let seenBroadcasts = new Set();
 
   window.resetSeenReplies = function() {
     seenReplies = new Set();
+    seenBroadcasts = new Set();
   };
 
   window.checkOfficeReplies = async function() {
     if (!window.etmLoggedIn) return;
 
+    const driverId = (window.currentDriver && window.currentDriver.id) ? window.currentDriver.id : "1234";
+
     const q = query(
       collection(db, "replies"),
-      where("driverId", "==", (window.currentDriver && window.currentDriver.id) ? window.currentDriver.id : "1234")
+      where("driverId", "==", driverId)
     );
 
     const snapshot = await getDocs(q);
@@ -1515,8 +1519,40 @@ window.receiveOfficeReply = receiveOfficeReply;
     });
   };
 
+  window.checkBroadcastMessages = async function() {
+    if (!window.etmLoggedIn) return;
+
+    const snapshot = await getDocs(collection(db, "broadcasts"));
+
+    snapshot.forEach(docSnap => {
+      if (seenBroadcasts.has(docSnap.id)) return;
+
+      seenBroadcasts.add(docSnap.id);
+
+      const broadcast = docSnap.data();
+      const broadcastTime = broadcast.createdAt && typeof broadcast.createdAt.toMillis === "function"
+        ? broadcast.createdAt.toMillis()
+        : Date.now();
+
+      if (window.currentLoginStartedAt && broadcastTime < window.currentLoginStartedAt) return;
+
+      if (typeof window.receiveOfficeReply === "function") {
+        window.receiveOfficeReply({
+          from: broadcast.senderName || broadcast.from || "Control",
+          senderName: broadcast.senderName || broadcast.from || "Control",
+          subject: "[Broadcast] " + (broadcast.subject || "Control Message"),
+          body: broadcast.body || "",
+          priority: broadcast.priority || "normal",
+          broadcast: true
+        });
+      }
+    });
+  };
+
   setInterval(window.checkOfficeReplies, 5000);
+  setInterval(window.checkBroadcastMessages, 5000);
   window.checkOfficeReplies();
+  window.checkBroadcastMessages();
 </script>
 
 
