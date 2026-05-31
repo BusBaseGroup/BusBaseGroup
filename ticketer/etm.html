@@ -1040,13 +1040,13 @@ const ticketData = {
       s.textContent = s.textContent === '✓' ? '✗' : '✓';
       s.style.color = s.textContent === '✓' ? 'green' : 'red';
     }
-    function passAllOthers() {
-      Array.from(byId('checkList').children).forEach(function (r) {
-        const s = r.querySelector('span:last-child');
-        if (s.textContent === '□') {
-          s.textContent = '✓';
-          s.style.color = 'green';
-        }
+function passAllOthers() {
+  Array.from(byId('checkList').children).forEach(function (r) {
+    const s = r.querySelector('span:last-child');
+    if (s.textContent === '□') {
+      s.textContent = '✓';
+      s.style.color = 'green';
+    }
 function receiveOfficeReply(body) {
   messageStore.unshift({
     type: 'Driver',
