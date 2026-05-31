@@ -1329,7 +1329,7 @@ renderMessages();
   };
 
   const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  const db = getFirestore(app, "default");
 
   window.sendToOffice = async function(subject, body, route) {
     const docRef = await addDoc(collection(db, "messages"), {
