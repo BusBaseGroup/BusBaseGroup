@@ -107,6 +107,7 @@ import {
   collection,
       addDoc,
       deleteDoc,
+      updateDoc,
       doc,
       onSnapshot,
       query,
@@ -250,6 +251,41 @@ async function getHelperByEmailAndPin(email, pin) {
         </article>
       `).join("");
     }
+    async function updateWinnerStatus(winnerId, status) {
+
+  const winner = winners.find(item => item.id === winnerId);
+
+  if (!winner) return;
+
+  let reason = "";
+
+  if (status === "retracted") {
+
+    reason = prompt("Why was this prize retracted?");
+
+    if (!reason || !reason.trim()) {
+      alert("You must enter a reason.");
+      return;
+    }
+  }
+
+  await updateDoc(
+    doc(db, "winners", winnerId),
+    {
+      status: status,
+      statusReason: reason,
+      statusUpdatedAt: serverTimestamp(),
+      statusUpdatedBy: currentAdminName || currentUser.email
+    }
+  );
+
+  await writeAuditLog("status_change", {
+    winnerId,
+    winnerName: winner.winnerName,
+    newStatus: status,
+    reason
+  });
+}
 
     function renderLogin() {
       root.innerHTML = `
@@ -427,11 +463,36 @@ currentAdminName = helper.name;
               <h3 class="mt-1 text-lg font-bold">${escapeHTML(winner.winnerName)}</h3>
               <p class="text-slate-700">Won <strong>${escapeHTML(winner.prize)}</strong> playing ${escapeHTML(winner.gameName)}</p>
             </div>
+            <div class="flex flex-wrap gap-2">
+  <button
+    data-status="received"
+    data-id="${winner.id}"
+    class="rounded-lg border border-green-300 px-3 py-2 text-sm font-bold text-green-700"
+  >
+    Received
+  </button>
+
+  <button
+    data-status="pending"
+    data-id="${winner.id}"
+    class="rounded-lg border border-yellow-300 px-3 py-2 text-sm font-bold text-yellow-700"
+  >
+    Pending
+  </button>
+
+  <button
+    data-status="retracted"
+    data-id="${winner.id}"
+    class="rounded-lg border border-orange-300 px-3 py-2 text-sm font-bold text-orange-700"
+  >
+    Retracted
+  </button>
+</div>
             <button data-delete="${winner.id}" class="rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-bold text-red-600">Delete</button>
           </div>
         </article>
       `).join("");
-
+ 
       document.querySelectorAll("[data-delete]").forEach(button => {
         button.addEventListener("click", async () => {
           const winnerId = button.dataset.delete;
