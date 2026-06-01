@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stream Winner Wall</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-white min-h-screen">
+  <div id="app"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      deleteDoc,
+      doc,
+      onSnapshot,
+      query,
+      orderBy,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBBCqx9D1r5U9mWJYKEY_dtCdyk132xGog",
+  authDomain: "busbase-ticketer-v2.firebaseapp.com",
+  projectId: "busbase-ticketer-v2",
+  storageBucket: "busbase-ticketer-v2.firebasestorage.app",
+  messagingSenderId: "807388978236",
+  appId: "1:807388978236:web:5ccf7c8193d81498377739"
+    };
+
+    const ADMIN_EMAILS = [
+      "streamer@busbase.co.uk",
+      "admin@busbase.co.uk"
+    ];
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const root = document.getElementById("app");
+
+    let currentUser = null;
+    let winners = [];
+
+    function escapeHTML(text = "") {
+      return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function isAdmin(user) {
+      return user && ADMIN_EMAILS.includes(user.email);
+    }
+
+    function render() {
+      const route = window.location.hash || "#/";
+      if (route === "#/admin") {
+        if (!isAdmin(currentUser)) renderLogin();
+        else renderAdmin();
+      } else {
+        renderViewer();
+      }
+    }
+
+    function renderViewer() {
+      root.innerHTML = `
+        <main class="min-h-screen bg-gradient-to-b from-slate-950 to-slate-800 px-4 py-10">
+          <div class="mx-auto max-w-5xl">
+            <header class="mb-10 text-center">
+              <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-white/10 text-4xl">🏆</div>
+              <h1 class="text-4xl font-bold">Winner Wall</h1>
+              <p class="mt-3 text-slate-300">See who won, what game they played, and what prize they got.</p>
+              <a href="#/admin" class="mt-5 inline-block rounded-2xl border border-white/20 px-4 py-2 text-sm hover:bg-white/10">Admin login</a>
+            </header>
+
+            <section id="winnerList" class="grid gap-4 md:grid-cols-2"></section>
+          </div>
+        </main>
+      `;
+
+      const list = document.getElementById("winnerList");
+      if (!winners.length) {
+        list.innerHTML = `<div class="md:col-span-2 rounded-3xl bg-white/10 p-8 text-center text-slate-200">No winners have been posted yet.</div>`;
+        return;
+      }
+
+      list.innerHTML = winners.map(winner => `
+        <article class="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-sm">
+          <p class="text-sm text-slate-300">${escapeHTML(winner.date)}</p>
+          <p class="mt-1 text-sm font-semibold text-slate-300">${escapeHTML(winner.streamTitle)}</p>
+          <h2 class="mt-3 text-2xl font-bold">${escapeHTML(winner.winnerName)}</h2>
+          <p class="mt-4 text-slate-200">🎮 Game: <strong>${escapeHTML(winner.gameName)}</strong></p>
+          <p class="mt-2 text-slate-200">🎁 Prize: <strong>${escapeHTML(winner.prize)}</strong></p>
+        </article>
+      `).join("");
+    }
+
+    function renderLogin() {
+      root.innerHTML = `
+        <main class="min-h-screen bg-slate-100 px-4 py-10 text-slate-950">
+          <div class="mx-auto max-w-md">
+            <div class="mb-6 text-center">
+              <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-950 text-3xl text-white">🔒</div>
+              <h1 class="text-3xl font-bold">Admin Login</h1>
+              <p class="mt-2 text-slate-600">The streamer or backup admin can add stream winners here.</p>
+            </div>
+
+            <form id="loginForm" class="rounded-3xl bg-white p-6 shadow-sm">
+              <label class="block mb-4">
+                <span class="mb-1 block text-sm font-semibold">Email</span>
+                <input id="email" type="email" required class="w-full rounded-2xl border px-4 py-3" />
+              </label>
+              <label class="block mb-4">
+                <span class="mb-1 block text-sm font-semibold">Password</span>
+                <input id="password" type="password" required class="w-full rounded-2xl border px-4 py-3" />
+              </label>
+              <p id="loginError" class="mb-4 hidden rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700"></p>
+              <button class="w-full rounded-2xl bg-slate-950 px-4 py-3 font-bold text-white">Login</button>
+              <a href="#/" class="mt-4 block text-center text-sm text-slate-600">Back to viewer page</a>
+            </form>
+          </div>
+        </main>
+      `;
+
+      document.getElementById("loginForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+        const errorBox = document.getElementById("loginError");
+        errorBox.classList.add("hidden");
+
+        try {
+          const result = await signInWithEmailAndPassword(auth, email, password);
+          if (!ADMIN_EMAILS.includes(result.user.email)) {
+            await signOut(auth);
+            throw new Error("Not admin");
+          }
+          window.location.hash = "#/admin";
+        } catch {
+          errorBox.textContent = "Login failed. Check the email and password.";
+          errorBox.classList.remove("hidden");
+        }
+      });
+    }
+
+    function renderAdmin() {
+      root.innerHTML = `
+        <main class="min-h-screen bg-slate-100 px-4 py-8 text-slate-950">
+          <div class="mx-auto max-w-5xl">
+            <header class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h1 class="text-3xl font-bold">Stream Winners Admin</h1>
+                <p class="mt-1 text-slate-600">Logged in as ${escapeHTML(currentUser.email)}</p>
+              </div>
+              <div class="flex gap-3">
+                <a href="#/" class="rounded-2xl border bg-white px-4 py-3 font-semibold">Viewer page</a>
+                <button id="logoutBtn" class="rounded-2xl bg-slate-950 px-4 py-3 font-semibold text-white">Logout</button>
+              </div>
+            </header>
+
+            <div class="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
+              <form id="winnerForm" class="rounded-3xl bg-white p-6 shadow-sm">
+                <h2 class="mb-4 text-xl font-bold">Add winner</h2>
+                <label class="mb-4 block"><span class="mb-1 block text-sm font-semibold">Date</span><input id="date" type="date" required class="w-full rounded-2xl border px-4 py-3" /></label>
+                <label class="mb-4 block"><span class="mb-1 block text-sm font-semibold">Stream title</span><input id="streamTitle" required placeholder="Friday giveaway stream" class="w-full rounded-2xl border px-4 py-3" /></label>
+                <label class="mb-4 block"><span class="mb-1 block text-sm font-semibold">Game name</span><input id="gameName" required placeholder="Fortnite, Roblox, FIFA..." class="w-full rounded-2xl border px-4 py-3" /></label>
+                <label class="mb-4 block"><span class="mb-1 block text-sm font-semibold">Winner name</span><input id="winnerName" required placeholder="Winner username" class="w-full rounded-2xl border px-4 py-3" /></label>
+                <label class="mb-4 block"><span class="mb-1 block text-sm font-semibold">What they won</span><input id="prize" required placeholder="£10 gift card, Discord role, skin..." class="w-full rounded-2xl border px-4 py-3" /></label>
+                <button class="w-full rounded-2xl bg-slate-950 px-4 py-3 font-bold text-white">Save winner</button>
+              </form>
+
+              <section>
+                <h2 class="mb-4 text-xl font-bold">Recent entries</h2>
+                <div id="adminList" class="space-y-3"></div>
+              </section>
+            </div>
+          </div>
+        </main>
+      `;
+
+      document.getElementById("date").value = new Date().toISOString().slice(0, 10);
+      document.getElementById("logoutBtn").addEventListener("click", () => signOut(auth));
+
+      document.getElementById("winnerForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        await addDoc(collection(db, "winners"), {
+          date: document.getElementById("date").value,
+          streamTitle: document.getElementById("streamTitle").value.trim(),
+          gameName: document.getElementById("gameName").value.trim(),
+          winnerName: document.getElementById("winnerName").value.trim(),
+          prize: document.getElementById("prize").value.trim(),
+          createdBy: currentUser.email,
+          createdAt: serverTimestamp()
+        });
+        document.getElementById("gameName").value = "";
+        document.getElementById("winnerName").value = "";
+        document.getElementById("prize").value = "";
+      });
+
+      renderAdminList();
+    }
+
+    function renderAdminList() {
+      const list = document.getElementById("adminList");
+      if (!list) return;
+
+      if (!winners.length) {
+        list.innerHTML = `<div class="rounded-3xl bg-white p-6 text-slate-600">No winners added yet.</div>`;
+        return;
+      }
+
+      list.innerHTML = winners.map(winner => `
+        <article class="rounded-3xl bg-white p-5 shadow-sm">
+          <p class="text-sm font-semibold text-slate-500">${escapeHTML(winner.date)} · ${escapeHTML(winner.streamTitle)}</p>
+          <h3 class="mt-1 text-lg font-bold">${escapeHTML(winner.winnerName)}</h3>
+          <p class="text-slate-700">Won <strong>${escapeHTML(winner.prize)}</strong> playing ${escapeHTML(winner.gameName)}</p>
+          <button data-delete="${winner.id}" class="mt-4 rounded-2xl border px-4 py-2 font-semibold text-red-600">Delete</button>
+        </article>
+      `).join("");
+
+      document.querySelectorAll("[data-delete]").forEach(button => {
+        button.addEventListener("click", async () => {
+          await deleteDoc(doc(db, "winners", button.dataset.delete));
+        });
+      });
+    }
+
+    window.addEventListener("hashchange", render);
+
+    onAuthStateChanged(auth, (user) => {
+      currentUser = user;
+      render();
+    });
+
+    const q = query(collection(db, "winners"), orderBy("date", "desc"), orderBy("createdAt", "desc"));
+    onSnapshot(q, (snapshot) => {
+      winners = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      render();
+    });
+  </script>
+</body>
+</html>
