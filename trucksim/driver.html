@@ -16,27 +16,101 @@
 
     <label>Truck</label>
     <select id="truck">
-      <option>Truck 1</option>
-      <option>Truck 2</option>
-      <option>Truck 3</option>
+      <option value="Truck 1">Truck 1</option>
+      <option value="Truck 2">Truck 2</option>
+      <option value="Truck 3">Truck 3</option>
     </select>
 
     <label>Mileage</label>
     <input id="mileage" type="number" placeholder="Enter mileage">
 
     <div class="checklist">
-      <label><input type="checkbox"> Tyres checked</label>
-      <label><input type="checkbox"> Lights checked</label>
-      <label><input type="checkbox"> Brakes checked</label>
-      <label><input type="checkbox"> Oil checked</label>
-      <label><input type="checkbox"> Fuel checked</label>
-      <label><input type="checkbox"> No damage</label>
+      <label><input id="tyres" type="checkbox"> Tyres checked</label>
+      <label><input id="lights" type="checkbox"> Lights checked</label>
+      <label><input id="brakes" type="checkbox"> Brakes checked</label>
+      <label><input id="oil" type="checkbox"> Oil checked</label>
+      <label><input id="fuel" type="checkbox"> Fuel checked</label>
+      <label><input id="noDamage" type="checkbox"> No damage</label>
     </div>
 
-    <textarea placeholder="Notes for office staff"></textarea>
+    <textarea id="notes" placeholder="Notes for office staff"></textarea>
 
-    <button>Submit Check</button>
+    <button id="submitBtn">Submit Check</button>
+    <p id="status"></p>
   </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBBCqx9D1r5U9mWJYKEY_dtCdyk132xGog",
+      authDomain: "busbase-ticketer-v2.firebaseapp.com",
+      projectId: "busbase-ticketer-v2",
+      storageBucket: "busbase-ticketer-v2.firebasestorage.app",
+      messagingSenderId: "807388978236",
+      appId: "1:807388978236:web:5ccf7c8193d81498377739"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUser = null;
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "login.html";
+      } else {
+        currentUser = user;
+      }
+    });
+
+    document.getElementById("submitBtn").addEventListener("click", async () => {
+      const status = document.getElementById("status");
+      const mileage = document.getElementById("mileage").value;
+
+      if (!mileage) {
+        status.textContent = "Please enter the mileage.";
+        return;
+      }
+
+      status.textContent = "Submitting check...";
+
+      try {
+        await addDoc(collection(db, "truckChecks"), {
+          driverId: currentUser.uid,
+          driverEmail: currentUser.email,
+          truck: document.getElementById("truck").value,
+          mileage: Number(mileage),
+          checklist: {
+            tyres: document.getElementById("tyres").checked,
+            lights: document.getElementById("lights").checked,
+            brakes: document.getElementById("brakes").checked,
+            oil: document.getElementById("oil").checked,
+            fuel: document.getElementById("fuel").checked,
+            noDamage: document.getElementById("noDamage").checked
+          },
+          notes: document.getElementById("notes").value,
+          createdAt: serverTimestamp()
+        });
+
+        status.textContent = "Check submitted successfully.";
+
+        document.getElementById("mileage").value = "";
+        document.getElementById("notes").value = "";
+      } catch (error) {
+        status.textContent = "Could not submit check.";
+        console.error(error);
+      }
+    });
+  </script>
 
 </body>
 </html>
