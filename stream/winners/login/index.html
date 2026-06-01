@@ -3,10 +3,94 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Stream Winner Wall</title>
+  <title>Stream Winners</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f4f5;
+    }
+
+    .site-bg {
+      background: #f4f4f5;
+    }
+
+    .page-shell {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 16px;
+    }
+
+    .topbar {
+      background: #111827;
+      color: white;
+      border-radius: 14px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .panel {
+      background: white;
+      color: #111827;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 18px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-weight: 700;
+      background: #111827;
+      color: white;
+      border: 0;
+      cursor: pointer;
+    }
+
+    .btn-light {
+      background: white;
+      color: #111827;
+      border: 1px solid #d1d5db;
+    }
+
+    .field {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      padding: 11px 12px;
+      color: #111827;
+      background: white;
+    }
+
+    .label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #374151;
+    }
+
+    .winner-card {
+      background: white;
+      color: #111827;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .muted {
+      color: #6b7280;
+    }
+  </style>
 </head>
-<body class="bg-slate-950 text-white min-h-screen">
+<body class="site-bg text-white min-h-screen">
   <div id="app"></div>
 
   <script type="module">
@@ -29,19 +113,33 @@
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyBBCqx9D1r5U9mWJYKEY_dtCdyk132xGog",
-  authDomain: "busbase-ticketer-v2.firebaseapp.com",
-  projectId: "busbase-ticketer-v2",
-  storageBucket: "busbase-ticketer-v2.firebasestorage.app",
-  messagingSenderId: "807388978236",
-  appId: "1:807388978236:web:5ccf7c8193d81498377739"
+    const firebaseConfig = {
+      apiKey: "PASTE_YOUR_API_KEY",
+      authDomain: "PASTE_YOUR_AUTH_DOMAIN",
+      projectId: "PASTE_YOUR_PROJECT_ID",
+      storageBucket: "PASTE_YOUR_STORAGE_BUCKET",
+      messagingSenderId: "PASTE_YOUR_SENDER_ID",
+      appId: "PASTE_YOUR_APP_ID"
     };
 
     const ADMIN_EMAILS = [
-      "streamer@busbase.co.uk",
-      "admin@busbase.co.uk"
+      "streamer@example.com",
+      "your-email@example.com"
     ];
+
+    // Each admin has their own PIN.
+    // Change these PINs before going public.
+    // Example: streamer uses 2468, you use 1357.
+    const ADMIN_PINS = {
+      "streamer@example.com": {
+        pin: "2468",
+        name: "The Streamer"
+      },
+      "your-email@example.com": {
+        pin: "1357",
+        name: "Backup Admin"
+      }
+    };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
@@ -49,7 +147,9 @@ const firebaseConfig = {
     const root = document.getElementById("app");
 
     let currentUser = null;
+    let currentAdminName = "";
     let winners = [];
+    let auditLogs = [];
 
     function escapeHTML(text = "") {
       return String(text)
@@ -64,6 +164,20 @@ const firebaseConfig = {
       return user && ADMIN_EMAILS.includes(user.email);
     }
 
+    function pinIsCorrect(email, pin) {
+      return ADMIN_PINS[email] && ADMIN_PINS[email].pin === pin;
+    }
+
+    async function writeAuditLog(action, details) {
+      await addDoc(collection(db, "auditLogs"), {
+        action,
+        details,
+        adminEmail: currentUser ? currentUser.email : "unknown",
+        adminName: currentAdminName || "Unknown admin",
+        createdAt: serverTimestamp()
+      });
+    }
+
     function render() {
       const route = window.location.hash || "#/";
       if (route === "#/admin") {
@@ -76,59 +190,81 @@ const firebaseConfig = {
 
     function renderViewer() {
       root.innerHTML = `
-        <main class="min-h-screen bg-gradient-to-b from-slate-950 to-slate-800 px-4 py-10">
-          <div class="mx-auto max-w-5xl">
-            <header class="mb-10 text-center">
-              <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-white/10 text-4xl">🏆</div>
-              <h1 class="text-4xl font-bold">Winner Wall</h1>
-              <p class="mt-3 text-slate-300">See who won, what game they played, and what prize they got.</p>
-              <a href="#/admin" class="mt-5 inline-block rounded-2xl border border-white/20 px-4 py-2 text-sm hover:bg-white/10">Admin login</a>
-            </header>
+        <main class="page-shell">
+          <header class="topbar">
+            <div>
+              <h1 class="text-2xl font-bold">Stream Winners</h1>
+              <p class="text-sm text-slate-300">Recent prizes and giveaway winners</p>
+            </div>
+            <a href="#/admin" class="btn btn-light">Admin</a>
+          </header>
 
-            <section id="winnerList" class="grid gap-4 md:grid-cols-2"></section>
-          </div>
+          <section class="mb-4 grid gap-3 sm:grid-cols-3">
+            <div class="panel">
+              <p class="text-sm muted">Total winners</p>
+              <p class="mt-1 text-3xl font-bold">${winners.length}</p>
+            </div>
+            <div class="panel sm:col-span-2">
+              <p class="text-sm muted">Viewer page</p>
+              <p class="mt-1 font-semibold">This page updates automatically when a winner is added.</p>
+            </div>
+          </section>
+
+          <section id="winnerList" class="grid gap-3 md:grid-cols-2"></section>
         </main>
       `;
 
       const list = document.getElementById("winnerList");
       if (!winners.length) {
-        list.innerHTML = `<div class="md:col-span-2 rounded-3xl bg-white/10 p-8 text-center text-slate-200">No winners have been posted yet.</div>`;
+        list.innerHTML = `<div class="panel md:col-span-2 text-center"><p class="text-xl font-bold">No winners yet</p><p class="mt-1 muted">The first prize will appear here once it is added.</p></div>`;
         return;
       }
 
       list.innerHTML = winners.map(winner => `
-        <article class="rounded-3xl border border-white/10 bg-white/10 p-6 shadow-sm">
-          <p class="text-sm text-slate-300">${escapeHTML(winner.date)}</p>
-          <p class="mt-1 text-sm font-semibold text-slate-300">${escapeHTML(winner.streamTitle)}</p>
-          <h2 class="mt-3 text-2xl font-bold">${escapeHTML(winner.winnerName)}</h2>
-          <p class="mt-4 text-slate-200">🎮 Game: <strong>${escapeHTML(winner.gameName)}</strong></p>
-          <p class="mt-2 text-slate-200">🎁 Prize: <strong>${escapeHTML(winner.prize)}</strong></p>
+        <article class="winner-card">
+          <div class="mb-3 flex items-start justify-between gap-3">
+            <div>
+              <p class="text-sm font-bold muted">${escapeHTML(winner.date)}</p>
+              <p class="text-sm muted">${escapeHTML(winner.streamTitle)}</p>
+            </div>
+            <span class="rounded-lg bg-slate-100 px-2 py-1 text-sm font-bold">Winner</span>
+          </div>
+          <h2 class="text-2xl font-bold">${escapeHTML(winner.winnerName)}</h2>
+          <div class="mt-4 grid gap-2">
+            <p><span class="font-bold">Game:</span> ${escapeHTML(winner.gameName)}</p>
+            <p><span class="font-bold">Prize:</span> ${escapeHTML(winner.prize)}</p>
+          </div>
         </article>
       `).join("");
     }
 
     function renderLogin() {
       root.innerHTML = `
-        <main class="min-h-screen bg-slate-100 px-4 py-10 text-slate-950">
-          <div class="mx-auto max-w-md">
-            <div class="mb-6 text-center">
-              <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-950 text-3xl text-white">🔒</div>
-              <h1 class="text-3xl font-bold">Admin Login</h1>
-              <p class="mt-2 text-slate-600">The streamer or backup admin can add stream winners here.</p>
+        <main class="page-shell">
+          <header class="topbar">
+            <div>
+              <h1 class="text-2xl font-bold">Admin Login</h1>
+              <p class="text-sm text-slate-300">Enter email, password, and PIN</p>
             </div>
+            <a href="#/" class="btn btn-light">Viewer</a>
+          </header>
 
-            <form id="loginForm" class="rounded-3xl bg-white p-6 shadow-sm">
-              <label class="block mb-4">
-                <span class="mb-1 block text-sm font-semibold">Email</span>
-                <input id="email" type="email" required class="w-full rounded-2xl border px-4 py-3" />
+          <div class="mx-auto max-w-md">
+            <form id="loginForm" class="panel">
+              <label class="mb-4 block">
+                <span class="label">Email</span>
+                <input id="email" type="email" required class="field" />
               </label>
-              <label class="block mb-4">
-                <span class="mb-1 block text-sm font-semibold">Password</span>
-                <input id="password" type="password" required class="w-full rounded-2xl border px-4 py-3" />
+              <label class="mb-4 block">
+                <span class="label">Password</span>
+                <input id="password" type="password" required class="field" />
               </label>
-              <p id="loginError" class="mb-4 hidden rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700"></p>
-              <button class="w-full rounded-2xl bg-slate-950 px-4 py-3 font-bold text-white">Login</button>
-              <a href="#/" class="mt-4 block text-center text-sm text-slate-600">Back to viewer page</a>
+              <label class="mb-4 block">
+                <span class="label">Admin PIN</span>
+                <input id="pin" type="password" inputmode="numeric" required placeholder="Enter your PIN" class="field" />
+              </label>
+              <p id="loginError" class="mb-4 hidden rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700"></p>
+              <button class="btn w-full">Login</button>
             </form>
           </div>
         </main>
@@ -138,18 +274,23 @@ const firebaseConfig = {
         e.preventDefault();
         const email = document.getElementById("email").value.trim();
         const password = document.getElementById("password").value;
+        const pin = document.getElementById("pin").value.trim();
         const errorBox = document.getElementById("loginError");
         errorBox.classList.add("hidden");
 
         try {
           const result = await signInWithEmailAndPassword(auth, email, password);
-          if (!ADMIN_EMAILS.includes(result.user.email)) {
+          if (!ADMIN_EMAILS.includes(result.user.email) || !pinIsCorrect(result.user.email, pin)) {
             await signOut(auth);
             throw new Error("Not admin");
           }
+          currentAdminName = ADMIN_PINS[result.user.email].name;
+          await writeAuditLog("login", {
+            message: "Admin logged in"
+          });
           window.location.hash = "#/admin";
         } catch {
-          errorBox.textContent = "Login failed. Check the email and password.";
+          errorBox.textContent = "Login failed. Check the email, password, and PIN.";
           errorBox.classList.remove("hidden");
         }
       });
@@ -157,35 +298,40 @@ const firebaseConfig = {
 
     function renderAdmin() {
       root.innerHTML = `
-        <main class="min-h-screen bg-slate-100 px-4 py-8 text-slate-950">
-          <div class="mx-auto max-w-5xl">
-            <header class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h1 class="text-3xl font-bold">Stream Winners Admin</h1>
-                <p class="mt-1 text-slate-600">Logged in as ${escapeHTML(currentUser.email)}</p>
-              </div>
-              <div class="flex gap-3">
-                <a href="#/" class="rounded-2xl border bg-white px-4 py-3 font-semibold">Viewer page</a>
-                <button id="logoutBtn" class="rounded-2xl bg-slate-950 px-4 py-3 font-semibold text-white">Logout</button>
-              </div>
-            </header>
+        <main class="page-shell">
+          <header class="topbar">
+            <div>
+              <h1 class="text-2xl font-bold">Winner Admin</h1>
+              <p class="text-sm text-slate-300">Logged in as ${escapeHTML(currentUser.email)} · ${escapeHTML(currentAdminName || "Admin")}</p>
+            </div>
+            <div class="flex gap-2">
+              <a href="#/" class="btn btn-light">Viewer</a>
+              <button id="logoutBtn" class="btn btn-light">Logout</button>
+            </div>
+          </header>
 
-            <div class="grid gap-6 lg:grid-cols-[1fr_1.2fr]">
-              <form id="winnerForm" class="rounded-3xl bg-white p-6 shadow-sm">
-                <h2 class="mb-4 text-xl font-bold">Add winner</h2>
-                <label class="mb-4 block"><span class="mb-1 block text-sm font-semibold">Date</span><input id="date" type="date" required class="w-full rounded-2xl border px-4 py-3" /></label>
-                <label class="mb-4 block"><span class="mb-1 block text-sm font-semibold">Stream title</span><input id="streamTitle" required placeholder="Friday giveaway stream" class="w-full rounded-2xl border px-4 py-3" /></label>
-                <label class="mb-4 block"><span class="mb-1 block text-sm font-semibold">Game name</span><input id="gameName" required placeholder="Fortnite, Roblox, FIFA..." class="w-full rounded-2xl border px-4 py-3" /></label>
-                <label class="mb-4 block"><span class="mb-1 block text-sm font-semibold">Winner name</span><input id="winnerName" required placeholder="Winner username" class="w-full rounded-2xl border px-4 py-3" /></label>
-                <label class="mb-4 block"><span class="mb-1 block text-sm font-semibold">What they won</span><input id="prize" required placeholder="£10 gift card, Discord role, skin..." class="w-full rounded-2xl border px-4 py-3" /></label>
-                <button class="w-full rounded-2xl bg-slate-950 px-4 py-3 font-bold text-white">Save winner</button>
-              </form>
+          <div class="grid gap-4 lg:grid-cols-[380px_1fr]">
+            <form id="winnerForm" class="panel">
+              <h2 class="mb-4 text-xl font-bold">Add winner</h2>
+              <label class="mb-3 block"><span class="label">Date</span><input id="date" type="date" required class="field" /></label>
+              <label class="mb-3 block"><span class="label">Stream title</span><input id="streamTitle" required placeholder="Friday giveaway stream" class="field" /></label>
+              <label class="mb-3 block"><span class="label">Game name</span><input id="gameName" required placeholder="Fortnite, Roblox, FIFA..." class="field" /></label>
+              <label class="mb-3 block"><span class="label">Winner name</span><input id="winnerName" required placeholder="Winner username" class="field" /></label>
+              <label class="mb-4 block"><span class="label">What they won</span><input id="prize" required placeholder="£10 gift card, Discord role, skin..." class="field" /></label>
+              <button class="btn w-full">Save winner</button>
+            </form>
 
-              <section>
+            <section class="grid gap-4">
+              <div class="panel">
                 <h2 class="mb-4 text-xl font-bold">Recent entries</h2>
                 <div id="adminList" class="space-y-3"></div>
-              </section>
-            </div>
+              </div>
+
+              <div class="panel">
+                <h2 class="mb-4 text-xl font-bold">Admin activity log</h2>
+                <div id="auditList" class="space-y-3"></div>
+              </div>
+            </section>
           </div>
         </main>
       `;
@@ -195,14 +341,26 @@ const firebaseConfig = {
 
       document.getElementById("winnerForm").addEventListener("submit", async (e) => {
         e.preventDefault();
-        await addDoc(collection(db, "winners"), {
+        const winnerData = {
           date: document.getElementById("date").value,
           streamTitle: document.getElementById("streamTitle").value.trim(),
           gameName: document.getElementById("gameName").value.trim(),
           winnerName: document.getElementById("winnerName").value.trim(),
           prize: document.getElementById("prize").value.trim(),
           createdBy: currentUser.email,
+          createdByName: currentAdminName || "Unknown admin",
           createdAt: serverTimestamp()
+        };
+
+        await addDoc(collection(db, "winners"), winnerData);
+
+        await writeAuditLog("add_winner", {
+          message: "Winner added",
+          date: winnerData.date,
+          streamTitle: winnerData.streamTitle,
+          gameName: winnerData.gameName,
+          winnerName: winnerData.winnerName,
+          prize: winnerData.prize
         });
         document.getElementById("gameName").value = "";
         document.getElementById("winnerName").value = "";
@@ -210,6 +368,29 @@ const firebaseConfig = {
       });
 
       renderAdminList();
+      renderAuditList();
+    }
+
+    function renderAuditList() {
+      const list = document.getElementById("auditList");
+      if (!list) return;
+
+      if (!auditLogs.length) {
+        list.innerHTML = `<div class="rounded-3xl bg-white p-6 text-slate-600">No admin actions logged yet.</div>`;
+        return;
+      }
+
+      list.innerHTML = auditLogs.map(log => {
+        const time = log.createdAt && log.createdAt.toDate ? log.createdAt.toDate().toLocaleString() : "Just now";
+        return `
+          <article class="rounded-3xl bg-white p-5 shadow-sm">
+            <p class="text-sm font-semibold text-slate-500">${escapeHTML(time)}</p>
+            <h3 class="mt-1 text-lg font-bold">${escapeHTML(log.action)}</h3>
+            <p class="text-slate-700">By <strong>${escapeHTML(log.adminName)}</strong> (${escapeHTML(log.adminEmail)})</p>
+            <pre class="mt-3 overflow-auto rounded-2xl bg-slate-100 p-3 text-xs text-slate-700">${escapeHTML(JSON.stringify(log.details || {}, null, 2))}</pre>
+          </article>
+        `;
+      }).join("");
     }
 
     function renderAdminList() {
@@ -217,22 +398,35 @@ const firebaseConfig = {
       if (!list) return;
 
       if (!winners.length) {
-        list.innerHTML = `<div class="rounded-3xl bg-white p-6 text-slate-600">No winners added yet.</div>`;
+        list.innerHTML = `<div class="rounded-lg bg-slate-50 p-4 text-slate-600">No winners added yet.</div>`;
         return;
       }
 
       list.innerHTML = winners.map(winner => `
-        <article class="rounded-3xl bg-white p-5 shadow-sm">
-          <p class="text-sm font-semibold text-slate-500">${escapeHTML(winner.date)} · ${escapeHTML(winner.streamTitle)}</p>
-          <h3 class="mt-1 text-lg font-bold">${escapeHTML(winner.winnerName)}</h3>
-          <p class="text-slate-700">Won <strong>${escapeHTML(winner.prize)}</strong> playing ${escapeHTML(winner.gameName)}</p>
-          <button data-delete="${winner.id}" class="mt-4 rounded-2xl border px-4 py-2 font-semibold text-red-600">Delete</button>
+        <article class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-sm font-semibold text-slate-500">${escapeHTML(winner.date)} · ${escapeHTML(winner.streamTitle)}</p>
+              <h3 class="mt-1 text-lg font-bold">${escapeHTML(winner.winnerName)}</h3>
+              <p class="text-slate-700">Won <strong>${escapeHTML(winner.prize)}</strong> playing ${escapeHTML(winner.gameName)}</p>
+            </div>
+            <button data-delete="${winner.id}" class="rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-bold text-red-600">Delete</button>
+          </div>
         </article>
       `).join("");
 
       document.querySelectorAll("[data-delete]").forEach(button => {
         button.addEventListener("click", async () => {
-          await deleteDoc(doc(db, "winners", button.dataset.delete));
+          const winnerId = button.dataset.delete;
+          const winner = winners.find(item => item.id === winnerId);
+
+          await writeAuditLog("delete_winner", {
+            message: "Winner deleted",
+            deletedWinnerId: winnerId,
+            deletedWinner: winner || null
+          });
+
+          await deleteDoc(doc(db, "winners", winnerId));
         });
       });
     }
@@ -249,6 +443,13 @@ const firebaseConfig = {
       winners = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       render();
     });
+
+    const auditQuery = query(collection(db, "auditLogs"), orderBy("createdAt", "desc"));
+    onSnapshot(auditQuery, (snapshot) => {
+      auditLogs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderAuditList();
+    });
   </script>
 </body>
 </html>
+
