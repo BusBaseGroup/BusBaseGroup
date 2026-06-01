@@ -455,7 +455,7 @@ currentAdminName = helper.name;
       render();
     });
 
-    const q = query(collection(db, "winners"), orderBy("date", "desc"), orderBy("createdAt", "desc"));
+const q = query(collection(db, "winners"), orderBy("createdAt", "desc"));
     onSnapshot(q, (snapshot) => {
       winners = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
       render();
