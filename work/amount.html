@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Fun Fair Counter</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #ff7a18, #af002d, #319197);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      color: #fff;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 480px;
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(14px);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+      text-align: center;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.18);
+      border-radius: 18px;
+      padding: 18px;
+      margin: 16px 0;
+    }
+
+    input {
+      width: 140px;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      font-size: 20px;
+      text-align: center;
+    }
+
+    .number {
+      font-size: 44px;
+      font-weight: bold;
+    }
+
+    .money {
+      font-size: 34px;
+      font-weight: bold;
+      color: #fff6a8;
+    }
+
+    button {
+      border: none;
+      border-radius: 14px;
+      padding: 14px 18px;
+      margin: 6px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .cash { background: #00c853; color: white; }
+    .cardPay { background: #2979ff; color: white; }
+    .ride { background: #9c27b0; color: white; }
+    .minus { background: #ff3d00; color: white; }
+    .reset { background: #263238; color: white; }
+    .download { background: #ffffff; color: #222; width: 100%; }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app">
+    <h1>🎡 Fun Fair Counter</h1>
+
+    <div class="card">
+      <p>Ticket price</p>
+      £<input type="number" id="price" value="5" min="0" step="0.50">
+    </div>
+
+    <div class="card">
+      <h2>Add Payment</h2>
+      <button class="cash" onclick="addCash()">+ Cash</button>
+      <button class="cardPay" onclick="addCard()">+ Card</button>
+      <br>
+      <button class="minus" onclick="removeLast()">Undo Last</button>
+    </div>
+
+    <div class="card">
+      <h2>People on Ride Now</h2>
+      <div class="number" id="ridePeople">0</div>
+      <button class="ride" onclick="clearRide()">Next Ride / Clear Count</button>
+    </div>
+
+    <div class="card">
+      <h2>Total People Today</h2>
+      <div class="number" id="people">0</div>
+    </div>
+
+    <div class="split">
+      <div class="card">
+        <h3>Cash</h3>
+        <div id="cashPeople">0 people</div>
+        <div class="money">£<span id="cashMoney">0.00</span></div>
+      </div>
+
+      <div class="card">
+        <h3>Card</h3>
+        <div id="cardPeople">0 people</div>
+        <div class="money">£<span id="cardMoney">0.00</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Total Money</h2>
+      <div class="money">£<span id="totalMoney">0.00</span></div>
+    </div>
+
+    <button class="reset" onclick="resetAll()">Reset Whole Day</button>
+    <button class="download" onclick="downloadImage()">Download End of Day Image</button>
+  </div>
+
+  <canvas id="imageCanvas" style="display:none;"></canvas>
+
+  <script>
+    let cashPeople = 0;
+    let cardPeople = 0;
+    let ridePeople = 0;
+    let history = [];
+
+    function getPrice() {
+      return Number(document.getElementById("price").value);
+    }
+
+    function updateDisplay() {
+      const price = getPrice();
+
+      const totalPeople = cashPeople + cardPeople;
+      const cashMoney = cashPeople * price;
+      const cardMoney = cardPeople * price;
+      const totalMoney = cashMoney + cardMoney;
+
+      document.getElementById("people").textContent = totalPeople;
+      document.getElementById("ridePeople").textContent = ridePeople;
+
+      document.getElementById("cashPeople").textContent = cashPeople + " people";
+      document.getElementById("cardPeople").textContent = cardPeople + " people";
+
+      document.getElementById("cashMoney").textContent = cashMoney.toFixed(2);
+      document.getElementById("cardMoney").textContent = cardMoney.toFixed(2);
+      document.getElementById("totalMoney").textContent = totalMoney.toFixed(2);
+    }
+
+    function addCash() {
+      cashPeople++;
+      ridePeople++;
+      history.push("cash");
+      updateDisplay();
+    }
+
+    function addCard() {
+      cardPeople++;
+      ridePeople++;
+      history.push("card");
+      updateDisplay();
+    }
+
+    function removeLast() {
+      const last = history.pop();
+
+      if (last === "cash") {
+        cashPeople--;
+        if (ridePeople > 0) ridePeople--;
+      }
+
+      if (last === "card") {
+        cardPeople--;
+        if (ridePeople > 0) ridePeople--;
+      }
+
+      updateDisplay();
+    }
+
+    function clearRide() {
+      ridePeople = 0;
+      updateDisplay();
+    }
+
+    function resetAll() {
+      if (confirm("Reset the whole day?")) {
+        cashPeople = 0;
+        cardPeople = 0;
+        ridePeople = 0;
+        history = [];
+        updateDisplay();
+      }
+    }
+
+    function downloadImage() {
+      const price = getPrice();
+      const totalPeople = cashPeople + cardPeople;
+      const cashMoney = cashPeople * price;
+      const cardMoney = cardPeople * price;
+      const totalMoney = cashMoney + cardMoney;
+      const date = new Date().toLocaleDateString("en-GB");
+
+      const canvas = document.getElementById("imageCanvas");
+      const ctx = canvas.getContext("2d");
+
+      canvas.width = 900;
+      canvas.height = 700;
+
+      const gradient = ctx.createLinearGradient(0, 0, 900, 700);
+      gradient.addColorStop(0, "#ff7a18");
+      gradient.addColorStop(0.5, "#af002d");
+      gradient.addColorStop(1, "#319197");
+
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.fillStyle = "rgba(255,255,255,0.18)";
+      roundRect(ctx, 80, 60, 740, 580, 35);
+      ctx.fill();
+
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#ffffff";
+
+      ctx.font = "bold 52px Arial";
+      ctx.fillText("🎡 Fun Fair End of Day", 450, 125);
+
+      ctx.font = "28px Arial";
+      ctx.fillText("Date: " + date, 450, 180);
+
+      ctx.font = "bold 38px Arial";
+      ctx.fillText("Total People: " + totalPeople, 450, 250);
+
+      ctx.font = "30px Arial";
+      ctx.fillText("Cash: " + cashPeople + " people — £" + cashMoney.toFixed(2), 450, 320);
+      ctx.fillText("Card: " + cardPeople + " people — £" + cardMoney.toFixed(2), 450, 370);
+
+      ctx.font = "30px Arial";
+      ctx.fillText("People currently on ride: " + ridePeople, 450, 425);
+
+      ctx.font = "bold 56px Arial";
+      ctx.fillStyle = "#fff6a8";
+      ctx.fillText("Total: £" + totalMoney.toFixed(2), 450, 510);
+
+      ctx.font = "24px Arial";
+      ctx.fillStyle = "#ffffff";
+      ctx.fillText("Ticket price: £" + price.toFixed(2), 450, 570);
+
+      const link = document.createElement("a");
+      link.download = "funfair-end-of-day.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    }
+
+    function roundRect(ctx, x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    }
+
+    document.getElementById("price").addEventListener("input", updateDisplay);
+    updateDisplay();
+  </script>
+
+</body>
+</html>
