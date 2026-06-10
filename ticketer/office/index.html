@@ -408,6 +408,100 @@
       font-size: 30px;
     }
 
+
+    .tracker-board {
+      display: grid;
+      gap: 12px;
+      padding: 15px;
+      max-height: 320px;
+      overflow: auto;
+    }
+
+    .tracker-empty {
+      border: 1px dashed var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      background: #f9fafb;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .tracker-card {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: white;
+      padding: 14px;
+      box-shadow: 0 8px 20px rgba(15,23,42,.08);
+      border-left: 9px solid var(--blue);
+    }
+
+    .tracker-card.early { border-left-color: var(--red); }
+    .tracker-card.late { border-left-color: var(--amber); }
+    .tracker-card.ontime { border-left-color: var(--green); }
+    .tracker-card.offline { opacity: .66; border-left-color: #6b7280; }
+
+    .tracker-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .tracker-top h3 {
+      margin: 0;
+      font-size: 19px;
+    }
+
+    .tracker-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .tracker-stat {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 14px;
+      padding: 10px;
+      min-height: 68px;
+    }
+
+    .tracker-stat span {
+      display: block;
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+
+    .tracker-stat strong {
+      display: block;
+      font-size: 14px;
+      line-height: 1.2;
+      word-break: break-word;
+    }
+
+    .running-pill {
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 12px;
+      font-weight: 900;
+      color: white;
+      background: var(--blue);
+      white-space: nowrap;
+    }
+
+    .running-pill.early { background: var(--red); }
+    .running-pill.late { background: var(--amber); color: #111827; }
+    .running-pill.ontime { background: var(--green); }
+    .running-pill.offline { background: #6b7280; }
+
+    @media (max-width: 1180px) {
+      .tracker-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
     @media (max-width: 980px) {
       .layout { grid-template-columns: 1fr; }
       .rail {
@@ -479,6 +573,12 @@
       </div>
 
       <div class="rail-card">
+        <strong>Tracking</strong>
+        <span id="trackerCount">0</span>
+      </div>
+
+
+      <div class="rail-card">
         <strong>Broadcasts</strong>
         <span id="broadcastCount">0</span>
       </div>
@@ -548,13 +648,25 @@
           </section>
         </div>
 
-        <section class="panel">
-          <div class="panel-head">
-            <h3>Message Board</h3>
-            <button class="red" style="width:auto;margin:0" onclick="deleteAllMessages()">Delete All Messages</button>
-          </div>
-          <div class="message-board" id="messages"></div>
-        </section>
+        <div class="column">
+          <section class="panel">
+            <div class="panel-head">
+              <h3>Live Tracker</h3>
+              <button class="light" style="width:auto;margin:0" onclick="refreshTracker()">Refresh Tracker</button>
+            </div>
+            <div class="tracker-board" id="trackerBoard">
+              <div class="tracker-empty">No live ETM tracking yet.</div>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">
+              <h3>Message Board</h3>
+              <button class="red" style="width:auto;margin:0" onclick="deleteAllMessages()">Delete All Messages</button>
+            </div>
+            <div class="message-board" id="messages"></div>
+          </section>
+        </div>
       </div>
     </main>
   </section>
@@ -596,9 +708,11 @@
   const db = getFirestore(app);
 
   let unsubscribeMessages = null;
+  let unsubscribeTracker = null;
   let verifiedOfficeUser = null;
   let sendMode = "single";
   let latestMessages = [];
+  let latestTracking = [];
 
   function showOnly(sectionId) {
     document.getElementById("authRoot").classList.toggle("hidden", sectionId === "appBox");
@@ -700,6 +814,7 @@
 
       showOnly("appBox");
       startInbox();
+      startTracker();
     } catch (err) {
       document.getElementById("securityError").textContent = err.message;
     }
@@ -711,12 +826,20 @@
       unsubscribeMessages = null;
     }
 
+    if (unsubscribeTracker) {
+      unsubscribeTracker();
+      unsubscribeTracker = null;
+    }
+
     verifiedOfficeUser = null;
     latestMessages = [];
+    latestTracking = [];
     document.getElementById("password").value = "";
     document.getElementById("staffId").value = "";
     document.getElementById("securityCode").value = "";
     document.getElementById("messages").innerHTML = "";
+    document.getElementById("trackerBoard").innerHTML = '<div class="tracker-empty">No live ETM tracking yet.</div>';
+    document.getElementById("trackerCount").textContent = "0";
     document.getElementById("directDriverId").value = "";
     document.getElementById("directSubject").value = "";
     document.getElementById("directBody").value = "";
@@ -750,6 +873,112 @@
   window.refreshInbox = function() {
     renderMessages(latestMessages);
   };
+
+
+  function startTracker() {
+    if (unsubscribeTracker) unsubscribeTracker();
+
+    const q = query(collection(db, "driverTracking"), orderBy("updatedAt", "desc"));
+
+    unsubscribeTracker = onSnapshot(q, snapshot => {
+      latestTracking = [];
+
+      snapshot.forEach(documentSnap => {
+        latestTracking.push({
+          id: documentSnap.id,
+          data: documentSnap.data()
+        });
+      });
+
+      renderTracker(latestTracking);
+    }, err => {
+      document.getElementById("trackerBoard").innerHTML =
+        '<div class="tracker-empty error">Could not load tracker: ' + escapeHtml(err.message) + '</div>';
+    });
+  }
+
+  window.refreshTracker = function() {
+    renderTracker(latestTracking);
+  };
+
+  function renderTracker(items) {
+    const box = document.getElementById("trackerBoard");
+    box.innerHTML = "";
+
+    document.getElementById("trackerCount").textContent = items.length;
+
+    if (!items.length) {
+      box.innerHTML = '<div class="tracker-empty">No live ETM tracking yet. Tracking will appear when an ETM sends live location updates.</div>';
+      return;
+    }
+
+    items.forEach(item => {
+      const t = item.data || {};
+      const runningText = t.runningText || t.runningStatus || t.timingStatus || "Unknown";
+      const statusClass = getRunningClass(runningText, t.updatedAt);
+      const lastUpdated = formatFirebaseTime(t.updatedAt || t.lastUpdated || t.timestamp);
+      const lat = t.lat || t.latitude || (t.location && t.location.lat) || "";
+      const lng = t.lng || t.longitude || (t.location && t.location.lng) || "";
+      const mapText = lat && lng ? Number(lat).toFixed(5) + ", " + Number(lng).toFixed(5) : "No GPS";
+
+      const div = document.createElement("div");
+      div.className = "tracker-card " + statusClass;
+
+      div.innerHTML = `
+        <div class="tracker-top">
+          <div>
+            <h3>${escapeHtml(t.driverName || t.driverId || "Driver")}</h3>
+            <div class="chips">
+              <span class="chip">Driver: ${escapeHtml(t.driverId || "Unknown")}</span>
+              <span class="chip">Vehicle: ${escapeHtml(t.vehicle || t.vehicleId || "Unknown")}</span>
+              <span class="chip">Route: ${escapeHtml(t.route || t.service || "Unknown")}</span>
+            </div>
+          </div>
+          <span class="running-pill ${statusClass}">${escapeHtml(runningText)}</span>
+        </div>
+
+        <div class="tracker-grid">
+          <div class="tracker-stat"><span>Current stop</span><strong>${escapeHtml(t.currentStop || "Unknown")}</strong></div>
+          <div class="tracker-stat"><span>Next stop</span><strong>${escapeHtml(t.nextStop || "Unknown")}</strong></div>
+          <div class="tracker-stat"><span>Last stop</span><strong>${escapeHtml(t.lastStopStatus || t.lastStop || "Not recorded")}</strong></div>
+          <div class="tracker-stat"><span>Updated</span><strong>${escapeHtml(lastUpdated)}</strong></div>
+          <div class="tracker-stat"><span>Destination</span><strong>${escapeHtml(t.destination || t.to || "Unknown")}</strong></div>
+          <div class="tracker-stat"><span>Direction</span><strong>${escapeHtml(t.direction || "Unknown")}</strong></div>
+          <div class="tracker-stat"><span>GPS</span><strong>${escapeHtml(mapText)}</strong></div>
+          <div class="tracker-stat"><span>Speed</span><strong>${escapeHtml(t.speedMph ? t.speedMph + " mph" : t.speed ? t.speed + " mph" : "Unknown")}</strong></div>
+        </div>
+      `;
+
+      box.appendChild(div);
+    });
+  }
+
+  function getRunningClass(value, updatedAt) {
+    const text = String(value || "").toLowerCase();
+    const updatedMs = firebaseTimeToMs(updatedAt);
+    const stale = updatedMs && Date.now() - updatedMs > 120000;
+
+    if (stale) return "offline";
+    if (text.includes("early")) return "early";
+    if (text.includes("late")) return "late";
+    if (text.includes("on time") || text.includes("ontime") || text.includes("due")) return "ontime";
+    return "";
+  }
+
+  function firebaseTimeToMs(value) {
+    if (!value) return 0;
+    if (typeof value.toMillis === "function") return value.toMillis();
+    if (value.seconds) return value.seconds * 1000;
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }
+
+  function formatFirebaseTime(value) {
+    const ms = firebaseTimeToMs(value);
+    if (!ms) return "Unknown";
+    return new Date(ms).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  }
+
 
   function startInbox() {
     if (unsubscribeMessages) unsubscribeMessages();
