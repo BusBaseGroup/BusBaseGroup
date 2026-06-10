@@ -1562,6 +1562,43 @@
       .screen { height: calc(100vh - 16px) !important; }
     }
 
+
+
+    /* Live location / schedule running board */
+    .running-board {
+      background: #eef1f8 !important;
+      border: 1px solid #8c96ad !important;
+      margin-top: 3px !important;
+      padding: 3px !important;
+      font-size: 9px !important;
+    }
+    .running-board .rb-grid {
+      display: grid !important;
+      grid-template-columns: repeat(3, 1fr) !important;
+      gap: 2px !important;
+    }
+    .running-board .rb-cell {
+      background: #fff !important;
+      border: 1px solid #7d879f !important;
+      padding: 3px !important;
+      min-height: 25px !important;
+      overflow: hidden !important;
+      white-space: nowrap !important;
+      text-overflow: ellipsis !important;
+      font-weight: 900 !important;
+    }
+    .running-board .rb-label {
+      display: block !important;
+      font-size: 7px !important;
+      color: #334155 !important;
+      text-transform: uppercase !important;
+      font-weight: 900 !important;
+    }
+    .running-ok { background: #168032 !important; color: #fff !important; }
+    .running-amber { background: #efa637 !important; color: #000 !important; }
+    .running-red { background: #bf0b1f !important; color: #fff !important; }
+    .running-neutral { background: #dfe6f8 !important; color: #00005f !important; }
+
   </style>
 </head>
 <body>
@@ -1697,6 +1734,16 @@ Hunstanton Bus Station</textarea>
             <button id="catPeriod" onclick="setCat('period')">Period</button>
             <button id="catConcession" onclick="setCat('concession')">Conc.</button>
             <button onclick="nextCat()">&gt;</button>
+          </div>
+          <div class="running-board" id="runningBoard">
+            <div class="rb-grid">
+              <div class="rb-cell"><span class="rb-label">Running</span><span id="runningState">Not started</span></div>
+              <div class="rb-cell"><span class="rb-label">Due</span><span id="dueTime">--:--</span></div>
+              <div class="rb-cell"><span class="rb-label">Variance</span><span id="timeVariance">--</span></div>
+              <div class="rb-cell"><span class="rb-label">Nearest</span><span id="nearestStop">GPS waiting</span></div>
+              <div class="rb-cell"><span class="rb-label">Distance</span><span id="nearestDistance">--</span></div>
+              <div class="rb-cell"><span class="rb-label">Next timed</span><span id="nextTimedStop">--</span></div>
+            </div>
           </div>
           <div class="ticket-grid" id="tickets"></div>
           <div class="total-strip">
@@ -1856,7 +1903,7 @@ Hunstanton Bus Station</textarea>
 
       <div class="status-bar" aria-label="ticket selling status display bar">
         <div class="status-item" onclick="goMessages()">✉ <span id="msgCount">0</span></div>
-        <div class="status-item" onclick="showInfo('GPS last connected just now')">GPS <span class="ok">✓</span></div>
+        <div class="status-item" onclick="showLocationDetails()">GPS <span id="gpsStatus" class="warn">…</span></div>
         <div class="status-item" onclick="showInfo('GPRS connected to back office')">GPRS <span class="ok">✓</span></div>
         <div class="status-item" onclick="showInfo('Smartcard reader operational')">CARD <span class="ok">✓</span></div>
         <div class="status-item" onclick="showInfo('Printer operational')">PRN <span class="ok">✓</span></div>
@@ -2008,6 +2055,183 @@ Hunstanton Bus Station</textarea>
     let dutyStartedAt = new Date();
     let tripStartedAt = new Date();
     let tripSequence = 1;
+
+    // Live running system. Uses browser GPS when available. Timings are calculated from the accepted trip departure
+    // and stop offsets. Replace the minute offsets with exact timetable minutes if you want exact public timetable timing points.
+    const STOP_COORDS = {
+      "King's Lynn Bus Station": [52.7539, 0.3956], "King's Lynn": [52.7539, 0.3956],
+      'Gaywood': [52.7628, 0.4260], 'Gaywood Tesco': [52.7589, 0.4253],
+      'QE Hospital Travel Hub': [52.7567, 0.4468], 'Queen Elizabeth Hospital': [52.7567, 0.4468],
+      'South Wootton': [52.7778, 0.4298], 'North Wootton': [52.7930, 0.4375],
+      'Knights Hill': [52.7842, 0.4550], 'Castle Reach': [52.7377, 0.4186],
+      'Hardwick Retail Park': [52.7389, 0.4228], 'Southgates': [52.7469, 0.4019],
+      'Sandringham': [52.8288, 0.5056], 'Dersingham': [52.8454, 0.5031],
+      'Snettisham': [52.8787, 0.5003], 'Heacham': [52.9075, 0.4933],
+      'Hunstanton Bus Station': [52.9403, 0.4894], 'Hunstanton': [52.9403, 0.4894],
+      'Hunstanton Tesco': [52.9329, 0.4941], 'Cliff Parade': [52.9441, 0.4874],
+      'Lighthouse Close': [52.9518, 0.4968], 'Old Hunstanton Road': [52.9476, 0.4941],
+      'Old Hunstanton': [52.9600, 0.5100], 'Holme': [52.9633, 0.5423],
+      'Thornham': [52.9590, 0.5835], 'Titchwell': [52.9619, 0.6278],
+      'Brancaster': [52.9631, 0.6401], 'Brancaster Staithe': [52.9640, 0.6822],
+      'Burnham Deepdale': [52.9655, 0.7138], 'Burnham Market': [52.9454, 0.7273],
+      'Burnham Overy Staithe': [52.9630, 0.7468], 'Holkham': [52.9496, 0.8037],
+      'Wells-next-the-Sea': [52.9546, 0.8524], 'Wighton': [52.9198, 0.8879],
+      'Walsingham': [52.8946, 0.8734], 'Houghton St Giles': [52.8822, 0.8555],
+      'East Barsham': [52.8602, 0.8505], 'Fakenham': [52.8306, 0.8494],
+      'Hillington': [52.8235, 0.5484], 'Flitcham': [52.8110, 0.5663], 'Great Bircham': [52.8627, 0.6249],
+      'Bircham Newton': [52.8757, 0.6294], 'Docking': [52.9027, 0.6247], 'Sedgeford': [52.8996, 0.5457],
+      'West Winch': [52.7104, 0.4073], 'Setchey': [52.6884, 0.3918], 'Runcton Holme': [52.6587, 0.3850],
+      'Watlington': [52.6739, 0.3831], 'Hilgay': [52.5588, 0.3906], 'Southery': [52.5296, 0.3860],
+      'Ten Mile Bank': [52.5353, 0.3387], 'Downham Market': [52.6029, 0.3787],
+      'Shouldham': [52.6507, 0.4744], 'Marham': [52.6598, 0.5462],
+      'Fairstead': [52.7648, 0.4493], "King's Reach": [52.7762, 0.4611],
+      'Saddlebow': [52.7148, 0.3752], 'Islington': [52.7167, 0.3150], 'Terrington St John': [52.7052, 0.2787],
+      'Tilney St Lawrence': [52.7115, 0.2475], 'West Walton': [52.6970, 0.1790], 'Wisbech Bus Station': [52.6658, 0.1590],
+      'Grimston': [52.7764, 0.5495], 'Gayton': [52.7416, 0.5487], 'Great Massingham': [52.7759, 0.6602],
+      'Harpley': [52.8026, 0.6541], 'The Rudhams': [52.8000, 0.7450],
+      'South Lynn': [52.7431, 0.3923], 'West Lynn': [52.7523, 0.3837], 'Clenchwarton': [52.7563, 0.3568],
+      'Terrington St Clement': [52.7576, 0.2934], 'Tilney All Saints': [52.7314, 0.2637], 'The Walpoles': [52.7319, 0.2230],
+      'Terrington High School': [52.7480, 0.2924], 'Emneth': [52.6422, 0.2089], 'Outwell': [52.6068, 0.2339],
+      'Upwell': [52.5984, 0.2213], 'Three Holes': [52.5792, 0.2463], 'Nordelph': [52.5875, 0.2938], 'Denver': [52.5885, 0.3782],
+      'Alderman Peel High School': [52.9556, 0.8520], 'Middleton': [52.7245, 0.4632], 'East Winch': [52.7192, 0.5050],
+      'Ashwicken': [52.7452, 0.4941], 'Springwood High School': [52.7666, 0.4450]
+    };
+
+    let currentTripSchedule = [];
+    let acceptedTripDate = null;
+    let livePosition = null;
+    let watchPositionId = null;
+    let nearestStopName = '';
+    let nearestStopDistance = null;
+
+    function minutesFromTime(value) {
+      const parts = String(value || '00:00').split(':').map(Number);
+      return (parts[0] || 0) * 60 + (parts[1] || 0);
+    }
+
+    function formatTimeFromMinutes(total) {
+      total = ((Math.round(total) % 1440) + 1440) % 1440;
+      const h = Math.floor(total / 60);
+      const m = total % 60;
+      return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+    }
+
+    function distanceMetres(a, b) {
+      if (!a || !b) return Infinity;
+      const R = 6371000;
+      const lat1 = a[0] * Math.PI / 180, lat2 = b[0] * Math.PI / 180;
+      const dLat = (b[0] - a[0]) * Math.PI / 180;
+      const dLon = (b[1] - a[1]) * Math.PI / 180;
+      const x = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+      return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+    }
+
+    function buildTripSchedule(setup) {
+      const dep = minutesFromTime(setup.time);
+      const routeStops = uniqueRoutePoints([setup.origin].concat(setup.parsedStops, [setup.dest]));
+      let elapsed = 0;
+      return routeStops.map(function (stop, index) {
+        if (index > 0) {
+          const prev = routeStops[index - 1];
+          const metres = distanceMetres(STOP_COORDS[prev], STOP_COORDS[stop]);
+          const guessed = isFinite(metres) ? Math.max(2, Math.min(12, Math.round((metres / 1000) * 2.4))) : 4;
+          elapsed += guessed;
+        }
+        return { stop: stop, minutes: dep + elapsed, time: formatTimeFromMinutes(dep + elapsed), index: index };
+      });
+    }
+
+    function getNearestScheduledStop() {
+      if (!currentTripSchedule.length) return null;
+      if (livePosition) {
+        let best = null;
+        currentTripSchedule.forEach(function (s) {
+          const d = distanceMetres([livePosition.latitude, livePosition.longitude], STOP_COORDS[s.stop]);
+          if (!best || d < best.distance) best = Object.assign({ distance: d }, s);
+        });
+        return best;
+      }
+      return currentTripSchedule[Math.min(stopIndex, currentTripSchedule.length - 1)];
+    }
+
+    function updateRunningBoard() {
+      if (!currentTripSchedule.length) return;
+      const nearest = getNearestScheduledStop();
+      if (!nearest) return;
+      const now = new Date();
+      const nowMins = now.getHours() * 60 + now.getMinutes() + now.getSeconds() / 60;
+      const variance = nowMins - nearest.minutes; // negative = early, positive = late
+      const early = variance < 0;
+      const absSeconds = Math.abs(variance * 60);
+      let cls = 'running-ok';
+      let label = 'ON TIME';
+      if (early && absSeconds <= 60) { cls = 'running-amber'; label = 'EARLY'; }
+      else if (early && absSeconds > 60) { cls = 'running-red'; label = 'TOO EARLY'; }
+      else if (!early && absSeconds > 300) { cls = 'running-red'; label = 'LATE'; }
+      else if (!early && absSeconds > 60) { cls = 'running-amber'; label = 'LATE'; }
+      const board = byId('runningBoard');
+      if (board) board.className = 'running-board ' + cls;
+      setText('runningState', label);
+      setText('dueTime', nearest.time + ' ' + nearest.stop);
+      setText('timeVariance', (early ? '-' : '+') + Math.floor(absSeconds / 60) + 'm ' + Math.round(absSeconds % 60) + 's');
+      setText('nearestStop', nearest.stop);
+      setText('nearestDistance', isFinite(nearest.distance) ? Math.round(nearest.distance) + 'm' : 'manual');
+      const next = currentTripSchedule[Math.min(nearest.index + 1, currentTripSchedule.length - 1)];
+      setText('nextTimedStop', next ? next.time + ' ' + next.stop : '--');
+      setText('vimStop', next ? next.stop : nearest.stop);
+      setText('vimTime', next ? next.time : nearest.time);
+      if (nearest.stop && byId('currentStop')) {
+        nearestStopName = nearest.stop;
+        if (livePosition && isFinite(nearest.distance) && nearest.distance < 180) {
+          stopIndex = stops.indexOf(nearest.stop) >= 0 ? stops.indexOf(nearest.stop) : stopIndex;
+          setText('currentStop', nearest.stop);
+        }
+      }
+    }
+
+    function startLocationTracking() {
+      if (!navigator.geolocation) {
+        setText('gpsStatus', '×');
+        return;
+      }
+      setText('gpsStatus', '…');
+      if (watchPositionId !== null) return;
+      watchPositionId = navigator.geolocation.watchPosition(function (pos) {
+        livePosition = pos.coords;
+        setText('gpsStatus', '✓');
+        const g = byId('gpsStatus');
+        if (g) { g.className = 'ok'; }
+        updateRunningBoard();
+      }, function () {
+        setText('gpsStatus', '!');
+        const g = byId('gpsStatus');
+        if (g) { g.className = 'warn'; }
+      }, { enableHighAccuracy: true, maximumAge: 10000, timeout: 12000 });
+    }
+
+    window.getLiveRunningSnapshot = function() {
+      return {
+        route: byId('manualRoute') ? byId('manualRoute').value : '',
+        trip: selectedTrip,
+        stop: byId('currentStop') ? byId('currentStop').textContent : '',
+        destination: byId('destination') ? byId('destination').textContent : '',
+        runningState: byId('runningState') ? byId('runningState').textContent : '',
+        variance: byId('timeVariance') ? byId('timeVariance').textContent : '',
+        nearestStop: nearestStopName,
+        latitude: livePosition ? livePosition.latitude : null,
+        longitude: livePosition ? livePosition.longitude : null,
+        accuracy: livePosition ? livePosition.accuracy : null
+      };
+    };
+
+    function showLocationDetails() {
+      const nearest = getNearestScheduledStop();
+      const gpsText = livePosition
+        ? ('Lat: ' + livePosition.latitude.toFixed(5) + '<br>Lon: ' + livePosition.longitude.toFixed(5) + '<br>Accuracy: ' + Math.round(livePosition.accuracy || 0) + 'm')
+        : 'GPS not active yet. Press START TRIP and allow location permission in the browser.';
+      showInfo('<strong>Live GPS / Running</strong><br>' + gpsText + '<br><br><strong>Nearest timing point:</strong><br>' + escapeHtml(nearest ? nearest.stop + ' at ' + nearest.time : 'No trip loaded'));
+    }
+
 
     function normaliseStopName(name) {
       return String(name || '')
@@ -2647,6 +2871,8 @@ Hunstanton Bus Station</textarea>
       setText('destination', setup.dest);
       setText('vimStop', stops[1] || setup.dest);
       setText('vimTime', setup.time);
+      currentTripSchedule = buildTripSchedule(setup);
+      updateRunningBoard();
       updateTripPreview();
       if (byId('tickets')) renderTickets();
 
@@ -2661,9 +2887,13 @@ Hunstanton Bus Station</textarea>
       if (!applyRouteSetup(false)) return;
 
       selectedTrip = setup.route + ' ' + setup.direction + ' ' + setup.time;
+      acceptedTripDate = new Date();
+      tripStartedAt = new Date();
       saveRouteForCurrentDriver(setup, true);
       page('ticketPage');
-      showInfo('Trip started: Route ' + escapeHtml(setup.route) + ' from ' + escapeHtml(setup.origin) + ' to ' + escapeHtml(setup.dest) + ' at ' + escapeHtml(setup.time) + '. Route saved to this driver account.');
+      startLocationTracking();
+      updateRunningBoard();
+      showInfo('Trip started: Route ' + escapeHtml(setup.route) + ' from ' + escapeHtml(setup.origin) + ' to ' + escapeHtml(setup.dest) + ' at ' + escapeHtml(setup.time) + '. GPS timing is now active. Amber = under 1 minute early. Red = over 1 minute early.');
     }
 
     function openOptions() { page('optionsPage'); }
@@ -2679,6 +2909,7 @@ Hunstanton Bus Station</textarea>
       stopIndex = (stopIndex + n + stops.length) % stops.length;
       setText('currentStop', stops[stopIndex]);
       setText('vimStop', stops[(stopIndex + 1) % stops.length]);
+      updateRunningBoard();
     }
 
     function moveDestination(n) {
@@ -2781,6 +3012,7 @@ Hunstanton Bus Station</textarea>
         'From: ' + byId('fareStage').textContent,
         'Stop: ' + byId('currentStop').textContent,
         'To: ' + byId('destination').textContent,
+        'Running: ' + (byId('runningState') ? byId('runningState').textContent : 'N/A') + ' / ' + (byId('timeVariance') ? byId('timeVariance').textContent : '--'),
         '',
         ticketLines,
         '',
@@ -3135,6 +3367,7 @@ window.receiveOfficeReply = receiveOfficeReply;
     }
     function tick() {
       setText('clock', new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }));
+      updateRunningBoard();
     }
     function hideVim() {
       byId('vim').classList.remove('show');
@@ -3205,6 +3438,7 @@ window.receiveOfficeReply = receiveOfficeReply;
       route: route || "Unknown",
       subject: subject,
       body: body,
+      live: (typeof window.getLiveRunningSnapshot === "function" ? window.getLiveRunningSnapshot() : null),
       status: "unread",
       createdAt: serverTimestamp()
     });
