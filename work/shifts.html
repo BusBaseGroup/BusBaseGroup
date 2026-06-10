@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Funfair Shift Tracker</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#0f172a;color:#fff}
+header{background:linear-gradient(135deg,#2563eb,#06b6d4);padding:20px;text-align:center}
+.container{max-width:1100px;margin:auto;padding:15px}
+.card{background:#111827;border-radius:16px;padding:15px;margin-bottom:15px}
+button{background:#2563eb;color:#fff;border:none;padding:10px 14px;border-radius:10px;cursor:pointer}
+input{width:100%;padding:10px;margin:5px 0;border:none;border-radius:8px;background:#1f2937;color:#fff}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.day{background:#1f2937;border-radius:10px;min-height:90px;padding:8px;cursor:pointer}
+.daynum{font-weight:bold}
+.shift{margin-top:5px;background:#16a34a;padding:4px;border-radius:6px;font-size:12px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.stat{background:#1f2937;padding:10px;border-radius:10px;text-align:center}
+@media(max-width:700px){.calendar{grid-template-columns:repeat(7,1fr)} .day{min-height:70px;font-size:12px}}
+</style>
+</head>
+<body>
+<header>
+<h1>🎡 Funfair Shift Tracker</h1>
+<p>All shifts automatically save on your device</p>
+</header>
+
+<div class="container">
+<div class="card">
+<button onclick="prevMonth()">◀</button>
+<button onclick="nextMonth()">▶</button>
+<h2 id="monthTitle"></h2>
+<div class="calendar" id="calendar"></div>
+</div>
+
+<div class="card">
+<h2>Add / Edit Shift</h2>
+<input type="date" id="shiftDate">
+<input type="time" id="startTime">
+<input type="time" id="endTime">
+<input type="text" id="ride" placeholder="Ride (e.g. Waltzer)">
+<button onclick="saveShift()">Save Shift</button>
+</div>
+
+<div class="card">
+<h2>Statistics</h2>
+<div class="stats">
+<div class="stat"><h3 id="totalShifts">0</h3><small>Total Shifts</small></div>
+<div class="stat"><h3 id="monthShifts">0</h3><small>This Month</small></div>
+</div>
+</div>
+</div>
+
+<script>
+let shifts=JSON.parse(localStorage.getItem("funfairShifts")||"{}");
+let current=new Date();
+
+function saveData(){
+ localStorage.setItem("funfairShifts",JSON.stringify(shifts));
+}
+
+function render(){
+ const cal=document.getElementById("calendar");
+ cal.innerHTML="";
+ const year=current.getFullYear();
+ const month=current.getMonth();
+
+ document.getElementById("monthTitle").textContent=
+ new Date(year,month).toLocaleString('default',{month:'long',year:'numeric'});
+
+ const first=new Date(year,month,1);
+ const startDay=(first.getDay()+6)%7;
+ const days=new Date(year,month+1,0).getDate();
+
+ for(let i=0;i<startDay;i++){
+   cal.innerHTML+="<div></div>";
+ }
+
+ for(let d=1;d<=days;d++){
+   const date=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+   const div=document.createElement("div");
+   div.className="day";
+   div.onclick=()=>selectDate(date);
+
+   let html=`<div class='daynum'>${d}</div>`;
+
+   if(shifts[date]){
+      html+=`<div class='shift'>${shifts[date].start} - ${shifts[date].end}</div>`;
+      if(shifts[date].ride){
+        html+=`<div class='shift'>🎡 ${shifts[date].ride}</div>`;
+      }
+   }
+
+   div.innerHTML=html;
+   cal.appendChild(div);
+ }
+
+ document.getElementById("totalShifts").textContent=Object.keys(shifts).length;
+
+ let monthCount=0;
+ Object.keys(shifts).forEach(d=>{
+   let sd=new Date(d);
+   if(sd.getMonth()===month && sd.getFullYear()===year) monthCount++;
+ });
+ document.getElementById("monthShifts").textContent=monthCount;
+}
+
+function selectDate(date){
+ document.getElementById("shiftDate").value=date;
+ if(shifts[date]){
+   document.getElementById("startTime").value=shifts[date].start;
+   document.getElementById("endTime").value=shifts[date].end;
+   document.getElementById("ride").value=shifts[date].ride||"";
+ }
+}
+
+function saveShift(){
+ const date=document.getElementById("shiftDate").value;
+ if(!date){alert("Select a date");return;}
+ shifts[date]={
+  start:document.getElementById("startTime").value,
+  end:document.getElementById("endTime").value,
+  ride:document.getElementById("ride").value
+ };
+ saveData();
+ render();
+}
+
+function prevMonth(){current.setMonth(current.getMonth()-1);render();}
+function nextMonth(){current.setMonth(current.getMonth()+1);render();}
+
+render();
+</script>
+</body>
+</html>
