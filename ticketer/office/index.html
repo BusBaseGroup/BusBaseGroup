@@ -878,9 +878,8 @@
   function startTracker() {
     if (unsubscribeTracker) unsubscribeTracker();
 
-    const q = query(collection(db, "driverTracking"), orderBy("updatedAt", "desc"));
-
-    unsubscribeTracker = onSnapshot(q, snapshot => {
+    // Plain collection listener avoids problems if some tracking docs do not have updatedAt yet.
+    unsubscribeTracker = onSnapshot(collection(db, "driverTracking"), snapshot => {
       latestTracking = [];
 
       snapshot.forEach(documentSnap => {
@@ -890,6 +889,7 @@
         });
       });
 
+      latestTracking.sort((a, b) => getTrackingMillis(b.data) - getTrackingMillis(a.data));
       renderTracker(latestTracking);
     }, err => {
       document.getElementById("trackerBoard").innerHTML =
@@ -900,6 +900,16 @@
   window.refreshTracker = function() {
     renderTracker(latestTracking);
   };
+
+
+  function getTrackingMillis(t) {
+    if (!t) return 0;
+    if (typeof t.updatedAtMs === "number") return t.updatedAtMs;
+    const value = t.updatedAt || t.lastUpdated || t.timestamp;
+    if (value && typeof value.toMillis === "function") return value.toMillis();
+    if (value && value.seconds) return value.seconds * 1000;
+    return 0;
+  }
 
   function renderTracker(items) {
     const box = document.getElementById("trackerBoard");
