@@ -2329,6 +2329,7 @@ Hunstanton Bus Station</textarea>
       const next = currentTripSchedule[Math.min(nearest.index + 1, currentTripSchedule.length - 1)];
       setText('nextTimedStop', next ? next.time + ' ' + next.stop : '--');
       setText('lastStopStatus', lastStopStatusText);
+      if (typeof window.publishLiveTracking === 'function') window.publishLiveTracking(window.getLiveRunningSnapshot ? window.getLiveRunningSnapshot() : null);
       setText('vimStop', next ? next.stop : nearest.stop);
       setText('vimTime', next ? next.time : nearest.time);
       if (nearest.stop && byId('currentStop')) {
@@ -3655,6 +3656,7 @@ window.receiveOfficeReply = receiveOfficeReply;
     collection,
     addDoc,
     getDocs,
+    setDoc,
     doc,
     getDoc,
     query,
@@ -3673,6 +3675,38 @@ window.receiveOfficeReply = receiveOfficeReply;
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+
+
+  window.publishLiveTracking = async function(snapshot) {
+    try {
+      const driver = window.currentDriver || { id: "1234", name: "Driver" };
+      const vehicleText = (document.getElementById("selectedVehicleText") && document.getElementById("selectedVehicleText").textContent) || window.selectedVehicle || "Unknown";
+      const cleanId = String(driver.id || "1234").replace(/[^a-zA-Z0-9_-]/g, "_");
+      const payload = snapshot || (typeof window.getLiveRunningSnapshot === "function" ? window.getLiveRunningSnapshot() : {});
+
+      await setDoc(doc(db, "driverTracking", cleanId), {
+        driverId: String(driver.id || "1234"),
+        driverName: driver.name || "Driver",
+        vehicle: vehicleText,
+        route: payload.route || "Unknown",
+        trip: payload.trip || "",
+        currentStop: payload.stop || payload.nearestStop || "Unknown",
+        nextStop: payload.destination || "Unknown",
+        destination: payload.destination || "Unknown",
+        runningText: payload.runningState || "Unknown",
+        runningStatus: payload.runningState || "Unknown",
+        variance: payload.variance || "",
+        lastStopStatus: payload.lastStopStatus || "Last stop: waiting",
+        latitude: payload.latitude ?? null,
+        longitude: payload.longitude ?? null,
+        accuracy: payload.accuracy ?? null,
+        updatedAt: serverTimestamp(),
+        updatedAtMs: Date.now()
+      }, { merge: true });
+    } catch (err) {
+      console.warn("Live tracker update failed:", err);
+    }
+  };
 
   window.sendToOffice = async function(subject, body, route) {
     const driver = window.currentDriver || { id: "1234", name: "Driver" };
