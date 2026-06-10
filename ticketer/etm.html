@@ -1599,6 +1599,42 @@
     .running-red { background: #bf0b1f !important; color: #fff !important; }
     .running-neutral { background: #dfe6f8 !important; color: #00005f !important; }
 
+
+    /* Improved route selection page */
+    .route-select-panel {
+      background: #eef1f8 !important;
+      border: 1px solid #8c96ad !important;
+      padding: 4px !important;
+      margin-top: 3px !important;
+    }
+    .route-select-grid {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 4px !important;
+    }
+    .route-select-wide { grid-column: 1 / -1 !important; }
+    .route-stop-list {
+      max-height: 112px !important;
+      overflow: auto !important;
+      background: #fff !important;
+      border: 1px solid #8c96ad !important;
+      margin-top: 3px !important;
+    }
+    .route-stop-list div {
+      display: grid !important;
+      grid-template-columns: 24px 1fr auto !important;
+      gap: 4px !important;
+      padding: 3px 5px !important;
+      border-bottom: 1px solid #c4cad8 !important;
+      font-size: 9px !important;
+      font-weight: 800 !important;
+    }
+    .route-stop-list div:last-child { border-bottom: 0 !important; }
+    .status-item.running-ok { background: #168032 !important; color: #fff !important; }
+    .status-item.running-amber { background: #efa637 !important; color: #000 !important; }
+    .status-item.running-red { background: #bf0b1f !important; color: #fff !important; }
+    .status-item.running-neutral { background: #0a1688 !important; color: #fff !important; }
+
   </style>
 </head>
 <body>
@@ -1675,21 +1711,40 @@
         </section>
 
         <section id="tripPage" class="page">
-          <div class="header"><span>BUILD ROUTE / START TRIP</span><button onclick="adHocTrip()">AD HOC</button></div>
-          <div class="saved-routes-panel">
-            <div class="saved-routes-head"><span>Saved routes for this driver</span><button onclick="saveCurrentRouteFromForm()">SAVE</button></div>
-            <div class="saved-routes-list" id="savedRoutesList"><div class="saved-route-empty">No saved routes yet</div></div>
-          </div>
-          <div class="panel" style="padding:6px">
-            <p style="margin:0 0 6px">Enter the route, where it starts, where it ends, and the stops in order.</p>
-            <label>Route / Service number</label>
-            <input id="manualRoute" placeholder="Example: 16 or 24A" value="34/35/36" oninput="updateTripPreview()">
-            <label style="margin-top:4px;display:block">Going from</label>
-            <input id="manualOrigin" placeholder="Example: Holt" value="King's Lynn" oninput="updateTripPreview()">
-            <label style="margin-top:4px;display:block">Going to</label>
-            <input id="manualDestination" placeholder="Example: City Centre" value="Hunstanton Bus Station" oninput="updateTripPreview()">
-            <label style="margin-top:4px;display:block">Stops, one per line</label>
-            <textarea id="manualStops" rows="5" placeholder="Railway Tavern&#10;Holt Road&#10;Pine Box&#10;Bull Street" oninput="updateTripPreview()">King's Lynn Bus Station
+          <div class="header"><span>ROUTE SELECTION</span><button onclick="adHocTrip()">AD HOC</button></div>
+          <div class="route-select-panel">
+            <div class="route-select-grid">
+              <div class="route-select-wide">
+                <label>Route / Service</label>
+                <select id="routePresetSelect" onchange="routePresetChanged()"></select>
+              </div>
+              <div>
+                <label>Direction</label>
+                <select id="manualDirection" onchange="routeDirectionChanged()">
+                  <option>Outbound</option>
+                  <option>Inbound</option>
+                  <option>Clockwise</option>
+                  <option>Anti-Clockwise</option>
+                  <option>School</option>
+                </select>
+              </div>
+              <div>
+                <label>Departure</label>
+                <input id="manualTime" type="time" value="15:15" oninput="updateTripPreview()">
+              </div>
+              <div>
+                <label>Start stop</label>
+                <select id="routeStartSelect" onchange="routeStopChoiceChanged()"></select>
+              </div>
+              <div>
+                <label>Destination</label>
+                <select id="routeDestSelect" onchange="routeStopChoiceChanged()"></select>
+              </div>
+            </div>
+            <input id="manualRoute" type="hidden" value="34">
+            <input id="manualOrigin" type="hidden" value="King's Lynn">
+            <input id="manualDestination" type="hidden" value="Hunstanton Bus Station">
+            <textarea id="manualStops" style="display:none">King's Lynn Bus Station
 Gaywood Tesco
 QE Hospital Travel Hub
 South Wootton
@@ -1698,24 +1753,25 @@ Dersingham
 Snettisham
 Heacham
 Hunstanton Bus Station</textarea>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:4px">
-              <div><label>Departure time</label><input id="manualTime" type="time" value="15:15" oninput="updateTripPreview()"></div>
-              <div><label>Direction</label><select id="manualDirection" onchange="updateTripPreview()"><option>Inbound</option><option>Outbound</option><option>Clockwise</option><option>Anti-Clockwise</option></select></div>
-            </div>
           </div>
-          <div class="panel" style="padding:6px">
-            <strong>Trip preview</strong>
-            <div class="list-row"><span>Service</span><span id="previewRoute">16</span></div>
-            <div class="list-row"><span>From</span><span id="previewOrigin">Holt</span></div>
-            <div class="list-row"><span>To</span><span id="previewDestination">City Centre</span></div>
-            <div class="list-row"><span>Stops</span><span id="previewStopCount">5</span></div>
+          <div class="panel" style="padding:0">
+            <strong style="display:block;background:#000044;color:#fff;padding:3px 5px;border-bottom:1px solid #000">Route preview</strong>
+            <div class="list-row"><span>Service</span><span id="previewRoute">34</span></div>
+            <div class="list-row"><span>From</span><span id="previewOrigin">King's Lynn</span></div>
+            <div class="list-row"><span>To</span><span id="previewDestination">Hunstanton Bus Station</span></div>
+            <div class="list-row"><span>Stops</span><span id="previewStopCount">0</span></div>
             <div class="list-row"><span>Time</span><span id="previewTime">15:15</span></div>
+          </div>
+          <div class="route-stop-list" id="routeStopList"></div>
+          <div class="saved-routes-panel">
+            <div class="saved-routes-head"><span>Saved / Lynx routes</span><button onclick="saveCurrentRouteFromForm()">SAVE</button></div>
+            <div class="saved-routes-list" id="savedRoutesList"><div class="saved-route-empty">No saved routes yet</div></div>
           </div>
           <div class="bottom-buttons">
             <button onclick="backTo('dutyPage')">BACK</button>
-            <button onclick="applyRouteSetup(false)">PREVIEW</button>
+            <button onclick="applyRouteSetup(true)">PREVIEW</button>
             <button class="green" onclick="startTrip()">ACCEPT</button>
-            <button onclick="showInfo('Add the origin, destination and stops in order. Each stop should be on its own line. Press ACCEPT to load the route into the fare-stage and stop controls.')">HELP</button>
+            <button onclick="showInfo('Choose a Lynx route, direction, start stop and destination. The stop list and fare stages load automatically.')">HELP</button>
           </div>
         </section>
 
@@ -1743,6 +1799,7 @@ Hunstanton Bus Station</textarea>
               <div class="rb-cell"><span class="rb-label">Nearest</span><span id="nearestStop">GPS waiting</span></div>
               <div class="rb-cell"><span class="rb-label">Distance</span><span id="nearestDistance">--</span></div>
               <div class="rb-cell"><span class="rb-label">Next timed</span><span id="nextTimedStop">--</span></div>
+              <div class="rb-cell route-select-wide"><span class="rb-label">Last stop</span><span id="lastStopStatus">Last stop: waiting</span></div>
             </div>
           </div>
           <div class="ticket-grid" id="tickets"></div>
@@ -2104,6 +2161,10 @@ Hunstanton Bus Station</textarea>
     let nearestStopName = '';
     let nearestStopDistance = null;
     let lastAutoStopIndex = 0;
+    let gpsAtStopIndex = null;
+    let lastStopStatusText = 'Last stop: waiting';
+    const STOP_ARRIVE_RADIUS_M = 55;
+    const STOP_LEAVE_RADIUS_M = 85;
 
     function minutesFromTime(value) {
       const parts = String(value || '00:00').split(':').map(Number);
@@ -2115,6 +2176,53 @@ Hunstanton Bus Station</textarea>
       const h = Math.floor(total / 60);
       const m = total % 60;
       return String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+    }
+
+    function formatRunningMinutes(diffMinutes) {
+      const abs = Math.abs(diffMinutes);
+      const rounded = Math.max(0, Math.round(abs));
+      if (rounded < 1) return 'less than 1 min ' + (diffMinutes < 0 ? 'early' : 'late');
+      return rounded + ' min' + (rounded === 1 ? '' : 's') + ' ' + (diffMinutes < 0 ? 'early' : 'late');
+    }
+
+    function stopScheduleByName(name) {
+      if (!name || !currentTripSchedule.length) return null;
+      return currentTripSchedule.find(function (s) { return s.stop === name; }) || currentTripSchedule[Math.min(stopIndex, currentTripSchedule.length - 1)] || null;
+    }
+
+    function currentTimeMinutesExact() {
+      const n = new Date();
+      return n.getHours() * 60 + n.getMinutes() + n.getSeconds() / 60;
+    }
+
+    function setLastStopStatus(stopName, actionText) {
+      const scheduled = stopScheduleByName(stopName);
+      if (!scheduled) return;
+      const diff = currentTimeMinutesExact() - scheduled.minutes;
+      lastStopStatusText = 'Last stop: ' + formatRunningMinutes(diff);
+      if (actionText) lastStopStatusText += ' (' + actionText + ')';
+      setText('lastStopStatus', lastStopStatusText);
+    }
+
+    function watchStopArrivalAndLeaving(here) {
+      if (!here || !stops.length) return;
+      const currentName = stops[stopIndex] || stops[0];
+      const currentDist = distanceMetres(here, STOP_COORDS[currentName]);
+      if (isFinite(currentDist) && currentDist <= STOP_ARRIVE_RADIUS_M) {
+        if (gpsAtStopIndex !== stopIndex) {
+          gpsAtStopIndex = stopIndex;
+          setLastStopStatus(currentName, 'arrived');
+        }
+        return;
+      }
+      if (gpsAtStopIndex !== null) {
+        const leftName = stops[gpsAtStopIndex] || currentName;
+        const leftDist = distanceMetres(here, STOP_COORDS[leftName]);
+        if (!isFinite(leftDist) || leftDist >= STOP_LEAVE_RADIUS_M) {
+          setLastStopStatus(leftName, 'left stop');
+          gpsAtStopIndex = null;
+        }
+      }
     }
 
     function distanceMetres(a, b) {
@@ -2158,6 +2266,7 @@ Hunstanton Bus Station</textarea>
     function updateStopFromMovement() {
       if (!livePosition || !stops.length) return null;
       const here = [livePosition.latitude, livePosition.longitude];
+      watchStopArrivalAndLeaving(here);
       const currentName = stops[stopIndex] || stops[0];
       const nextIndex = Math.min(stopIndex + 1, stops.length - 1);
       const nextName = stops[nextIndex];
@@ -2209,7 +2318,9 @@ Hunstanton Bus Station</textarea>
       else if (!early && absSeconds > 300) { cls = 'running-red'; label = 'LATE'; }
       else if (!early && absSeconds > 60) { cls = 'running-amber'; label = 'LATE'; }
       const board = byId('runningBoard');
-      if (board) board.className = 'running-board ' + cls;
+      if (board) board.className = 'running-board';
+      const clockBox = byId('clock');
+      if (clockBox) clockBox.className = 'status-item ' + cls;
       setText('runningState', label);
       setText('dueTime', nearest.time + ' ' + nearest.stop);
       setText('timeVariance', (early ? '-' : '+') + Math.floor(absSeconds / 60) + 'm ' + Math.round(absSeconds % 60) + 's');
@@ -2217,6 +2328,7 @@ Hunstanton Bus Station</textarea>
       setText('nearestDistance', movement && isFinite(movement.nextDist) ? 'next ' + Math.round(movement.nextDist) + 'm' : (isFinite(nearest.distance) ? Math.round(nearest.distance) + 'm' : 'manual'));
       const next = currentTripSchedule[Math.min(nearest.index + 1, currentTripSchedule.length - 1)];
       setText('nextTimedStop', next ? next.time + ' ' + next.stop : '--');
+      setText('lastStopStatus', lastStopStatusText);
       setText('vimStop', next ? next.stop : nearest.stop);
       setText('vimTime', next ? next.time : nearest.time);
       if (nearest.stop && byId('currentStop')) {
@@ -2254,6 +2366,7 @@ Hunstanton Bus Station</textarea>
         runningState: byId('runningState') ? byId('runningState').textContent : '',
         variance: byId('timeVariance') ? byId('timeVariance').textContent : '',
         nearestStop: nearestStopName,
+        lastStopStatus: lastStopStatusText,
         latitude: livePosition ? livePosition.latitude : null,
         longitude: livePosition ? livePosition.longitude : null,
         accuracy: livePosition ? livePosition.accuracy : null
@@ -2587,6 +2700,7 @@ Hunstanton Bus Station</textarea>
     }
 
     function renderTrips() {
+      initRouteSelectionPage();
       updateTripPreview();
     }
 
@@ -2796,6 +2910,12 @@ Hunstanton Bus Station</textarea>
       if (byId('manualStops')) byId('manualStops').value = (route.stops || []).join('\n');
       if (byId('manualTime')) byId('manualTime').value = route.time || byId('manualTime').value;
       if (byId('manualDirection')) byId('manualDirection').value = route.direction || byId('manualDirection').value;
+      if (byId('routePresetSelect')) {
+        const rows = presetRows();
+        const match = rows.findIndex(function (r) { return r.route === route.route && r.origin === route.origin && r.dest === route.dest; });
+        if (match >= 0) byId('routePresetSelect').value = String(match);
+        renderRouteStopList(route.stops || []);
+      }
       updateTripPreview();
     }
 
@@ -2819,6 +2939,91 @@ Hunstanton Bus Station</textarea>
       return LYNX_ROUTE_PRESETS.map(function (preset, index) {
         return Object.assign({ presetIndex: index, name: preset.route + ' · ' + preset.origin + ' → ' + preset.dest, parsedStops: preset.stops }, preset);
       });
+    }
+
+
+    function getSelectedPresetRoute() {
+      const select = byId('routePresetSelect');
+      const rows = presetRows();
+      if (!select || !rows.length) return null;
+      return rows[Number(select.value || 0)] || rows[0];
+    }
+
+    function initRouteSelectionPage() {
+      const select = byId('routePresetSelect');
+      if (!select) return;
+      const rows = presetRows();
+      if (!select.options.length) {
+        rows.forEach(function (route, index) {
+          select.add(new Option(route.route + '  ' + route.origin + ' → ' + route.dest, String(index)));
+        });
+      }
+      if (!byId('manualRoute').value && rows[0]) select.value = '0';
+      routePresetChanged(true);
+    }
+
+    function routePresetChanged(silent) {
+      const route = getSelectedPresetRoute();
+      if (!route) return;
+      const direction = byId('manualDirection') ? byId('manualDirection').value : route.direction;
+      if (byId('manualRoute')) byId('manualRoute').value = route.route || '';
+      if (byId('manualTime')) byId('manualTime').value = route.time || byId('manualTime').value || '09:00';
+      if (byId('manualDirection')) byId('manualDirection').value = route.direction || direction || 'Outbound';
+      buildRouteStopChoices(route);
+      if (!silent) updateTripPreview();
+    }
+
+    function routeDirectionChanged() {
+      const route = getSelectedPresetRoute();
+      if (!route) return;
+      buildRouteStopChoices(route);
+      updateTripPreview();
+    }
+
+    function buildRouteStopChoices(route) {
+      const startSel = byId('routeStartSelect');
+      const destSel = byId('routeDestSelect');
+      if (!startSel || !destSel || !route) return;
+      let points = uniqueRoutePoints([route.origin].concat(route.stops || [], [route.dest]));
+      const dir = byId('manualDirection') ? byId('manualDirection').value : route.direction;
+      if (dir === 'Inbound' || dir === 'Anti-Clockwise') points = points.slice().reverse();
+      startSel.innerHTML = '';
+      destSel.innerHTML = '';
+      points.forEach(function (stop, i) {
+        startSel.add(new Option((i + 1) + '. ' + stop, stop));
+        destSel.add(new Option((i + 1) + '. ' + stop, stop));
+      });
+      startSel.selectedIndex = 0;
+      destSel.selectedIndex = Math.max(0, points.length - 1);
+      routeStopChoiceChanged();
+    }
+
+    function routeStopChoiceChanged() {
+      const route = getSelectedPresetRoute();
+      const startSel = byId('routeStartSelect');
+      const destSel = byId('routeDestSelect');
+      if (!route || !startSel || !destSel) return;
+      const all = Array.from(startSel.options).map(function (opt) { return opt.value; });
+      const a = startSel.selectedIndex;
+      const b = destSel.selectedIndex;
+      const low = Math.min(a, b);
+      const high = Math.max(a, b);
+      const selectedPoints = all.slice(low, high + 1);
+      if (byId('manualRoute')) byId('manualRoute').value = route.route || '';
+      if (byId('manualOrigin')) byId('manualOrigin').value = selectedPoints[0] || route.origin || '';
+      if (byId('manualDestination')) byId('manualDestination').value = selectedPoints[selectedPoints.length - 1] || route.dest || '';
+      if (byId('manualStops')) byId('manualStops').value = selectedPoints.join('\n');
+      renderRouteStopList(selectedPoints);
+      updateTripPreview();
+    }
+
+    function renderRouteStopList(points) {
+      const box = byId('routeStopList');
+      if (!box) return;
+      box.innerHTML = (points || []).map(function (stop, i) {
+        let tag = i === 0 ? 'START' : (i === points.length - 1 ? 'DEST' : 'STOP');
+        return '<div><span>' + (i + 1) + '</span><span>' + escapeHtml(stop) + '</span><b>' + tag + '</b></div>';
+      }).join('') || '<div><span>-</span><span>No stops loaded</span><b></b></div>';
     }
 
     function loadPresetRoute(index) {
@@ -2901,6 +3106,9 @@ Hunstanton Bus Station</textarea>
       stageIndex = 0;
       stopIndex = 0;
       lastAutoStopIndex = 0;
+      gpsAtStopIndex = null;
+      lastStopStatusText = 'Last stop: waiting';
+      setText('lastStopStatus', lastStopStatusText);
       destIndex = stages.length - 1;
 
       setText('fareStage', setup.origin);
@@ -3138,7 +3346,8 @@ Hunstanton Bus Station</textarea>
       byId('manualStops').value = '';
       byId('manualTime').value = '';
       updateTripPreview();
-      showInfo('Ad Hoc trip mode: enter route, origin, destination, stops and time manually.');
+      renderRouteStopList([]);
+      showInfo('Ad Hoc trip mode is still available, but this screen is now built around route presets. Use saved routes or edit the hidden fields in code if needed.');
     }
 
     function toggleCheck(el) {
