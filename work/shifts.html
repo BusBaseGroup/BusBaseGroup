@@ -1,136 +1,110 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Funfair Shift Tracker</title>
+<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Funfair Shift Tracker V4</title>
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#0f172a;color:#fff}
+body{font-family:Arial;margin:0;background:#0f172a;color:white}
 header{background:linear-gradient(135deg,#2563eb,#06b6d4);padding:20px;text-align:center}
-.container{max-width:1100px;margin:auto;padding:15px}
+.wrap{max-width:1200px;margin:auto;padding:15px}
 .card{background:#111827;border-radius:16px;padding:15px;margin-bottom:15px}
-button{background:#2563eb;color:#fff;border:none;padding:10px 14px;border-radius:10px;cursor:pointer}
-input{width:100%;padding:10px;margin:5px 0;border:none;border-radius:8px;background:#1f2937;color:#fff}
-.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
-.day{background:#1f2937;border-radius:10px;min-height:90px;padding:8px;cursor:pointer}
-.daynum{font-weight:bold}
-.shift{margin-top:5px;background:#16a34a;padding:4px;border-radius:6px;font-size:12px}
-.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
 .stat{background:#1f2937;padding:10px;border-radius:10px;text-align:center}
-@media(max-width:700px){.calendar{grid-template-columns:repeat(7,1fr)} .day{min-height:70px;font-size:12px}}
-</style>
-</head>
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.day{background:#1f2937;border-radius:10px;padding:8px;min-height:90px}
+input,select,textarea{width:100%;padding:10px;margin:5px 0;border:none;border-radius:8px;background:#1f2937;color:#fff}
+button{padding:10px 14px;border:none;border-radius:8px;background:#2563eb;color:#fff;margin:3px}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.week div{background:#1f2937;padding:10px;border-radius:10px}
+</style></head>
 <body>
-<header>
-<h1>🎡 Funfair Shift Tracker</h1>
-<p>All shifts automatically save on your device</p>
-</header>
-
-<div class="container">
-<div class="card">
-<button onclick="prevMonth()">◀</button>
-<button onclick="nextMonth()">▶</button>
-<h2 id="monthTitle"></h2>
-<div class="calendar" id="calendar"></div>
-</div>
-
-<div class="card">
-<h2>Add / Edit Shift</h2>
-<input type="date" id="shiftDate">
-<input type="time" id="startTime">
-<input type="time" id="endTime">
-<input type="text" id="ride" placeholder="Ride (e.g. Waltzer)">
-<button onclick="saveShift()">Save Shift</button>
-</div>
+<header><h1>🎡 Funfair Shift Tracker V4</h1><p>Weekly View • Earnings • Export • Multi Location</p></header>
+<div class="wrap">
 
 <div class="card">
 <h2>Statistics</h2>
 <div class="stats">
-<div class="stat"><h3 id="totalShifts">0</h3><small>Total Shifts</small></div>
-<div class="stat"><h3 id="monthShifts">0</h3><small>This Month</small></div>
+<div class="stat"><h3 id="totalShifts">0</h3><small>Shifts</small></div>
+<div class="stat"><h3 id="yearPay">£0</h3><small>Year Earnings</small></div>
+<div class="stat"><h3 id="monthPay">£0</h3><small>Month Earnings</small></div>
+<div class="stat"><h3 id="hours">0</h3><small>Total Hours</small></div>
 </div>
 </div>
+
+<div class="card">
+<h2>Add Shift</h2>
+<input type="date" id="date">
+<input type="time" id="start">
+<input type="time" id="end">
+<input type="number" id="rate" placeholder="Hourly Rate">
+<input type="text" id="ride" placeholder="Ride">
+<input type="text" id="location" placeholder="Location">
+<textarea id="notes" placeholder="Notes"></textarea>
+<button onclick="saveShift()">Save</button>
+<button onclick="window.print()">🖨 Print Rota</button>
+<button onclick="exportData()">📁 Export Backup</button>
+</div>
+
+<div class="card">
+<h2>Weekly View</h2>
+<div class="week" id="weekView"></div>
+</div>
+
 </div>
 
 <script>
-let shifts=JSON.parse(localStorage.getItem("funfairShifts")||"{}");
-let current=new Date();
+let shifts=JSON.parse(localStorage.getItem("funfairV4")||"{}");
 
-function saveData(){
- localStorage.setItem("funfairShifts",JSON.stringify(shifts));
-}
-
-function render(){
- const cal=document.getElementById("calendar");
- cal.innerHTML="";
- const year=current.getFullYear();
- const month=current.getMonth();
-
- document.getElementById("monthTitle").textContent=
- new Date(year,month).toLocaleString('default',{month:'long',year:'numeric'});
-
- const first=new Date(year,month,1);
- const startDay=(first.getDay()+6)%7;
- const days=new Date(year,month+1,0).getDate();
-
- for(let i=0;i<startDay;i++){
-   cal.innerHTML+="<div></div>";
- }
-
- for(let d=1;d<=days;d++){
-   const date=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-   const div=document.createElement("div");
-   div.className="day";
-   div.onclick=()=>selectDate(date);
-
-   let html=`<div class='daynum'>${d}</div>`;
-
-   if(shifts[date]){
-      html+=`<div class='shift'>${shifts[date].start} - ${shifts[date].end}</div>`;
-      if(shifts[date].ride){
-        html+=`<div class='shift'>🎡 ${shifts[date].ride}</div>`;
-      }
-   }
-
-   div.innerHTML=html;
-   cal.appendChild(div);
- }
-
- document.getElementById("totalShifts").textContent=Object.keys(shifts).length;
-
- let monthCount=0;
- Object.keys(shifts).forEach(d=>{
-   let sd=new Date(d);
-   if(sd.getMonth()===month && sd.getFullYear()===year) monthCount++;
- });
- document.getElementById("monthShifts").textContent=monthCount;
-}
-
-function selectDate(date){
- document.getElementById("shiftDate").value=date;
- if(shifts[date]){
-   document.getElementById("startTime").value=shifts[date].start;
-   document.getElementById("endTime").value=shifts[date].end;
-   document.getElementById("ride").value=shifts[date].ride||"";
- }
+function hrs(a,b){
+ if(!a||!b) return 0;
+ let s=a.split(":"); let e=b.split(":");
+ let sm=s[0]*60+ +s[1], em=e[0]*60+ +e[1];
+ if(em<sm) em+=1440;
+ return (em-sm)/60;
 }
 
 function saveShift(){
- const date=document.getElementById("shiftDate").value;
- if(!date){alert("Select a date");return;}
- shifts[date]={
-  start:document.getElementById("startTime").value,
-  end:document.getElementById("endTime").value,
-  ride:document.getElementById("ride").value
- };
- saveData();
+ let d=date.value;
+ if(!d) return alert("Choose date");
+ shifts[d]={start:start.value,end:end.value,rate:rate.value,ride:ride.value,location:location.value,notes:notes.value};
+ localStorage.setItem("funfairV4",JSON.stringify(shifts));
  render();
 }
 
-function prevMonth(){current.setMonth(current.getMonth()-1);render();}
-function nextMonth(){current.setMonth(current.getMonth()+1);render();}
+function exportData(){
+ let blob=new Blob([JSON.stringify(shifts,null,2)],{type:"application/json"});
+ let a=document.createElement("a");
+ a.href=URL.createObjectURL(blob);
+ a.download="funfair-shifts.json";
+ a.click();
+}
 
+function render(){
+ let total=0,pay=0,monthPay=0;
+ let now=new Date();
+
+ Object.keys(shifts).forEach(d=>{
+  let h=hrs(shifts[d].start,shifts[d].end);
+  total+=h;
+  let earned=h*(parseFloat(shifts[d].rate)||0);
+  pay+=earned;
+
+  let dt=new Date(d);
+  if(dt.getMonth()==now.getMonth() && dt.getFullYear()==now.getFullYear()) monthPay+=earned;
+ });
+
+ totalShifts.textContent=Object.keys(shifts).length;
+ yearPay.textContent="£"+pay.toFixed(2);
+ monthPay.textContent="£"+monthPay.toFixed(2);
+ hours.textContent=total.toFixed(1);
+
+ let week=document.getElementById("weekView");
+ week.innerHTML="";
+ let days=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+ days.forEach(n=>{
+   let div=document.createElement("div");
+   div.innerHTML="<b>"+n+"</b>";
+   week.appendChild(div);
+ });
+}
 render();
 </script>
-</body>
-</html>
+</body></html>
