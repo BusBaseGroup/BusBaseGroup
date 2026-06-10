@@ -2103,6 +2103,7 @@ Hunstanton Bus Station</textarea>
     let watchPositionId = null;
     let nearestStopName = '';
     let nearestStopDistance = null;
+    let lastAutoStopIndex = 0;
 
     function minutesFromTime(value) {
       const parts = String(value || '00:00').split(':').map(Number);
@@ -2154,8 +2155,46 @@ Hunstanton Bus Station</textarea>
       return currentTripSchedule[Math.min(stopIndex, currentTripSchedule.length - 1)];
     }
 
+    function updateStopFromMovement() {
+      if (!livePosition || !stops.length) return null;
+      const here = [livePosition.latitude, livePosition.longitude];
+      const currentName = stops[stopIndex] || stops[0];
+      const nextIndex = Math.min(stopIndex + 1, stops.length - 1);
+      const nextName = stops[nextIndex];
+      const currentDist = distanceMetres(here, STOP_COORDS[currentName]);
+      const nextDist = distanceMetres(here, STOP_COORDS[nextName]);
+
+      // Move the machine forward once GPS shows the bus is now nearer to the next stop
+      // than the current one. The 25m margin stops it flicking backwards/forwards on weak GPS.
+      if (nextIndex > stopIndex && isFinite(nextDist) && isFinite(currentDist) && nextDist + 25 < currentDist) {
+        stopIndex = nextIndex;
+        lastAutoStopIndex = stopIndex;
+        setText('currentStop', nextName);
+        setText('vimStop', stops[Math.min(stopIndex + 1, stops.length - 1)] || nextName);
+        if (byId('tickets')) renderTickets();
+      }
+
+      // If GPS jumps closer to a later stop, move forward, but never automatically move backwards.
+      let bestAhead = { index: stopIndex, stop: currentName, distance: currentDist };
+      for (let i = stopIndex + 1; i < stops.length; i++) {
+        const d = distanceMetres(here, STOP_COORDS[stops[i]]);
+        if (isFinite(d) && (!isFinite(bestAhead.distance) || d < bestAhead.distance)) {
+          bestAhead = { index: i, stop: stops[i], distance: d };
+        }
+      }
+      if (bestAhead.index > stopIndex && isFinite(bestAhead.distance) && bestAhead.distance < 120) {
+        stopIndex = bestAhead.index;
+        lastAutoStopIndex = stopIndex;
+        setText('currentStop', bestAhead.stop);
+        setText('vimStop', stops[Math.min(stopIndex + 1, stops.length - 1)] || bestAhead.stop);
+        if (byId('tickets')) renderTickets();
+      }
+      return { currentName: stops[stopIndex], currentDist, nextName, nextDist };
+    }
+
     function updateRunningBoard() {
       if (!currentTripSchedule.length) return;
+      const movement = updateStopFromMovement();
       const nearest = getNearestScheduledStop();
       if (!nearest) return;
       const now = new Date();
@@ -2174,18 +2213,15 @@ Hunstanton Bus Station</textarea>
       setText('runningState', label);
       setText('dueTime', nearest.time + ' ' + nearest.stop);
       setText('timeVariance', (early ? '-' : '+') + Math.floor(absSeconds / 60) + 'm ' + Math.round(absSeconds % 60) + 's');
-      setText('nearestStop', nearest.stop);
-      setText('nearestDistance', isFinite(nearest.distance) ? Math.round(nearest.distance) + 'm' : 'manual');
+      setText('nearestStop', movement && movement.currentName ? movement.currentName : nearest.stop);
+      setText('nearestDistance', movement && isFinite(movement.nextDist) ? 'next ' + Math.round(movement.nextDist) + 'm' : (isFinite(nearest.distance) ? Math.round(nearest.distance) + 'm' : 'manual'));
       const next = currentTripSchedule[Math.min(nearest.index + 1, currentTripSchedule.length - 1)];
       setText('nextTimedStop', next ? next.time + ' ' + next.stop : '--');
       setText('vimStop', next ? next.stop : nearest.stop);
       setText('vimTime', next ? next.time : nearest.time);
       if (nearest.stop && byId('currentStop')) {
-        nearestStopName = nearest.stop;
-        if (livePosition && isFinite(nearest.distance) && nearest.distance < 180) {
-          stopIndex = stops.indexOf(nearest.stop) >= 0 ? stops.indexOf(nearest.stop) : stopIndex;
-          setText('currentStop', nearest.stop);
-        }
+        nearestStopName = movement && movement.currentName ? movement.currentName : nearest.stop;
+        // Do not snap backwards to the nearest stop. The movement logic above advances the current stop progressively.
       }
     }
 
@@ -2864,6 +2900,7 @@ Hunstanton Bus Station</textarea>
       stages = uniqueRoutePoints([setup.origin].concat(setup.parsedStops, [setup.dest]));
       stageIndex = 0;
       stopIndex = 0;
+      lastAutoStopIndex = 0;
       destIndex = stages.length - 1;
 
       setText('fareStage', setup.origin);
@@ -2907,6 +2944,7 @@ Hunstanton Bus Station</textarea>
 
     function moveStop(n) {
       stopIndex = (stopIndex + n + stops.length) % stops.length;
+      lastAutoStopIndex = stopIndex;
       setText('currentStop', stops[stopIndex]);
       setText('vimStop', stops[(stopIndex + 1) % stops.length]);
       updateRunningBoard();
