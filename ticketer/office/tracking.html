@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Back Office Live Tracking</title>
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #111827;
+      color: #e5e7eb;
+    }
+
+    header {
+      background: #020617;
+      border-bottom: 1px solid #334155;
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    header a {
+      color: white;
+      text-decoration: none;
+      background: #1d4ed8;
+      padding: 9px 12px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 340px 1fr 340px;
+      height: calc(100vh - 64px);
+    }
+
+    .side {
+      background: #0f172a;
+      border-right: 1px solid #334155;
+      overflow: auto;
+      padding: 12px;
+    }
+
+    .right {
+      border-right: 0;
+      border-left: 1px solid #334155;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+      background: #1e293b;
+    }
+
+    .vehicle-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-left: 6px solid #64748b;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+
+    .vehicle-card:hover {
+      background: #273449;
+    }
+
+    .vehicle-card.selected {
+      outline: 2px solid #60a5fa;
+    }
+
+    .vehicle-card.green {
+      border-left-color: #22c55e;
+    }
+
+    .vehicle-card.amber {
+      border-left-color: #f59e0b;
+    }
+
+    .vehicle-card.red {
+      border-left-color: #ef4444;
+    }
+
+    .vehicle-card.grey {
+      border-left-color: #64748b;
+    }
+
+    .fleet {
+      font-size: 19px;
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+
+    .muted {
+      color: #94a3b8;
+      font-size: 13px;
+    }
+
+    .badge {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 900;
+      color: #020617;
+      background: #94a3b8;
+    }
+
+    .badge.green {
+      background: #22c55e;
+    }
+
+    .badge.amber {
+      background: #f59e0b;
+    }
+
+    .badge.red {
+      background: #ef4444;
+      color: white;
+    }
+
+    .badge.grey {
+      background: #64748b;
+      color: white;
+    }
+
+    .panel {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+
+    .panel h2 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 8px;
+      padding: 8px 0;
+      border-bottom: 1px solid #334155;
+      font-size: 14px;
+    }
+
+    .row:last-child {
+      border-bottom: 0;
+    }
+
+    .label {
+      color: #94a3b8;
+      font-weight: bold;
+    }
+
+    .value {
+      color: #f8fafc;
+      font-weight: bold;
+      word-break: break-word;
+    }
+
+    .empty {
+      text-align: center;
+      color: #94a3b8;
+      padding: 30px 10px;
+      font-weight: bold;
+    }
+
+    .status-line {
+      font-size: 13px;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+
+    .leaflet-popup-content {
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .popup-title {
+      font-weight: 900;
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+
+    @media (max-width: 1000px) {
+      .layout {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+
+      .side,
+      .right {
+        border: 0;
+        max-height: none;
+      }
+
+      #map {
+        height: 55vh;
+      }
+
+      header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      header a {
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div>
+      <h1>Live Vehicle Tracking</h1>
+      <div class="status-line" id="connectionStatus">Connecting to Firebase...</div>
+    </div>
+    <a href="index.html">Back Office</a>
+  </header>
+
+  <main class="layout">
+    <aside class="side">
+      <div class="panel">
+        <h2>Vehicles</h2>
+        <div class="status-line" id="vehicleCount">Loading...</div>
+      </div>
+      <div id="vehicleList"></div>
+    </aside>
+
+    <section id="map"></section>
+
+    <aside class="side right">
+      <div class="panel">
+        <h2>Vehicle Details</h2>
+        <div id="details">
+          <div class="empty">Select a vehicle to view details.</div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      onSnapshot,
+      query
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBBCqx9D1r5U9mWJYKEY_dtCdyk132xGog",
+      authDomain: "busbase-ticketer-v2.firebaseapp.com",
+      projectId: "busbase-ticketer-v2",
+      storageBucket: "busbase-ticketer-v2.firebasestorage.app",
+      messagingSenderId: "807388978236",
+      appId: "1:807388978236:web:5ccf7c8193d81498377739"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const vehicleList = document.getElementById("vehicleList");
+    const vehicleCount = document.getElementById("vehicleCount");
+    const details = document.getElementById("details");
+    const connectionStatus = document.getElementById("connectionStatus");
+
+    let selectedId = null;
+    let vehicles = [];
+    const markers = {};
+
+    const map = L.map("map").setView([52.7517, 0.3952], 10);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap"
+    }).addTo(map);
+
+    function getVehicleLabel(vehicle) {
+      return vehicle.vehicle || vehicle.fleetNumber || vehicle.fleet || vehicle.driverId || "Unknown Vehicle";
+    }
+
+    function getFleetNumber(vehicle) {
+      const vehicleText = vehicle.vehicle || "";
+      const match = vehicleText.match(/\b\d{2,5}\b/);
+      return vehicle.fleetNumber || vehicle.fleet || (match ? match[0] : vehicle.driverId || "Unknown");
+    }
+
+    function getReg(vehicle) {
+      const vehicleText = vehicle.vehicle || "";
+      const regMatch = vehicleText.match(/[A-Z]{2}\d{2}\s?[A-Z]{3}|[A-Z]\d{1,3}\s?[A-Z]{3}|[A-Z]{3}\s?\d{1,4}/i);
+      return vehicle.reg || vehicle.registration || (regMatch ? regMatch[0].toUpperCase() : "Unknown");
+    }
+
+    function getMinutesNumber(vehicle) {
+      const text = String(vehicle.variance || vehicle.runningText || vehicle.runningStatus || "");
+      const match = text.match(/-?\d+/);
+      return match ? Number(match[0]) : 0;
+    }
+
+    function getStatus(vehicle) {
+      const age = Date.now() - Number(vehicle.updatedAtMs || 0);
+
+      if (!vehicle.latitude || !vehicle.longitude) return "grey";
+      if (age > 120000) return "grey";
+
+      const text = String(vehicle.runningStatus || vehicle.runningText || vehicle.variance || "").toLowerCase();
+      const mins = Math.abs(getMinutesNumber(vehicle));
+
+      if (text.includes("late") || text.includes("early")) {
+        if (mins >= 1) return "red";
+        return "amber";
+      }
+
+      if (text.includes("on time") || text.includes("due")) return "green";
+
+      return "green";
+    }
+
+    function getStatusText(vehicle) {
+      const status = getStatus(vehicle);
+
+      if (status === "grey") return "No GPS / stale";
+      if (vehicle.variance) return vehicle.variance;
+      if (vehicle.runningText) return vehicle.runningText;
+      if (vehicle.runningStatus) return vehicle.runningStatus;
+      return "On time";
+    }
+
+    function getMarkerIcon(status) {
+      const colour = {
+        green: "#22c55e",
+        amber: "#f59e0b",
+        red: "#ef4444",
+        grey: "#64748b"
+      }[status] || "#64748b";
+
+      return L.divIcon({
+        className: "",
+        html: `
+          <div style="
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: ${colour};
+            border: 3px solid white;
+            box-shadow: 0 3px 12px rgba(0,0,0,.45);
+          "></div>
+        `,
+        iconSize: [28, 28],
+        iconAnchor: [14, 14]
+      });
+    }
+
+    function formatUpdated(vehicle) {
+      if (!vehicle.updatedAtMs) return "Unknown";
+      const diff = Math.round((Date.now() - vehicle.updatedAtMs) / 1000);
+
+      if (diff < 10) return "Just now";
+      if (diff < 60) return diff + " seconds ago";
+
+      const mins = Math.round(diff / 60);
+      if (mins < 60) return mins + " mins ago";
+
+      return new Date(vehicle.updatedAtMs).toLocaleString("en-GB");
+    }
+
+    function renderVehicles() {
+      vehicleList.innerHTML = "";
+
+      if (!vehicles.length) {
+        vehicleCount.textContent = "No vehicles are currently tracking.";
+        vehicleList.innerHTML = `<div class="empty">No tracking data found yet.</div>`;
+        return;
+      }
+
+      vehicleCount.textContent = vehicles.length + " vehicle" + (vehicles.length === 1 ? "" : "s") + " online/recent";
+
+      vehicles
+        .sort((a, b) => getFleetNumber(a).localeCompare(getFleetNumber(b), undefined, { numeric: true }))
+        .forEach(vehicle => {
+          const status = getStatus(vehicle);
+          const card = document.createElement("div");
+          card.className = `vehicle-card ${status} ${selectedId === vehicle.id ? "selected" : ""}`;
+
+          card.innerHTML = `
+            <div class="fleet">${getFleetNumber(vehicle)} · Route ${vehicle.route || "Unknown"}</div>
+            <div class="muted">${getReg(vehicle)} · ${vehicle.driverName || "Unknown Driver"}</div>
+            <div class="muted">${vehicle.currentStop || "Unknown stop"} → ${vehicle.nextStop || vehicle.destination || "Unknown"}</div>
+            <span class="badge ${status}">${getStatusText(vehicle)}</span>
+            <div class="status-line">Updated ${formatUpdated(vehicle)}</div>
+          `;
+
+          card.onclick = () => selectVehicle(vehicle.id);
+          vehicleList.appendChild(card);
+        });
+    }
+
+    function renderDetails(vehicle) {
+      if (!vehicle) {
+        details.innerHTML = `<div class="empty">Select a vehicle to view details.</div>`;
+        return;
+      }
+
+      const status = getStatus(vehicle);
+
+      details.innerHTML = `
+        <div class="row"><div class="label">Fleet No</div><div class="value">${getFleetNumber(vehicle)}</div></div>
+        <div class="row"><div class="label">Registration</div><div class="value">${getReg(vehicle)}</div></div>
+        <div class="row"><div class="label">Route</div><div class="value">${vehicle.route || "Unknown"}</div></div>
+        <div class="row"><div class="label">Trip</div><div class="value">${vehicle.trip || "Unknown"}</div></div>
+        <div class="row"><div class="label">Driver</div><div class="value">${vehicle.driverName || "Unknown"}</div></div>
+        <div class="row"><div class="label">Driver ID</div><div class="value">${vehicle.driverId || "Unknown"}</div></div>
+        <div class="row"><div class="label">Current Stop</div><div class="value">${vehicle.currentStop || "Unknown"}</div></div>
+        <div class="row"><div class="label">Next Stop</div><div class="value">${vehicle.nextStop || vehicle.destination || "Unknown"}</div></div>
+        <div class="row"><div class="label">Destination</div><div class="value">${vehicle.destination || "Unknown"}</div></div>
+        <div class="row"><div class="label">Last Stop</div><div class="value">${vehicle.lastStopStatus || "Waiting"}</div></div>
+        <div class="row"><div class="label">Running</div><div class="value"><span class="badge ${status}">${getStatusText(vehicle)}</span></div></div>
+        <div class="row"><div class="label">Variance</div><div class="value">${vehicle.variance || "Unknown"}</div></div>
+        <div class="row"><div class="label">Accuracy</div><div class="value">${vehicle.accuracy ? Math.round(vehicle.accuracy) + "m" : "Unknown"}</div></div>
+        <div class="row"><div class="label">Updated</div><div class="value">${formatUpdated(vehicle)}</div></div>
+      `;
+    }
+
+    function updateMarkers() {
+      const liveIds = new Set();
+
+      vehicles.forEach(vehicle => {
+        liveIds.add(vehicle.id);
+
+        const lat = Number(vehicle.latitude);
+        const lng = Number(vehicle.longitude);
+
+        if (!lat || !lng) return;
+
+        const status = getStatus(vehicle);
+        const popup = `
+          <div class="popup-title">${getFleetNumber(vehicle)} · Route ${vehicle.route || "Unknown"}</div>
+          <div><b>Reg:</b> ${getReg(vehicle)}</div>
+          <div><b>Driver:</b> ${vehicle.driverName || "Unknown"}</div>
+          <div><b>Current:</b> ${vehicle.currentStop || "Unknown"}</div>
+          <div><b>Next:</b> ${vehicle.nextStop || vehicle.destination || "Unknown"}</div>
+          <div><b>Status:</b> ${getStatusText(vehicle)}</div>
+        `;
+
+        if (!markers[vehicle.id]) {
+          markers[vehicle.id] = L.marker([lat, lng], {
+            icon: getMarkerIcon(status)
+          }).addTo(map);
+
+          markers[vehicle.id].on("click", () => selectVehicle(vehicle.id));
+        } else {
+          markers[vehicle.id].setLatLng([lat, lng]);
+          markers[vehicle.id].setIcon(getMarkerIcon(status));
+        }
+
+        markers[vehicle.id].bindPopup(popup);
+      });
+
+      Object.keys(markers).forEach(id => {
+        if (!liveIds.has(id)) {
+          map.removeLayer(markers[id]);
+          delete markers[id];
+        }
+      });
+    }
+
+    function selectVehicle(id) {
+      selectedId = id;
+      const vehicle = vehicles.find(v => v.id === id);
+
+      renderVehicles();
+      renderDetails(vehicle);
+
+      if (vehicle && vehicle.latitude && vehicle.longitude) {
+        map.setView([Number(vehicle.latitude), Number(vehicle.longitude)], 15);
+        if (markers[id]) markers[id].openPopup();
+      }
+    }
+
+    function fitMapToVehicles() {
+      const points = vehicles
+        .filter(v => v.latitude && v.longitude)
+        .map(v => [Number(v.latitude), Number(v.longitude)]);
+
+      if (points.length === 1) {
+        map.setView(points[0], 14);
+      }
+
+      if (points.length > 1) {
+        map.fitBounds(points, { padding: [40, 40] });
+      }
+    }
+
+    const trackingQuery = query(collection(db, "driverTracking"));
+
+    onSnapshot(trackingQuery, snapshot => {
+      connectionStatus.textContent = "Connected · live updates enabled";
+
+      vehicles = snapshot.docs.map(docSnap => ({
+        id: docSnap.id,
+        ...docSnap.data()
+      }));
+
+      renderVehicles();
+      updateMarkers();
+
+      const selected = vehicles.find(v => v.id === selectedId);
+      renderDetails(selected || null);
+
+      if (!selectedId) fitMapToVehicles();
+    }, error => {
+      console.error(error);
+      connectionStatus.textContent = "Firebase error: " + error.message;
+      vehicleList.innerHTML = `<div class="empty">Could not load tracking data.</div>`;
+    });
+
+    setInterval(() => {
+      renderVehicles();
+      const selected = vehicles.find(v => v.id === selectedId);
+      renderDetails(selected || null);
+      updateMarkers();
+    }, 10000);
+  </script>
+</body>
+</html>
