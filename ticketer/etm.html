@@ -3809,40 +3809,69 @@ Hunstanton Bus Station</textarea>
 
     function updateStopFromMovement() {
       if (!livePosition || !stops.length) return null;
+
       const here = [livePosition.latitude, livePosition.longitude];
       watchStopArrivalAndLeaving(here);
-      const currentName = stops[stopIndex] || stops[0];
-      const nextIndex = Math.min(stopIndex + 1, stops.length - 1);
-      const nextName = stops[nextIndex];
-      const currentDist = distanceMetres(here, STOP_COORDS[currentName]);
-      const nextDist = distanceMetres(here, STOP_COORDS[nextName]);
 
-      // Move the machine forward once GPS shows the bus is now nearer to the next stop
-      // than the current one. The 25m margin stops it flicking backwards/forwards on weak GPS.
-      if (nextIndex > stopIndex && isFinite(nextDist) && isFinite(currentDist) && nextDist + 25 < currentDist) {
-        stopIndex = nextIndex;
-        lastAutoStopIndex = stopIndex;
-        setText('currentStop', nextName);
-        setText('vimStop', stops[Math.min(stopIndex + 1, stops.length - 1)] || nextName);
-        if (byId('tickets')) renderTickets();
-      }
+      const previousIndex = stopIndex;
+      const currentNameBefore = stops[stopIndex] || stops[0];
+      const nextIndexBefore = Math.min(stopIndex + 1, stops.length - 1);
+      const nextNameBefore = stops[nextIndexBefore] || currentNameBefore;
 
-      // If GPS jumps closer to a later stop, move forward, but never automatically move backwards.
-      let bestAhead = { index: stopIndex, stop: currentName, distance: currentDist };
-      for (let i = stopIndex + 1; i < stops.length; i++) {
+      let currentDist = distanceMetres(here, STOP_COORDS[currentNameBefore]);
+      let nextDist = distanceMetres(here, STOP_COORDS[nextNameBefore]);
+
+      // Find the nearest stop on the accepted route, but only use it to move FORWARD.
+      // This makes the ETM follow the phone/bus location instead of staying on the first stop.
+      let nearestAhead = {
+        index: stopIndex,
+        stop: currentNameBefore,
+        distance: currentDist
+      };
+
+      for (let i = stopIndex; i < stops.length; i++) {
         const d = distanceMetres(here, STOP_COORDS[stops[i]]);
-        if (isFinite(d) && (!isFinite(bestAhead.distance) || d < bestAhead.distance)) {
-          bestAhead = { index: i, stop: stops[i], distance: d };
+        if (isFinite(d) && (!isFinite(nearestAhead.distance) || d < nearestAhead.distance)) {
+          nearestAhead = { index: i, stop: stops[i], distance: d };
         }
       }
-      if (bestAhead.index > stopIndex && isFinite(bestAhead.distance) && bestAhead.distance < 120) {
-        stopIndex = bestAhead.index;
+
+      // Snap to the stop you are actually at when GPS is close enough.
+      // 95m is used because phone GPS can drift, especially on mobile browsers.
+      if (nearestAhead.index > stopIndex && nearestAhead.distance <= 95) {
+        stopIndex = nearestAhead.index;
+      }
+
+      // If you are travelling between stops, move forward when the next stop is clearly closer
+      // than the current stop. This avoids needing to be exactly inside the stop radius.
+      const currentName = stops[stopIndex] || stops[0];
+      const nextIndex = Math.min(stopIndex + 1, stops.length - 1);
+      const nextName = stops[nextIndex] || currentName;
+      currentDist = distanceMetres(here, STOP_COORDS[currentName]);
+      nextDist = distanceMetres(here, STOP_COORDS[nextName]);
+
+      if (nextIndex > stopIndex && isFinite(nextDist) && isFinite(currentDist) && nextDist + 35 < currentDist) {
+        stopIndex = nextIndex;
+      }
+
+      if (stopIndex !== previousIndex) {
+        const newCurrent = stops[stopIndex] || currentName;
+        const newNext = stops[Math.min(stopIndex + 1, stops.length - 1)] || newCurrent;
         lastAutoStopIndex = stopIndex;
-        setText('currentStop', bestAhead.stop);
-        setText('vimStop', stops[Math.min(stopIndex + 1, stops.length - 1)] || bestAhead.stop);
+        setText('currentStop', newCurrent);
+        setText('vimStop', newNext);
+        nearestStopName = newCurrent;
         if (byId('tickets')) renderTickets();
       }
-      return { currentName: stops[stopIndex], currentDist, nextName, nextDist };
+
+      return {
+        currentName: stops[stopIndex] || currentName,
+        currentDist: distanceMetres(here, STOP_COORDS[stops[stopIndex] || currentName]),
+        nextName: stops[Math.min(stopIndex + 1, stops.length - 1)] || stops[stopIndex],
+        nextDist: distanceMetres(here, STOP_COORDS[stops[Math.min(stopIndex + 1, stops.length - 1)] || stops[stopIndex]]),
+        nearestName: nearestAhead.stop,
+        nearestDist: nearestAhead.distance
+      };
     }
 
     function updateRunningBoard() {
@@ -4683,7 +4712,7 @@ Hunstanton Bus Station</textarea>
       page('ticketPage');
       startLocationTracking();
       updateRunningBoard();
-      showInfo('Trip started: Route ' + escapeHtml(setup.route) + ' from ' + escapeHtml(setup.origin) + ' to ' + escapeHtml(setup.dest) + ' at ' + escapeHtml(setup.time) + '. GPS timing is now active. Amber = under 1 minute early. Red = over 1 minute early.');
+      showInfo('Trip started: Route ' + escapeHtml(setup.route) + ' from ' + escapeHtml(setup.origin) + ' to ' + escapeHtml(setup.dest) + ' at ' + escapeHtml(setup.time) + '. GPS timing is now active. The current stop will now update from your location. Amber = under 1 minute early. Red = over 1 minute early.');
     }
 
     function openOptions() { page('optionsPage'); }
