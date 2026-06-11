@@ -3814,63 +3814,54 @@ Hunstanton Bus Station</textarea>
       watchStopArrivalAndLeaving(here);
 
       const previousIndex = stopIndex;
-      const currentNameBefore = stops[stopIndex] || stops[0];
-      const nextIndexBefore = Math.min(stopIndex + 1, stops.length - 1);
-      const nextNameBefore = stops[nextIndexBefore] || currentNameBefore;
 
-      let currentDist = distanceMetres(here, STOP_COORDS[currentNameBefore]);
-      let nextDist = distanceMetres(here, STOP_COORDS[nextNameBefore]);
-
-      // Find the nearest stop on the accepted route, but only use it to move FORWARD.
-      // This makes the ETM follow the phone/bus location instead of staying on the first stop.
-      let nearestAhead = {
+      // ALWAYS GPS-DRIVEN:
+      // Every location update checks the whole accepted route and makes the current stop
+      // the nearest stop to the phone/bus. This means the ETM corrects itself if the
+      // driver starts midway along the route, misses a stop, or turns around.
+      let nearestRouteStop = {
         index: stopIndex,
-        stop: currentNameBefore,
-        distance: currentDist
+        stop: stops[stopIndex] || stops[0],
+        distance: distanceMetres(here, STOP_COORDS[stops[stopIndex] || stops[0]])
       };
 
-      for (let i = stopIndex; i < stops.length; i++) {
+      for (let i = 0; i < stops.length; i++) {
         const d = distanceMetres(here, STOP_COORDS[stops[i]]);
-        if (isFinite(d) && (!isFinite(nearestAhead.distance) || d < nearestAhead.distance)) {
-          nearestAhead = { index: i, stop: stops[i], distance: d };
+        if (isFinite(d) && (!isFinite(nearestRouteStop.distance) || d < nearestRouteStop.distance)) {
+          nearestRouteStop = { index: i, stop: stops[i], distance: d };
         }
       }
 
-      // Snap to the stop you are actually at when GPS is close enough.
-      // 95m is used because phone GPS can drift, especially on mobile browsers.
-      if (nearestAhead.index > stopIndex && nearestAhead.distance <= 95) {
-        stopIndex = nearestAhead.index;
+      // Change current stop from GPS whenever the nearest route stop changes.
+      // No forward-only lock: GPS is now the source of truth.
+      if (nearestRouteStop.index !== stopIndex && isFinite(nearestRouteStop.distance)) {
+        stopIndex = nearestRouteStop.index;
       }
 
-      // If you are travelling between stops, move forward when the next stop is clearly closer
-      // than the current stop. This avoids needing to be exactly inside the stop radius.
-      const currentName = stops[stopIndex] || stops[0];
-      const nextIndex = Math.min(stopIndex + 1, stops.length - 1);
-      const nextName = stops[nextIndex] || currentName;
-      currentDist = distanceMetres(here, STOP_COORDS[currentName]);
-      nextDist = distanceMetres(here, STOP_COORDS[nextName]);
-
-      if (nextIndex > stopIndex && isFinite(nextDist) && isFinite(currentDist) && nextDist + 35 < currentDist) {
-        stopIndex = nextIndex;
-      }
+      const currentName = stops[stopIndex] || nearestRouteStop.stop || stops[0];
+      const nextName = stops[Math.min(stopIndex + 1, stops.length - 1)] || currentName;
+      const currentDist = distanceMetres(here, STOP_COORDS[currentName]);
+      const nextDist = distanceMetres(here, STOP_COORDS[nextName]);
 
       if (stopIndex !== previousIndex) {
-        const newCurrent = stops[stopIndex] || currentName;
-        const newNext = stops[Math.min(stopIndex + 1, stops.length - 1)] || newCurrent;
         lastAutoStopIndex = stopIndex;
-        setText('currentStop', newCurrent);
-        setText('vimStop', newNext);
-        nearestStopName = newCurrent;
+        setText('currentStop', currentName);
+        setText('vimStop', nextName);
+        nearestStopName = currentName;
         if (byId('tickets')) renderTickets();
+      } else {
+        setText('currentStop', currentName);
+        setText('vimStop', nextName);
+        nearestStopName = currentName;
       }
 
       return {
-        currentName: stops[stopIndex] || currentName,
-        currentDist: distanceMetres(here, STOP_COORDS[stops[stopIndex] || currentName]),
-        nextName: stops[Math.min(stopIndex + 1, stops.length - 1)] || stops[stopIndex],
-        nextDist: distanceMetres(here, STOP_COORDS[stops[Math.min(stopIndex + 1, stops.length - 1)] || stops[stopIndex]]),
-        nearestName: nearestAhead.stop,
-        nearestDist: nearestAhead.distance
+        currentName: currentName,
+        currentDist: currentDist,
+        nextName: nextName,
+        nextDist: nextDist,
+        nearestName: nearestRouteStop.stop,
+        nearestDist: nearestRouteStop.distance
       };
     }
 
@@ -3928,7 +3919,15 @@ Hunstanton Bus Station</textarea>
         setText('gpsStatus', '!');
         const g = byId('gpsStatus');
         if (g) { g.className = 'warn'; }
-      }, { enableHighAccuracy: true, maximumAge: 10000, timeout: 12000 });
+      }, { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 });
+
+      // Extra refresh so the machine keeps correcting the stop even if the browser
+      // sends GPS updates slowly.
+      if (!window.__etmLocationRefreshTimer) {
+        window.__etmLocationRefreshTimer = setInterval(function () {
+          if (livePosition && currentTripSchedule.length) updateRunningBoard();
+        }, 2500);
+      }
     }
 
     window.getLiveRunningSnapshot = function() {
@@ -4691,6 +4690,7 @@ Hunstanton Bus Station</textarea>
       setText('vimStop', stops[1] || setup.dest);
       setText('vimTime', setup.time);
       currentTripSchedule = buildTripSchedule(setup);
+      startLocationTracking();
       updateRunningBoard();
       updateTripPreview();
       if (byId('tickets')) renderTickets();
@@ -4725,6 +4725,13 @@ Hunstanton Bus Station</textarea>
     }
 
     function moveStop(n) {
+      // Stop is now controlled by GPS all the time.
+      // The arrows only force a one-off refresh instead of overriding location.
+      if (livePosition) {
+        updateRunningBoard();
+        showInfo('Current stop is controlled by live location. Move nearer to a stop and the machine will update automatically.');
+        return;
+      }
       stopIndex = (stopIndex + n + stops.length) % stops.length;
       lastAutoStopIndex = stopIndex;
       setText('currentStop', stops[stopIndex]);
