@@ -1992,23 +1992,126 @@ Hunstanton Bus Station</textarea>
     // Lynx data loaded 1 June 2026 from the public Lynx services, fleet list and 34/35/36 fares PDF.
     // Exact stop-by-stop fares are only published publicly for sample popular flows, so unpublished pairs fall back to stage distance pricing.
     const LYNX_ROUTE_PRESETS = [
-      { route: '33/33C', origin: "King's Lynn", dest: 'Hunstanton', direction: 'Outbound', time: '09:00', summary: 'via QE Hospital, Hillington, The Birchams & Sedgeford', stops: ["King's Lynn Bus Station", 'Gaywood', 'QE Hospital Travel Hub', 'Hillington', 'Flitcham', 'Great Bircham', 'Bircham Newton', 'Docking', 'Sedgeford', 'Heacham', 'Hunstanton Bus Station'] },
-      { route: '33A/33B', origin: 'Hunstanton', dest: 'Hunstanton', direction: 'Circular', time: '09:30', summary: 'Hunstanton circular via Tesco & Cliff Parade', stops: ['Hunstanton Bus Station', 'Hunstanton Tesco', 'Cliff Parade', 'Lighthouse Close', 'Old Hunstanton Road', 'Hunstanton Bus Station'] },
-      { route: '34/35/36', origin: "King's Lynn", dest: 'Fakenham', direction: 'Outbound', time: '09:15', summary: 'via QE Hospital, Sandringham, Dersingham, Snettisham, Heacham and the coast', stops: ["King's Lynn Bus Station", 'Gaywood Tesco', 'QE Hospital Travel Hub', 'South Wootton', 'Sandringham', 'Dersingham', 'Snettisham', 'Heacham', 'Hunstanton Bus Station', 'Old Hunstanton', 'Holme', 'Thornham', 'Titchwell', 'Brancaster', 'Brancaster Staithe', 'Burnham Deepdale', 'Burnham Market', 'Burnham Overy Staithe', 'Holkham', 'Wells-next-the-Sea', 'Wighton', 'Walsingham', 'Houghton St Giles', 'East Barsham', 'Fakenham'] },
-      { route: '37', origin: "King's Lynn", dest: 'Downham Market', direction: 'Outbound', time: '08:25', summary: 'via Hardwick Retail Park, Hilgay, Southery and Ten Mile Bank', stops: ["King's Lynn Bus Station", 'Hardwick Retail Park', 'West Winch', 'Setchey', 'Runcton Holme', 'Watlington', 'Hilgay', 'Southery', 'Ten Mile Bank', 'Downham Market'] },
-      { route: '38', origin: "King's Lynn", dest: 'Fair Green', direction: 'Outbound', time: '10:00', summary: 'via Hardwick Retail Park', stops: ["King's Lynn Bus Station", 'Southgates', 'Hardwick Retail Park', 'West Winch', 'Fair Green'] },
-      { route: '39', origin: "King's Lynn", dest: 'Marham', direction: 'Outbound', time: '07:45', summary: 'via Hardwick Retail Park & Shouldham', stops: ["King's Lynn Bus Station", 'Hardwick Retail Park', 'West Winch', 'Setchey', 'Tottenhill', 'Wormegay', 'Shouldham', 'Marham'] },
-      { route: '41', origin: "King's Lynn", dest: "King's Reach", direction: 'Outbound', time: '08:10', summary: 'via Gaywood & QE Hospital', stops: ["King's Lynn Bus Station", 'Gaywood', 'QE Hospital Travel Hub', 'Fairstead', "King's Reach"] },
-      { route: '42', origin: "King's Lynn", dest: 'Fairstead', direction: 'Outbound', time: '08:30', summary: 'via Gaywood', stops: ["King's Lynn Bus Station", 'Gaywood', 'Fairstead'] },
-      { route: '43', origin: "King's Lynn", dest: 'North Wootton', direction: 'Outbound', time: '07:30', summary: 'Schooldays only', stops: ["King's Lynn Bus Station", 'Gaywood', 'South Wootton', 'North Wootton'] },
-      { route: '44', origin: "King's Lynn", dest: 'Hardwick', direction: 'Loop', time: '09:20', summary: 'the loop via South Wootton, Knights Hill, QE Hospital and Castle Reach', stops: ["King's Lynn Bus Station", 'South Wootton', 'Knights Hill', 'QE Hospital Travel Hub', 'Gaywood', 'St James Medical Practice', 'Castle Reach', 'Hardwick Retail Park'] },
-      { route: '46/X46', origin: "King's Lynn", dest: 'Wisbech', direction: 'Outbound', time: '08:05', summary: 'via Saddlebow, Islington, Terrington St John, Tilney St Lawrence & West Walton', stops: ["King's Lynn Bus Station", 'Saddlebow', 'Islington', 'Terrington St John', 'Tilney St Lawrence', 'West Walton', 'Wisbech Bus Station'] },
-      { route: '48/49/49A', origin: "King's Lynn", dest: 'Fakenham', direction: 'Outbound', time: '09:05', summary: 'via QE Hospital, Gayton, Great Massingham and The Rudhams', stops: ["King's Lynn Bus Station", 'QE Hospital Travel Hub', 'Gaywood', 'Grimston', 'Gayton', 'Great Massingham', 'Harpley', 'The Rudhams', 'Fakenham'] },
-      { route: '54', origin: "King's Lynn", dest: 'The Walpoles', direction: 'Outbound', time: '09:40', summary: 'via South Lynn, Clenchwarton & Tilney All Saints', stops: ["King's Lynn Bus Station", 'South Lynn', 'West Lynn', 'Clenchwarton', 'Terrington St Clement', 'Tilney All Saints', 'The Walpoles'] },
-      { route: '54A', origin: "King's Lynn", dest: 'Terrington High School', direction: 'Outbound', time: '07:25', summary: 'Schooldays only', stops: ["King's Lynn Bus Station", 'South Lynn', 'West Lynn', 'Clenchwarton', 'Terrington St Clement', 'Terrington High School'] },
-      { route: '60', origin: 'Wisbech', dest: 'Downham Market', direction: 'Outbound', time: '08:55', summary: 'via Emneth, Outwell, Upwell and Three Holes', stops: ['Wisbech Bus Station', 'Emneth', 'Outwell', 'Upwell', 'Three Holes', 'Nordelph', 'Denver', 'Downham Market'] },
-      { route: '414/415', origin: 'Dersingham', dest: 'Alderman Peel High School', direction: 'School', time: '07:35', summary: 'via Docking; schooldays only', stops: ['Dersingham', 'Snettisham', 'Heacham', 'Sedgeford', 'Docking', 'Burnham Market', 'Wells-next-the-Sea', 'Alderman Peel High School'] },
-      { route: '48A', origin: 'Middleton', dest: 'Springwood High School', direction: 'School', time: '07:40', summary: 'via East Winch & Ashwicken', stops: ['Middleton', 'East Winch', 'Ashwicken', 'Gayton', 'Springwood High School'] }
+      {
+        route: '33B', origin: "King's Lynn Transport Interchange", dest: 'Hunstanton Travel Hub', direction: 'Outbound', time: '09:00',
+        summary: 'via QE Hospital, Hillington, Flitcham, Great Bircham, Docking, Sedgeford and Heacham',
+        stops: ["King's Lynn Transport Interchange", "King's Lynn Railway Station", 'Gaywood Tesco', 'Gaywood Clock', 'Queen Elizabeth Hospital Bus Shelter', 'North Wootton Priory Lane', 'Hillington Ffolkes Arms', 'Flitcham Church', 'Great Bircham Church Lane', 'Bircham Newton Bus Shelter', 'Docking Market Place', 'Sedgeford Church', 'Heacham Lavender', 'Heacham Tesco', 'Hunstanton Tesco', 'Hunstanton Travel Hub'],
+        offsets: [0,2,5,7,11,17,25,31,38,42,49,58,66,70,75,79]
+      },
+      {
+        route: '33C', origin: 'Hunstanton Travel Hub', dest: "King's Lynn Transport Interchange", direction: 'Inbound', time: '10:00',
+        summary: 'via Heacham, Sedgeford, Docking, Bircham, Flitcham, Hillington and QE Hospital',
+        stops: ['Hunstanton Travel Hub', 'Hunstanton Tesco', 'Heacham Tesco', 'Heacham Lavender', 'Sedgeford Church', 'Docking Market Place', 'Bircham Newton Bus Shelter', 'Great Bircham Church Lane', 'Flitcham Church', 'Hillington Ffolkes Arms', 'North Wootton Priory Lane', 'Queen Elizabeth Hospital Bus Shelter', 'Gaywood Clock', 'Gaywood Tesco', "King's Lynn Railway Station", "King's Lynn Transport Interchange"],
+        offsets: [0,4,9,13,21,30,37,41,48,54,62,68,72,74,77,80]
+      },
+      {
+        route: '33A', origin: 'Hunstanton Travel Hub', dest: 'Hunstanton Travel Hub', direction: 'Circular', time: '09:30',
+        summary: 'Hunstanton circular via Tesco, Smithdon, Lighthouse and Cliff Parade',
+        stops: ['Hunstanton Travel Hub', 'Hunstanton Tesco', 'Hunstanton Smithdon High School', 'Old Hunstanton Road', 'Lighthouse Close', 'Cliff Parade', 'Hunstanton Bus Station', 'Hunstanton Travel Hub'],
+        offsets: [0,3,5,8,11,14,17,18]
+      },
+      {
+        route: '34', origin: "King's Lynn Transport Interchange", dest: 'Hunstanton Travel Hub', direction: 'Outbound', time: '09:15',
+        summary: 'via QE Hospital, Dersingham, Snettisham and Heacham',
+        stops: ["King's Lynn Transport Interchange", "King's Lynn Railway Station", 'Kettlewell Lane', 'Gaywood Tesco', 'Gaywood Clock', 'Queen Elizabeth Hospital Bus Shelter', 'Castle Rising The Lodge', 'Dersingham Manor Road', 'Dersingham Viceroy Close', 'Dersingham Thaxters', 'Snettisham Station Road', 'Snettisham Common Road', 'Heacham Lavender', 'Heacham Jennings Close', 'Heacham Fox & Hound', 'Hunstanton Tudor Crescent', 'Hunstanton Tesco', 'Hunstanton Travel Hub'],
+        offsets: [0,2,4,6,8,11,16,24,25,27,31,33,37,41,44,49,51,56]
+      },
+      {
+        route: '35', origin: "King's Lynn Transport Interchange", dest: 'Hunstanton Travel Hub', direction: 'Outbound', time: '10:15',
+        summary: 'via Sandringham, Dersingham, Snettisham and Heacham',
+        stops: ["King's Lynn Transport Interchange", "King's Lynn Railway Station", 'Gaywood Tesco', 'Gaywood Clock', 'South Wootton Church Lane', 'North Wootton Priory Lane', 'Castle Rising The Lodge', 'Sandringham Visitor Centre', 'Dersingham Manor Road', 'Dersingham Viceroy Close', 'Dersingham Thaxters', 'Snettisham Station Road', 'Snettisham Common Road', 'Heacham Lavender', 'Heacham Jennings Close', 'Heacham Fox & Hound', 'Hunstanton Tudor Crescent', 'Hunstanton Tesco', 'Hunstanton Travel Hub'],
+        offsets: [0,2,5,7,12,15,20,26,32,33,35,39,41,45,49,52,57,59,64]
+      },
+      {
+        route: '36', origin: "King's Lynn Transport Interchange", dest: 'Fakenham Oak Street', direction: 'Outbound', time: '09:26',
+        summary: 'Coastliner via Hunstanton, Brancaster, Burnham Market, Holkham, Wells and Walsingham',
+        stops: ["King's Lynn Transport Interchange", "King's Lynn Railway Station", 'Kettlewell Lane', 'Gaywood Tesco', 'Gaywood Clock', 'Queen Elizabeth Hospital Bus Shelter', 'Castle Rising The Lodge', 'Dersingham Manor Road', 'Dersingham Viceroy Close', 'Dersingham Thaxters', 'Snettisham Station Road', 'Snettisham Common Road', 'Heacham Lavender', 'Heacham Jennings Close', 'Heacham Fox & Hound', 'Hunstanton Tudor Crescent', 'Hunstanton Tesco', 'Hunstanton Travel Hub', 'Old Hunstanton Post Office', 'Holme The Street', 'Thornham Orange Tree', 'Titchwell Manor Road', 'Brancaster Ship Hotel', 'Brancaster Staithe Jolly Sailors', 'Burnham Deepdale Petrol Station', 'Burnham Market The Green', 'Burnham Overy Staithe Hero', 'Holkham Victoria', 'Wells The Buttlands', 'Wells Freeman Street', 'Wighton Carpenters Arms', 'Walsingham The Bull', 'Houghton St Giles', 'East Barsham White Horse', 'Fakenham Oak Street'],
+        offsets: [0,2,4,6,8,11,16,24,25,27,31,33,37,41,44,49,51,56,62,68,75,80,85,89,93,102,108,116,124,127,135,142,147,153,162]
+      },
+      {
+        route: '37', origin: "King's Lynn Transport Interchange", dest: 'Downham Market Railway Station', direction: 'Outbound', time: '08:25',
+        summary: 'via Hardwick Retail Park, West Winch, Watlington, Hilgay, Southery and Ten Mile Bank',
+        stops: ["King's Lynn Transport Interchange", 'Southgates', 'Hardwick Tesco', 'Hardwick Retail Park', 'West Winch Church', 'Setchey Bus Shelter', 'Runcton Holme Post Office', 'Watlington Station Road', 'Watlington Angel', 'Hilgay Bus Shelter', 'Southery Bus Shelter', 'Ten Mile Bank', 'Denver Sluice', 'Downham Market Railway Station'],
+        offsets: [0,3,7,9,14,18,23,28,30,38,45,52,58,63]
+      },
+      {
+        route: '38', origin: "King's Lynn Transport Interchange", dest: 'Fair Green', direction: 'Outbound', time: '10:00',
+        summary: 'via Southgates, Hardwick and West Winch',
+        stops: ["King's Lynn Transport Interchange", 'Southgates', 'Hardwick Tesco', 'Hardwick Retail Park', 'West Winch Church', 'Fair Green'],
+        offsets: [0,3,7,9,14,20]
+      },
+      {
+        route: '39', origin: "King's Lynn Transport Interchange", dest: 'Marham', direction: 'Outbound', time: '07:45',
+        summary: 'via Hardwick, West Winch, Setchey, Tottenhill, Wormegay and Shouldham',
+        stops: ["King's Lynn Transport Interchange", 'Southgates', 'Hardwick Retail Park', 'West Winch Church', 'Setchey Bus Shelter', 'Tottenhill Row', 'Wormegay Bus Shelter', 'Shouldham', 'Marham Village'],
+        offsets: [0,3,8,14,18,23,31,39,47]
+      },
+      {
+        route: '41', origin: "King's Lynn Transport Interchange", dest: "King's Reach", direction: 'Outbound', time: '08:10',
+        summary: 'via Gaywood and QE Hospital',
+        stops: ["King's Lynn Transport Interchange", "King's Lynn Railway Station", 'Kettlewell Lane', 'Gaywood Tesco', 'Gaywood Clock', 'Queen Elizabeth Hospital Bus Shelter', 'Fairstead Centre', "King's Reach"],
+        offsets: [0,2,4,6,8,12,17,22]
+      },
+      {
+        route: '42', origin: "King's Lynn Transport Interchange", dest: 'Fairstead', direction: 'Outbound', time: '08:30',
+        summary: 'via Gaywood',
+        stops: ["King's Lynn Transport Interchange", "King's Lynn Railway Station", 'Kettlewell Lane', 'Gaywood Tesco', 'Gaywood Clock', 'Fairstead Centre'],
+        offsets: [0,2,4,6,8,14]
+      },
+      {
+        route: '43', origin: "King's Lynn Transport Interchange", dest: 'North Wootton', direction: 'School', time: '07:30',
+        summary: 'school route via Gaywood, South Wootton and North Wootton',
+        stops: ["King's Lynn Transport Interchange", 'Gaywood Clock', 'Queen Elizabeth Hospital Bus Shelter', 'South Wootton Church Lane', 'North Wootton Priory Lane'],
+        offsets: [0,7,12,18,22]
+      },
+      {
+        route: '44', origin: "King's Lynn Transport Interchange", dest: "King's Lynn Transport Interchange", direction: 'Loop', time: '10:10',
+        summary: 'the loop via South Wootton, Knights Hill, QE Hospital, Gaywood and Hardwick',
+        stops: ["King's Lynn Transport Interchange", 'Austin Fields', 'Retail Park', 'Bergen Way', 'Hamburg Way', 'St James Medical Practice', 'South Wootton Church Lane', "Knight's Hill", 'Queen Elizabeth Hospital Bus Shelter', 'Gaywood Clock', 'Gaywood Tesco', 'Hardwick Tesco', 'Paxman Road', 'Hardwick Retail Park', 'Queen Elizabeth Hospital Bus Shelter', 'Gaywood Clock', "King's Lynn Railway Station", "King's Lynn Transport Interchange"],
+        offsets: [0,1,3,4,5,6,8,11,17,21,23,25,27,30,36,41,46,50]
+      },
+      {
+        route: '46/X46', origin: "King's Lynn Transport Interchange", dest: 'Wisbech Bus Station', direction: 'Outbound', time: '08:05',
+        summary: 'via Saddlebow, Islington, Terrington St John, Tilney St Lawrence and West Walton',
+        stops: ["King's Lynn Transport Interchange", 'South Lynn', 'Saddlebow Industrial Estate', 'Islington Church', 'Terrington St John', 'Tilney St Lawrence', 'West Walton Church', 'Wisbech Horsefair', 'Wisbech Bus Station'],
+        offsets: [0,4,9,16,24,32,40,48,50]
+      },
+      {
+        route: '48/49/49A', origin: "King's Lynn Transport Interchange", dest: 'Fakenham Oak Street', direction: 'Outbound', time: '09:05',
+        summary: 'via QE Hospital, Grimston, Gayton, Great Massingham and The Rudhams',
+        stops: ["King's Lynn Transport Interchange", "King's Lynn Railway Station", 'Gaywood Tesco', 'Gaywood Clock', 'Queen Elizabeth Hospital Bus Shelter', 'Grimston Church', 'Gayton Crown', 'Great Massingham Green', 'Harpley Bus Shelter', 'West Rudham', 'East Rudham Green', 'Fakenham Oak Street'],
+        offsets: [0,2,5,7,11,23,31,40,47,56,60,72]
+      },
+      {
+        route: '54', origin: "King's Lynn Transport Interchange", dest: 'The Walpoles', direction: 'Outbound', time: '09:40',
+        summary: 'via South Lynn, West Lynn, Clenchwarton, Terrington St Clement and Tilney All Saints',
+        stops: ["King's Lynn Transport Interchange", 'South Lynn', 'West Lynn Ferry Square', 'Clenchwarton Church', 'Terrington St Clement Churchgate Way', 'Tilney All Saints', 'Walpole Cross Keys', 'Walpole St Peter', 'The Walpoles'],
+        offsets: [0,4,9,16,24,33,41,47,52]
+      },
+      {
+        route: '54A', origin: "King's Lynn Transport Interchange", dest: 'Terrington High School', direction: 'School', time: '07:25',
+        summary: 'schooldays via South Lynn, West Lynn, Clenchwarton and Terrington St Clement',
+        stops: ["King's Lynn Transport Interchange", 'South Lynn', 'West Lynn Ferry Square', 'Clenchwarton Church', 'Terrington St Clement Churchgate Way', 'Terrington High School'],
+        offsets: [0,4,9,16,24,31]
+      },
+      {
+        route: '60', origin: 'Wisbech Bus Station', dest: 'Downham Market Railway Station', direction: 'Outbound', time: '08:55',
+        summary: 'via Emneth, Outwell, Upwell, Three Holes, Nordelph and Denver',
+        stops: ['Wisbech Bus Station', 'Emneth Village', 'Outwell Church', 'Upwell Church', 'Three Holes', 'Nordelph', 'Denver Sluice', 'Downham Market Railway Station'],
+        offsets: [0,8,16,22,29,36,45,52]
+      },
+      {
+        route: '414/415', origin: 'Dersingham Manor Road', dest: 'Alderman Peel High School', direction: 'School', time: '07:35',
+        summary: 'schooldays via Snettisham, Heacham, Sedgeford, Docking, Burnham Market and Wells',
+        stops: ['Dersingham Manor Road', 'Snettisham Station Road', 'Heacham Fox & Hound', 'Sedgeford Church', 'Docking Market Place', 'Burnham Market The Green', 'Wells Freeman Street', 'Alderman Peel High School'],
+        offsets: [0,7,14,22,31,43,55,60]
+      },
+      {
+        route: '48A', origin: 'Middleton', dest: 'Springwood High School', direction: 'School', time: '07:40',
+        summary: 'schooldays via East Winch, Ashwicken and Gayton',
+        stops: ['Middleton', 'East Winch', 'Ashwicken', 'Gayton Crown', 'Springwood High School'],
+        offsets: [0,6,12,20,32]
+      }
     ];
 
     const LYNX_FLEET = [
@@ -2116,42 +2219,31 @@ Hunstanton Bus Station</textarea>
     // Live running system. Uses browser GPS when available. Timings are calculated from the accepted trip departure
     // and stop offsets. Replace the minute offsets with exact timetable minutes if you want exact public timetable timing points.
     const STOP_COORDS = {
-      "King's Lynn Bus Station": [52.7539, 0.3956], "King's Lynn": [52.7539, 0.3956],
-      'Gaywood': [52.7628, 0.4260], 'Gaywood Tesco': [52.7589, 0.4253],
-      'QE Hospital Travel Hub': [52.7567, 0.4468], 'Queen Elizabeth Hospital': [52.7567, 0.4468],
-      'South Wootton': [52.7778, 0.4298], 'North Wootton': [52.7930, 0.4375],
-      'Knights Hill': [52.7842, 0.4550], 'Castle Reach': [52.7377, 0.4186],
-      'Hardwick Retail Park': [52.7389, 0.4228], 'Southgates': [52.7469, 0.4019],
-      'Sandringham': [52.8288, 0.5056], 'Dersingham': [52.8454, 0.5031],
-      'Snettisham': [52.8787, 0.5003], 'Heacham': [52.9075, 0.4933],
-      'Hunstanton Bus Station': [52.9403, 0.4894], 'Hunstanton': [52.9403, 0.4894],
-      'Hunstanton Tesco': [52.9329, 0.4941], 'Cliff Parade': [52.9441, 0.4874],
-      'Lighthouse Close': [52.9518, 0.4968], 'Old Hunstanton Road': [52.9476, 0.4941],
-      'Old Hunstanton': [52.9600, 0.5100], 'Holme': [52.9633, 0.5423],
-      'Thornham': [52.9590, 0.5835], 'Titchwell': [52.9619, 0.6278],
-      'Brancaster': [52.9631, 0.6401], 'Brancaster Staithe': [52.9640, 0.6822],
-      'Burnham Deepdale': [52.9655, 0.7138], 'Burnham Market': [52.9454, 0.7273],
-      'Burnham Overy Staithe': [52.9630, 0.7468], 'Holkham': [52.9496, 0.8037],
-      'Wells-next-the-Sea': [52.9546, 0.8524], 'Wighton': [52.9198, 0.8879],
-      'Walsingham': [52.8946, 0.8734], 'Houghton St Giles': [52.8822, 0.8555],
-      'East Barsham': [52.8602, 0.8505], 'Fakenham': [52.8306, 0.8494],
-      'Hillington': [52.8235, 0.5484], 'Flitcham': [52.8110, 0.5663], 'Great Bircham': [52.8627, 0.6249],
-      'Bircham Newton': [52.8757, 0.6294], 'Docking': [52.9027, 0.6247], 'Sedgeford': [52.8996, 0.5457],
-      'West Winch': [52.7104, 0.4073], 'Setchey': [52.6884, 0.3918], 'Runcton Holme': [52.6587, 0.3850],
-      'Watlington': [52.6739, 0.3831], 'Hilgay': [52.5588, 0.3906], 'Southery': [52.5296, 0.3860],
-      'Ten Mile Bank': [52.5353, 0.3387], 'Downham Market': [52.6029, 0.3787],
-      'Shouldham': [52.6507, 0.4744], 'Marham': [52.6598, 0.5462],
-      'Fairstead': [52.7648, 0.4493], "King's Reach": [52.7762, 0.4611],
-      'Saddlebow': [52.7148, 0.3752], 'Islington': [52.7167, 0.3150], 'Terrington St John': [52.7052, 0.2787],
-      'Tilney St Lawrence': [52.7115, 0.2475], 'West Walton': [52.6970, 0.1790], 'Wisbech Bus Station': [52.6658, 0.1590],
-      'Grimston': [52.7764, 0.5495], 'Gayton': [52.7416, 0.5487], 'Great Massingham': [52.7759, 0.6602],
-      'Harpley': [52.8026, 0.6541], 'The Rudhams': [52.8000, 0.7450],
-      'South Lynn': [52.7431, 0.3923], 'West Lynn': [52.7523, 0.3837], 'Clenchwarton': [52.7563, 0.3568],
-      'Terrington St Clement': [52.7576, 0.2934], 'Tilney All Saints': [52.7314, 0.2637], 'The Walpoles': [52.7319, 0.2230],
-      'Terrington High School': [52.7480, 0.2924], 'Emneth': [52.6422, 0.2089], 'Outwell': [52.6068, 0.2339],
-      'Upwell': [52.5984, 0.2213], 'Three Holes': [52.5792, 0.2463], 'Nordelph': [52.5875, 0.2938], 'Denver': [52.5885, 0.3782],
-      'Alderman Peel High School': [52.9556, 0.8520], 'Middleton': [52.7245, 0.4632], 'East Winch': [52.7192, 0.5050],
-      'Ashwicken': [52.7452, 0.4941], 'Springwood High School': [52.7666, 0.4450]
+      "King's Lynn": [52.7539, 0.3956], "King's Lynn Bus Station": [52.7539, 0.3956], "King's Lynn Transport Interchange": [52.7539, 0.3956], "King's Lynn Railway Station": [52.7542, 0.4030],
+      'Kettlewell Lane': [52.7580, 0.4108], 'Austin Fields': [52.7553, 0.4115], 'Retail Park': [52.7557, 0.4218], 'Bergen Way': [52.7580, 0.4294], 'Hamburg Way': [52.7591, 0.4344], 'St James Medical Practice': [52.7572, 0.4068],
+      'Gaywood': [52.7628, 0.4260], 'Gaywood Tesco': [52.7589, 0.4253], 'Gaywood Clock': [52.7605, 0.4331],
+      'QE Hospital Travel Hub': [52.7567, 0.4468], 'Queen Elizabeth Hospital': [52.7567, 0.4468], 'Queen Elizabeth Hospital Bus Shelter': [52.7567, 0.4468],
+      'South Wootton': [52.7778, 0.4298], 'South Wootton Church Lane': [52.7778, 0.4298], 'North Wootton': [52.7930, 0.4375], 'North Wootton Priory Lane': [52.7930, 0.4375], "Knight's Hill": [52.7842, 0.4550], 'Knights Hill': [52.7842, 0.4550],
+      'Castle Reach': [52.7377, 0.4186], 'Hardwick Retail Park': [52.7389, 0.4228], 'Hardwick Tesco': [52.7389, 0.4228], 'Paxman Road': [52.7398, 0.4210], 'Southgates': [52.7469, 0.4019],
+      'Castle Rising The Lodge': [52.7937, 0.4695], 'Sandringham': [52.8288, 0.5056], 'Sandringham Visitor Centre': [52.8288, 0.5056],
+      'Dersingham': [52.8454, 0.5031], 'Dersingham Manor Road': [52.8454, 0.5031], 'Dersingham Viceroy Close': [52.8466, 0.5037], 'Dersingham Thaxters': [52.8488, 0.5045],
+      'Snettisham': [52.8787, 0.5003], 'Snettisham Station Road': [52.8787, 0.5003], 'Snettisham Common Road': [52.8815, 0.5001],
+      'Heacham': [52.9075, 0.4933], 'Heacham Lavender': [52.9007, 0.4977], 'Heacham Jennings Close': [52.9087, 0.4936], 'Heacham Fox & Hound': [52.9117, 0.4916], 'Heacham Tesco': [52.9102, 0.4925],
+      'Hunstanton': [52.9403, 0.4894], 'Hunstanton Bus Station': [52.9403, 0.4894], 'Hunstanton Travel Hub': [52.9403, 0.4894], 'Hunstanton Tudor Crescent': [52.9312, 0.4925], 'Hunstanton Tesco': [52.9329, 0.4941], 'Hunstanton Smithdon High School': [52.9335, 0.4983], 'Cliff Parade': [52.9441, 0.4874], 'Lighthouse Close': [52.9518, 0.4968], 'Old Hunstanton Road': [52.9476, 0.4941],
+      'Old Hunstanton': [52.9600, 0.5100], 'Old Hunstanton Post Office': [52.9600, 0.5100], 'Holme': [52.9633, 0.5423], 'Holme The Street': [52.9633, 0.5423], 'Thornham': [52.9590, 0.5835], 'Thornham Orange Tree': [52.9590, 0.5835], 'Titchwell': [52.9619, 0.6278], 'Titchwell Manor Road': [52.9619, 0.6278],
+      'Brancaster': [52.9631, 0.6401], 'Brancaster Ship Hotel': [52.9631, 0.6401], 'Brancaster Staithe': [52.9640, 0.6822], 'Brancaster Staithe Jolly Sailors': [52.9640, 0.6822], 'Burnham Deepdale': [52.9655, 0.7138], 'Burnham Deepdale Petrol Station': [52.9655, 0.7138],
+      'Burnham Market': [52.9454, 0.7273], 'Burnham Market The Green': [52.9454, 0.7273], 'Burnham Overy Staithe': [52.9630, 0.7468], 'Burnham Overy Staithe Hero': [52.9630, 0.7468], 'Holkham': [52.9496, 0.8037], 'Holkham Victoria': [52.9496, 0.8037],
+      'Wells-next-the-Sea': [52.9546, 0.8524], 'Wells The Buttlands': [52.9546, 0.8524], 'Wells Freeman Street': [52.9556, 0.8520], 'Wighton': [52.9198, 0.8879], 'Wighton Carpenters Arms': [52.9198, 0.8879], 'Walsingham': [52.8946, 0.8734], 'Walsingham The Bull': [52.8946, 0.8734],
+      'Houghton St Giles': [52.8822, 0.8555], 'East Barsham': [52.8602, 0.8505], 'East Barsham White Horse': [52.8602, 0.8505], 'Fakenham': [52.8306, 0.8494], 'Fakenham Oak Street': [52.8306, 0.8494],
+      'Hillington': [52.8235, 0.5484], 'Hillington Ffolkes Arms': [52.8235, 0.5484], 'Flitcham': [52.8110, 0.5663], 'Flitcham Church': [52.8110, 0.5663], 'Great Bircham': [52.8627, 0.6249], 'Great Bircham Church Lane': [52.8627, 0.6249], 'Bircham Newton': [52.8757, 0.6294], 'Bircham Newton Bus Shelter': [52.8757, 0.6294], 'Docking': [52.9027, 0.6247], 'Docking Market Place': [52.9027, 0.6247], 'Sedgeford': [52.8996, 0.5457], 'Sedgeford Church': [52.8996, 0.5457],
+      'West Winch': [52.7104, 0.4073], 'West Winch Church': [52.7104, 0.4073], 'Setchey': [52.6884, 0.3918], 'Setchey Bus Shelter': [52.6884, 0.3918], 'Runcton Holme': [52.6587, 0.3850], 'Runcton Holme Post Office': [52.6587, 0.3850], 'Watlington': [52.6739, 0.3831], 'Watlington Station Road': [52.6739, 0.3831], 'Watlington Angel': [52.6739, 0.3831], 'Hilgay': [52.5588, 0.3906], 'Hilgay Bus Shelter': [52.5588, 0.3906], 'Southery': [52.5296, 0.3860], 'Southery Bus Shelter': [52.5296, 0.3860], 'Ten Mile Bank': [52.5353, 0.3387], 'Denver': [52.5885, 0.3782], 'Denver Sluice': [52.5885, 0.3782], 'Downham Market': [52.6029, 0.3787], 'Downham Market Railway Station': [52.6029, 0.3787],
+      'Tottenhill Row': [52.6813, 0.4420], 'Shouldham': [52.6507, 0.4744], 'Marham': [52.6598, 0.5462], 'Marham Village': [52.6598, 0.5462], 'Wormegay Bus Shelter': [52.6750, 0.4650],
+      'Fairstead': [52.7648, 0.4493], 'Fairstead Centre': [52.7648, 0.4493], "King's Reach": [52.7762, 0.4611],
+      'Saddlebow': [52.7148, 0.3752], 'Saddlebow Industrial Estate': [52.7148, 0.3752], 'Islington': [52.7167, 0.3150], 'Islington Church': [52.7167, 0.3150], 'Terrington St John': [52.7052, 0.2787], 'Tilney St Lawrence': [52.7115, 0.2475], 'West Walton': [52.6970, 0.1790], 'West Walton Church': [52.6970, 0.1790], 'Wisbech Horsefair': [52.6648, 0.1602], 'Wisbech Bus Station': [52.6658, 0.1590],
+      'Grimston': [52.7764, 0.5495], 'Grimston Church': [52.7764, 0.5495], 'Gayton': [52.7416, 0.5487], 'Gayton Crown': [52.7416, 0.5487], 'Great Massingham': [52.7759, 0.6602], 'Great Massingham Green': [52.7759, 0.6602], 'Harpley': [52.8026, 0.6541], 'Harpley Bus Shelter': [52.8026, 0.6541], 'The Rudhams': [52.8000, 0.7450], 'West Rudham': [52.8060, 0.7150], 'East Rudham Green': [52.8050, 0.7390],
+      'South Lynn': [52.7431, 0.3923], 'West Lynn': [52.7523, 0.3837], 'West Lynn Ferry Square': [52.7523, 0.3837], 'Clenchwarton': [52.7563, 0.3568], 'Clenchwarton Church': [52.7563, 0.3568], 'Terrington St Clement': [52.7576, 0.2934], 'Terrington St Clement Churchgate Way': [52.7576, 0.2934], 'Tilney All Saints': [52.7314, 0.2637], 'The Walpoles': [52.7319, 0.2230], 'Walpole Cross Keys': [52.7350, 0.2200], 'Walpole St Peter': [52.7330, 0.2380], 'Terrington High School': [52.7480, 0.2924],
+      'Emneth': [52.6422, 0.2089], 'Emneth Village': [52.6422, 0.2089], 'Outwell': [52.6068, 0.2339], 'Outwell Church': [52.6068, 0.2339], 'Upwell': [52.5984, 0.2213], 'Upwell Church': [52.5984, 0.2213], 'Three Holes': [52.5792, 0.2463], 'Nordelph': [52.5875, 0.2938],
+      'Alderman Peel High School': [52.9556, 0.8520], 'Middleton': [52.7245, 0.4632], 'East Winch': [52.7192, 0.5050], 'Ashwicken': [52.7452, 0.4941], 'Springwood High School': [52.7666, 0.4450]
     };
 
     let currentTripSchedule = [];
@@ -2235,15 +2327,37 @@ Hunstanton Bus Station</textarea>
       return R * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
     }
 
+    function findPresetForSetup(setup) {
+      const route = String(setup.route || '').trim();
+      return LYNX_ROUTE_PRESETS.find(function (p) {
+        return String(p.route || '').trim() === route && Array.isArray(p.stops);
+      }) || null;
+    }
+
     function buildTripSchedule(setup) {
       const dep = minutesFromTime(setup.time);
       const routeStops = uniqueRoutePoints([setup.origin].concat(setup.parsedStops, [setup.dest]));
+      const preset = findPresetForSetup(setup);
+      const offsetMap = {};
+
+      if (preset && Array.isArray(preset.offsets) && preset.offsets.length === preset.stops.length) {
+        preset.stops.forEach(function (stop, index) {
+          if (offsetMap[stop] === undefined) offsetMap[stop] = preset.offsets[index];
+        });
+      }
+
+      let baseOffset = offsetMap[routeStops[0]];
+      if (baseOffset === undefined) baseOffset = 0;
       let elapsed = 0;
+
       return routeStops.map(function (stop, index) {
-        if (index > 0) {
+        let offset = offsetMap[stop];
+        if (offset !== undefined) {
+          elapsed = Math.max(0, offset - baseOffset);
+        } else if (index > 0) {
           const prev = routeStops[index - 1];
           const metres = distanceMetres(STOP_COORDS[prev], STOP_COORDS[stop]);
-          const guessed = isFinite(metres) ? Math.max(2, Math.min(12, Math.round((metres / 1000) * 2.4))) : 4;
+          const guessed = isFinite(metres) ? Math.max(1, Math.min(10, Math.round((metres / 1000) * 2.4))) : 3;
           elapsed += guessed;
         }
         return { stop: stop, minutes: dep + elapsed, time: formatTimeFromMinutes(dep + elapsed), index: index };
