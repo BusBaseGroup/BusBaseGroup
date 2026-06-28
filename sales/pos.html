@@ -2,313 +2,370 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>In-Person Sales POS</title>
+<title>Shop EPOS Till</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
 *{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:#101418;
-  color:white;
-}
-header{
-  background:#171d24;
-  padding:16px 22px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-button{
-  border:0;
-  border-radius:10px;
-  padding:12px 16px;
-  cursor:pointer;
-  font-weight:bold;
-}
-.main{
-  display:grid;
-  grid-template-columns:1fr 380px;
-  gap:20px;
-  padding:20px;
-}
-.products{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
-  gap:14px;
-}
-.product{
-  background:#1b232c;
-  padding:18px;
-  border-radius:16px;
-  cursor:pointer;
-  border:1px solid #2b3540;
-}
-.product:hover{background:#26313d}
-.product h3{margin:0 0 10px}
-.product p{margin:0;color:#9fb0c0}
-.cart{
-  background:#171d24;
-  border-radius:18px;
-  padding:18px;
-}
-.cart-item{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-  border-bottom:1px solid #2b3540;
-  padding:10px 0;
-}
-.total{
-  font-size:32px;
-  font-weight:bold;
-  margin:20px 0;
-}
-.actions{
-  display:grid;
-  gap:10px;
-}
-.pay{background:#2ecc71}
-.cash{background:#3498db}
-.clear{background:#e74c3c;color:white}
-.display{background:#f1c40f}
-input{
-  width:100%;
-  padding:12px;
-  border-radius:10px;
-  border:0;
-  margin:8px 0;
-  font-size:16px;
-}
-.customer-screen{
-  min-height:100vh;
-  display:flex;
-  flex-direction:column;
-  justify-content:space-between;
-  padding:40px;
-  background:#080b0f;
-}
-.customer-list{
-  font-size:28px;
-}
-.customer-item{
-  display:flex;
-  justify-content:space-between;
-  border-bottom:1px solid #333;
-  padding:14px 0;
-}
-.customer-total{
-  font-size:64px;
-  font-weight:bold;
-  text-align:right;
-}
-.thankyou{
-  font-size:46px;
-  text-align:center;
-  color:#2ecc71;
-}
-@media(max-width:800px){
-  .main{grid-template-columns:1fr}
-}
+body{margin:0;font-family:Arial,sans-serif;background:#0d1117;color:#f5f7fa}
+button,input,select{font:inherit}
+button{border:0;border-radius:12px;padding:13px;cursor:pointer;font-weight:800}
+.top{height:70px;background:#151b24;display:flex;justify-content:space-between;align-items:center;padding:0 22px;border-bottom:1px solid #2b3442}
+.top h1{margin:0;font-size:24px}
+.grid{display:grid;grid-template-columns:230px 1fr 430px;gap:14px;padding:14px}
+.card{background:#151b24;border:1px solid #2b3442;border-radius:18px;padding:14px}
+.cats button{display:block;width:100%;margin-bottom:9px;background:#202a36;color:#fff;text-align:left}
+.cats button.active{background:#1f8cff}
+.search{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+input,select{width:100%;background:#0d1117;color:white;border:1px solid #344052;border-radius:12px;padding:13px}
+.products{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:10px}
+.product{background:#202a36;border:1px solid #344052;color:white;min-height:115px;text-align:left}
+.product:hover{background:#2b3848}
+.product strong{display:block;font-size:17px}
+.product span{display:block;color:#9fb2c8;margin-top:10px;font-size:22px}
+.basket-item{display:grid;grid-template-columns:1fr auto;gap:8px;padding:10px 0;border-bottom:1px solid #2b3442}
+.qty{display:flex;gap:6px;margin-top:7px}
+.qty button{padding:6px 10px;background:#344052;color:white}
+.totalBox{background:#061b14;border:1px solid #1cc77a;border-radius:16px;padding:14px;margin:12px 0}
+.bigTotal{font-size:42px;font-weight:900;color:#1cc77a}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cash{background:#1cc77a}
+.cardpay{background:#1f8cff;color:white}
+.danger{background:#ff4d4d;color:white}
+.warn{background:#ffb020}
+.dark{background:#344052;color:white}
+.good{color:#1cc77a;font-size:34px;font-weight:900}
+.bad{color:#ff4d4d;font-size:22px;font-weight:900}
+.receipt{background:#fff;color:#111;padding:18px;border-radius:12px;font-family:monospace;white-space:pre-wrap;max-height:340px;overflow:auto}
+.customer-screen{min-height:100vh;background:#071018;color:white;display:grid;grid-template-rows:auto 1fr auto}
+.customer-head{background:#101b27;padding:32px}
+.customer-head h1{font-size:42px;margin:0}
+.customer-items{padding:35px;font-size:28px}
+.customer-row{display:flex;justify-content:space-between;border-bottom:1px solid #344052;padding:14px 0}
+.customer-foot{background:#101b27;padding:35px;display:flex;justify-content:space-between;align-items:end}
+.customer-total{font-size:70px;font-weight:900;color:#1cc77a}
+@media(max-width:900px){.grid{grid-template-columns:1fr}.search{grid-template-columns:1fr}}
 </style>
 </head>
-
 <body>
 
-<div id="staffApp">
-<header>
-  <h1>Sales Till</h1>
-  <button class="display" onclick="openCustomerDisplay()">Open Customer Display</button>
+<div id="staff">
+<header class="top">
+  <div>
+    <h1>Shop EPOS Till</h1>
+    <small>Retail sales • same-computer customer display</small>
+  </div>
+  <button class="warn" onclick="openCustomer()">Open Customer Display</button>
 </header>
 
-<div class="main">
-  <section>
-    <h2>Products</h2>
+<div class="grid">
+  <aside class="card cats">
+    <h2>Categories</h2>
+    <button class="active" onclick="setCat('All',this)">All Items</button>
+    <button onclick="setCat('Drinks',this)">Drinks</button>
+    <button onclick="setCat('Sweets',this)">Sweets</button>
+    <button onclick="setCat('Snacks',this)">Snacks</button>
+    <button onclick="setCat('Toys',this)">Toys</button>
+    <button onclick="setCat('Other',this)">Other</button>
+
+    <h2>Sale Tools</h2>
+    <button class="dark" onclick="parkSale()">Park Sale</button>
+    <button class="dark" onclick="resumeSale()">Resume Sale</button>
+    <button class="danger" onclick="clearSale()">Void Sale</button>
+    <button class="warn" onclick="openDrawer()">Open Cash Drawer</button>
+  </aside>
+
+  <main class="card">
+    <div class="search">
+      <input id="search" placeholder="Search product..." oninput="renderProducts()">
+      <input id="barcode" placeholder="Scan / type barcode" onkeydown="scanBarcode(event)">
+    </div>
+
+    <h2 id="catTitle">All Items</h2>
     <div class="products" id="products"></div>
 
-    <h2>Add Custom Item</h2>
-    <input id="customName" placeholder="Item name">
-    <input id="customPrice" type="number" step="0.01" placeholder="Price">
-    <button onclick="addCustomItem()">Add Item</button>
-  </section>
+    <h2>Custom Item</h2>
+    <div class="search">
+      <input id="customName" placeholder="Item name">
+      <input id="customPrice" type="number" step="0.01" placeholder="Price">
+    </div>
+    <button class="cardpay" onclick="addCustom()">Add Custom Item</button>
+  </main>
 
-  <aside class="cart">
-    <h2>Current Sale</h2>
-    <div id="cartItems"></div>
-    <div class="total" id="total">£0.00</div>
+  <aside class="card">
+    <h2>Basket</h2>
+    <div id="basket"></div>
+
+    <div class="totalBox">
+      <small>Amount Due</small>
+      <div class="bigTotal" id="total">£0.00</div>
+    </div>
+
+    <label>Discount</label>
+    <select id="discountType" onchange="renderBasket()">
+      <option value="none">No discount</option>
+      <option value="percent">Percentage %</option>
+      <option value="money">Money off £</option>
+    </select>
+    <input id="discountValue" type="number" step="0.01" placeholder="Discount amount" oninput="renderBasket()">
+
+    <h2>Cash Payment</h2>
+    <input id="cashTendered" type="number" step="0.01" placeholder="Enter cash tendered" oninput="renderBasket()">
+    <p>Change:</p>
+    <div id="change" class="good">£0.00</div>
+    <div id="cashWarn"></div>
 
     <div class="actions">
-      <button class="cash" onclick="completeSale('Cash')">Pay Cash</button>
-      <button class="pay" onclick="completeSale('Card')">Pay Card</button>
-      <button class="clear" onclick="clearCart()">Clear Sale</button>
+      <button class="cash" onclick="completeSale('Cash')">Complete Cash</button>
+      <button class="cardpay" onclick="completeSale('Card')">Card Payment</button>
+      <button class="dark" onclick="printReceipt()">Print Receipt</button>
+      <button class="danger" onclick="clearSale()">Clear</button>
     </div>
+
+    <h2>Receipt</h2>
+    <div class="receipt" id="receipt">No sale completed yet.</div>
+
+    <h2>Today</h2>
+    <p id="dailyTotals"></p>
   </aside>
 </div>
 </div>
 
-<div id="customerApp" style="display:none"></div>
+<div id="customer" style="display:none"></div>
 
 <script>
-const products = [
-  { name:"Single Ride", price:3.00 },
-  { name:"Child Ride", price:2.00 },
-  { name:"Family Ticket", price:10.00 },
-  { name:"Prize Game", price:2.50 },
-  { name:"Large Prize", price:5.00 },
-  { name:"Drink", price:1.50 }
+const productsData=[
+{name:"Can Drink",price:1.50,cat:"Drinks",barcode:"1001"},
+{name:"Bottle Drink",price:2.00,cat:"Drinks",barcode:"1002"},
+{name:"Water",price:1.20,cat:"Drinks",barcode:"1003"},
+{name:"Chocolate Bar",price:1.20,cat:"Sweets",barcode:"2001"},
+{name:"Pick & Mix Bag",price:3.00,cat:"Sweets",barcode:"2002"},
+{name:"Lolly",price:0.50,cat:"Sweets",barcode:"2003"},
+{name:"Crisps",price:1.00,cat:"Snacks",barcode:"3001"},
+{name:"Popcorn",price:2.50,cat:"Snacks",barcode:"3002"},
+{name:"Small Toy",price:2.00,cat:"Toys",barcode:"4001"},
+{name:"Glow Stick",price:1.50,cat:"Toys",barcode:"4002"},
+{name:"Bubble Wand",price:3.50,cat:"Toys",barcode:"4003"},
+{name:"Carrier Bag",price:0.20,cat:"Other",barcode:"5001"}
 ];
 
-let cart = JSON.parse(localStorage.getItem("pos_cart")) || [];
-let lastMessage = localStorage.getItem("pos_message") || "Welcome";
+let cart=JSON.parse(localStorage.getItem("shop_cart"))||[];
+let cat="All";
+let lastReceipt="No sale completed yet.";
 
-function money(n){
-  return "£" + n.toFixed(2);
-}
-
+function money(n){return "£"+Number(n||0).toFixed(2)}
 function save(){
-  localStorage.setItem("pos_cart", JSON.stringify(cart));
-  updateCustomerData();
+  localStorage.setItem("shop_cart",JSON.stringify(cart));
+  localStorage.setItem("shop_due",finalTotal().toFixed(2));
+  localStorage.setItem("shop_cash",document.getElementById("cashTendered")?.value||"");
+  localStorage.setItem("shop_change",changeAmount().toFixed(2));
+  localStorage.setItem("shop_updated",Date.now());
 }
-
+function setCat(c,b){
+  cat=c;
+  document.querySelectorAll(".cats button").forEach(x=>x.classList.remove("active"));
+  b.classList.add("active");
+  document.getElementById("catTitle").textContent=c==="All"?"All Items":c;
+  renderProducts();
+}
 function renderProducts(){
-  const box = document.getElementById("products");
-  box.innerHTML = "";
-  products.forEach(p=>{
-    const div = document.createElement("div");
-    div.className = "product";
-    div.innerHTML = `<h3>${p.name}</h3><p>${money(p.price)}</p>`;
-    div.onclick = () => addItem(p.name, p.price);
-    box.appendChild(div);
+  const q=document.getElementById("search").value.toLowerCase();
+  const box=document.getElementById("products");
+  box.innerHTML="";
+  productsData.filter(p=>(cat==="All"||p.cat===cat)&&p.name.toLowerCase().includes(q)).forEach(p=>{
+    box.innerHTML+=`<button class="product" onclick="addItem('${p.name}',${p.price},'${p.barcode}')">
+      <strong>${p.name}</strong><small>${p.cat} • ${p.barcode}</small><span>${money(p.price)}</span>
+    </button>`;
   });
 }
-
-function addItem(name, price){
-  cart.push({name, price});
-  save();
-  renderCart();
+function addItem(name,price,barcode=""){
+  let found=cart.find(i=>i.name===name&&i.price===price);
+  if(found) found.qty++;
+  else cart.push({name,price,qty:1,barcode});
+  renderBasket();
 }
-
-function addCustomItem(){
-  const name = document.getElementById("customName").value.trim();
-  const price = parseFloat(document.getElementById("customPrice").value);
-
-  if(!name || isNaN(price)) return alert("Enter item name and price");
-
-  addItem(name, price);
-  document.getElementById("customName").value = "";
-  document.getElementById("customPrice").value = "";
+function addCustom(){
+  let n=document.getElementById("customName").value.trim();
+  let p=parseFloat(document.getElementById("customPrice").value);
+  if(!n||isNaN(p))return alert("Enter name and price");
+  addItem(n,p,"CUSTOM");
+  document.getElementById("customName").value="";
+  document.getElementById("customPrice").value="";
 }
-
-function removeItem(index){
-  cart.splice(index,1);
-  save();
-  renderCart();
+function scanBarcode(e){
+  if(e.key!=="Enter")return;
+  let code=e.target.value.trim();
+  let p=productsData.find(x=>x.barcode===code);
+  if(!p)return alert("Barcode not found");
+  addItem(p.name,p.price,p.barcode);
+  e.target.value="";
 }
-
-function total(){
-  return cart.reduce((sum,item)=>sum+item.price,0);
+function subtotal(){return cart.reduce((s,i)=>s+(i.price*i.qty),0)}
+function discount(){
+  let type=document.getElementById("discountType")?.value||"none";
+  let val=parseFloat(document.getElementById("discountValue")?.value)||0;
+  if(type==="percent")return subtotal()*(val/100);
+  if(type==="money")return val;
+  return 0;
 }
-
-function renderCart(){
-  const box = document.getElementById("cartItems");
-  box.innerHTML = "";
-
-  if(cart.length === 0){
-    box.innerHTML = "<p>No items added yet.</p>";
-  }
-
-  cart.forEach((item,i)=>{
-    box.innerHTML += `
-      <div class="cart-item">
-        <span>${item.name}</span>
-        <strong>${money(item.price)}</strong>
-        <button onclick="removeItem(${i})">X</button>
-      </div>
-    `;
-  });
-
-  document.getElementById("total").innerText = money(total());
+function finalTotal(){return Math.max(0,subtotal()-discount())}
+function changeAmount(){
+  let cash=parseFloat(document.getElementById("cashTendered")?.value)||0;
+  return Math.max(0,cash-finalTotal());
 }
-
-function clearCart(){
-  cart = [];
-  lastMessage = "Welcome";
-  localStorage.setItem("pos_message", lastMessage);
-  save();
-  renderCart();
+function qty(i,d){
+  cart[i].qty+=d;
+  if(cart[i].qty<=0)cart.splice(i,1);
+  renderBasket();
 }
-
-function completeSale(method){
-  if(cart.length === 0) return alert("No items in sale");
-
-  lastMessage = `Paid by ${method} - Thank you`;
-  localStorage.setItem("pos_message", lastMessage);
-
-  updateCustomerData();
-
-  setTimeout(()=>{
-    cart = [];
-    lastMessage = "Welcome";
-    localStorage.setItem("pos_message", lastMessage);
-    save();
-    renderCart();
-  }, 3500);
-}
-
-function openCustomerDisplay(){
-  window.open(location.pathname + "#customer", "CustomerDisplay", "width=900,height=600");
-}
-
-function updateCustomerData(){
-  localStorage.setItem("pos_cart", JSON.stringify(cart));
-  localStorage.setItem("pos_total", total().toFixed(2));
-  localStorage.setItem("pos_updated", Date.now());
-}
-
-function renderCustomer(){
-  const app = document.getElementById("customerApp");
-  const customerCart = JSON.parse(localStorage.getItem("pos_cart")) || [];
-  const message = localStorage.getItem("pos_message") || "Welcome";
-  const customerTotal = customerCart.reduce((s,i)=>s+i.price,0);
-
-  app.innerHTML = `
-    <div class="customer-screen">
+function removeItem(i){cart.splice(i,1);renderBasket()}
+function renderBasket(){
+  const box=document.getElementById("basket");
+  box.innerHTML=cart.length?"":"<p>No items in basket.</p>";
+  cart.forEach((i,index)=>{
+    box.innerHTML+=`
+    <div class="basket-item">
       <div>
-        <h1>Customer Display</h1>
-        <div class="customer-list">
-          ${
-            customerCart.length
-            ? customerCart.map(i=>`
-              <div class="customer-item">
-                <span>${i.name}</span>
-                <strong>${money(i.price)}</strong>
-              </div>
-            `).join("")
-            : `<p>${message}</p>`
-          }
+        <strong>${i.name}</strong><br>
+        <small>${money(i.price)} each • ${i.barcode||""}</small>
+        <div class="qty">
+          <button onclick="qty(${index},-1)">−</button>
+          <button>${i.qty}</button>
+          <button onclick="qty(${index},1)">+</button>
+          <button onclick="removeItem(${index})">Void</button>
         </div>
       </div>
+      <strong>${money(i.price*i.qty)}</strong>
+    </div>`;
+  });
+  document.getElementById("total").textContent=money(finalTotal());
+  document.getElementById("change").textContent=money(changeAmount());
 
+  let cash=parseFloat(document.getElementById("cashTendered")?.value)||0;
+  document.getElementById("cashWarn").innerHTML =
+    cash>0 && cash<finalTotal() ? `<p class="bad">Not enough cash</p>` : "";
+
+  save();
+}
+function clearSale(){
+  cart=[];
+  document.getElementById("cashTendered").value="";
+  document.getElementById("discountValue").value="";
+  document.getElementById("discountType").value="none";
+  renderBasket();
+}
+function completeSale(method){
+  if(cart.length===0)return alert("No items in basket");
+  let cash=parseFloat(document.getElementById("cashTendered").value)||0;
+  if(method==="Cash" && cash<finalTotal())return alert("Cash tendered is not enough");
+
+  const sale={
+    time:new Date().toLocaleString(),
+    method,
+    items:[...cart],
+    subtotal:subtotal(),
+    discount:discount(),
+    total:finalTotal(),
+    cash:method==="Cash"?cash:0,
+    change:method==="Cash"?changeAmount():0
+  };
+
+  let sales=JSON.parse(localStorage.getItem("shop_sales"))||[];
+  sales.push(sale);
+  localStorage.setItem("shop_sales",JSON.stringify(sales));
+
+  lastReceipt=makeReceipt(sale);
+  document.getElementById("receipt").textContent=lastReceipt;
+  localStorage.setItem("shop_message","Paid - thank you");
+  updateDaily();
+  clearSale();
+}
+function makeReceipt(s){
+  return `SHOP RECEIPT
+------------------------------
+${s.time}
+
+${s.items.map(i=>`${i.qty}x ${i.name}  ${money(i.price*i.qty)}`).join("\n")}
+
+------------------------------
+Subtotal: ${money(s.subtotal)}
+Discount: ${money(s.discount)}
+Total:    ${money(s.total)}
+Payment:  ${s.method}
+Cash:     ${money(s.cash)}
+Change:   ${money(s.change)}
+------------------------------
+Thank you`;
+}
+function printReceipt(){
+  let w=window.open("");
+  w.document.write(`<pre>${document.getElementById("receipt").textContent}</pre>`);
+  w.print();
+}
+function updateDaily(){
+  let sales=JSON.parse(localStorage.getItem("shop_sales"))||[];
+  let today=new Date().toDateString();
+  let todaySales=sales.filter(s=>new Date(s.time).toDateString()===today);
+  let total=todaySales.reduce((s,i)=>s+i.total,0);
+  let cash=todaySales.filter(s=>s.method==="Cash").reduce((s,i)=>s+i.total,0);
+  let card=todaySales.filter(s=>s.method==="Card").reduce((s,i)=>s+i.total,0);
+  document.getElementById("dailyTotals").innerHTML=
+    `Sales: <b>${todaySales.length}</b><br>Total: <b>${money(total)}</b><br>Cash: <b>${money(cash)}</b><br>Card: <b>${money(card)}</b>`;
+}
+function parkSale(){
+  if(cart.length===0)return alert("No sale to park");
+  localStorage.setItem("parked_sale",JSON.stringify(cart));
+  clearSale();
+  alert("Sale parked");
+}
+function resumeSale(){
+  let parked=JSON.parse(localStorage.getItem("parked_sale"))||[];
+  if(!parked.length)return alert("No parked sale");
+  cart=parked;
+  localStorage.removeItem("parked_sale");
+  renderBasket();
+}
+function openDrawer(){
+  alert("Cash drawer opened. On a real till this would trigger the drawer.");
+}
+function openCustomer(){
+  window.open(location.pathname+"#customer","CustomerDisplay","width=1000,height=700");
+}
+function renderCustomer(){
+  let c=JSON.parse(localStorage.getItem("shop_cart"))||[];
+  let due=parseFloat(localStorage.getItem("shop_due"))||0;
+  let cash=parseFloat(localStorage.getItem("shop_cash"))||0;
+  let change=parseFloat(localStorage.getItem("shop_change"))||0;
+  document.getElementById("customer").innerHTML=`
+  <div class="customer-screen">
+    <div class="customer-head">
+      <h1>Welcome</h1>
+      <p>Your items will appear here</p>
+    </div>
+    <div class="customer-items">
+      ${c.length?c.map(i=>`<div class="customer-row"><span>${i.qty}x ${i.name}</span><strong>${money(i.price*i.qty)}</strong></div>`).join(""):"<p>Please wait for your items to be added.</p>"}
+    </div>
+    <div class="customer-foot">
       <div>
-        ${message.includes("Paid") ? `<div class="thankyou">${message}</div>` : ""}
-        <div class="customer-total">Total: ${money(customerTotal)}</div>
+        <p>Cash Given: ${money(cash)}</p>
+        <p>Change: ${money(change)}</p>
+      </div>
+      <div>
+        <small>Total to pay</small>
+        <div class="customer-total">${money(due)}</div>
       </div>
     </div>
-  `;
+  </div>`;
 }
-
-if(location.hash === "#customer"){
-  document.getElementById("staffApp").style.display = "none";
-  document.getElementById("customerApp").style.display = "block";
+if(location.hash==="#customer"){
+  document.getElementById("staff").style.display="none";
+  document.getElementById("customer").style.display="block";
   renderCustomer();
-  setInterval(renderCustomer, 300);
+  setInterval(renderCustomer,300);
 }else{
   renderProducts();
-  renderCart();
-  updateCustomerData();
+  renderBasket();
+  updateDaily();
 }
 </script>
-
 </body>
 </html>
