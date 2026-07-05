@@ -1,0 +1,2464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Bus Display Control System</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<style>
+:root{
+  --bg:#070b10;
+  --panel:#101720;
+  --panel2:#151f2b;
+  --line:#263647;
+  --text:#f4f7fb;
+  --muted:#9fb1c5;
+  --blue:#1e88ff;
+  --orange:#ff9d00;
+  --yellow:#ffd400;
+  --green:#35e07a;
+  --red:#ef4444;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:radial-gradient(circle at top left,#172535 0,#070b10 42%);
+  color:var(--text);
+  font-family:Inter,Arial,Helvetica,sans-serif;
+}
+
+.topbar{
+  height:64px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:0 22px;
+  background:rgba(10,16,24,.88);
+  border-bottom:1px solid var(--line);
+  backdrop-filter:blur(10px);
+}
+
+.brand{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+}
+
+.brand strong{
+  font-size:18px;
+}
+
+.brand span{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.livePill{
+  padding:8px 12px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  color:var(--muted);
+  background:#0c121a;
+  font-size:13px;
+}
+
+.livePill b{color:var(--red)}
+
+.livePill.on b{color:var(--green)}
+
+.app{
+  display:grid;
+  grid-template-columns:410px 1fr 430px;
+  gap:14px;
+  padding:14px;
+  height:calc(100vh - 64px);
+}
+
+.card{
+  background:linear-gradient(180deg,rgba(21,31,43,.96),rgba(12,18,26,.96));
+  border:1px solid var(--line);
+  border-radius:18px;
+  box-shadow:0 20px 55px rgba(0,0,0,.35);
+  overflow:hidden;
+}
+
+.cardHead{
+  padding:14px 16px;
+  border-bottom:1px solid var(--line);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.cardHead h2{
+  margin:0;
+  font-size:15px;
+  letter-spacing:.3px;
+}
+
+.cardBody{
+  padding:14px;
+}
+
+.stack{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  min-height:0;
+}
+
+.scroll{
+  overflow:auto;
+}
+
+label{
+  display:block;
+  margin:10px 0 6px;
+  font-size:12px;
+  color:var(--muted);
+}
+
+input,select,button{
+  width:100%;
+  border:1px solid #31465d;
+  background:#080d14;
+  color:white;
+  border-radius:10px;
+  padding:11px;
+  font-size:14px;
+  outline:none;
+}
+
+input:focus,select:focus{
+  border-color:var(--blue);
+}
+
+button{
+  border:0;
+  background:var(--blue);
+  font-weight:800;
+  cursor:pointer;
+}
+
+button:hover{filter:brightness(1.08)}
+
+button.dark{background:#263647}
+button.red{background:#a82626}
+button.green{background:#16884a}
+button.orange{background:#b86a00}
+
+.grid2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.grid3{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:8px;
+}
+
+.hint{
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.45;
+}
+
+.statusLine{
+  color:var(--muted);
+  font-size:12px;
+  margin-top:9px;
+}
+
+/* Controller */
+.controllerShell{
+  background:linear-gradient(145deg,#324252,#17202a);
+  padding:16px;
+  border-radius:22px;
+  border:1px solid #45596d;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12), 0 20px 45px rgba(0,0,0,.4);
+}
+
+.controllerTop{
+  display:grid;
+  grid-template-columns:1fr 132px;
+  gap:12px;
+}
+
+.lcd{
+  min-height:150px;
+  border:5px solid #071018;
+  border-radius:15px;
+  background:linear-gradient(180deg,#79e7ff,#38bce8);
+  color:#0d4b68;
+  font-family:"Courier New",monospace;
+  padding:12px;
+  box-shadow:inset 0 0 18px rgba(0,0,0,.28);
+}
+
+.lcdMain{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  border:2px solid rgba(0,0,0,.24);
+  padding:8px;
+  font-size:24px;
+  font-weight:900;
+}
+
+.lcdDest{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.lcdGrid{
+  margin-top:10px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px;
+  font-size:14px;
+  font-weight:700;
+}
+
+.lcdStatusBar{
+  margin-top:10px;
+  border-top:2px solid rgba(0,0,0,.25);
+  padding-top:8px;
+  display:grid;
+  grid-template-columns:90px 1fr;
+  gap:6px;
+  font-size:13px;
+  font-weight:700;
+}
+
+.lcdStatusBar span{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.lcdMiniProgress{
+  grid-column:1 / -1;
+  height:8px;
+  background:rgba(0,0,0,.22);
+  border-radius:999px;
+  overflow:hidden;
+}
+
+.lcdMiniProgress div{
+  height:100%;
+  width:0%;
+  background:#0d4b68;
+}
+
+.pad{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:6px;
+}
+
+.pad button,.arrowRow button,.fnRow button{
+  background:#05080c;
+  border:1px solid #54697e;
+  color:white;
+  border-radius:9px;
+  min-height:38px;
+  padding:7px 4px;
+  box-shadow:inset 0 -3px 0 rgba(255,255,255,.08);
+}
+
+.pad .ok{color:#51ff82}
+.pad .cancel{color:#ff5555}
+
+.arrowRow{
+  margin-top:12px;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:8px;
+}
+
+.fnRow{
+  margin-top:10px;
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:8px;
+}
+
+.fnRow button{
+  color:#ffe276;
+}
+
+/* Screens */
+.screenWall{
+  display:grid;
+  gap:14px;
+}
+
+.fullscreenNextStop,
+.mobileFullscreenNextStop{
+  position:fixed !important;
+  inset:0 !important;
+  width:100vw !important;
+  height:100vh !important;
+  height:100dvh !important;
+  margin:0 !important;
+  border-radius:0 !important;
+  z-index:99999 !important;
+  border:0 !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:center !important;
+  background:#000 !important;
+}
+
+body.nextStopFullscreenActive{
+  overflow:hidden !important;
+}
+
+body.nextStopFullscreenActive .topbar,
+body.nextStopFullscreenActive .app > section:not(:nth-child(2)),
+body.nextStopFullscreenActive .frontBlind,
+body.nextStopFullscreenActive .currentBox,
+body.nextStopFullscreenActive .mapCard{
+  display:none !important;
+}
+
+body.nextStopFullscreenActive .app{
+  display:block !important;
+  padding:0 !important;
+  height:100vh !important;
+  height:100dvh !important;
+}
+
+body.nextStopFullscreenActive .screenWall{
+  display:block !important;
+}
+
+body.nextStopFullscreenActive button{
+  display:none !important;
+}
+
+.fullscreenNextStop .nextRouteInfo,
+.mobileFullscreenNextStop .nextRouteInfo{
+  font-size:46px;
+  margin-bottom:34px;
+}
+
+.fullscreenNextStop .nextLabel,
+.mobileFullscreenNextStop .nextLabel{
+  font-size:44px;
+}
+
+.fullscreenNextStop .nearestStopLine{
+  font-size:30px;
+}
+
+.fullscreenNextStop .nextMain,
+.mobileFullscreenNextStop .nextMain{
+  font-size:86px;
+  max-height:none;
+}
+
+.fullscreenNextStop .nextSub,
+.mobileFullscreenNextStop .nextSub{
+  font-size:42px;
+  min-height:130px;
+}
+
+.fullscreenNextStop .nextMain.messageMode,
+.mobileFullscreenNextStop .nextMain.messageMode{
+  font-size:64px;
+}
+
+.nextDisplay{
+  background:#000;
+  border:8px solid #111;
+  border-radius:22px;
+  height:330px;
+  padding:28px;
+  overflow:hidden;
+  text-align:center;
+  font-family:Arial Black,Arial,sans-serif;
+  box-shadow:0 18px 45px rgba(0,0,0,.45), inset 0 0 30px rgba(255,212,0,.05);
+}
+
+.nextRouteInfo{
+  color:#fff;
+  font-family:Arial Black,Arial,sans-serif;
+  font-size:22px;
+  line-height:1.2;
+  margin-bottom:14px;
+  display:flex;
+  justify-content:center;
+  gap:16px;
+  flex-wrap:wrap;
+}
+
+.nextRouteInfo span{
+  color:var(--yellow);
+}
+
+.diversionBanner{
+  display:none;
+  margin-bottom:12px;
+  padding:8px 14px;
+  border:2px solid #ff9d00;
+  border-radius:999px;
+  color:#ff9d00;
+  font-size:22px;
+  letter-spacing:2px;
+  font-family:Arial Black,Arial,sans-serif;
+}
+
+body.diversionOn .diversionBanner{
+  display:inline-block;
+}
+
+.nextLabel{
+  color:white;
+  font-size:26px;
+  letter-spacing:3px;
+}
+
+.nextMain{
+  color:var(--yellow);
+  font-size:54px;
+  line-height:1.05;
+  margin-top:22px;
+  word-break:break-word;
+  max-height:170px;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+}
+
+.nextMain.messageMode{
+  font-size:34px;
+  line-height:1.18;
+}
+
+.nextSub{
+  margin-top:18px;
+  color:#ffe775;
+  font-size:25px;
+  line-height:1.45;
+  min-height:82px;
+  overflow:hidden;
+}
+
+.frontBlind{
+  background:#030303;
+  border:8px solid #151515;
+  border-radius:20px;
+  min-height:170px;
+  display:grid;
+  grid-template-columns:1fr 120px;
+  gap:18px;
+  align-items:center;
+  padding:18px 22px;
+  color:var(--orange);
+  font-family:Arial Black,Arial,sans-serif;
+  box-shadow:inset 0 0 35px rgba(255,157,0,.08), 0 18px 45px rgba(0,0,0,.35);
+}
+
+.blindText{
+  min-width:0;
+}
+
+.blindDest{
+  font-size:46px;
+  line-height:48px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.blindVia{
+  color:#ffbd45;
+  font-size:22px;
+  line-height:26px;
+  margin-top:8px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.blindRoute{
+  border-left:4px solid var(--orange);
+  text-align:center;
+  font-size:76px;
+  line-height:76px;
+  padding-left:14px;
+}
+
+.currentBox{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+}
+
+.metric{
+  background:#0b1119;
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:12px;
+}
+
+.metric small{
+  color:var(--muted);
+  display:block;
+  font-size:11px;
+  margin-bottom:5px;
+}
+
+.metric strong{
+  font-size:15px;
+}
+
+/* Map */
+.mapCard{
+  min-height:0;
+}
+
+#map{
+  width:100%;
+  height:100%;
+  min-height:420px;
+}
+
+.stopItem{
+  background:#0b1119;
+  border:1px solid var(--line);
+  padding:10px;
+  border-radius:12px;
+  margin-bottom:8px;
+  font-size:13px;
+}
+
+.stopItem b{
+  display:block;
+  margin-bottom:5px;
+}
+
+.stopItem .mini{
+  color:var(--muted);
+  font-size:11px;
+  margin-bottom:7px;
+}
+
+@media(max-width:1200px){
+  .app{
+    grid-template-columns:1fr;
+    height:auto;
+  }
+  #map{
+    height:520px;
+  }
+}
+
+/* Mobile and tablet friendly layout */
+@media(max-width:900px){
+  body{
+    overflow-x:hidden;
+  }
+
+  .topbar{
+    height:auto;
+    padding:12px;
+    align-items:flex-start;
+    gap:10px;
+    flex-direction:column;
+  }
+
+  .brand strong{
+    font-size:16px;
+  }
+
+  .brand span{
+    font-size:11px;
+    line-height:1.35;
+  }
+
+  .app{
+    display:flex;
+    flex-direction:column;
+    padding:10px;
+    gap:10px;
+    height:auto;
+  }
+
+  .card{
+    border-radius:14px;
+  }
+
+  .cardHead{
+    padding:12px;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+
+  .cardHead h2{
+    font-size:14px;
+  }
+
+  .cardBody{
+    padding:12px;
+  }
+
+  input,select,button{
+    min-height:46px;
+    font-size:15px;
+    padding:11px;
+  }
+
+  .controllerShell{
+    padding:10px;
+    border-radius:16px;
+  }
+
+  .controllerTop{
+    grid-template-columns:1fr;
+  }
+
+  .lcd{
+    min-height:135px;
+    padding:10px;
+  }
+
+  .lcdMain{
+    font-size:19px;
+  }
+
+  .lcdGrid,
+  .lcdStatusBar{
+    font-size:12px;
+  }
+
+  .pad button,
+  .arrowRow button,
+  .fnRow button{
+    min-height:48px;
+    font-size:14px;
+  }
+
+  .arrowRow{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .fnRow{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .screenWall{
+    gap:10px;
+  }
+
+  .nextDisplay{
+    height:auto;
+    min-height:300px;
+    padding:18px 12px;
+    border-width:5px;
+    border-radius:16px;
+  }
+
+  .nextRouteInfo{
+    font-size:17px;
+    gap:8px;
+    margin-bottom:10px;
+  }
+
+  .nextLabel{
+    font-size:20px;
+    letter-spacing:2px;
+  }
+
+  .nextMain{
+    font-size:34px;
+    max-height:120px;
+    margin-top:14px;
+  }
+
+  .nextMain.messageMode{
+    font-size:24px;
+  }
+
+  .nextSub{
+    font-size:18px;
+    min-height:60px;
+    margin-top:14px;
+  }
+
+  .frontBlind{
+    min-height:115px;
+    grid-template-columns:1fr 82px;
+    gap:10px;
+    padding:12px;
+    border-width:5px;
+    border-radius:14px;
+  }
+
+  .blindDest{
+    font-size:29px;
+    line-height:31px;
+  }
+
+  .blindVia{
+    font-size:15px;
+    line-height:19px;
+  }
+
+  .blindRoute{
+    font-size:48px;
+    line-height:50px;
+    padding-left:8px;
+  }
+
+  .currentBox{
+    grid-template-columns:1fr 1fr;
+  }
+
+  #map{
+    height:360px;
+    min-height:360px;
+  }
+
+  .grid2,
+  .grid3{
+    grid-template-columns:1fr;
+  }
+
+  .stopItem .grid3{
+    grid-template-columns:1fr 1fr 1fr;
+  }
+
+  .fullscreenNextStop{
+    height:100vh !important;
+    min-height:100vh !important;
+    padding:22px !important;
+  }
+
+  .fullscreenNextStop .nextRouteInfo{
+    font-size:25px;
+    margin-bottom:22px;
+  }
+
+  .fullscreenNextStop .nextLabel{
+    font-size:28px;
+  }
+
+  .fullscreenNextStop .nextMain{
+    font-size:48px;
+  }
+
+  .fullscreenNextStop .nextMain.messageMode{
+    font-size:34px;
+  }
+
+  .fullscreenNextStop .nextSub{
+    font-size:25px;
+  }
+}
+
+@media(max-width:420px){
+  .nextMain{
+    font-size:29px;
+  }
+
+  .nextMain.messageMode{
+    font-size:21px;
+  }
+
+  .blindDest{
+    font-size:24px;
+  }
+
+  .blindRoute{
+    font-size:42px;
+  }
+
+  .currentBox{
+    grid-template-columns:1fr;
+  }
+
+  .stopItem .grid3{
+    grid-template-columns:1fr;
+  }
+}
+
+
+@media(max-width:900px){
+  .mobileFullscreenNextStop,
+  .fullscreenNextStop{
+    padding:18px !important;
+  }
+
+  .mobileFullscreenNextStop .nextRouteInfo,
+  .fullscreenNextStop .nextRouteInfo{
+    font-size:24px !important;
+    margin-bottom:22px !important;
+  }
+
+  .mobileFullscreenNextStop .nextLabel,
+  .fullscreenNextStop .nextLabel{
+    font-size:28px !important;
+  }
+
+  .mobileFullscreenNextStop .nextMain,
+  .fullscreenNextStop .nextMain{
+    font-size:48px !important;
+    max-height:none !important;
+  }
+
+  .mobileFullscreenNextStop .nextMain.messageMode,
+  .fullscreenNextStop .nextMain.messageMode{
+    font-size:34px !important;
+  }
+
+  .mobileFullscreenNextStop .nextSub,
+  .fullscreenNextStop .nextSub{
+    font-size:25px !important;
+    min-height:110px !important;
+  }
+}
+
+@media(orientation:landscape) and (max-width:950px){
+  .mobileFullscreenNextStop .nextRouteInfo,
+  .fullscreenNextStop .nextRouteInfo{
+    font-size:24px !important;
+    margin-bottom:12px !important;
+  }
+
+  .mobileFullscreenNextStop .nextLabel,
+  .fullscreenNextStop .nextLabel{
+    font-size:26px !important;
+  }
+
+  .mobileFullscreenNextStop .nextMain,
+  .fullscreenNextStop .nextMain{
+    font-size:54px !important;
+    margin-top:10px !important;
+  }
+
+  .mobileFullscreenNextStop .nextSub,
+  .fullscreenNextStop .nextSub{
+    font-size:25px !important;
+    margin-top:12px !important;
+  }
+}
+
+
+#exitNextStopFullscreen{
+  display:none;
+}
+
+body.nextStopFullscreenActive #exitNextStopFullscreen{
+  display:block !important;
+}
+
+</style>
+</head>
+
+<body>
+<header class="topbar">
+  <div class="brand">
+    <strong>Bus Display Control System</strong>
+    <span>Line number controller • destination blind • passenger next stop display • GPS tracking</span>
+  </div>
+  <div class="livePill" id="gpsPill">GPS <b>OFF</b></div>
+</header>
+
+<div class="app">
+
+  <section class="stack scroll">
+
+    <div class="card">
+      <div class="cardHead">
+        <h2>Destination Controller</h2>
+        <span class="hint">F1 → line → ↓ → ✓</span>
+      </div>
+      <div class="cardBody">
+        <div class="controllerShell">
+          <div class="controllerTop">
+            <div class="lcd">
+              <div class="lcdMain">
+                <span id="lcdRoute">----</span>
+                <span class="lcdDest" id="lcdDest">No Destination</span>
+              </div>
+              <div class="lcdGrid">
+                <div>Line: <span id="lcdLine">---</span></div>
+                <div>Dest: <span id="lcdDestCode">---</span></div>
+                <div>Stop: <span id="lcdStop">---</span></div>
+                <div>GPS: <span id="lcdGps">OFF</span></div>
+              </div>
+              <div class="lcdStatusBar">
+                <span>Time:</span><span id="lcdTime">--:--</span>
+                <span>Mode:</span><span id="lcdMode">STANDBY</span>
+                <span>Prog:</span><span id="lcdProgress">0%</span>
+                <span>Next:</span><span id="lcdNextMini">---</span>
+                <span>Update:</span><span id="lcdLastUpdate">---</span>
+                <div class="lcdMiniProgress"><div id="lcdProgressBar"></div></div>
+              </div>
+            </div>
+
+            <div class="pad">
+              <button onclick="pressNumber('1')">1</button>
+              <button onclick="pressNumber('2')">2<br><small>ABC</small></button>
+              <button onclick="pressNumber('3')">3<br><small>DEF</small></button>
+              <button onclick="pressNumber('4')">4<br><small>GHI</small></button>
+              <button onclick="pressNumber('5')">5<br><small>JKL</small></button>
+              <button onclick="pressNumber('6')">6<br><small>MNO</small></button>
+              <button onclick="pressNumber('7')">7<br><small>PQRS</small></button>
+              <button onclick="pressNumber('8')">8<br><small>TUV</small></button>
+              <button onclick="pressNumber('9')">9<br><small>WXYZ</small></button>
+              <button onclick="pressNumber('0')">0</button>
+              <button class="cancel" onclick="clearTyped()">✕</button>
+              <button class="ok" onclick="applyTypedLine()">✓</button>
+            </div>
+          </div>
+
+          <div class="arrowRow">
+            <button onclick="previousStop()">← Prev</button>
+            <button onclick="nextStop()">↑ Next</button>
+            <button onclick="nextStop()">→</button>
+            <button onclick="cycleDestination()">↓ Dest</button>
+          </div>
+
+          <div class="fnRow">
+            <button onclick="startLineEntry()">F1<br><small>LINE</small></button>
+            <button onclick="startGPS()">F2<br><small>GPS</small></button>
+            <button onclick="stopGPS()">F3<br><small>STOP</small></button>
+            <button onclick="clearAll()">F4<br><small>CLEAR</small></button>
+            <button onclick="homeView()">F5<br><small>MAP</small></button>
+            <button onclick="toggleDiversion()" id="diversionBtn">DIV<br><small>OFF</small></button>
+          </div>
+        </div>
+
+        <p class="hint">
+          The line number is separate from the route number. Example: line <b>1001</b> can show route <b>34</b> to Hunstanton.
+          Controller numbers <b>1–9</b> show passenger messages in normal mode. Press <b>F1</b> first to type a line number.
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="cardHead"><h2>Passenger Messages</h2></div>
+      <div class="cardBody">
+        <div class="grid3">
+          <button class="dark" onclick="showPassengerMessage('1')">1</button>
+          <button class="dark" onclick="showPassengerMessage('2')">2</button>
+          <button class="dark" onclick="showPassengerMessage('3')">3</button>
+          <button class="dark" onclick="showPassengerMessage('4')">4</button>
+          <button class="dark" onclick="showPassengerMessage('5')">5</button>
+          <button class="dark" onclick="showPassengerMessage('6')">6</button>
+          <button class="dark" onclick="showPassengerMessage('7')">7</button>
+          <button class="dark" onclick="showPassengerMessage('8')">8</button>
+          <button class="dark" onclick="showPassengerMessage('9')">9</button>
+        </div>
+        <p class="hint">
+          1 No smoking/vaping • 2 Stop closed • 3 Passing safely • 4 No standing upstairs/stairs • 5 Move down • 6 Hold on • 7 Pass ready • 8 Service regulation • 9 CCTV
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="cardHead"><h2>Route Setup</h2></div>
+      <div class="cardBody">
+        <label>Line number / controller code</label>
+        <input id="lineNumber" placeholder="Example: 1001">
+
+        <label>Route number shown on front display</label>
+        <input id="routeNo" placeholder="Example: 34">
+
+        <label>Main destination</label>
+        <input id="destination" placeholder="Example: Hunstanton">
+
+        <label>Via text</label>
+        <input id="viaText" placeholder="Example: via Dersingham & Snettisham">
+
+        <div class="grid2">
+          <button onclick="createRoute()">Save Route</button>
+          <button class="red" onclick="deleteRoute()">Delete Route</button>
+        </div>
+
+        <button class="green" onclick="loadAllLynxRoutes()">Load All Lynx Routes</button>
+
+        <label>Saved routes</label>
+        <select id="routeSelect" onchange="loadRoute()"></select>
+
+      </div>
+    </div>
+
+  </section>
+
+  <section class="stack">
+
+    <div class="screenWall">
+      <button class="dark" onclick="toggleNextStopFullscreen()">⛶ Passenger Full Screen</button>
+      <div class="nextDisplay">
+        <button id="exitNextStopFullscreen" onclick="toggleNextStopFullscreen()" style="position:absolute;top:10px;right:10px;width:auto;min-height:38px;padding:8px 12px;background:#111;color:#fff;border:1px solid #444;border-radius:10px;z-index:100001;">Exit</button>
+        <div class="diversionBanner" id="diversionBanner">ON DIVERSION</div>
+        <div class="nextRouteInfo">
+          <div>Route <span id="nextRouteNo">--</span></div>
+          <div id="nextDestination">NO DESTINATION</div>
+        </div>
+        <div class="nextLabel" id="stopScreenLabel">NEXT STOPS</div>
+        <div class="nextMain" id="nextStopText">No route selected</div>
+        <div class="nextSub">
+          <div id="stop2">---</div>
+          <div id="stop3">---</div>
+        </div>
+      </div>
+
+      <div class="frontBlind">
+        <div class="blindText">
+          <div class="blindDest" id="frontDest">NO DESTINATION</div>
+          <div class="blindVia" id="frontVia">via ---</div>
+        </div>
+        <div class="blindRoute" id="frontRoute">--</div>
+      </div>
+
+      <div class="currentBox">
+        <div class="metric"><small>Line</small><strong id="metricLine">---</strong></div>
+        <div class="metric"><small>Route</small><strong id="metricRoute">---</strong></div>
+        <div class="metric"><small>Current Stop</small><strong id="metricCurrent">---</strong></div>
+        <div class="metric"><small>GPS Accuracy</small><strong id="metricGps">---</strong></div>
+      </div>
+    </div>
+
+    <div class="card mapCard" style="flex:1">
+      <div class="cardHead">
+        <h2>Map & GPS</h2>
+        <span class="hint" id="locationStatus">Location: waiting</span>
+      </div>
+      <div id="map"></div>
+    </div>
+
+  </section>
+
+  <section class="stack scroll">
+
+    <div class="card">
+      <div class="cardHead"><h2>Add Stops</h2></div>
+      <div class="cardBody">
+        <p class="hint">Lynx routes now include built-in stop lists. Map points are optional if you want GPS distance matching.</p>
+
+        <label>Stop name</label>
+        <input id="stopName" placeholder="Example: King's Lynn Bus Station">
+
+        <button onclick="addClickedStop()">Add Map Point To Route</button>
+
+        <div class="grid2">
+          <button class="dark" onclick="previousStop()">Previous Stop</button>
+          <button class="dark" onclick="nextStop()">Next Stop</button>
+        </div>
+
+        <div class="grid2">
+          <button class="green" onclick="startGPS()">Start GPS</button>
+          <button class="red" onclick="stopGPS()">Stop GPS</button>
+        </div>
+
+        <div class="statusLine" id="gpsStatus">GPS: Off</div>
+        <p class="hint">When GPS detects you within 90m of a mapped stop, it jumps to that stop automatically.</p>
+      </div>
+    </div>
+
+    <div class="card" style="flex:1">
+      <div class="cardHead"><h2>Route Stops</h2></div>
+      <div class="cardBody">
+        <div id="stopsList"></div>
+      </div>
+    </div>
+
+  </section>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+let map = L.map("map").setView([52.753,0.397],12);
+let clickedLatLng = null;
+let markers = [];
+let gpsMarker = null;
+let watchId = null;
+let nearestStopName = "---";
+let nearestStopDistance = null;
+
+let typedLine = "";
+let controllerMode = "normal";
+let destinationMatches = [];
+let destinationChoiceIndex = 0;
+
+let dwellStopIndex = null;
+let dwellStartTime = null;
+let showingThisStop = false;
+let announcementTimer = null;
+let announcementActive = false;
+let diversionActive = false;
+
+const PASSENGER_MESSAGES = {
+  "1": "NO SMOKING OR VAPING ON THIS BUS",
+  "2": "THE NEXT BUS STOP IS CLOSED",
+  "3": "THIS BUS WILL WAIT HERE UNTIL THE BUS COMING IN THE OPPOSITE DIRECTION PASSES SAFELY",
+  "4": "NO STANDING ON THE UPPER DECK OR STAIRS PLEASE",
+  "5": "PLEASE MOVE DOWN INSIDE THE BUS",
+  "6": "PLEASE HOLD ON WHILE THE BUS IS MOVING",
+  "7": "PLEASE HAVE YOUR TICKET OR PASS READY",
+  "8": "THIS BUS IS BEING HELD TO REGULATE THE SERVICE",
+  "9": "CCTV IS IN OPERATION ON THIS BUS",
+  "DIVERSION": "THIS BUS IS CURRENTLY ON DIVERSION"
+};
+
+let routes = JSON.parse(localStorage.getItem("busRoutesV2") || localStorage.getItem("busRoutes") || "{}");
+
+const LYNX_ROUTES = [
+  {lineNumber:"3301", routeNo:"33", destination:"Hunstanton", via:"via QE Hospital, Hillington, The Birchams & Sedgeford"},
+  {lineNumber:"3302", routeNo:"33", destination:"King's Lynn", via:"via Sedgeford, The Birchams, Hillington & QE Hospital"},
+  {lineNumber:"3303", routeNo:"33C", destination:"Hunstanton", via:"via QE Hospital, Hillington, The Birchams & Sedgeford"},
+  {lineNumber:"3304", routeNo:"33C", destination:"King's Lynn", via:"via Sedgeford, The Birchams, Hillington & QE Hospital"},
+
+  {lineNumber:"3311", routeNo:"33A", destination:"Hunstanton Circular", via:"via Tesco & Cliff Parade"},
+  {lineNumber:"3312", routeNo:"33B", destination:"Hunstanton Circular", via:"via Tesco & Cliff Parade"},
+
+  {lineNumber:"3401", routeNo:"34", destination:"Hunstanton", via:"via QE Hospital, Dersingham, Snettisham & Heacham"},
+  {lineNumber:"3402", routeNo:"34", destination:"King's Lynn", via:"via Heacham, Snettisham, Dersingham & QE Hospital"},
+  {lineNumber:"3501", routeNo:"35", destination:"Hunstanton", via:"via Sandringham, Dersingham, Snettisham & Heacham"},
+  {lineNumber:"3502", routeNo:"35", destination:"King's Lynn", via:"via Heacham, Snettisham, Dersingham & Sandringham"},
+  {lineNumber:"3601", routeNo:"36", destination:"Fakenham", via:"Coastliner via Hunstanton, Wells-next-the-Sea & Burnham Market"},
+  {lineNumber:"3602", routeNo:"36", destination:"King's Lynn", via:"Coastliner via Wells-next-the-Sea, Hunstanton & Heacham"},
+
+  {lineNumber:"3701", routeNo:"37", destination:"Downham Market", via:"via West Winch, Hardwick Retail Park, Hilgay, Southery & Ten Mile Bank"},
+  {lineNumber:"3702", routeNo:"37", destination:"King's Lynn", via:"via Ten Mile Bank, Southery, Hilgay, Hardwick Retail Park & West Winch"},
+
+  {lineNumber:"3801", routeNo:"38", destination:"Fair Green", via:"via West Winch & Hardwick Retail Park"},
+  {lineNumber:"3802", routeNo:"38", destination:"King's Lynn", via:"via Hardwick Retail Park & West Winch"},
+
+  {lineNumber:"3901", routeNo:"39", destination:"Marham", via:"via West Winch, Hardwick Retail Park & Shouldham"},
+  {lineNumber:"3902", routeNo:"39", destination:"King's Lynn", via:"via Shouldham, Hardwick Retail Park & West Winch"},
+
+  {lineNumber:"4101", routeNo:"41", destination:"King's Reach", via:"via Gaywood & QE Hospital"},
+  {lineNumber:"4102", routeNo:"41", destination:"King's Lynn", via:"via QE Hospital & Gaywood"},
+
+  {lineNumber:"4201", routeNo:"42", destination:"Fairstead", via:"via Gaywood"},
+  {lineNumber:"4202", routeNo:"42", destination:"King's Lynn", via:"via Gaywood"},
+
+  {lineNumber:"4301", routeNo:"43", destination:"North Wootton", via:"Schooldays only"},
+  {lineNumber:"4302", routeNo:"43", destination:"King's Lynn", via:"Schooldays only"},
+
+  {lineNumber:"4401", routeNo:"44", destination:"The Loop", via:"via South Wootton, Knights Hill, QE Hospital & Hardwick"},
+  {lineNumber:"4402", routeNo:"44", destination:"The Loop", via:"via Edward Benefer Way, St James Medical Practice & Castle Reach"},
+
+  {lineNumber:"4601", routeNo:"46", destination:"Wisbech", via:"via Saddlebow, Islington, Terrington St John, Tilney St Lawrence & West Walton"},
+  {lineNumber:"4602", routeNo:"46", destination:"King's Lynn", via:"via West Walton, Tilney St Lawrence, Terrington St John, Islington & Saddlebow"},
+  {lineNumber:"4611", routeNo:"X46", destination:"Wisbech", via:"limited stop via St Germans"},
+  {lineNumber:"4612", routeNo:"X46", destination:"King's Lynn", via:"limited stop via St Germans"},
+
+  {lineNumber:"4801", routeNo:"48", destination:"Fakenham", via:"via QE Hospital, Gayton & The Rudhams"},
+  {lineNumber:"4802", routeNo:"48", destination:"King's Lynn", via:"via The Rudhams, Gayton & QE Hospital"},
+  {lineNumber:"4901", routeNo:"49", destination:"Fakenham", via:"via Grimston & The Rudhams"},
+  {lineNumber:"4902", routeNo:"49", destination:"King's Lynn", via:"via The Rudhams & Grimston"},
+  {lineNumber:"4911", routeNo:"49A", destination:"Fakenham", via:"via Gayton, Great Massingham & The Rudhams"},
+  {lineNumber:"4912", routeNo:"49A", destination:"King's Lynn", via:"via The Rudhams, Great Massingham & Gayton"},
+
+  {lineNumber:"5401", routeNo:"54", destination:"The Walpoles", via:"via South Lynn, Clenchwarton & Tilney All Saints"},
+  {lineNumber:"5402", routeNo:"54", destination:"King's Lynn", via:"via Tilney All Saints, Clenchwarton & South Lynn"},
+  {lineNumber:"5411", routeNo:"54A", destination:"Terrington High School", via:"Schooldays only"},
+  {lineNumber:"5412", routeNo:"54A", destination:"King's Lynn", via:"Schooldays only"},
+
+  {lineNumber:"6001", routeNo:"60", destination:"Downham Market", via:"via Emneth, Outwell, Upwell & Three Holes"},
+  {lineNumber:"6002", routeNo:"60", destination:"Wisbech", via:"via Three Holes, Upwell, Outwell & Emneth"},
+
+  {lineNumber:"4141", routeNo:"414", destination:"Alderman Peel High School", via:"via Dersingham & Docking"},
+  {lineNumber:"4142", routeNo:"414", destination:"Dersingham", via:"via Docking"},
+  {lineNumber:"4151", routeNo:"415", destination:"Alderman Peel High School", via:"via Dersingham & Docking"},
+  {lineNumber:"4152", routeNo:"415", destination:"Dersingham", via:"via Docking"},
+
+  {lineNumber:"4811", routeNo:"48A", destination:"Springwood High School", via:"via Middleton, East Winch & Ashwicken"},
+  {lineNumber:"4812", routeNo:"48A", destination:"Middleton", via:"via Ashwicken & East Winch"}
+];
+
+
+const LYNX_STOP_PATTERNS = {
+  "33": [
+    "King’s Lynn Transport Interchange (Stand E)", "King’s Lynn, adj Kettlewell Lane",
+    "King’s Lynn, adj Highgate School", "King’s Lynn, opp King Edward VII School",
+    "Gaywood, adj Tesco", "King’s Lynn, adj Health Centre", "King’s Lynn, adj Kent Road",
+    "King’s Lynn, adj Queensway", "King’s Lynn, adj Elvington Road",
+    "Queen Elizabeth Hospital, adj Travel Hub", "King’s Lynn, opp Austin Fields",
+    "King’s Lynn, opp Retail Park", "King’s Lynn, opp Hamburg Way",
+    "King’s Lynn, adj St James Medical Practice", "South Wootton, adj Nursery Lane",
+    "South Wootton, adj Castle Rising Road", "South Wootton, adj Deas Road",
+    "South Wootton, adj Langley Road", "South Wootton, adj Sandy Lane",
+    "South Wootton, opp Castle Reach", "South Wootton, adj Knight’s Hill",
+    "Castle Rising, opp Mill House Turn", "Sandringham, opp Cross Cottages",
+    "Sandringham - A149 only, opp Cats Bottom Cottages", "Sandringham, opp Edinburgh Plantation",
+    "Dersingham, adj Manor Road", "Dersingham, adj Bank Road", "Dersingham, adj Thaxters",
+    "Dersingham, adj Clayton Close", "Dersingham, opp Kings Croft", "Ingoldisthorpe, adj Ingoldsby Avenue",
+    "Ingoldisthorpe, opp Pond", "Ingoldisthorpe, adj Coaly Lane", "Snettisham, adj Station Road",
+    "Snettisham, adj Strickland Avenue", "Snettisham, adj Grapes", "Snettisham, opp Bottom Farm",
+    "Heacham, adj Collingwood Close", "Heacham, opp Fenside", "Heacham, opp Fengate",
+    "Heacham, adj Jennings Close", "Heacham, opp College Drive", "Heacham, opp Poplar Avenue",
+    "Heacham, adj Fox & Hound", "Heacham, opp High Street", "Heacham, opp Church Lane",
+    "Heacham, opp Manor Road", "Heacham, adj Norfolk Lavender", "Hunstanton, adj Redgate Hill",
+    "Hunstanton, adj Phillips Chase", "Hunstanton, opp Tudor Crescent", "Hunstanton No 14 (os)",
+    "Hunstanton, adj Manor Park", "Hunstanton, adj Holiday Camp", "Hunstanton, opp Tesco",
+    "Hunstanton Travel Hub (Drop-off)"
+  ],
+
+  "33A": [
+    "Hunstanton Travel Hub (Stand A)", "Hunstanton, adj Tesco", "Hunstanton, adj Searles",
+    "Hunstanton, adj Manor Park", "Hunstanton No 14 (os)", "Hunstanton, opp Tudor Crescent",
+    "Hunstanton, adj Phillips Chase", "Hunstanton, adj Redgate Hill", "Hunstanton Travel Hub"
+  ],
+
+  "33B": [
+    "Hunstanton Travel Hub (Stand A)", "Hunstanton, adj Tesco", "Hunstanton, opp Searles",
+    "Hunstanton, opp Manor Park", "Hunstanton No 7 (os)", "Hunstanton, adj Tudor Crescent",
+    "Hunstanton, opp Phillips Chase", "Hunstanton, opp Redgate Hill", "Hunstanton Travel Hub"
+  ],
+
+  "33C": [
+    "Hunstanton, adj Smithdon High School", "Heacham, adj Norfolk Lavender",
+    "Sedgeford, opp The King William IV Country Inn", "Sedgeford, adj Docking Road",
+    "Sedgeford, adj Pump Cottages", "Docking, adj Primary & Nursery School",
+    "Docking, adj Village Hall", "Docking, adj King William", "Docking, adj Fakenham Road",
+    "Docking Crossroads (S-bound)", "Bircham Newton, adj turn", "Bircham Newton, adj CITB",
+    "Bircham Tofts, adj Stocks Close", "Bircham Tofts, adj Church Lane",
+    "Great Bircham, adj Bircham Road", "Bircham, opp Country Stores"
+  ],
+
+  "34": [
+    "King’s Lynn Transport Interchange (Stand E)", "King’s Lynn, adj Kettlewell Lane",
+    "King’s Lynn, adj Highgate School", "King’s Lynn, opp King Edward VII School",
+    "Gaywood, adj Tesco", "King’s Lynn, adj Health Centre", "King’s Lynn, adj Kent Road",
+    "King’s Lynn, adj Queensway", "King’s Lynn, adj Elvington Road",
+    "Queen Elizabeth Hospital, adj Travel Hub", "King’s Lynn, opp Austin Fields",
+    "King’s Lynn, opp Retail Park", "King’s Lynn, opp Bergen Way",
+    "King’s Lynn, opp Hamburg Way", "King’s Lynn, adj St James Medical Practice",
+    "South Wootton, adj Nursery Lane", "South Wootton, adj Deas Road",
+    "South Wootton, adj Langley Road", "South Wootton, adj Sandy Lane",
+    "South Wootton, opp Castle Reach", "South Wootton, adj Knight’s Hill",
+    "Castle Rising, opp Mill House Turn", "Dersingham, adj Manor Road",
+    "Dersingham, adj Bank Road", "Dersingham, adj Thaxters", "Dersingham, adj Clayton Close",
+    "Dersingham, opp Kings Croft", "Ingoldisthorpe, adj Ingoldsby Avenue",
+    "Ingoldisthorpe, opp Pond", "Ingoldisthorpe, adj Coaly Lane",
+    "Snettisham, adj Station Road", "Snettisham, adj Strickland Avenue",
+    "Snettisham, adj Grapes", "Snettisham, opp Bottom Farm", "Heacham, adj Collingwood Close",
+    "Heacham, opp Fenside", "Heacham, opp Fengate", "Heacham, adj Jennings Close",
+    "Heacham, opp College Drive", "Heacham, opp Poplar Avenue", "Heacham, adj Fox & Hound",
+    "Heacham, opp High Street", "Heacham, opp Church Lane", "Heacham, opp Manor Road",
+    "Hunstanton, adj Redgate Hill", "Hunstanton, adj Phillips Chase",
+    "Hunstanton, opp Tudor Crescent", "Hunstanton No 14 (os)", "Hunstanton, adj Manor Park",
+    "Hunstanton, adj Holiday Camp", "Hunstanton, opp Tesco", "Hunstanton Travel Hub (Drop-off)"
+  ],
+
+  "35": [
+    "King’s Lynn Transport Interchange (Stand E)", "King’s Lynn, adj Railway Station",
+    "King’s Lynn, adj Austin Fields", "King’s Lynn, adj Retail Park", "King’s Lynn, adj Bergen Way",
+    "King’s Lynn, adj Hamburg Way", "King’s Lynn, opp St James Medical Practice",
+    "South Wootton, opp Nursery Lane", "South Wootton, opp Deas Road", "South Wootton, opp Langley Road",
+    "South Wootton, opp Sandy Lane", "South Wootton, adj Castle Reach", "South Wootton, adj Knight’s Hill",
+    "Castle Rising, adj Mill House Turn", "Sandringham, adj Cross Cottages",
+    "Sandringham - A149 only, adj Cats Bottom Cottages", "Sandringham, adj Edinburgh Plantation",
+    "Dersingham, adj Manor Road", "Dersingham, adj Bank Road", "Dersingham, adj Thaxters",
+    "Dersingham, adj Clayton Close", "Dersingham, opp Kings Croft", "Ingoldisthorpe, adj Ingoldsby Avenue",
+    "Ingoldisthorpe, opp Pond", "Ingoldisthorpe, adj Coaly Lane", "Snettisham, adj Station Road",
+    "Snettisham, adj Strickland Avenue", "Snettisham, adj Grapes", "Snettisham, opp Bottom Farm",
+    "Heacham, adj Collingwood Close", "Heacham, opp Fenside", "Heacham, opp Fengate",
+    "Heacham, adj Jennings Close", "Heacham, opp College Drive", "Heacham, opp Poplar Avenue",
+    "Heacham, adj Fox & Hound", "Heacham, opp High Street", "Heacham, opp Church Lane",
+    "Heacham, adj Norfolk Lavender", "Hunstanton, opp Redgate Hill", "Hunstanton, adj Tesco",
+    "Hunstanton Travel Hub (Stand A)"
+  ],
+
+  "36": [
+    "King’s Lynn Transport Interchange (Stand E)", "King’s Lynn, opp Austin Fields",
+    "King’s Lynn, opp Retail Park", "King’s Lynn, opp Bergen Way", "King’s Lynn, opp Hamburg Way",
+    "King’s Lynn, adj St James Medical Practice", "South Wootton, adj Nursery Lane",
+    "South Wootton, adj Deas Road", "South Wootton, adj Langley Road", "South Wootton, adj Sandy Lane",
+    "South Wootton, opp Castle Reach", "South Wootton, adj Knight’s Hill",
+    "Castle Rising, opp Mill House Turn", "Sandringham, opp Cross Cottages",
+    "Sandringham - A149 only, opp Cats Bottom Cottages", "Sandringham, opp Edinburgh Plantation",
+    "Dersingham, adj Manor Road", "Dersingham, adj Bank Road", "Dersingham, adj Thaxters",
+    "Dersingham, adj Clayton Close", "Dersingham, opp Kings Croft", "Ingoldisthorpe, adj Ingoldsby Avenue",
+    "Ingoldisthorpe, opp Pond", "Ingoldisthorpe, adj Coaly Lane", "Snettisham, adj Station Road",
+    "Snettisham, adj Strickland Avenue", "Snettisham, adj Grapes", "Snettisham, opp Bottom Farm",
+    "Heacham, adj Collingwood Close", "Heacham, opp Fenside", "Heacham, opp Fengate",
+    "Heacham, adj Jennings Close", "Heacham, opp College Drive", "Heacham, opp Poplar Avenue",
+    "Heacham, adj Fox & Hound", "Heacham, opp High Street", "Heacham, opp Church Lane",
+    "Heacham, opp Manor Road", "Hunstanton, adj Redgate Hill", "Hunstanton Travel Hub (Stand B)",
+    "Hunstanton, opp Lincoln Square", "Hunstanton, adj Lighthouse Close",
+    "Old Hunstanton, adj Post Office", "Old Hunstanton, adj Waterworks Road", "Holme-next-the-Sea",
+    "Thornham, adj Church", "Thornham, adj The Orange Tree", "Titchwell, adj Manor House",
+    "Titchwell, opp RSPB Reserve", "Brancaster, adj The Ship", "Brancaster Staithe, adj White Horse",
+    "Burnham Deepdale, adj Delgate Market", "Burnham Overy Staithe, adj Hero",
+    "Burnham Overy Staithe, adj Ostrich House", "Burnham Market, adj green",
+    "Holkham, adj The Victoria", "Wells-next-the-Sea, adj Grove Road",
+    "Wells-next-the-Sea, opp Co-op", "Wells-next-the-Sea, opp Northfield Lane",
+    "Wells-next-the-Sea, opp Quay", "Wells-next-the-Sea, opp Mainsail Yard",
+    "Warham Road (opp)", "Wighton, opp High Street", "Wighton, opp Buddell’s Lane",
+    "Little Walsingham, opp school", "Little Walsingham, opp The Bull",
+    "Houghton St Giles, adj Fakenham Road", "East Barsham, opp Water Lane",
+    "Fakenham, opp Toll Bar", "Fakenham, opp Howland Close", "Fakenham Oak Street (Stand A)"
+  ],
+
+  "37": [
+    "King’s Lynn Transport Interchange (Stand F)", "King’s Lynn, adj Railway Station",
+    "King’s Lynn, opp Southgate Street", "King’s Lynn, adj Cemetery Lodge",
+    "King’s Lynn, opp Hardwick Tesco", "King’s Lynn, adj Hardwick Tesco",
+    "King’s Lynn, adj McDonalds layby", "West Winch, opp Esso Garage", "West Winch, adj The Winch",
+    "West Winch, adj Mill Lane", "West Winch, adj Rectory Lane", "West Winch, adj Chequers Lane",
+    "West Winch, opp Oak Avenue", "Setchey, adj Blackborough End", "Tottenhill, adj Green",
+    "Wormegay, adj Garage Lane", "Watlington, adj Mill Road", "Watlington, adj Church Road",
+    "Watlington, adj Railway Station", "Stowbridge, adj Barley Close", "Runcton Holme, adj School Road",
+    "Hilgay, adj Church Road", "Southery, adj The Old White Bell", "Southery, adj Bus Shelter",
+    "Southery, adj Feltwell Road", "Ten Mile Bank, adj Post Office", "Ten Mile Bank, adj Church Road",
+    "Denver, adj Sluice Road", "Downham Market, adj Railway Station", "Downham Market, adj Bus Shelter",
+    "Downham Market, adj Tesco Superstore"
+  ],
+
+  "38": [
+    "King’s Lynn Transport Interchange (Stand F)", "King’s Lynn, adj Railway Station",
+    "King’s Lynn, opp Southgate Street", "King’s Lynn, adj Cemetery Lodge",
+    "King’s Lynn, opp Hardwick Tesco", "West Winch, opp Esso Garage",
+    "West Winch, adj The Winch", "West Winch, adj Mill Lane", "West Winch, adj Back Lane",
+    "West Winch, opp Hall Lane", "West Winch, opp Fir Tree Drive", "West Winch, adj Oak Avenue",
+    "West Winch, opp Chequers Lane", "West Winch, adj Coronation Avenue",
+    "North Runcton, nr New Road", "North Runcton, opp Rectory Lane",
+    "Middleton, opp Church", "Middleton, adj Walter Howes Crescent",
+    "Fair Green, opp The Gate", "Fair Green, opp Brookwell Springs"
+  ],
+
+  "39": [
+    "King’s Lynn Transport Interchange (Stand F)", "King’s Lynn, adj Railway Station",
+    "King’s Lynn, opp Southgate Street", "King’s Lynn, adj Cemetery Lodge",
+    "King’s Lynn, opp Hardwick Tesco", "West Winch, opp Esso Garage",
+    "West Winch, adj The Winch", "West Winch, adj Mill Lane", "West Winch, adj Rectory Lane",
+    "West Winch, adj Chequers Lane", "West Winch, opp Oak Avenue",
+    "Shouldham Thorpe, adj Lime Kiln Lane", "Shouldham, adj The Green",
+    "Shouldham, adj Westgate Street", "Marham, adj Hillside", "Marham, adj Main Gates",
+    "Marham, adj Woodview Road", "Marham, adj Davamor", "Marham, adj Post Office"
+  ],
+
+  "41": [
+    "King’s Lynn Transport Interchange (Stand G)", "King’s Lynn, adj Kettlewell Lane",
+    "King’s Lynn, adj Highgate School", "King’s Lynn, opp King Edward VII School",
+    "Gaywood, adj Tesco", "King’s Lynn, adj Health Centre", "King’s Lynn, adj Kent Road",
+    "King’s Lynn, adj Queensway", "King’s Lynn, adj Elvington Road",
+    "Queen Elizabeth Hospital, adj Travel Hub", "King’s Lynn, opp Elvington Road",
+    "King’s Lynn, opp Queensway", "King’s Lynn, opp Health Centre", "Gaywood, opp Tesco",
+    "King’s Lynn, adj The Woolpack", "King’s Lynn, adj St Katherines Court",
+    "King’s Lynn, adj Railway Station", "King’s Reach"
+  ],
+
+  "42": [
+    "King’s Lynn Transport Interchange (Stand G)", "King’s Lynn, adj Kettlewell Lane",
+    "King’s Lynn, adj Highgate School", "King’s Lynn, opp King Edward VII School",
+    "Gaywood, adj Tesco", "King’s Lynn, adj Health Centre", "King’s Lynn, adj Kent Road",
+    "King’s Lynn, adj Queensway", "King’s Lynn, adj Elvington Road",
+    "Fairstead, adj William Booth Road", "Fairstead, adj Glaven",
+    "Fairstead, opp Mulberry Road", "Fairstead, adj Tennyson Avenue",
+    "Fairstead, adj Wootton Road", "Fairstead, adj Langley Road",
+    "Queen Elizabeth Hospital, adj Travel Hub", "King’s Lynn, opp Elvington Road",
+    "King’s Lynn, opp Queensway", "King’s Lynn, opp Health Centre",
+    "Gaywood, opp Tesco", "King’s Lynn, adj The Woolpack",
+    "King’s Lynn, adj St Katherines Court", "King’s Lynn, adj Railway Station",
+    "King’s Lynn Transport Interchange"
+  ],
+
+  "43": [
+    "King’s Lynn Transport Interchange", "King’s Lynn Railway Station", "Gaywood Tesco",
+    "Queen Elizabeth Hospital, Travel Hub", "South Wootton, Nursery Lane",
+    "South Wootton, Deas Road", "South Wootton, Langley Road", "South Wootton, Sandy Lane",
+    "North Wootton, Village Hall", "North Wootton, Priory Lane", "North Wootton"
+  ],
+
+  "44": [
+    "King’s Lynn Transport Interchange (Stand E)", "King’s Lynn, opp Austin Fields",
+    "King’s Lynn, opp Retail Park", "King’s Lynn, opp Bergen Way", "King’s Lynn, opp Hamburg Way",
+    "King’s Lynn, adj St James Medical Practice", "Edward Benefer Way", "Loke Road",
+    "South Wootton, adj Nursery Lane", "South Wootton, adj Castle Rising Road",
+    "South Wootton, adj Deas Road", "South Wootton, adj Langley Road",
+    "South Wootton, adj Sandy Lane", "South Wootton, opp Castle Reach",
+    "South Wootton, adj Knight’s Hill", "Queen Elizabeth Hospital, Travel Hub",
+    "Gaywood, adj Tesco", "King’s Lynn, adj Queensway", "King’s Lynn, adj Elvington Road",
+    "King’s Lynn, adj Health Centre", "King’s Lynn, adj Kent Road",
+    "King’s Lynn, adj St Katherines Court", "King’s Lynn, adj Railway Station",
+    "King’s Lynn Transport Interchange"
+  ],
+
+  "46": [
+    "King’s Lynn Transport Interchange", "King’s Lynn, adj Railway Station",
+    "King’s Lynn, opp Southgate Street", "King’s Lynn, opp Sandpiper Way",
+    "Saddlebow, adj Bentinck Dock", "Tilney cum Islington, adj Bus Shelter",
+    "Tilney All Saints, adj Spice Chase", "Tilney High End, adj School Road",
+    "Tilney St Lawrence, adj Bus Shelter", "Tilney St Lawrence, adj Westfields",
+    "Terrington St John, adj Kismet", "Terrington St John, adj School Road",
+    "Walpole Highway, adj Post Office", "Walpole Highway, adj School Road",
+    "West Walton, adj Church", "West Walton, adj School Road", "Walsoken, adj Black Bear Lane",
+    "Wisbech, adj Horsefair Bus Station"
+  ],
+
+  "X46": [
+    "King’s Lynn Transport Interchange", "King’s Lynn Railway Station", "Saddlebow",
+    "St Germans", "Walsoken", "Wisbech Horsefair Bus Station"
+  ],
+
+  "48": [
+    "King’s Lynn St Katherines Court", "King’s Lynn Railway Station",
+    "King’s Lynn Transport Interchange (Stand F)", "Queen Elizabeth Hospital, Travel Hub",
+    "King’s Lynn, adj Kent Road", "King’s Lynn, adj Queensway", "King’s Lynn, adj Elvington Road",
+    "Gayton, adj Crown", "Gayton, adj Back Street", "East Walton, adj Church",
+    "West Acre, adj Stag", "Castle Acre, adj Bailey Street", "Castle Acre, adj Foxes Meadow",
+    "Great Massingham, adj The Dabbling Duck", "Rougham, adj Church",
+    "Weasenham, adj Church", "Tittleshall, adj Church", "Whissonsett, adj Church",
+    "Fakenham Oak Street"
+  ],
+
+  "48A": [
+    "Middleton, adj Walter Howes Crescent", "Middleton, adj Church", "East Winch, adj Station Road",
+    "Ashwicken, adj The Crown", "Leziate, adj Common Road", "Bawsey, adj Church Road",
+    "King’s Lynn, Springwood High School"
+  ],
+
+  "49": [
+    "King’s Lynn Transport Interchange", "King’s Lynn Railway Station",
+    "King’s Lynn St Katherines Court", "Queen Elizabeth Hospital, Travel Hub",
+    "Gayton Road", "Grimston, adj Church", "Grimston, adj The Old Bell",
+    "Pott Row, adj Chapel Road", "Pott Row, adj Massingham Road",
+    "Great Massingham, adj The Dabbling Duck", "Rougham, adj Church",
+    "Weasenham, adj Church", "Tittleshall, adj Church", "Whissonsett, adj Church",
+    "Fakenham Oak Street"
+  ],
+
+  "49A": [
+    "King’s Lynn Transport Interchange", "King’s Lynn Railway Station",
+    "Queen Elizabeth Hospital, Travel Hub", "Gayton, adj Crown",
+    "Great Massingham, adj The Dabbling Duck", "Rougham, adj Church",
+    "The Rudhams", "Tittleshall", "Whissonsett", "Fakenham Oak Street"
+  ],
+
+  "54": [
+    "King’s Lynn Transport Interchange", "South Lynn, adj Vancouver Avenue",
+    "South Lynn, adj Wisbech Road", "West Lynn, adj Ferry Square",
+    "Clenchwarton, adj Church", "Clenchwarton, adj Jubilee Bank Road",
+    "Tilney All Saints, adj Spice Chase", "Tilney High End, adj School Road",
+    "Terrington St Clement, adj Churchgate Way", "Terrington St Clement, adj Marshland Street",
+    "Terrington St Clement, adj Wesley Road", "Walpole Cross Keys", "Walpole St Peter",
+    "Walpole Highway"
+  ],
+
+  "54A": [
+    "King’s Lynn Transport Interchange", "South Lynn", "West Lynn", "Clenchwarton",
+    "Tilney All Saints", "Tilney High End", "Terrington St Clement",
+    "Terrington High School"
+  ],
+
+  "60": [
+    "Wisbech Horsefair Bus Station", "Wisbech, adj Park Avenue", "Emneth, opp Hollycroft Close",
+    "Emneth, adj Bus Shelter", "Emneth, opp Church", "Emneth, adj Thatchwood Avenue",
+    "Emneth, adj Tram Station Lane", "Emneth, opp Elmfield Drive",
+    "Outwell, adj Isle Bridge Road", "Outwell, adj St Clement’s Church",
+    "Upwell, adj The Five Bells", "Upwell, adj New Road", "Three Holes, adj Village Hall",
+    "Three Holes, opp Mudds Drove", "Lotts Bridge, adj PO Box", "Nordelph, adj Thorpe Terrace",
+    "Nordelph, opp Coronation Avenue", "Nordelph, opp Chequers",
+    "Salter’s Lode, opp Kemps Close", "Downham Market, opp Bus Shelter",
+    "Downham Market, opp Railway Station", "Downham Market, adj Tesco Superstore"
+  ],
+
+  "414": [
+    "Dersingham", "Snettisham", "Heacham", "Docking", "Stanhoe", "Burnham Market",
+    "Wells-next-the-Sea", "Alderman Peel High School"
+  ],
+
+  "415": [
+    "Dersingham", "Ingoldisthorpe", "Snettisham", "Heacham", "Docking",
+    "Wells-next-the-Sea", "Alderman Peel High School"
+  ]
+};
+
+function stopsForLynxRoute(routeNo, destination){
+  const base = (LYNX_STOP_PATTERNS[routeNo] || []).slice();
+
+  const dest = String(destination || "").toLowerCase();
+
+  if(dest.includes("king") || dest.includes("wisbech") || dest.includes("dersingham") || dest.includes("middleton")){
+    return base.reverse();
+  }
+
+  return base;
+}
+
+function stopObjectsForLynxRoute(routeNo, destination){
+  return stopsForLynxRoute(routeNo, destination).map(function(name, index){
+    return {
+      name: name,
+      lat: null,
+      lng: null,
+      builtIn: true,
+      order: index + 1
+    };
+  });
+}
+
+let currentRouteKey = null;
+let currentStopIndex = 0;
+
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+  maxZoom:19,
+  attribution:"© OpenStreetMap"
+}).addTo(map);
+
+map.on("click",function(e){
+  clickedLatLng = e.latlng;
+  L.popup()
+    .setLatLng(e.latlng)
+    .setContent("Point selected. Add a stop name.")
+    .openOn(map);
+});
+
+function saveRoutes(){
+  localStorage.setItem("busRoutesV2",JSON.stringify(routes));
+}
+
+function loadAllLynxRoutes(){
+  LYNX_ROUTES.forEach(function(item){
+    const key = makeKey(item.lineNumber, item.routeNo, item.destination);
+
+    if(!routes[key]){
+      routes[key] = {
+        lineNumber: item.lineNumber,
+        routeNo: item.routeNo,
+        destination: item.destination,
+        via: item.via,
+        stops: stopObjectsForLynxRoute(item.routeNo, item.destination),
+        presetOperator: "Lynx"
+      };
+    }else{
+      routes[key].lineNumber = item.lineNumber;
+      routes[key].routeNo = item.routeNo;
+      routes[key].destination = item.destination;
+      routes[key].via = item.via;
+      routes[key].presetOperator = "Lynx";
+      routes[key].stops = stopObjectsForLynxRoute(item.routeNo, item.destination);
+    }
+  });
+
+  saveRoutes();
+  function updateControllerClock(){
+  const el = document.getElementById("lcdTime");
+  if(!el) return;
+
+  const now = new Date();
+  el.textContent = now.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+}
+
+setInterval(updateControllerClock, 1000);
+updateControllerClock();
+
+
+function toggleNextStopFullscreen(){
+  const screen = document.querySelector('.nextDisplay');
+  if(!screen) return;
+
+  const isActive =
+    screen.classList.contains('fullscreenNextStop') ||
+    screen.classList.contains('mobileFullscreenNextStop') ||
+    document.body.classList.contains('nextStopFullscreenActive');
+
+  if(isActive){
+    screen.classList.remove('fullscreenNextStop');
+    screen.classList.remove('mobileFullscreenNextStop');
+    document.body.classList.remove('nextStopFullscreenActive');
+
+    if(document.fullscreenElement && document.exitFullscreen){
+      document.exitFullscreen().catch(()=>{});
+    }
+    return;
+  }
+
+  document.body.classList.add('nextStopFullscreenActive');
+  screen.classList.add('mobileFullscreenNextStop');
+
+  const request =
+    screen.requestFullscreen ||
+    screen.webkitRequestFullscreen ||
+    screen.msRequestFullscreen;
+
+  if(request){
+    try{
+      const result = request.call(screen);
+      if(result && result.catch){
+        result.catch(()=>{});
+      }
+      screen.classList.add('fullscreenNextStop');
+    }catch(e){
+      // iPhone/Safari fallback keeps fake fullscreen active.
+    }
+  }
+
+  setTimeout(function(){
+    window.scrollTo(0,0);
+  },100);
+}
+
+document.addEventListener('keydown',function(e){
+  if(e.key==='F11'){
+    e.preventDefault();
+    toggleNextStopFullscreen();
+  }
+});
+
+document.addEventListener('fullscreenchange',function(){
+  const screen=document.querySelector('.nextDisplay');
+  if(!screen) return;
+
+  if(!document.fullscreenElement){
+    screen.classList.remove('fullscreenNextStop');
+  }
+});
+
+document.addEventListener('webkitfullscreenchange',function(){
+  const screen=document.querySelector('.nextDisplay');
+  if(!screen) return;
+
+  if(!document.webkitFullscreenElement){
+    screen.classList.remove('fullscreenNextStop');
+  }
+});
+
+
+refreshRouteSelect();
+
+  if(!currentRouteKey && LYNX_ROUTES.length){
+    const first = LYNX_ROUTES[0];
+    currentRouteKey = makeKey(first.lineNumber, first.routeNo, first.destination);
+    document.getElementById("routeSelect").value = currentRouteKey;
+    loadRoute();
+  }
+
+  alert("Loaded Lynx routes with built-in stop lists. Select a route or type a line number on the controller.");
+}
+
+function makeKey(line,no,dest){
+  return line + " | " + no + " - " + dest;
+}
+
+function createRoute(){
+  const line = document.getElementById("lineNumber").value.trim();
+  const no = document.getElementById("routeNo").value.trim();
+  const dest = document.getElementById("destination").value.trim();
+  const via = document.getElementById("viaText").value.trim();
+
+  if(!line || !no || !dest){
+    alert("Enter line number, route number and destination first.");
+    return;
+  }
+
+  const key = makeKey(line,no,dest);
+
+  if(!routes[key]){
+    routes[key] = {lineNumber:line,routeNo:no,destination:dest,via:via,stops:stopObjectsForLynxRoute(no, dest)};
+  }else{
+    routes[key].lineNumber = line;
+    routes[key].routeNo = no;
+    routes[key].destination = dest;
+    routes[key].via = via;
+  }
+
+  currentRouteKey = key;
+  currentStopIndex = 0;
+  showingThisStop = false;
+  saveRoutes();
+  function updateControllerClock(){
+  const el = document.getElementById("lcdTime");
+  if(!el) return;
+
+  const now = new Date();
+  el.textContent = now.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+}
+
+setInterval(updateControllerClock, 1000);
+updateControllerClock();
+
+refreshRouteSelect();
+  document.getElementById("routeSelect").value = key;
+  drawStops();
+  updateDisplays();
+}
+
+function refreshRouteSelect(){
+  const select = document.getElementById("routeSelect");
+  select.innerHTML = "";
+
+  const keys = Object.keys(routes);
+
+  if(keys.length === 0){
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "No routes saved";
+    select.appendChild(opt);
+    return;
+  }
+
+  keys.forEach(key=>{
+    const r = routes[key];
+    const opt = document.createElement("option");
+    opt.value = key;
+    opt.textContent = `Line ${r.lineNumber || "---"} | Route ${r.routeNo} - ${r.destination}`;
+    select.appendChild(opt);
+  });
+}
+
+function loadRoute(){
+  const key = document.getElementById("routeSelect").value;
+  if(!key || !routes[key]) return;
+
+  currentRouteKey = key;
+  currentStopIndex = 0;
+  showingThisStop = false;
+  dwellStopIndex = null;
+  dwellStartTime = null;
+
+  const r = routes[key];
+
+  document.getElementById("lineNumber").value = r.lineNumber || "";
+  document.getElementById("routeNo").value = r.routeNo || "";
+  document.getElementById("destination").value = r.destination || "";
+  document.getElementById("viaText").value = r.via || "";
+
+  drawStops();
+  updateDisplays();
+}
+
+function addClickedStop(){
+  if(!currentRouteKey){
+    alert("Create or select a route first.");
+    return;
+  }
+
+  if(!clickedLatLng){
+    alert("Click the map first.");
+    return;
+  }
+
+  const name = document.getElementById("stopName").value.trim();
+
+  if(!name){
+    alert("Type a stop name.");
+    return;
+  }
+
+  routes[currentRouteKey].stops.push({
+    name:name,
+    lat:clickedLatLng.lat,
+    lng:clickedLatLng.lng
+  });
+
+  clickedLatLng = null;
+  document.getElementById("stopName").value = "";
+  saveRoutes();
+  drawStops();
+  updateDisplays();
+}
+
+function autoPickupStops(showAlert){
+  const status = document.getElementById("autoStopStatus");
+
+  if(!currentRouteKey || !routes[currentRouteKey]){
+    if(showAlert) alert("Select a route first.");
+    return false;
+  }
+
+  const current = routes[currentRouteKey];
+
+  if(current.stops && current.stops.length > 0){
+    if(status) status.textContent = "Auto stops: this route already has stops saved.";
+    return true;
+  }
+
+  const sameRouteKey = Object.keys(routes).find(function(key){
+    if(key === currentRouteKey) return false;
+
+    const other = routes[key];
+
+    return String(other.routeNo || "") === String(current.routeNo || "") &&
+           other.stops &&
+           other.stops.length > 0;
+  });
+
+  if(!sameRouteKey){
+    if(status) status.textContent = "Auto stops: no saved stop pattern found for route " + current.routeNo + ". Add stops once first.";
+    if(showAlert) alert("No saved stops found for route " + current.routeNo + ". Add the stops once, then other lines using this route can copy them.");
+    return false;
+  }
+
+  const source = routes[sameRouteKey];
+
+  current.stops = source.stops.map(function(stop){
+    return {
+      name: stop.name,
+      lat: stop.lat,
+      lng: stop.lng
+    };
+  });
+
+  saveRoutes();
+
+  if(status){
+    status.textContent = "Auto stops: copied " + current.stops.length + " stops from line " + (source.lineNumber || "---") + ", route " + source.routeNo + ".";
+  }
+
+  drawStops();
+  updateDisplays();
+
+  if(showAlert){
+    alert("Copied " + current.stops.length + " stops from another saved route " + source.routeNo + ".");
+  }
+
+  return true;
+}
+
+
+function drawStops(){
+  markers.forEach(m=>map.removeLayer(m));
+  markers = [];
+
+  const list = document.getElementById("stopsList");
+  list.innerHTML = "";
+
+  if(!currentRouteKey || !routes[currentRouteKey]) return;
+
+  const route = routes[currentRouteKey];
+
+  route.stops.forEach((stop,index)=>{
+    const hasCoords = typeof stop.lat === "number" && typeof stop.lng === "number";
+
+    if(hasCoords){
+      const marker = L.marker([stop.lat,stop.lng])
+        .addTo(map)
+        .bindPopup(`${index+1}. ${stop.name}`);
+
+      markers.push(marker);
+    }
+
+    const div = document.createElement("div");
+    div.className = "stopItem";
+    div.innerHTML = `
+      <b>${index+1}. ${stop.name}</b>
+      <div class="mini">${hasCoords ? stop.lat.toFixed(5) + ", " + stop.lng.toFixed(5) : "Built-in Lynx stop"}</div>
+      <div class="grid3">
+        <button class="dark" onclick="setStop(${index})">Set</button>
+        <button class="dark" onclick="moveStopUp(${index})">Up</button>
+        <button class="red" onclick="removeStop(${index})">Delete</button>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+
+  const coordStops = route.stops.filter(s => typeof s.lat === "number" && typeof s.lng === "number");
+
+  if(coordStops.length){
+    map.fitBounds(coordStops.map(s=>[s.lat,s.lng]),{padding:[40,40]});
+  }
+}
+
+function setStop(index){
+  currentStopIndex = index;
+  showingThisStop = false;
+  dwellStopIndex = null;
+  dwellStartTime = null;
+  updateDisplays();
+}
+
+function moveStopUp(index){
+  if(!currentRouteKey || index <= 0) return;
+  const stops = routes[currentRouteKey].stops;
+  [stops[index-1],stops[index]] = [stops[index],stops[index-1]];
+  saveRoutes();
+  drawStops();
+  updateDisplays();
+}
+
+function removeStop(index){
+  if(!currentRouteKey) return;
+  routes[currentRouteKey].stops.splice(index,1);
+  currentStopIndex = Math.min(currentStopIndex,Math.max(0,routes[currentRouteKey].stops.length-1));
+  saveRoutes();
+  drawStops();
+  updateDisplays();
+}
+
+function nextStop(){
+  if(!currentRouteKey) return;
+  const r = routes[currentRouteKey];
+  if(currentStopIndex < r.stops.length - 1) currentStopIndex++;
+  showingThisStop = false;
+  dwellStopIndex = null;
+  dwellStartTime = null;
+  updateDisplays();
+}
+
+function previousStop(){
+  if(!currentRouteKey) return;
+  if(currentStopIndex > 0) currentStopIndex--;
+  showingThisStop = false;
+  dwellStopIndex = null;
+  dwellStartTime = null;
+  updateDisplays();
+}
+
+function updateDisplays(){
+  if(announcementActive) return;
+
+  const nextRouteNo = document.getElementById("nextRouteNo");
+  const nextDestination = document.getElementById("nextDestination");
+  const label = document.getElementById("stopScreenLabel");
+  const nextText = document.getElementById("nextStopText");
+  nextText.classList.remove("messageMode");
+  const stop2 = document.getElementById("stop2");
+  const stop3 = document.getElementById("stop3");
+
+  const frontRoute = document.getElementById("frontRoute");
+  const frontDest = document.getElementById("frontDest");
+  const frontVia = document.getElementById("frontVia");
+
+  const lcdRoute = document.getElementById("lcdRoute");
+  const lcdDest = document.getElementById("lcdDest");
+  const lcdLine = document.getElementById("lcdLine");
+  const lcdStop = document.getElementById("lcdStop");
+  const lcdMode = document.getElementById("lcdMode");
+  const lcdProgress = document.getElementById("lcdProgress");
+  const lcdProgressBar = document.getElementById("lcdProgressBar");
+  const lcdNextMini = document.getElementById("lcdNextMini");
+  const lcdLastUpdate = document.getElementById("lcdLastUpdate");
+
+  const metricLine = document.getElementById("metricLine");
+  const metricRoute = document.getElementById("metricRoute");
+  const metricCurrent = document.getElementById("metricCurrent");
+
+  if(!currentRouteKey || !routes[currentRouteKey]){
+    nextRouteNo.textContent = "--";
+    nextDestination.textContent = "NO DESTINATION";
+    label.textContent = "NEXT STOPS";
+    nextText.textContent = "No route selected";
+    stop2.textContent = "---";
+    stop3.textContent = "---";
+    frontRoute.textContent = "--";
+    frontDest.textContent = "NO DESTINATION";
+    frontVia.textContent = "via ---";
+    lcdRoute.textContent = typedLine ? "----" : "----";
+    lcdDest.textContent = typedLine ? "Press ↓ for destination" : "No Destination";
+    lcdLine.textContent = typedLine || "---";
+    lcdStop.textContent = "---";
+    lcdMode.textContent = typedLine ? "LINE ENTRY" : "STANDBY";
+    lcdProgress.textContent = "0%";
+    lcdProgressBar.style.width = "0%";
+    lcdNextMini.textContent = "---";
+    lcdLastUpdate.textContent = "---";
+    metricLine.textContent = "---";
+    metricRoute.textContent = "---";
+    metricCurrent.textContent = "---";
+    return;
+  }
+
+  const r = routes[currentRouteKey];
+  const currentStop = r.stops[currentStopIndex];
+
+  nextRouteNo.textContent = r.routeNo || "--";
+  nextDestination.textContent = (r.destination || "NO DESTINATION").toUpperCase();
+  frontRoute.textContent = r.routeNo || "--";
+  frontDest.textContent = (r.destination || "NO DESTINATION").toUpperCase();
+  frontVia.textContent = diversionActive ? "ON DIVERSION" : (r.via ? r.via.toUpperCase() : "via ---");
+
+  lcdRoute.textContent = r.routeNo || "----";
+  lcdDest.textContent = r.destination || "No Destination";
+  lcdLine.textContent = r.lineNumber || "---";
+  lcdStop.textContent = currentStop ? currentStop.name : "---";
+  lcdMode.textContent = showingThisStop ? "AT STOP" : "IN SERVICE";
+
+  const totalStops = r.stops.length || 1;
+  const progress = totalStops > 1 ? Math.round((currentStopIndex / (totalStops - 1)) * 100) : 0;
+  const nextMini = r.stops[currentStopIndex + 1] ? r.stops[currentStopIndex + 1].name : "Terminus";
+
+  lcdProgress.textContent = progress + "%";
+  lcdProgressBar.style.width = progress + "%";
+  lcdNextMini.textContent = nextMini;
+  lcdLastUpdate.textContent = window.lastGpsUpdate || "Manual";
+
+  metricLine.textContent = r.lineNumber || "---";
+  metricRoute.textContent = r.routeNo || "---";
+  metricCurrent.textContent = currentStop ? currentStop.name : "---";
+
+  if(!r.stops.length){
+    label.textContent = "NEXT STOPS";
+    nextText.textContent = "No stops added";
+    stop2.textContent = "---";
+    stop3.textContent = "---";
+    return;
+  }
+
+  if(showingThisStop && currentStop){
+    const n1 = r.stops[currentStopIndex + 1];
+    const n2 = r.stops[currentStopIndex + 2];
+
+    label.textContent = "THIS STOP";
+    nextText.textContent = currentStop.name.toUpperCase();
+    stop2.textContent = n1 ? "Next: " + n1.name : "Terminus";
+    stop3.textContent = n2 ? "Then: " + n2.name : "";
+    return;
+  }
+
+  label.textContent = "NEXT STOPS";
+
+  const n1 = r.stops[currentStopIndex + 1];
+  const n2 = r.stops[currentStopIndex + 2];
+  const n3 = r.stops[currentStopIndex + 3];
+
+  nextText.textContent = n1 ? n1.name.toUpperCase() : "TERMINUS";
+  stop2.textContent = n2 ? "Then: " + n2.name : "";
+  stop3.textContent = n3 ? "Then: " + n3.name : "";
+}
+
+function toggleDiversion(){
+  diversionActive = !diversionActive;
+
+  const btn = document.getElementById("diversionBtn");
+  if(btn){
+    btn.innerHTML = diversionActive ? "DIV<br><small>ON</small>" : "DIV<br><small>OFF</small>";
+    btn.style.color = diversionActive ? "#ff9d00" : "";
+  }
+
+  document.body.classList.toggle("diversionOn", diversionActive);
+
+  if(diversionActive){
+    document.getElementById("lcdMode").textContent = "DIVERSION";
+    showPassengerMessage("DIVERSION");
+  }else{
+    announcementActive = false;
+    if(announcementTimer){
+      clearTimeout(announcementTimer);
+      announcementTimer = null;
+    }
+    updateDisplays();
+  }
+}
+
+function showPassengerMessage(number){
+  const message = PASSENGER_MESSAGES[number];
+  if(!message) return;
+
+  const nextRouteNo = document.getElementById("nextRouteNo");
+  const nextDestination = document.getElementById("nextDestination");
+  const label = document.getElementById("stopScreenLabel");
+  const nextText = document.getElementById("nextStopText");
+  nextText.classList.remove("messageMode");
+  const stop2 = document.getElementById("stop2");
+  const stop3 = document.getElementById("stop3");
+
+  announcementActive = true;
+
+  if(announcementTimer){
+    clearTimeout(announcementTimer);
+  }
+
+  label.textContent = "INFORMATION";
+  nextText.classList.add("messageMode");
+  nextText.textContent = message;
+  stop2.textContent = "";
+  stop3.textContent = "";
+
+  document.getElementById("lcdDest").textContent = "Message " + number;
+  document.getElementById("lcdDestCode").textContent = number;
+  document.getElementById("lcdMode").textContent = "MESSAGE";
+
+  if(number === "DIVERSION"){
+    return;
+  }
+
+  announcementTimer = setTimeout(function(){
+    announcementActive = false;
+    announcementTimer = null;
+    nextText.classList.remove("messageMode");
+    updateDisplays();
+  }, 15000);
+}
+
+function startLineEntry(){
+  if(announcementTimer){
+    clearTimeout(announcementTimer);
+    announcementTimer = null;
+  }
+  announcementActive = false;
+  diversionActive = false;
+  document.body.classList.remove("diversionOn");
+  const divBtn = document.getElementById("diversionBtn");
+  if(divBtn){
+    divBtn.innerHTML = "DIV<br><small>OFF</small>";
+    divBtn.style.color = "";
+  }
+
+  typedLine = "";
+  controllerMode = "lineEntry";
+  destinationMatches = [];
+  destinationChoiceIndex = 0;
+  document.getElementById("lcdRoute").textContent = "----";
+  document.getElementById("lcdDest").textContent = "Type line number";
+  document.getElementById("lcdLine").textContent = "---";
+  document.getElementById("lcdDestCode").textContent = "---";
+  document.getElementById("lcdMode").textContent = "LINE ENTRY";
+}
+
+function pressNumber(num){
+  // Normal controller mode: number buttons play passenger messages.
+  // F1 switches to line entry mode, then numbers type the line number.
+  if(controllerMode !== "lineEntry"){
+    if(PASSENGER_MESSAGES[num]){
+      showPassengerMessage(num);
+      return;
+    }
+    return;
+  }
+
+  typedLine += num;
+  destinationMatches = [];
+  destinationChoiceIndex = 0;
+
+  document.getElementById("lcdRoute").textContent = "----";
+  document.getElementById("lcdDest").textContent = "Press ↓ for destination";
+  document.getElementById("lcdLine").textContent = typedLine;
+  document.getElementById("lcdDestCode").textContent = "---";
+}
+
+function clearTyped(){
+  typedLine = "";
+  controllerMode = "normal";
+  destinationMatches = [];
+  destinationChoiceIndex = 0;
+  updateDisplays();
+}
+
+function cycleDestination(){
+  if(!typedLine){
+    alert("Press F1 and type a line number first.");
+    return;
+  }
+
+  destinationMatches = Object.keys(routes).filter(key=>{
+    const r = routes[key];
+    return String(r.lineNumber || r.routeNo) === typedLine;
+  });
+
+  if(!destinationMatches.length){
+    document.getElementById("lcdDest").textContent = "No line found";
+    document.getElementById("lcdDestCode").textContent = "---";
+    return;
+  }
+
+  const key = destinationMatches[destinationChoiceIndex];
+  const r = routes[key];
+
+  document.getElementById("lcdRoute").textContent = r.routeNo;
+  document.getElementById("lcdDest").textContent = r.destination;
+  document.getElementById("lcdLine").textContent = r.lineNumber || typedLine;
+  document.getElementById("lcdDestCode").textContent = String(destinationChoiceIndex + 1);
+
+  destinationChoiceIndex++;
+  if(destinationChoiceIndex >= destinationMatches.length) destinationChoiceIndex = 0;
+}
+
+function applyTypedLine(){
+  if(!typedLine){
+    alert("Press F1 and type a line number first.");
+    return;
+  }
+
+  if(!destinationMatches.length){
+    destinationMatches = Object.keys(routes).filter(key=>{
+      const r = routes[key];
+      return String(r.lineNumber || r.routeNo) === typedLine;
+    });
+  }
+
+  if(!destinationMatches.length){
+    alert("No saved destinations found for line " + typedLine);
+    return;
+  }
+
+  let selectedIndex = destinationChoiceIndex - 1;
+  if(selectedIndex < 0) selectedIndex = 0;
+
+  currentRouteKey = destinationMatches[selectedIndex];
+  currentStopIndex = 0;
+  showingThisStop = false;
+  dwellStopIndex = null;
+  dwellStartTime = null;
+
+  document.getElementById("routeSelect").value = currentRouteKey;
+
+  typedLine = "";
+  controllerMode = "normal";
+  destinationMatches = [];
+  destinationChoiceIndex = 0;
+
+  loadRoute();
+}
+
+function startGPS(){
+  if(!navigator.geolocation){
+    alert("GPS is not supported on this device.");
+    return;
+  }
+
+  if(watchId) navigator.geolocation.clearWatch(watchId);
+
+  document.getElementById("gpsStatus").textContent = "GPS: On - using live location";
+  document.getElementById("gpsPill").classList.add("on");
+  document.getElementById("gpsPill").innerHTML = "GPS <b>ON</b>";
+  document.getElementById("lcdGps").textContent = "ON";
+
+  watchId = navigator.geolocation.watchPosition(pos=>{
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+    const accuracy = Math.round(pos.coords.accuracy);
+
+    document.getElementById("locationStatus").textContent =
+      `Location: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+
+    document.getElementById("metricGps").textContent = accuracy + "m";
+    window.lastGpsUpdate = new Date().toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
+
+    if(gpsMarker){
+      gpsMarker.setLatLng([lat,lng]);
+    }else{
+      gpsMarker = L.marker([lat,lng]).addTo(map).bindPopup("Your real GPS location");
+    }
+
+    checkNearestStop(lat,lng);
+
+  },err=>{
+    alert("GPS error: " + err.message);
+  },{
+    enableHighAccuracy:true,
+    maximumAge:1000,
+    timeout:10000
+  });
+}
+
+function stopGPS(){
+  if(watchId){
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+  }
+
+  document.getElementById("gpsStatus").textContent = "GPS: Off";
+  document.getElementById("gpsPill").classList.remove("on");
+  document.getElementById("gpsPill").innerHTML = "GPS <b>OFF</b>";
+  document.getElementById("lcdGps").textContent = "OFF";
+}
+
+function checkNearestStop(lat,lng){
+  if(!currentRouteKey || !routes[currentRouteKey]){
+    nearestStopName = "No route selected";
+    nearestStopDistance = null;
+    updateDisplays();
+    return;
+  }
+
+  const r = routes[currentRouteKey];
+
+  if(!r || !r.stops.length){
+    nearestStopName = "No stops loaded";
+    nearestStopDistance = null;
+    updateDisplays();
+    return;
+  }
+
+  let nearestIndex = 0;
+  let nearestDistance = Infinity;
+  let foundCoords = false;
+
+  r.stops.forEach((s,i)=>{
+    if(typeof s.lat !== "number" || typeof s.lng !== "number") return;
+
+    foundCoords = true;
+    const d = getDistance(lat,lng,s.lat,s.lng);
+
+    if(d < nearestDistance){
+      nearestDistance = d;
+      nearestIndex = i;
+    }
+  });
+
+  // Built-in text-only stops cannot GPS jump unless coordinates are added.
+  if(!foundCoords){
+    updateDisplays();
+    return;
+  }
+
+  nearestStopName = r.stops[nearestIndex].name;
+  nearestStopDistance = nearestDistance;
+
+  const triggerDistance = 90;
+
+  // Only jump when the bus is actually near a stop.
+  if(nearestDistance <= triggerDistance){
+    if(currentStopIndex !== nearestIndex){
+      currentStopIndex = nearestIndex;
+      showingThisStop = false;
+      dwellStopIndex = nearestIndex;
+      dwellStartTime = Date.now();
+      updateDisplays();
+      return;
+    }
+
+    if(dwellStopIndex !== nearestIndex){
+      dwellStopIndex = nearestIndex;
+      dwellStartTime = Date.now();
+      showingThisStop = false;
+      updateDisplays();
+      return;
+    }
+
+    // After 5 seconds nearby, switch to THIS STOP.
+    if(dwellStartTime && Date.now() - dwellStartTime >= 5000){
+      showingThisStop = true;
+      updateDisplays();
+      return;
+    }
+  }else{
+    // Not close enough to jump. Keep the selected stop order steady.
+    dwellStopIndex = null;
+    dwellStartTime = null;
+
+    if(showingThisStop){
+      showingThisStop = false;
+      updateDisplays();
+      return;
+    }
+  }
+
+  updateDisplays();
+}
+
+function getDistance(lat1,lng1,lat2,lng2){
+  const R = 6371000;
+  const dLat = toRad(lat2-lat1);
+  const dLng = toRad(lng2-lng1);
+  const a =
+    Math.sin(dLat/2)**2 +
+    Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+function toRad(v){return v*Math.PI/180}
+
+function clearAll(){
+  typedLine = "";
+  controllerMode = "normal";
+  destinationMatches = [];
+  destinationChoiceIndex = 0;
+  currentRouteKey = null;
+  currentStopIndex = 0;
+  nearestStopName = "---";
+  nearestStopDistance = null;
+  showingThisStop = false;
+  dwellStopIndex = null;
+  dwellStartTime = null;
+
+  document.getElementById("lineNumber").value = "";
+  document.getElementById("routeNo").value = "";
+  document.getElementById("destination").value = "";
+  document.getElementById("viaText").value = "";
+  document.getElementById("routeSelect").value = "";
+
+  updateDisplays();
+}
+
+function homeView(){
+  if(currentRouteKey && routes[currentRouteKey] && routes[currentRouteKey].stops.length){
+    drawStops();
+  }else{
+    map.setView([52.753,0.397],12);
+  }
+}
+
+function deleteRoute(){
+  if(!currentRouteKey){
+    alert("No route selected.");
+    return;
+  }
+
+  if(confirm("Delete this route?")){
+    delete routes[currentRouteKey];
+    currentRouteKey = null;
+    currentStopIndex = 0;
+    saveRoutes();
+    function updateControllerClock(){
+  const el = document.getElementById("lcdTime");
+  if(!el) return;
+
+  const now = new Date();
+  el.textContent = now.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+}
+
+setInterval(updateControllerClock, 1000);
+updateControllerClock();
+
+refreshRouteSelect();
+    drawStops();
+    updateDisplays();
+  }
+}
+
+function updateControllerClock(){
+  const el = document.getElementById("lcdTime");
+  if(!el) return;
+
+  const now = new Date();
+  el.textContent = now.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+}
+
+setInterval(updateControllerClock, 1000);
+updateControllerClock();
+
+refreshRouteSelect();
+
+if(Object.keys(routes).length){
+  currentRouteKey = Object.keys(routes)[0];
+  document.getElementById("routeSelect").value = currentRouteKey;
+  loadRoute();
+}else{
+  updateDisplays();
+}
+</script>
+</body>
+</html>
