@@ -481,6 +481,27 @@ button.orange{background:#b86a00}
 
         <p class="hint">
           The line number is separate from the route number. Example: line <b>1001</b> can show route <b>34</b> to Hunstanton.
+          Press numbers <b>1–9</b> during normal mode to show passenger messages for 15 seconds.
+        </p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="cardHead"><h2>Passenger Messages</h2></div>
+      <div class="cardBody">
+        <div class="grid3">
+          <button class="dark" onclick="showPassengerMessage('1')">1</button>
+          <button class="dark" onclick="showPassengerMessage('2')">2</button>
+          <button class="dark" onclick="showPassengerMessage('3')">3</button>
+          <button class="dark" onclick="showPassengerMessage('4')">4</button>
+          <button class="dark" onclick="showPassengerMessage('5')">5</button>
+          <button class="dark" onclick="showPassengerMessage('6')">6</button>
+          <button class="dark" onclick="showPassengerMessage('7')">7</button>
+          <button class="dark" onclick="showPassengerMessage('8')">8</button>
+          <button class="dark" onclick="showPassengerMessage('9')">9</button>
+        </div>
+        <p class="hint">
+          1 No smoking/vaping • 2 Stop closed • 3 Passing safely • 4 No standing upstairs/stairs • 5 Move down • 6 Hold on • 7 Pass ready • 8 Service regulation • 9 CCTV
         </p>
       </div>
     </div>
@@ -607,6 +628,20 @@ let destinationChoiceIndex = 0;
 let dwellStopIndex = null;
 let dwellStartTime = null;
 let showingThisStop = false;
+let announcementTimer = null;
+let announcementActive = false;
+
+const PASSENGER_MESSAGES = {
+  "1": "NO SMOKING OR VAPING ON THIS BUS",
+  "2": "THE NEXT BUS STOP IS CLOSED",
+  "3": "THIS BUS WILL WAIT HERE UNTIL THE BUS COMING IN THE OPPOSITE DIRECTION PASSES SAFELY",
+  "4": "NO STANDING ON THE UPPER DECK OR STAIRS PLEASE",
+  "5": "PLEASE MOVE DOWN INSIDE THE BUS",
+  "6": "PLEASE HOLD ON WHILE THE BUS IS MOVING",
+  "7": "PLEASE HAVE YOUR TICKET OR PASS READY",
+  "8": "THIS BUS IS BEING HELD TO REGULATE THE SERVICE",
+  "9": "CCTV IS IN OPERATION ON THIS BUS"
+};
 
 let routes = JSON.parse(localStorage.getItem("busRoutesV2") || localStorage.getItem("busRoutes") || "{}");
 
@@ -1314,6 +1349,8 @@ function previousStop(){
 }
 
 function updateDisplays(){
+  if(announcementActive) return;
+
   const label = document.getElementById("stopScreenLabel");
   const nextText = document.getElementById("nextStopText");
   const stop2 = document.getElementById("stop2");
@@ -1396,7 +1433,40 @@ function updateDisplays(){
   stop3.textContent = n3 ? "Then: " + n3.name : "";
 }
 
+function showPassengerMessage(number){
+  const message = PASSENGER_MESSAGES[number];
+  if(!message) return;
+
+  const label = document.getElementById("stopScreenLabel");
+  const nextText = document.getElementById("nextStopText");
+  const stop2 = document.getElementById("stop2");
+  const stop3 = document.getElementById("stop3");
+
+  announcementActive = true;
+
+  if(announcementTimer){
+    clearTimeout(announcementTimer);
+  }
+
+  label.textContent = "INFORMATION";
+  nextText.textContent = message;
+  stop2.textContent = "";
+  stop3.textContent = "";
+
+  announcementTimer = setTimeout(function(){
+    announcementActive = false;
+    announcementTimer = null;
+    updateDisplays();
+  }, 15000);
+}
+
 function startLineEntry(){
+  if(announcementTimer){
+    clearTimeout(announcementTimer);
+    announcementTimer = null;
+  }
+  announcementActive = false;
+
   typedLine = "";
   controllerMode = "lineEntry";
   destinationMatches = [];
@@ -1408,7 +1478,13 @@ function startLineEntry(){
 }
 
 function pressNumber(num){
-  if(controllerMode !== "lineEntry") startLineEntry();
+  if(controllerMode !== "lineEntry"){
+    if(PASSENGER_MESSAGES[num]){
+      showPassengerMessage(num);
+      return;
+    }
+    startLineEntry();
+  }
 
   typedLine += num;
   destinationMatches = [];
