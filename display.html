@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>Bus Stop Screen Controller</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#101418;color:#fff}
+header{padding:14px 18px;background:#161d24;border-bottom:1px solid #2a3440}
+header h1{margin:0;font-size:20px}
+.wrap{display:grid;grid-template-columns:380px 1fr;min-height:calc(100vh - 55px)}
+.panel{padding:15px;background:#151b22;border-right:1px solid #2a3440;overflow:auto}
+#map{height:100%;min-height:600px}
+label{display:block;margin-top:12px;font-size:13px;color:#b7c4d1}
+input,select,button{width:100%;padding:10px;margin-top:6px;border-radius:8px;border:1px solid #334252;background:#0f141a;color:white}
+button{cursor:pointer;background:#1677ff;border:0;font-weight:bold}
+button.secondary{background:#2d3946}
+button.danger{background:#b42b2b}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stop{padding:8px;margin-top:6px;background:#202a34;border-radius:8px;font-size:13px}
+.screenBox{margin-top:15px;padding:12px;border-radius:12px;background:#050505;border:2px solid #333}
+.nextScreen{font-family:Arial Black,Arial,sans-serif;background:#000;color:#ffd400;text-align:center;padding:20px;border-radius:8px;min-height:130px}
+.nextScreen .small{font-size:16px;color:#fff}
+.nextScreen .big{font-size:30px;margin-top:12px}
+.destDisplay{margin-top:10px;background:#050505;color:#ff9d00;font-family:Arial Black,Arial,sans-serif;text-align:center;border:3px solid #222;padding:18px;border-radius:8px}
+.destDisplay .routeNo{font-size:56px;line-height:50px}
+.destDisplay .dest{font-size:24px;margin-top:8px}
+.status{margin-top:10px;font-size:13px;color:#b7c4d1}
+.gpsOn{color:#42ff8b}
+.gpsOff{color:#ff7070}
+</style>
+</head>
+
+<body>
+<header>
+  <h1>Bus Destination & Next Stop Controller</h1>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+
+    <label>Route number</label>
+    <input id="routeNo" placeholder="Example: 34">
+
+    <label>Destination</label>
+    <input id="destination" placeholder="Example: Hunstanton">
+
+    <button onclick="createRoute()">Create / Save Route</button>
+
+    <label>Select Route</label>
+    <select id="routeSelect" onchange="loadRoute()"></select>
+
+    <div class="row">
+      <button class="secondary" onclick="previousStop()">Previous Stop</button>
+      <button class="secondary" onclick="nextStop()">Next Stop</button>
+    </div>
+
+    <button onclick="startGPS()">Start GPS Tracking</button>
+    <button class="danger" onclick="stopGPS()">Stop GPS</button>
+
+    <label>Add stop name</label>
+    <input id="stopName" placeholder="Click map first, then type stop name">
+    <button onclick="addClickedStop()">Add Point To Route</button>
+
+    <div class="status" id="gpsStatus">GPS: <span class="gpsOff">Off</span></div>
+
+    <div class="screenBox">
+      <div class="nextScreen">
+        <div class="small">NEXT STOP</div>
+        <div class="big" id="nextStopText">No route selected</div>
+      </div>
+
+      <div class="destDisplay">
+        <div class="routeNo" id="frontRoute">--</div>
+        <div class="dest" id="frontDest">NO DESTINATION</div>
+      </div>
+    </div>
+
+    <h3>Stops</h3>
+    <div id="stopsList"></div>
+
+    <button class="danger" onclick="deleteRoute()">Delete Selected Route</button>
+  </div>
+
+  <div id="map"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+let map = L.map('map').setView([52.753, 0.397], 12);
+let clickedLatLng = null;
+let markers = [];
+let gpsMarker = null;
+let watchId = null;
+
+let routes = JSON.parse(localStorage.getItem("busRoutes") || "{}");
+let currentRouteKey = null;
+let currentStopIndex = 0;
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19
+}).addTo(map);
+
+map.on("click", e => {
+  clickedLatLng = e.latlng;
+  L.popup()
+    .setLatLng(e.latlng)
+    .setContent("Point selected. Type stop name then press Add Point.")
+    .openOn(map);
+});
+
+function saveRoutes(){
+  localStorage.setItem("busRoutes", JSON.stringify(routes));
+}
+
+function createRoute(){
+  const no = document.getElementById("routeNo").value.trim();
+  const dest = document.getElementById("destination").value.trim();
+
+  if(!no || !dest){
+    alert("Enter route number and destination first.");
+    return;
+  }
+
+  const key = no + " - " + dest;
+
+  if(!routes[key]){
+    routes[key] = {
+      routeNo: no,
+      destination: dest,
+      stops: []
+    };
+  } else {
+    routes[key].routeNo = no;
+    routes[key].destination = dest;
+  }
+
+  currentRouteKey = key;
+  currentStopIndex = 0;
+  saveRoutes();
+  refreshRouteSelect();
+  document.getElementById("routeSelect").value = key;
+  updateDisplays();
+}
+
+function refreshRouteSelect(){
+  const select = document.getElementById("routeSelect");
+  select.innerHTML = "";
+
+  Object.keys(routes).forEach(key => {
+    const opt = document.createElement("option");
+    opt.value = key;
+    opt.textContent = key;
+    select.appendChild(opt);
+  });
+}
+
+function loadRoute(){
+  currentRouteKey = document.getElementById("routeSelect").value;
+  currentStopIndex = 0;
+
+  const route = routes[currentRouteKey];
+  if(route){
+    document.getElementById("routeNo").value = route.routeNo;
+    document.getElementById("destination").value = route.destination;
+  }
+
+  drawStops();
+  updateDisplays();
+}
+
+function addClickedStop(){
+  if(!currentRouteKey){
+    alert("Create or select a route first.");
+    return;
+  }
+
+  if(!clickedLatLng){
+    alert("Click on the map first.");
+    return;
+  }
+
+  const name = document.getElementById("stopName").value.trim();
+  if(!name){
+    alert("Enter a stop name.");
+    return;
+  }
+
+  routes[currentRouteKey].stops.push({
+    name,
+    lat: clickedLatLng.lat,
+    lng: clickedLatLng.lng
+  });
+
+  document.getElementById("stopName").value = "";
+  clickedLatLng = null;
+
+  saveRoutes();
+  drawStops();
+  updateDisplays();
+}
+
+function drawStops(){
+  markers.forEach(m => map.removeLayer(m));
+  markers = [];
+
+  const list = document.getElementById("stopsList");
+  list.innerHTML = "";
+
+  if(!currentRouteKey) return;
+
+  const route = routes[currentRouteKey];
+
+  route.stops.forEach((stop, index) => {
+    const marker = L.marker([stop.lat, stop.lng])
+      .addTo(map)
+      .bindPopup(`${index + 1}. ${stop.name}`);
+
+    markers.push(marker);
+
+    const div = document.createElement("div");
+    div.className = "stop";
+    div.innerHTML = `
+      <b>${index + 1}. ${stop.name}</b><br>
+      ${stop.lat.toFixed(5)}, ${stop.lng.toFixed(5)}
+      <br><button onclick="setStop(${index})">Set As Current</button>
+    `;
+    list.appendChild(div);
+  });
+
+  if(route.stops.length){
+    map.fitBounds(route.stops.map(s => [s.lat, s.lng]), {padding:[40,40]});
+  }
+}
+
+function setStop(index){
+  currentStopIndex = index;
+  updateDisplays();
+}
+
+function nextStop(){
+  if(!currentRouteKey) return;
+  const route = routes[currentRouteKey];
+
+  if(currentStopIndex < route.stops.length - 1){
+    currentStopIndex++;
+  }
+
+  updateDisplays();
+}
+
+function previousStop(){
+  if(!currentRouteKey) return;
+
+  if(currentStopIndex > 0){
+    currentStopIndex--;
+  }
+
+  updateDisplays();
+}
+
+function updateDisplays(){
+  const nextText = document.getElementById("nextStopText");
+  const frontRoute = document.getElementById("frontRoute");
+  const frontDest = document.getElementById("frontDest");
+
+  if(!currentRouteKey){
+    nextText.textContent = "No route selected";
+    frontRoute.textContent = "--";
+    frontDest.textContent = "NO DESTINATION";
+    return;
+  }
+
+  const route = routes[currentRouteKey];
+
+  frontRoute.textContent = route.routeNo;
+  frontDest.textContent = route.destination.toUpperCase();
+
+  if(route.stops.length === 0){
+    nextText.textContent = "No stops added";
+    return;
+  }
+
+  const next = route.stops[currentStopIndex + 1];
+
+  if(next){
+    nextText.textContent = next.name.toUpperCase();
+  } else {
+    nextText.textContent = "TERMINUS";
+  }
+}
+
+function startGPS(){
+  if(!navigator.geolocation){
+    alert("GPS is not supported on this device.");
+    return;
+  }
+
+  if(!currentRouteKey){
+    alert("Select a route first.");
+    return;
+  }
+
+  document.getElementById("gpsStatus").innerHTML = `GPS: <span class="gpsOn">On</span>`;
+
+  watchId = navigator.geolocation.watchPosition(pos => {
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+
+    if(gpsMarker){
+      gpsMarker.setLatLng([lat,lng]);
+    } else {
+      gpsMarker = L.marker([lat,lng]).addTo(map).bindPopup("Your GPS Location");
+    }
+
+    checkNearestStop(lat,lng);
+
+  }, err => {
+    alert("GPS error: " + err.message);
+  }, {
+    enableHighAccuracy: true,
+    maximumAge: 1000,
+    timeout: 10000
+  });
+}
+
+function stopGPS(){
+  if(watchId){
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+  }
+
+  document.getElementById("gpsStatus").innerHTML = `GPS: <span class="gpsOff">Off</span>`;
+}
+
+function checkNearestStop(lat,lng){
+  const route = routes[currentRouteKey];
+  if(!route || route.stops.length === 0) return;
+
+  const triggerDistance = 70; // metres
+
+  route.stops.forEach((stop, index) => {
+    const distance = getDistance(lat,lng,stop.lat,stop.lng);
+
+    if(distance < triggerDistance){
+      currentStopIndex = index;
+      updateDisplays();
+    }
+  });
+}
+
+function getDistance(lat1,lng1,lat2,lng2){
+  const R = 6371000;
+  const dLat = toRad(lat2-lat1);
+  const dLng = toRad(lng2-lng1);
+
+  const a =
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLng/2) * Math.sin(dLng/2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
+function toRad(value){
+  return value * Math.PI / 180;
+}
+
+function deleteRoute(){
+  if(!currentRouteKey) return;
+
+  if(confirm("Delete this route?")){
+    delete routes[currentRouteKey];
+    currentRouteKey = null;
+    currentStopIndex = 0;
+    saveRoutes();
+    refreshRouteSelect();
+    drawStops();
+    updateDisplays();
+  }
+}
+
+refreshRouteSelect();
+
+if(Object.keys(routes).length){
+  currentRouteKey = Object.keys(routes)[0];
+  document.getElementById("routeSelect").value = currentRouteKey;
+  loadRoute();
+}
+</script>
+</body>
+</html>
