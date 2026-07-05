@@ -1091,6 +1091,8 @@ let gpsMarker = null;
 let watchId = null;
 let nearestStopName = "---";
 let nearestStopDistance = null;
+let resolvingStopCoords = false;
+let lastStopCoordResolve = 0;
 
 let typedLine = "";
 let controllerMode = "normal";
@@ -2254,6 +2256,7 @@ function startGPS(){
       gpsMarker = L.marker([lat,lng]).addTo(map).bindPopup("Your real GPS location");
     }
 
+    resolveBuiltInStopCoordinates(lat,lng);
     checkNearestStop(lat,lng);
 
   },err=>{
@@ -2275,6 +2278,117 @@ function stopGPS(){
   document.getElementById("gpsPill").classList.remove("on");
   document.getElementById("gpsPill").innerHTML = "GPS <b>OFF</b>";
   document.getElementById("lcdGps").textContent = "OFF";
+}
+
+
+function cleanStopNameForMatch(name){
+  return String(name || "")
+    .toLowerCase()
+    .replace(/king’s/g, "kings")
+    .replace(/king's/g, "kings")
+    .replace(/\(.*?\)/g, "")
+    .replace(/\b(adj|opp|opposite|stand|stop|bus|s-bound|n-bound|eastbound|westbound|northbound|southbound|drop-off|os|nr)\b/g, "")
+    .replace(/[^a-z0-9 ]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function stopNamesLikelyMatch(builtInName, osmName){
+  const a = cleanStopNameForMatch(builtInName);
+  const b = cleanStopNameForMatch(osmName);
+
+  if(!a || !b) return false;
+  if(a === b) return true;
+  if(a.includes(b) || b.includes(a)) return true;
+
+  const aWords = a.split(" ").filter(w => w.length > 3);
+  const bWords = b.split(" ").filter(w => w.length > 3);
+
+  if(aWords.length === 0 || bWords.length === 0) return false;
+
+  const matches = aWords.filter(w => bWords.includes(w)).length;
+  return matches >= Math.min(2, aWords.length);
+}
+
+async function resolveBuiltInStopCoordinates(lat,lng){
+  if(resolvingStopCoords) return;
+  if(!currentRouteKey || !routes[currentRouteKey]) return;
+
+  const route = routes[currentRouteKey];
+  const missingCoords = route.stops.some(s => typeof s.lat !== "number" || typeof s.lng !== "number");
+
+  if(!missingCoords) return;
+
+  const now = Date.now();
+  if(now - lastStopCoordResolve < 120000) return;
+
+  resolvingStopCoords = true;
+  lastStopCoordResolve = now;
+
+  const gpsStatus = document.getElementById("gpsStatus");
+  if(gpsStatus){
+    gpsStatus.textContent = "GPS: finding stop coordinates for this route...";
+  }
+
+  const query = `
+    [out:json][timeout:25];
+    (
+      node["highway"="bus_stop"](around:65000,${lat},${lng});
+      node["public_transport"="platform"](around:65000,${lat},${lng});
+    );
+    out body;
+  `;
+
+  try{
+    const res = await fetch("https://overpass-api.de/api/interpreter", {
+      method: "POST",
+      body: query
+    });
+
+    if(!res.ok) throw new Error("Could not load stop coordinates");
+
+    const data = await res.json();
+
+    const osmStops = (data.elements || [])
+      .filter(item => item.lat && item.lon && item.tags && item.tags.name)
+      .map(item => ({
+        name: item.tags.name,
+        lat: item.lat,
+        lng: item.lon
+      }));
+
+    let fixed = 0;
+
+    route.stops.forEach(function(stop){
+      if(typeof stop.lat === "number" && typeof stop.lng === "number") return;
+
+      const match = osmStops.find(osm => stopNamesLikelyMatch(stop.name, osm.name));
+
+      if(match){
+        stop.lat = match.lat;
+        stop.lng = match.lng;
+        stop.coordSource = "OpenStreetMap";
+        fixed++;
+      }
+    });
+
+    saveRoutes();
+    drawStops();
+
+    if(gpsStatus){
+      gpsStatus.textContent = fixed > 0
+        ? "GPS: On - added coordinates to " + fixed + " stops"
+        : "GPS: On - could not match stop coordinates, use manual stop buttons";
+    }
+
+  }catch(err){
+    console.warn(err);
+    if(gpsStatus){
+      gpsStatus.textContent = "GPS: On - stop coordinate lookup failed";
+    }
+  }
+
+  resolvingStopCoords = false;
 }
 
 function checkNearestStop(lat,lng){
@@ -2310,8 +2424,12 @@ function checkNearestStop(lat,lng){
     }
   });
 
-  // Built-in text-only stops cannot GPS jump unless coordinates are added.
+  // Built-in text-only stops cannot GPS jump unless coordinates are found.
   if(!foundCoords){
+    const gpsStatus = document.getElementById("gpsStatus");
+    if(gpsStatus){
+      gpsStatus.textContent = "GPS: On - waiting for stop coordinates";
+    }
     updateDisplays();
     return;
   }
