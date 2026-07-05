@@ -1030,6 +1030,7 @@ body.nextStopFullscreenActive #exitNextStopFullscreen{
         <div class="metric"><small>Route</small><strong id="metricRoute">---</strong></div>
         <div class="metric"><small>Current Stop</small><strong id="metricCurrent">---</strong></div>
         <div class="metric"><small>GPS Accuracy</small><strong id="metricGps">---</strong></div>
+        <div class="metric"><small>GPS Debug</small><strong id="metricGpsDebug">Waiting</strong></div>
       </div>
     </div>
 
@@ -1065,6 +1066,11 @@ body.nextStopFullscreenActive #exitNextStopFullscreen{
           <button class="red" onclick="stopGPS()">Stop GPS</button>
         </div>
 
+        <button class="orange" onclick="setCurrentStopToMyGps()">Set This Stop To My GPS</button>
+        <p class="hint">
+          If auto-changing does not work, go to the stop, press Set This Stop To My GPS once, and it will save the exact coordinates for that stop.
+        </p>
+
         <div class="statusLine" id="gpsStatus">GPS: Off</div>
         <p class="hint">When GPS detects you within 90m of a mapped stop, it jumps to that stop automatically.</p>
       </div>
@@ -1091,6 +1097,9 @@ let gpsMarker = null;
 let watchId = null;
 let nearestStopName = "---";
 let nearestStopDistance = null;
+let currentGpsLat = null;
+let currentGpsLng = null;
+let currentGpsAccuracy = null;
 let resolvingStopCoords = false;
 let lastStopCoordResolve = 0;
 
@@ -1864,7 +1873,7 @@ function drawStops(){
     div.className = "stopItem";
     div.innerHTML = `
       <b>${index+1}. ${stop.name}</b>
-      <div class="mini">${hasCoords ? stop.lat.toFixed(5) + ", " + stop.lng.toFixed(5) : "Built-in Lynx stop"}</div>
+      <div class="mini">${hasCoords ? "GPS saved: " + stop.lat.toFixed(5) + ", " + stop.lng.toFixed(5) : "No GPS coordinate yet"}</div>
       <div class="grid3">
         <button class="dark" onclick="setStop(${index})">Set</button>
         <button class="dark" onclick="moveStopUp(${index})">Up</button>
@@ -2240,10 +2249,18 @@ function startGPS(){
     const lng = pos.coords.longitude;
     const accuracy = Math.round(pos.coords.accuracy);
 
+    currentGpsLat = lat;
+    currentGpsLng = lng;
+    currentGpsAccuracy = accuracy;
+
     document.getElementById("locationStatus").textContent =
       `Location: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
 
     document.getElementById("metricGps").textContent = accuracy + "m";
+    const debugEl = document.getElementById("metricGpsDebug");
+    if(debugEl){
+      debugEl.textContent = currentRouteKey ? "Checking stops" : "No route";
+    }
     window.lastGpsUpdate = new Date().toLocaleTimeString("en-GB", {
       hour: "2-digit",
       minute: "2-digit",
@@ -2391,10 +2408,51 @@ async function resolveBuiltInStopCoordinates(lat,lng){
   resolvingStopCoords = false;
 }
 
+
+function setCurrentStopToMyGps(){
+  if(currentGpsLat === null || currentGpsLng === null){
+    alert("Start GPS first and wait for your location to appear.");
+    return;
+  }
+
+  if(!currentRouteKey || !routes[currentRouteKey]){
+    alert("Select a route first.");
+    return;
+  }
+
+  const route = routes[currentRouteKey];
+
+  if(!route.stops || route.stops.length === 0){
+    alert("This route has no stops loaded.");
+    return;
+  }
+
+  const stop = route.stops[currentStopIndex];
+
+  if(!stop){
+    alert("No current stop selected.");
+    return;
+  }
+
+  stop.lat = currentGpsLat;
+  stop.lng = currentGpsLng;
+  stop.coordSource = "Driver GPS saved";
+  stop.gpsAccuracyWhenSaved = currentGpsAccuracy;
+
+  saveRoutes();
+  drawStops();
+  updateDisplays();
+
+  alert("Saved GPS position for: " + stop.name + "\\nAccuracy: " + currentGpsAccuracy + "m");
+}
+
 function checkNearestStop(lat,lng){
+  const debugEl = document.getElementById("metricGpsDebug");
+
   if(!currentRouteKey || !routes[currentRouteKey]){
     nearestStopName = "No route selected";
     nearestStopDistance = null;
+    if(debugEl) debugEl.textContent = "No route";
     updateDisplays();
     return;
   }
@@ -2404,18 +2462,19 @@ function checkNearestStop(lat,lng){
   if(!r || !r.stops.length){
     nearestStopName = "No stops loaded";
     nearestStopDistance = null;
+    if(debugEl) debugEl.textContent = "No stops";
     updateDisplays();
     return;
   }
 
-  let nearestIndex = 0;
+  let nearestIndex = -1;
   let nearestDistance = Infinity;
-  let foundCoords = false;
+  let coordCount = 0;
 
   r.stops.forEach((s,i)=>{
     if(typeof s.lat !== "number" || typeof s.lng !== "number") return;
 
-    foundCoords = true;
+    coordCount++;
     const d = getDistance(lat,lng,s.lat,s.lng);
 
     if(d < nearestDistance){
@@ -2424,11 +2483,11 @@ function checkNearestStop(lat,lng){
     }
   });
 
-  // Built-in text-only stops cannot GPS jump unless coordinates are found.
-  if(!foundCoords){
+  if(coordCount === 0){
+    if(debugEl) debugEl.textContent = "No stop coords";
     const gpsStatus = document.getElementById("gpsStatus");
     if(gpsStatus){
-      gpsStatus.textContent = "GPS: On - waiting for stop coordinates";
+      gpsStatus.textContent = "GPS: On - stops need coordinates. Use Set This Stop To My GPS.";
     }
     updateDisplays();
     return;
@@ -2439,13 +2498,22 @@ function checkNearestStop(lat,lng){
 
   const triggerDistance = 90;
 
-  // Only jump when the bus is actually near a stop.
+  if(debugEl){
+    debugEl.textContent = Math.round(nearestDistance) + "m from " + nearestStopName;
+  }
+
   if(nearestDistance <= triggerDistance){
     if(currentStopIndex !== nearestIndex){
       currentStopIndex = nearestIndex;
       showingThisStop = false;
       dwellStopIndex = nearestIndex;
       dwellStartTime = Date.now();
+
+      const gpsStatus = document.getElementById("gpsStatus");
+      if(gpsStatus){
+        gpsStatus.textContent = "GPS: changed to " + nearestStopName;
+      }
+
       updateDisplays();
       return;
     }
@@ -2458,21 +2526,17 @@ function checkNearestStop(lat,lng){
       return;
     }
 
-    // After 5 seconds nearby, switch to THIS STOP.
     if(dwellStartTime && Date.now() - dwellStartTime >= 5000){
       showingThisStop = true;
       updateDisplays();
       return;
     }
   }else{
-    // Not close enough to jump. Keep the selected stop order steady.
     dwellStopIndex = null;
     dwellStartTime = null;
 
     if(showingThisStop){
       showingThisStop = false;
-      updateDisplays();
-      return;
     }
   }
 
