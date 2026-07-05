@@ -2,46 +2,324 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0" />
-<title>Bus Stop Screen Controller</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Bus Destination Controller</title>
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#101418;color:#fff}
-header{padding:14px 18px;background:#161d24;border-bottom:1px solid #2a3440}
-header h1{margin:0;font-size:20px}
-.wrap{display:grid;grid-template-columns:380px 1fr;min-height:calc(100vh - 55px)}
-.panel{padding:15px;background:#151b22;border-right:1px solid #2a3440;overflow:auto}
-#map{height:100%;min-height:600px}
-label{display:block;margin-top:12px;font-size:13px;color:#b7c4d1}
-input,select,button{width:100%;padding:10px;margin-top:6px;border-radius:8px;border:1px solid #334252;background:#0f141a;color:white}
-button{cursor:pointer;background:#1677ff;border:0;font-weight:bold}
-button.secondary{background:#2d3946}
-button.danger{background:#b42b2b}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.stop{padding:8px;margin-top:6px;background:#202a34;border-radius:8px;font-size:13px}
-.screenBox{margin-top:15px;padding:12px;border-radius:12px;background:#050505;border:2px solid #333}
-.nextScreen{font-family:Arial Black,Arial,sans-serif;background:#000;color:#ffd400;text-align:center;padding:20px;border-radius:8px;min-height:130px}
-.nextScreen .small{font-size:16px;color:#fff}
-.nextScreen .big{font-size:30px;margin-top:12px}
-.destDisplay{margin-top:10px;background:#050505;color:#ff9d00;font-family:Arial Black,Arial,sans-serif;text-align:center;border:3px solid #222;padding:18px;border-radius:8px}
-.destDisplay .routeNo{font-size:56px;line-height:50px}
-.destDisplay .dest{font-size:24px;margin-top:8px}
-.status{margin-top:10px;font-size:13px;color:#b7c4d1}
-.gpsOn{color:#42ff8b}
-.gpsOff{color:#ff7070}
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:Arial, Helvetica, sans-serif;
+  background:#0d1117;
+  color:#fff;
+}
+
+header{
+  background:#121923;
+  border-bottom:1px solid #263445;
+  padding:14px 18px;
+}
+
+header h1{
+  margin:0;
+  font-size:20px;
+}
+
+.app{
+  display:grid;
+  grid-template-columns:430px 1fr;
+  min-height:calc(100vh - 53px);
+}
+
+.sidebar{
+  padding:15px;
+  background:#151c26;
+  border-right:1px solid #263445;
+  overflow:auto;
+}
+
+#map{
+  min-height:720px;
+  height:100%;
+}
+
+label{
+  display:block;
+  margin-top:12px;
+  color:#bdd0e4;
+  font-size:13px;
+}
+
+input, select, button{
+  width:100%;
+  padding:10px;
+  margin-top:6px;
+  border-radius:8px;
+  border:1px solid #33465c;
+  background:#0d131b;
+  color:#fff;
+  font-size:14px;
+}
+
+button{
+  background:#1677ff;
+  border:0;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+button:hover{
+  filter:brightness(1.1);
+}
+
+button.secondary{
+  background:#33465c;
+}
+
+button.danger{
+  background:#b32626;
+}
+
+.grid2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.grid3{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:8px;
+}
+
+.status{
+  margin-top:10px;
+  color:#b7c4d1;
+  font-size:13px;
+}
+
+.gpsOn{
+  color:#42ff8b;
+}
+
+.gpsOff{
+  color:#ff7070;
+}
+
+.stopItem{
+  background:#202b37;
+  border:1px solid #32465c;
+  padding:9px;
+  border-radius:8px;
+  margin-top:7px;
+  font-size:13px;
+}
+
+/* Big passenger next stop screen */
+.screenBox{
+  margin-top:16px;
+  background:#050505;
+  border:2px solid #303030;
+  border-radius:14px;
+  padding:12px;
+}
+
+.nextScreen{
+  font-family:Arial Black, Arial, sans-serif;
+  background:#000;
+  color:#ffd400;
+  text-align:center;
+  padding:28px;
+  border-radius:12px;
+  min-height:245px;
+  border:4px solid #222;
+}
+
+.nextScreen .small{
+  font-size:22px;
+  color:#fff;
+  letter-spacing:2px;
+}
+
+.nextMain{
+  font-size:42px;
+  margin-top:18px;
+  line-height:1.1;
+}
+
+.nextList{
+  margin-top:20px;
+  font-size:24px;
+  color:#ffeb70;
+  line-height:1.5;
+}
+
+/* Front bus destination display */
+.frontDisplay{
+  margin-top:12px;
+  background:#020202;
+  border:3px solid #202020;
+  color:#ff9d00;
+  font-family:Arial Black, Arial, sans-serif;
+  text-align:center;
+  padding:18px;
+  border-radius:10px;
+}
+
+.frontDisplay .routeNo{
+  font-size:58px;
+  line-height:54px;
+}
+
+.frontDisplay .dest{
+  font-size:25px;
+  margin-top:8px;
+}
+
+/* Destination controller inspired by bus Hanover style */
+.controllerWrap{
+  margin-top:16px;
+  background:linear-gradient(180deg,#263644,#141b22);
+  padding:14px;
+  border-radius:18px;
+  border:2px solid #35485b;
+  box-shadow:inset 0 0 12px rgba(255,255,255,.08), 0 10px 25px rgba(0,0,0,.35);
+}
+
+.controller{
+  display:grid;
+  grid-template-columns:1fr 120px;
+  gap:12px;
+  align-items:stretch;
+}
+
+.controllerScreen{
+  background:#67dfff;
+  color:#165273;
+  border:5px solid #111a22;
+  border-radius:12px;
+  box-shadow:inset 0 0 12px rgba(0,0,0,.3);
+  padding:12px;
+  min-height:122px;
+  font-family:"Courier New", monospace;
+}
+
+.lcdMain{
+  border:2px solid rgba(0,0,0,.25);
+  padding:8px;
+  font-size:25px;
+  font-weight:bold;
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  white-space:nowrap;
+  overflow:hidden;
+}
+
+.lcdInfo{
+  margin-top:9px;
+  font-size:15px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:5px;
+}
+
+.clearAll{
+  background:#349ed0;
+  color:#e8fbff;
+  border:0;
+  padding:5px 8px;
+  border-radius:3px;
+  font-size:13px;
+  width:auto;
+  margin-top:6px;
+  float:right;
+}
+
+.keypad{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:6px;
+}
+
+.key, .arrowKey, .fnKey, .homeKey, .okKey, .cancelKey{
+  background:#06090c;
+  color:#fff;
+  border:1px solid #526477;
+  border-radius:7px;
+  padding:8px 0;
+  font-size:13px;
+  box-shadow:inset 0 -2px 0 rgba(255,255,255,.08);
+}
+
+.key small{
+  font-size:9px;
+  color:#ddd;
+}
+
+.cancelKey{
+  background:#111;
+  color:#ff3b3b;
+}
+
+.okKey{
+  background:#111;
+  color:#4cff71;
+}
+
+.arrows{
+  margin-top:10px;
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:6px;
+}
+
+.fnRow{
+  margin-top:10px;
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:7px;
+}
+
+.fnKey{
+  color:#ffdf58;
+}
+
+.homeKey{
+  color:#ffdf58;
+}
+
+.helper{
+  margin-top:8px;
+  color:#9db0c4;
+  font-size:12px;
+  line-height:1.4;
+}
+
+@media(max-width:900px){
+  .app{
+    grid-template-columns:1fr;
+  }
+  #map{
+    height:520px;
+    min-height:520px;
+  }
+}
 </style>
 </head>
 
 <body>
 <header>
-  <h1>Bus Destination & Next Stop Controller</h1>
+  <h1>Bus Destination Controller, Next Stop Screen & GPS Tracker</h1>
 </header>
 
-<div class="wrap">
-  <div class="panel">
+<div class="app">
+  <aside class="sidebar">
 
     <label>Route number</label>
     <input id="routeNo" placeholder="Example: 34">
@@ -51,66 +329,131 @@ button.danger{background:#b42b2b}
 
     <button onclick="createRoute()">Create / Save Route</button>
 
-    <label>Select Route</label>
+    <label>Select route</label>
     <select id="routeSelect" onchange="loadRoute()"></select>
 
-    <div class="row">
+    <div class="grid2">
       <button class="secondary" onclick="previousStop()">Previous Stop</button>
       <button class="secondary" onclick="nextStop()">Next Stop</button>
     </div>
 
-    <button onclick="startGPS()">Start GPS Tracking</button>
-    <button class="danger" onclick="stopGPS()">Stop GPS</button>
-
-    <label>Add stop name</label>
-    <input id="stopName" placeholder="Click map first, then type stop name">
-    <button onclick="addClickedStop()">Add Point To Route</button>
+    <div class="grid2">
+      <button onclick="startGPS()">Start GPS Tracking</button>
+      <button class="danger" onclick="stopGPS()">Stop GPS</button>
+    </div>
 
     <div class="status" id="gpsStatus">GPS: <span class="gpsOff">Off</span></div>
+    <div class="status" id="locationStatus">Location: waiting</div>
 
     <div class="screenBox">
       <div class="nextScreen">
-        <div class="small">NEXT STOP</div>
-        <div class="big" id="nextStopText">No route selected</div>
+        <div class="small">NEXT STOPS</div>
+        <div class="nextMain" id="nextStopText">No route selected</div>
+        <div class="nextList">
+          <div id="stop2">---</div>
+          <div id="stop3">---</div>
+        </div>
       </div>
 
-      <div class="destDisplay">
+      <div class="frontDisplay">
         <div class="routeNo" id="frontRoute">--</div>
         <div class="dest" id="frontDest">NO DESTINATION</div>
       </div>
     </div>
 
-    <h3>Stops</h3>
+    <div class="controllerWrap">
+      <div class="controller">
+        <div class="controllerScreen">
+          <div class="lcdMain">
+            <span id="lcdRoute">---</span>
+            <span id="lcdDest">No Destination</span>
+          </div>
+          <div class="lcdInfo">
+            <div>Line: <span id="lcdLine">---</span></div>
+            <div>Dest: <span id="lcdDestCode">1</span></div>
+            <div>Stop: <span id="lcdStop">---</span></div>
+            <div>GPS: <span id="lcdGps">OFF</span></div>
+          </div>
+          <button class="clearAll" onclick="clearAll()">Clear all</button>
+        </div>
+
+        <div>
+          <div class="keypad">
+            <button class="key" onclick="pressNumber('1')">1</button>
+            <button class="key" onclick="pressNumber('2')">2<br><small>ABC</small></button>
+            <button class="key" onclick="pressNumber('3')">3<br><small>DEF</small></button>
+            <button class="key" onclick="pressNumber('4')">4<br><small>GHI</small></button>
+            <button class="key" onclick="pressNumber('5')">5<br><small>JKL</small></button>
+            <button class="key" onclick="pressNumber('6')">6<br><small>MNO</small></button>
+            <button class="key" onclick="pressNumber('7')">7<br><small>PQRS</small></button>
+            <button class="key" onclick="pressNumber('8')">8<br><small>TUV</small></button>
+            <button class="key" onclick="pressNumber('9')">9<br><small>WXYZ</small></button>
+            <button class="key" onclick="pressNumber('0')">0</button>
+            <button class="cancelKey" onclick="clearTyped()">✕</button>
+            <button class="okKey" onclick="applyTypedRoute()">✓</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="arrows">
+        <button class="arrowKey" onclick="previousStop()">←</button>
+        <button class="arrowKey" onclick="nextStop()">↑ Next</button>
+        <button class="arrowKey" onclick="nextStop()">→</button>
+      </div>
+
+      <div class="fnRow">
+        <button class="homeKey" onclick="homeView()">⌂</button>
+        <button class="fnKey" onclick="previousStop()">F1</button>
+        <button class="fnKey" onclick="nextStop()">F2</button>
+        <button class="fnKey" onclick="startGPS()">F3</button>
+        <button class="fnKey" onclick="stopGPS()">F4</button>
+        <button class="fnKey" onclick="clearAll()">F5</button>
+      </div>
+
+      <div class="helper">
+        Number keys type a route number. Press ✓ to load that route. F3 starts GPS, F4 stops GPS, F5 clears display.
+      </div>
+    </div>
+
+    <label>Add stop name</label>
+    <input id="stopName" placeholder="Click map first, then type stop name">
+    <button onclick="addClickedStop()">Add Map Point To Route</button>
+
+    <h3>Route Stops</h3>
     <div id="stopsList"></div>
 
     <button class="danger" onclick="deleteRoute()">Delete Selected Route</button>
-  </div>
 
-  <div id="map"></div>
+  </aside>
+
+  <main id="map"></main>
 </div>
 
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-let map = L.map('map').setView([52.753, 0.397], 12);
+let map = L.map("map").setView([52.753, 0.397], 12);
 let clickedLatLng = null;
 let markers = [];
 let gpsMarker = null;
 let watchId = null;
+let typedRoute = "";
 
 let routes = JSON.parse(localStorage.getItem("busRoutes") || "{}");
 let currentRouteKey = null;
 let currentStopIndex = 0;
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  maxZoom: 19
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  maxZoom: 19,
+  attribution: "© OpenStreetMap"
 }).addTo(map);
 
-map.on("click", e => {
+map.on("click", function(e){
   clickedLatLng = e.latlng;
+
   L.popup()
     .setLatLng(e.latlng)
-    .setContent("Point selected. Type stop name then press Add Point.")
+    .setContent("Point selected. Type a stop name, then press Add Map Point.")
     .openOn(map);
 });
 
@@ -123,7 +466,7 @@ function createRoute(){
   const dest = document.getElementById("destination").value.trim();
 
   if(!no || !dest){
-    alert("Enter route number and destination first.");
+    alert("Enter a route number and destination first.");
     return;
   }
 
@@ -145,6 +488,7 @@ function createRoute(){
   saveRoutes();
   refreshRouteSelect();
   document.getElementById("routeSelect").value = key;
+  drawStops();
   updateDisplays();
 }
 
@@ -152,7 +496,17 @@ function refreshRouteSelect(){
   const select = document.getElementById("routeSelect");
   select.innerHTML = "";
 
-  Object.keys(routes).forEach(key => {
+  const keys = Object.keys(routes);
+
+  if(keys.length === 0){
+    const opt = document.createElement("option");
+    opt.textContent = "No routes saved";
+    opt.value = "";
+    select.appendChild(opt);
+    return;
+  }
+
+  keys.forEach(function(key){
     const opt = document.createElement("option");
     opt.value = key;
     opt.textContent = key;
@@ -161,14 +515,16 @@ function refreshRouteSelect(){
 }
 
 function loadRoute(){
-  currentRouteKey = document.getElementById("routeSelect").value;
+  const value = document.getElementById("routeSelect").value;
+  if(!value) return;
+
+  currentRouteKey = value;
   currentStopIndex = 0;
 
   const route = routes[currentRouteKey];
-  if(route){
-    document.getElementById("routeNo").value = route.routeNo;
-    document.getElementById("destination").value = route.destination;
-  }
+
+  document.getElementById("routeNo").value = route.routeNo;
+  document.getElementById("destination").value = route.destination;
 
   drawStops();
   updateDisplays();
@@ -186,13 +542,14 @@ function addClickedStop(){
   }
 
   const name = document.getElementById("stopName").value.trim();
+
   if(!name){
     alert("Enter a stop name.");
     return;
   }
 
   routes[currentRouteKey].stops.push({
-    name,
+    name: name,
     lat: clickedLatLng.lat,
     lng: clickedLatLng.lng
   });
@@ -206,35 +563,47 @@ function addClickedStop(){
 }
 
 function drawStops(){
-  markers.forEach(m => map.removeLayer(m));
+  markers.forEach(function(marker){
+    map.removeLayer(marker);
+  });
+
   markers = [];
 
   const list = document.getElementById("stopsList");
   list.innerHTML = "";
 
-  if(!currentRouteKey) return;
+  if(!currentRouteKey || !routes[currentRouteKey]) return;
 
   const route = routes[currentRouteKey];
 
-  route.stops.forEach((stop, index) => {
+  route.stops.forEach(function(stop, index){
     const marker = L.marker([stop.lat, stop.lng])
       .addTo(map)
-      .bindPopup(`${index + 1}. ${stop.name}`);
+      .bindPopup((index + 1) + ". " + stop.name);
 
     markers.push(marker);
 
     const div = document.createElement("div");
-    div.className = "stop";
+    div.className = "stopItem";
     div.innerHTML = `
       <b>${index + 1}. ${stop.name}</b><br>
       ${stop.lat.toFixed(5)}, ${stop.lng.toFixed(5)}
-      <br><button onclick="setStop(${index})">Set As Current</button>
+      <div class="grid3">
+        <button class="secondary" onclick="setStop(${index})">Set</button>
+        <button class="secondary" onclick="moveStopUp(${index})">Up</button>
+        <button class="danger" onclick="removeStop(${index})">Delete</button>
+      </div>
     `;
+
     list.appendChild(div);
   });
 
-  if(route.stops.length){
-    map.fitBounds(route.stops.map(s => [s.lat, s.lng]), {padding:[40,40]});
+  if(route.stops.length > 0){
+    const bounds = route.stops.map(function(stop){
+      return [stop.lat, stop.lng];
+    });
+
+    map.fitBounds(bounds, {padding:[40,40]});
   }
 }
 
@@ -243,8 +612,36 @@ function setStop(index){
   updateDisplays();
 }
 
+function moveStopUp(index){
+  if(!currentRouteKey || index <= 0) return;
+
+  const stops = routes[currentRouteKey].stops;
+  const temp = stops[index - 1];
+  stops[index - 1] = stops[index];
+  stops[index] = temp;
+
+  saveRoutes();
+  drawStops();
+  updateDisplays();
+}
+
+function removeStop(index){
+  if(!currentRouteKey) return;
+
+  routes[currentRouteKey].stops.splice(index, 1);
+
+  if(currentStopIndex >= routes[currentRouteKey].stops.length){
+    currentStopIndex = Math.max(0, routes[currentRouteKey].stops.length - 1);
+  }
+
+  saveRoutes();
+  drawStops();
+  updateDisplays();
+}
+
 function nextStop(){
   if(!currentRouteKey) return;
+
   const route = routes[currentRouteKey];
 
   if(currentStopIndex < route.stops.length - 1){
@@ -266,13 +663,26 @@ function previousStop(){
 
 function updateDisplays(){
   const nextText = document.getElementById("nextStopText");
+  const stop2 = document.getElementById("stop2");
+  const stop3 = document.getElementById("stop3");
   const frontRoute = document.getElementById("frontRoute");
   const frontDest = document.getElementById("frontDest");
 
-  if(!currentRouteKey){
+  const lcdRoute = document.getElementById("lcdRoute");
+  const lcdDest = document.getElementById("lcdDest");
+  const lcdLine = document.getElementById("lcdLine");
+  const lcdStop = document.getElementById("lcdStop");
+
+  if(!currentRouteKey || !routes[currentRouteKey]){
     nextText.textContent = "No route selected";
+    stop2.textContent = "---";
+    stop3.textContent = "---";
     frontRoute.textContent = "--";
     frontDest.textContent = "NO DESTINATION";
+    lcdRoute.textContent = typedRoute || "---";
+    lcdDest.textContent = "No Destination";
+    lcdLine.textContent = "---";
+    lcdStop.textContent = "---";
     return;
   }
 
@@ -281,18 +691,25 @@ function updateDisplays(){
   frontRoute.textContent = route.routeNo;
   frontDest.textContent = route.destination.toUpperCase();
 
+  lcdRoute.textContent = typedRoute || route.routeNo;
+  lcdDest.textContent = route.destination;
+  lcdLine.textContent = route.routeNo;
+  lcdStop.textContent = route.stops[currentStopIndex] ? route.stops[currentStopIndex].name : "---";
+
   if(route.stops.length === 0){
     nextText.textContent = "No stops added";
+    stop2.textContent = "---";
+    stop3.textContent = "---";
     return;
   }
 
-  const next = route.stops[currentStopIndex + 1];
+  const next1 = route.stops[currentStopIndex + 1];
+  const next2 = route.stops[currentStopIndex + 2];
+  const next3 = route.stops[currentStopIndex + 3];
 
-  if(next){
-    nextText.textContent = next.name.toUpperCase();
-  } else {
-    nextText.textContent = "TERMINUS";
-  }
+  nextText.textContent = next1 ? next1.name.toUpperCase() : "TERMINUS";
+  stop2.textContent = next2 ? "Then: " + next2.name : "";
+  stop3.textContent = next3 ? "Then: " + next3.name : "";
 }
 
 function startGPS(){
@@ -306,22 +723,27 @@ function startGPS(){
     return;
   }
 
-  document.getElementById("gpsStatus").innerHTML = `GPS: <span class="gpsOn">On</span>`;
+  document.getElementById("gpsStatus").innerHTML = 'GPS: <span class="gpsOn">On</span>';
+  document.getElementById("lcdGps").textContent = "ON";
 
-  watchId = navigator.geolocation.watchPosition(pos => {
+  watchId = navigator.geolocation.watchPosition(function(pos){
     const lat = pos.coords.latitude;
     const lng = pos.coords.longitude;
+    const accuracy = Math.round(pos.coords.accuracy);
+
+    document.getElementById("locationStatus").textContent =
+      "Location: " + lat.toFixed(5) + ", " + lng.toFixed(5) + " | Accuracy: " + accuracy + "m";
 
     if(gpsMarker){
-      gpsMarker.setLatLng([lat,lng]);
+      gpsMarker.setLatLng([lat, lng]);
     } else {
-      gpsMarker = L.marker([lat,lng]).addTo(map).bindPopup("Your GPS Location");
+      gpsMarker = L.marker([lat, lng]).addTo(map).bindPopup("Your real GPS location");
     }
 
-    checkNearestStop(lat,lng);
+    checkNearestStop(lat, lng);
 
-  }, err => {
-    alert("GPS error: " + err.message);
+  }, function(error){
+    alert("GPS error: " + error.message);
   }, {
     enableHighAccuracy: true,
     maximumAge: 1000,
@@ -335,36 +757,46 @@ function stopGPS(){
     watchId = null;
   }
 
-  document.getElementById("gpsStatus").innerHTML = `GPS: <span class="gpsOff">Off</span>`;
+  document.getElementById("gpsStatus").innerHTML = 'GPS: <span class="gpsOff">Off</span>';
+  document.getElementById("lcdGps").textContent = "OFF";
 }
 
-function checkNearestStop(lat,lng){
+function checkNearestStop(lat, lng){
   const route = routes[currentRouteKey];
+
   if(!route || route.stops.length === 0) return;
 
-  const triggerDistance = 70; // metres
+  let nearestIndex = 0;
+  let nearestDistance = Infinity;
 
-  route.stops.forEach((stop, index) => {
-    const distance = getDistance(lat,lng,stop.lat,stop.lng);
+  route.stops.forEach(function(stop, index){
+    const distance = getDistance(lat, lng, stop.lat, stop.lng);
 
-    if(distance < triggerDistance){
-      currentStopIndex = index;
-      updateDisplays();
+    if(distance < nearestDistance){
+      nearestDistance = distance;
+      nearestIndex = index;
     }
   });
+
+  // Uses your real location. When you are within 90m of a saved stop,
+  // it sets that as the current stop, then the display shows the next 3 stops.
+  if(nearestDistance < 90){
+    currentStopIndex = nearestIndex;
+    updateDisplays();
+  }
 }
 
-function getDistance(lat1,lng1,lat2,lng2){
+function getDistance(lat1, lng1, lat2, lng2){
   const R = 6371000;
-  const dLat = toRad(lat2-lat1);
-  const dLng = toRad(lng2-lng1);
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
 
   const a =
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-    Math.sin(dLng/2) * Math.sin(dLng/2);
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
 
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
 
@@ -372,8 +804,63 @@ function toRad(value){
   return value * Math.PI / 180;
 }
 
+function pressNumber(num){
+  typedRoute += num;
+  document.getElementById("lcdRoute").textContent = typedRoute;
+}
+
+function clearTyped(){
+  typedRoute = "";
+  updateDisplays();
+}
+
+function applyTypedRoute(){
+  if(!typedRoute){
+    alert("Type a route number first.");
+    return;
+  }
+
+  const foundKey = Object.keys(routes).find(function(key){
+    return routes[key].routeNo === typedRoute;
+  });
+
+  if(!foundKey){
+    alert("No saved route found for route " + typedRoute);
+    return;
+  }
+
+  currentRouteKey = foundKey;
+  currentStopIndex = 0;
+  document.getElementById("routeSelect").value = foundKey;
+  typedRoute = "";
+  loadRoute();
+}
+
+function clearAll(){
+  typedRoute = "";
+  currentRouteKey = null;
+  currentStopIndex = 0;
+
+  document.getElementById("routeNo").value = "";
+  document.getElementById("destination").value = "";
+  document.getElementById("routeSelect").value = "";
+
+  updateDisplays();
+}
+
+function homeView(){
+  if(currentRouteKey && routes[currentRouteKey] && routes[currentRouteKey].stops.length > 0){
+    drawStops();
+  } else {
+    map.setView([52.753, 0.397], 12);
+  }
+}
+
 function deleteRoute(){
-  if(!currentRouteKey) return;
+  if(!currentRouteKey){
+    alert("No route selected.");
+    return;
+  }
 
   if(confirm("Delete this route?")){
     delete routes[currentRouteKey];
@@ -388,10 +875,12 @@ function deleteRoute(){
 
 refreshRouteSelect();
 
-if(Object.keys(routes).length){
+if(Object.keys(routes).length > 0){
   currentRouteKey = Object.keys(routes)[0];
   document.getElementById("routeSelect").value = currentRouteKey;
   loadRoute();
+} else {
+  updateDisplays();
 }
 </script>
 </body>
