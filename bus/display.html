@@ -286,7 +286,7 @@ button.orange{background:#b86a00}
 .fnRow{
   margin-top:10px;
   display:grid;
-  grid-template-columns:repeat(5,1fr);
+  grid-template-columns:repeat(6,1fr);
   gap:8px;
 }
 
@@ -300,26 +300,58 @@ button.orange{background:#b86a00}
   gap:14px;
 }
 
-.fullscreenNextStop{
+.fullscreenNextStop,
+.mobileFullscreenNextStop{
   position:fixed !important;
-  inset:0;
+  inset:0 !important;
   width:100vw !important;
   height:100vh !important;
+  height:100dvh !important;
   margin:0 !important;
   border-radius:0 !important;
-  z-index:99999;
+  z-index:99999 !important;
   border:0 !important;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:center !important;
+  background:#000 !important;
 }
 
-.fullscreenNextStop .nextRouteInfo{
+body.nextStopFullscreenActive{
+  overflow:hidden !important;
+}
+
+body.nextStopFullscreenActive .topbar,
+body.nextStopFullscreenActive .app > section:not(:nth-child(2)),
+body.nextStopFullscreenActive .frontBlind,
+body.nextStopFullscreenActive .currentBox,
+body.nextStopFullscreenActive .mapCard{
+  display:none !important;
+}
+
+body.nextStopFullscreenActive .app{
+  display:block !important;
+  padding:0 !important;
+  height:100vh !important;
+  height:100dvh !important;
+}
+
+body.nextStopFullscreenActive .screenWall{
+  display:block !important;
+}
+
+body.nextStopFullscreenActive button{
+  display:none !important;
+}
+
+.fullscreenNextStop .nextRouteInfo,
+.mobileFullscreenNextStop .nextRouteInfo{
   font-size:46px;
   margin-bottom:34px;
 }
 
-.fullscreenNextStop .nextLabel{
+.fullscreenNextStop .nextLabel,
+.mobileFullscreenNextStop .nextLabel{
   font-size:44px;
 }
 
@@ -327,17 +359,20 @@ button.orange{background:#b86a00}
   font-size:30px;
 }
 
-.fullscreenNextStop .nextMain{
+.fullscreenNextStop .nextMain,
+.mobileFullscreenNextStop .nextMain{
   font-size:86px;
   max-height:none;
 }
 
-.fullscreenNextStop .nextSub{
+.fullscreenNextStop .nextSub,
+.mobileFullscreenNextStop .nextSub{
   font-size:42px;
   min-height:130px;
 }
 
-.fullscreenNextStop .nextMain.messageMode{
+.fullscreenNextStop .nextMain.messageMode,
+.mobileFullscreenNextStop .nextMain.messageMode{
   font-size:64px;
 }
 
@@ -367,6 +402,22 @@ button.orange{background:#b86a00}
 
 .nextRouteInfo span{
   color:var(--yellow);
+}
+
+.diversionBanner{
+  display:none;
+  margin-bottom:12px;
+  padding:8px 14px;
+  border:2px solid #ff9d00;
+  border-radius:999px;
+  color:#ff9d00;
+  font-size:22px;
+  letter-spacing:2px;
+  font-family:Arial Black,Arial,sans-serif;
+}
+
+body.diversionOn .diversionBanner{
+  display:inline-block;
 }
 
 .nextLabel{
@@ -742,6 +793,76 @@ button.orange{background:#b86a00}
   }
 }
 
+
+@media(max-width:900px){
+  .mobileFullscreenNextStop,
+  .fullscreenNextStop{
+    padding:18px !important;
+  }
+
+  .mobileFullscreenNextStop .nextRouteInfo,
+  .fullscreenNextStop .nextRouteInfo{
+    font-size:24px !important;
+    margin-bottom:22px !important;
+  }
+
+  .mobileFullscreenNextStop .nextLabel,
+  .fullscreenNextStop .nextLabel{
+    font-size:28px !important;
+  }
+
+  .mobileFullscreenNextStop .nextMain,
+  .fullscreenNextStop .nextMain{
+    font-size:48px !important;
+    max-height:none !important;
+  }
+
+  .mobileFullscreenNextStop .nextMain.messageMode,
+  .fullscreenNextStop .nextMain.messageMode{
+    font-size:34px !important;
+  }
+
+  .mobileFullscreenNextStop .nextSub,
+  .fullscreenNextStop .nextSub{
+    font-size:25px !important;
+    min-height:110px !important;
+  }
+}
+
+@media(orientation:landscape) and (max-width:950px){
+  .mobileFullscreenNextStop .nextRouteInfo,
+  .fullscreenNextStop .nextRouteInfo{
+    font-size:24px !important;
+    margin-bottom:12px !important;
+  }
+
+  .mobileFullscreenNextStop .nextLabel,
+  .fullscreenNextStop .nextLabel{
+    font-size:26px !important;
+  }
+
+  .mobileFullscreenNextStop .nextMain,
+  .fullscreenNextStop .nextMain{
+    font-size:54px !important;
+    margin-top:10px !important;
+  }
+
+  .mobileFullscreenNextStop .nextSub,
+  .fullscreenNextStop .nextSub{
+    font-size:25px !important;
+    margin-top:12px !important;
+  }
+}
+
+
+#exitNextStopFullscreen{
+  display:none;
+}
+
+body.nextStopFullscreenActive #exitNextStopFullscreen{
+  display:block !important;
+}
+
 </style>
 </head>
 
@@ -816,6 +937,7 @@ button.orange{background:#b86a00}
             <button onclick="stopGPS()">F3<br><small>STOP</small></button>
             <button onclick="clearAll()">F4<br><small>CLEAR</small></button>
             <button onclick="homeView()">F5<br><small>MAP</small></button>
+            <button onclick="toggleDiversion()" id="diversionBtn">DIV<br><small>OFF</small></button>
           </div>
         </div>
 
@@ -881,6 +1003,8 @@ button.orange{background:#b86a00}
     <div class="screenWall">
       <button class="dark" onclick="toggleNextStopFullscreen()">⛶ Passenger Full Screen</button>
       <div class="nextDisplay">
+        <button id="exitNextStopFullscreen" onclick="toggleNextStopFullscreen()" style="position:absolute;top:10px;right:10px;width:auto;min-height:38px;padding:8px 12px;background:#111;color:#fff;border:1px solid #444;border-radius:10px;z-index:100001;">Exit</button>
+        <div class="diversionBanner" id="diversionBanner">ON DIVERSION</div>
         <div class="nextRouteInfo">
           <div>Route <span id="nextRouteNo">--</span></div>
           <div id="nextDestination">NO DESTINATION</div>
@@ -942,6 +1066,7 @@ button.orange{background:#b86a00}
         </div>
 
         <div class="statusLine" id="gpsStatus">GPS: Off</div>
+        <p class="hint">When GPS detects you within 90m of a mapped stop, it jumps to that stop automatically.</p>
       </div>
     </div>
 
@@ -977,6 +1102,7 @@ let dwellStartTime = null;
 let showingThisStop = false;
 let announcementTimer = null;
 let announcementActive = false;
+let diversionActive = false;
 
 const PASSENGER_MESSAGES = {
   "1": "NO SMOKING OR VAPING ON THIS BUS",
@@ -987,7 +1113,8 @@ const PASSENGER_MESSAGES = {
   "6": "PLEASE HOLD ON WHILE THE BUS IS MOVING",
   "7": "PLEASE HAVE YOUR TICKET OR PASS READY",
   "8": "THIS BUS IS BEING HELD TO REGULATE THE SERVICE",
-  "9": "CCTV IS IN OPERATION ON THIS BUS"
+  "9": "CCTV IS IN OPERATION ON THIS BUS",
+  "DIVERSION": "THIS BUS IS CURRENTLY ON DIVERSION"
 };
 
 let routes = JSON.parse(localStorage.getItem("busRoutesV2") || localStorage.getItem("busRoutes") || "{}");
@@ -1443,20 +1570,48 @@ updateControllerClock();
 
 
 function toggleNextStopFullscreen(){
-  const screen=document.querySelector('.nextDisplay');
+  const screen = document.querySelector('.nextDisplay');
   if(!screen) return;
 
-  screen.classList.toggle('fullscreenNextStop');
+  const isActive =
+    screen.classList.contains('fullscreenNextStop') ||
+    screen.classList.contains('mobileFullscreenNextStop') ||
+    document.body.classList.contains('nextStopFullscreenActive');
 
-  if(screen.classList.contains('fullscreenNextStop')){
-    if(screen.requestFullscreen){
-      screen.requestFullscreen().catch(()=>{});
-    }
-  }else{
-    if(document.fullscreenElement){
+  if(isActive){
+    screen.classList.remove('fullscreenNextStop');
+    screen.classList.remove('mobileFullscreenNextStop');
+    document.body.classList.remove('nextStopFullscreenActive');
+
+    if(document.fullscreenElement && document.exitFullscreen){
       document.exitFullscreen().catch(()=>{});
     }
+    return;
   }
+
+  document.body.classList.add('nextStopFullscreenActive');
+  screen.classList.add('mobileFullscreenNextStop');
+
+  const request =
+    screen.requestFullscreen ||
+    screen.webkitRequestFullscreen ||
+    screen.msRequestFullscreen;
+
+  if(request){
+    try{
+      const result = request.call(screen);
+      if(result && result.catch){
+        result.catch(()=>{});
+      }
+      screen.classList.add('fullscreenNextStop');
+    }catch(e){
+      // iPhone/Safari fallback keeps fake fullscreen active.
+    }
+  }
+
+  setTimeout(function(){
+    window.scrollTo(0,0);
+  },100);
 }
 
 document.addEventListener('keydown',function(e){
@@ -1469,7 +1624,17 @@ document.addEventListener('keydown',function(e){
 document.addEventListener('fullscreenchange',function(){
   const screen=document.querySelector('.nextDisplay');
   if(!screen) return;
+
   if(!document.fullscreenElement){
+    screen.classList.remove('fullscreenNextStop');
+  }
+});
+
+document.addEventListener('webkitfullscreenchange',function(){
+  const screen=document.querySelector('.nextDisplay');
+  if(!screen) return;
+
+  if(!document.webkitFullscreenElement){
     screen.classList.remove('fullscreenNextStop');
   }
 });
@@ -1820,7 +1985,7 @@ function updateDisplays(){
   nextDestination.textContent = (r.destination || "NO DESTINATION").toUpperCase();
   frontRoute.textContent = r.routeNo || "--";
   frontDest.textContent = (r.destination || "NO DESTINATION").toUpperCase();
-  frontVia.textContent = r.via ? r.via.toUpperCase() : "via ---";
+  frontVia.textContent = diversionActive ? "ON DIVERSION" : (r.via ? r.via.toUpperCase() : "via ---");
 
   lcdRoute.textContent = r.routeNo || "----";
   lcdDest.textContent = r.destination || "No Destination";
@@ -1871,6 +2036,30 @@ function updateDisplays(){
   stop3.textContent = n3 ? "Then: " + n3.name : "";
 }
 
+function toggleDiversion(){
+  diversionActive = !diversionActive;
+
+  const btn = document.getElementById("diversionBtn");
+  if(btn){
+    btn.innerHTML = diversionActive ? "DIV<br><small>ON</small>" : "DIV<br><small>OFF</small>";
+    btn.style.color = diversionActive ? "#ff9d00" : "";
+  }
+
+  document.body.classList.toggle("diversionOn", diversionActive);
+
+  if(diversionActive){
+    document.getElementById("lcdMode").textContent = "DIVERSION";
+    showPassengerMessage("DIVERSION");
+  }else{
+    announcementActive = false;
+    if(announcementTimer){
+      clearTimeout(announcementTimer);
+      announcementTimer = null;
+    }
+    updateDisplays();
+  }
+}
+
 function showPassengerMessage(number){
   const message = PASSENGER_MESSAGES[number];
   if(!message) return;
@@ -1899,6 +2088,10 @@ function showPassengerMessage(number){
   document.getElementById("lcdDestCode").textContent = number;
   document.getElementById("lcdMode").textContent = "MESSAGE";
 
+  if(number === "DIVERSION"){
+    return;
+  }
+
   announcementTimer = setTimeout(function(){
     announcementActive = false;
     announcementTimer = null;
@@ -1913,6 +2106,13 @@ function startLineEntry(){
     announcementTimer = null;
   }
   announcementActive = false;
+  diversionActive = false;
+  document.body.classList.remove("diversionOn");
+  const divBtn = document.getElementById("diversionBtn");
+  if(divBtn){
+    divBtn.innerHTML = "DIV<br><small>OFF</small>";
+    divBtn.style.color = "";
+  }
 
   typedLine = "";
   controllerMode = "lineEntry";
@@ -2110,10 +2310,8 @@ function checkNearestStop(lat,lng){
     }
   });
 
-  // If built-in stops have no map coordinates, still show the current stop from the list.
+  // Built-in text-only stops cannot GPS jump unless coordinates are added.
   if(!foundCoords){
-    nearestStopName = r.stops[currentStopIndex] ? r.stops[currentStopIndex].name : "---";
-    nearestStopDistance = null;
     updateDisplays();
     return;
   }
@@ -2121,11 +2319,19 @@ function checkNearestStop(lat,lng){
   nearestStopName = r.stops[nearestIndex].name;
   nearestStopDistance = nearestDistance;
 
-  // Always keep the screen aligned to the nearest stop from live GPS.
-  currentStopIndex = nearestIndex;
+  const triggerDistance = 90;
 
-  // If you are close to the stop for more than 5 seconds, show THIS STOP.
-  if(nearestDistance < 90){
+  // Only jump when the bus is actually near a stop.
+  if(nearestDistance <= triggerDistance){
+    if(currentStopIndex !== nearestIndex){
+      currentStopIndex = nearestIndex;
+      showingThisStop = false;
+      dwellStopIndex = nearestIndex;
+      dwellStartTime = Date.now();
+      updateDisplays();
+      return;
+    }
+
     if(dwellStopIndex !== nearestIndex){
       dwellStopIndex = nearestIndex;
       dwellStartTime = Date.now();
@@ -2134,15 +2340,22 @@ function checkNearestStop(lat,lng){
       return;
     }
 
+    // After 5 seconds nearby, switch to THIS STOP.
     if(dwellStartTime && Date.now() - dwellStartTime >= 5000){
       showingThisStop = true;
       updateDisplays();
       return;
     }
   }else{
+    // Not close enough to jump. Keep the selected stop order steady.
     dwellStopIndex = null;
     dwellStartTime = null;
-    showingThisStop = false;
+
+    if(showingThisStop){
+      showingThisStop = false;
+      updateDisplays();
+      return;
+    }
   }
 
   updateDisplays();
