@@ -505,13 +505,11 @@ button.orange{background:#b86a00}
           <button class="red" onclick="deleteRoute()">Delete Route</button>
         </div>
 
+        <button class="green" onclick="loadAllLynxRoutes()">Load All Lynx Routes</button>
+
         <label>Saved routes</label>
         <select id="routeSelect" onchange="loadRoute()"></select>
 
-        <button class="orange" onclick="autoPickupStops(true)">Auto Pick Up Stops For This Route</button>
-        <p class="hint" id="autoStopStatus">
-          Auto stops: saved route patterns can still be copied, and GPS can now search nearby stops automatically.
-        </p>
       </div>
     </div>
 
@@ -560,17 +558,12 @@ button.orange{background:#b86a00}
     <div class="card">
       <div class="cardHead"><h2>Add Stops</h2></div>
       <div class="cardBody">
-        <p class="hint">You can still add stops manually, but Auto Nearby Stops can use your real GPS location to search nearby stops and fill the route automatically.</p>
+        <p class="hint">Lynx routes now include built-in stop lists. Map points are optional if you want GPS distance matching.</p>
 
         <label>Stop name</label>
         <input id="stopName" placeholder="Example: King's Lynn Bus Station">
 
         <button onclick="addClickedStop()">Add Map Point To Route</button>
-
-        <button class="orange" onclick="toggleAutoNearbyStops()" id="autoNearbyBtn">Auto Nearby Stops: ON</button>
-        <p class="hint" id="nearbyStopStatus">
-          Auto nearby stops uses your GPS location and searches nearby bus stops automatically.
-        </p>
 
         <div class="grid2">
           <button class="dark" onclick="previousStop()">Previous Stop</button>
@@ -605,8 +598,6 @@ let clickedLatLng = null;
 let markers = [];
 let gpsMarker = null;
 let watchId = null;
-let autoNearbyStopsEnabled = true;
-let lastNearbyStopFetch = 0;
 
 let typedLine = "";
 let controllerMode = "normal";
@@ -618,6 +609,397 @@ let dwellStartTime = null;
 let showingThisStop = false;
 
 let routes = JSON.parse(localStorage.getItem("busRoutesV2") || localStorage.getItem("busRoutes") || "{}");
+
+const LYNX_ROUTES = [
+  {lineNumber:"3301", routeNo:"33", destination:"Hunstanton", via:"via QE Hospital, Hillington, The Birchams & Sedgeford"},
+  {lineNumber:"3302", routeNo:"33", destination:"King's Lynn", via:"via Sedgeford, The Birchams, Hillington & QE Hospital"},
+  {lineNumber:"3303", routeNo:"33C", destination:"Hunstanton", via:"via QE Hospital, Hillington, The Birchams & Sedgeford"},
+  {lineNumber:"3304", routeNo:"33C", destination:"King's Lynn", via:"via Sedgeford, The Birchams, Hillington & QE Hospital"},
+
+  {lineNumber:"3311", routeNo:"33A", destination:"Hunstanton Circular", via:"via Tesco & Cliff Parade"},
+  {lineNumber:"3312", routeNo:"33B", destination:"Hunstanton Circular", via:"via Tesco & Cliff Parade"},
+
+  {lineNumber:"3401", routeNo:"34", destination:"Hunstanton", via:"via QE Hospital, Dersingham, Snettisham & Heacham"},
+  {lineNumber:"3402", routeNo:"34", destination:"King's Lynn", via:"via Heacham, Snettisham, Dersingham & QE Hospital"},
+  {lineNumber:"3501", routeNo:"35", destination:"Hunstanton", via:"via Sandringham, Dersingham, Snettisham & Heacham"},
+  {lineNumber:"3502", routeNo:"35", destination:"King's Lynn", via:"via Heacham, Snettisham, Dersingham & Sandringham"},
+  {lineNumber:"3601", routeNo:"36", destination:"Fakenham", via:"Coastliner via Hunstanton, Wells-next-the-Sea & Burnham Market"},
+  {lineNumber:"3602", routeNo:"36", destination:"King's Lynn", via:"Coastliner via Wells-next-the-Sea, Hunstanton & Heacham"},
+
+  {lineNumber:"3701", routeNo:"37", destination:"Downham Market", via:"via West Winch, Hardwick Retail Park, Hilgay, Southery & Ten Mile Bank"},
+  {lineNumber:"3702", routeNo:"37", destination:"King's Lynn", via:"via Ten Mile Bank, Southery, Hilgay, Hardwick Retail Park & West Winch"},
+
+  {lineNumber:"3801", routeNo:"38", destination:"Fair Green", via:"via West Winch & Hardwick Retail Park"},
+  {lineNumber:"3802", routeNo:"38", destination:"King's Lynn", via:"via Hardwick Retail Park & West Winch"},
+
+  {lineNumber:"3901", routeNo:"39", destination:"Marham", via:"via West Winch, Hardwick Retail Park & Shouldham"},
+  {lineNumber:"3902", routeNo:"39", destination:"King's Lynn", via:"via Shouldham, Hardwick Retail Park & West Winch"},
+
+  {lineNumber:"4101", routeNo:"41", destination:"King's Reach", via:"via Gaywood & QE Hospital"},
+  {lineNumber:"4102", routeNo:"41", destination:"King's Lynn", via:"via QE Hospital & Gaywood"},
+
+  {lineNumber:"4201", routeNo:"42", destination:"Fairstead", via:"via Gaywood"},
+  {lineNumber:"4202", routeNo:"42", destination:"King's Lynn", via:"via Gaywood"},
+
+  {lineNumber:"4301", routeNo:"43", destination:"North Wootton", via:"Schooldays only"},
+  {lineNumber:"4302", routeNo:"43", destination:"King's Lynn", via:"Schooldays only"},
+
+  {lineNumber:"4401", routeNo:"44", destination:"The Loop", via:"via South Wootton, Knights Hill, QE Hospital & Hardwick"},
+  {lineNumber:"4402", routeNo:"44", destination:"The Loop", via:"via Edward Benefer Way, St James Medical Practice & Castle Reach"},
+
+  {lineNumber:"4601", routeNo:"46", destination:"Wisbech", via:"via Saddlebow, Islington, Terrington St John, Tilney St Lawrence & West Walton"},
+  {lineNumber:"4602", routeNo:"46", destination:"King's Lynn", via:"via West Walton, Tilney St Lawrence, Terrington St John, Islington & Saddlebow"},
+  {lineNumber:"4611", routeNo:"X46", destination:"Wisbech", via:"limited stop via St Germans"},
+  {lineNumber:"4612", routeNo:"X46", destination:"King's Lynn", via:"limited stop via St Germans"},
+
+  {lineNumber:"4801", routeNo:"48", destination:"Fakenham", via:"via QE Hospital, Gayton & The Rudhams"},
+  {lineNumber:"4802", routeNo:"48", destination:"King's Lynn", via:"via The Rudhams, Gayton & QE Hospital"},
+  {lineNumber:"4901", routeNo:"49", destination:"Fakenham", via:"via Grimston & The Rudhams"},
+  {lineNumber:"4902", routeNo:"49", destination:"King's Lynn", via:"via The Rudhams & Grimston"},
+  {lineNumber:"4911", routeNo:"49A", destination:"Fakenham", via:"via Gayton, Great Massingham & The Rudhams"},
+  {lineNumber:"4912", routeNo:"49A", destination:"King's Lynn", via:"via The Rudhams, Great Massingham & Gayton"},
+
+  {lineNumber:"5401", routeNo:"54", destination:"The Walpoles", via:"via South Lynn, Clenchwarton & Tilney All Saints"},
+  {lineNumber:"5402", routeNo:"54", destination:"King's Lynn", via:"via Tilney All Saints, Clenchwarton & South Lynn"},
+  {lineNumber:"5411", routeNo:"54A", destination:"Terrington High School", via:"Schooldays only"},
+  {lineNumber:"5412", routeNo:"54A", destination:"King's Lynn", via:"Schooldays only"},
+
+  {lineNumber:"6001", routeNo:"60", destination:"Downham Market", via:"via Emneth, Outwell, Upwell & Three Holes"},
+  {lineNumber:"6002", routeNo:"60", destination:"Wisbech", via:"via Three Holes, Upwell, Outwell & Emneth"},
+
+  {lineNumber:"4141", routeNo:"414", destination:"Alderman Peel High School", via:"via Dersingham & Docking"},
+  {lineNumber:"4142", routeNo:"414", destination:"Dersingham", via:"via Docking"},
+  {lineNumber:"4151", routeNo:"415", destination:"Alderman Peel High School", via:"via Dersingham & Docking"},
+  {lineNumber:"4152", routeNo:"415", destination:"Dersingham", via:"via Docking"},
+
+  {lineNumber:"4811", routeNo:"48A", destination:"Springwood High School", via:"via Middleton, East Winch & Ashwicken"},
+  {lineNumber:"4812", routeNo:"48A", destination:"Middleton", via:"via Ashwicken & East Winch"}
+];
+
+
+const LYNX_STOP_PATTERNS = {
+  "33": [
+    "King’s Lynn Transport Interchange (Stand E)", "King’s Lynn, adj Kettlewell Lane",
+    "King’s Lynn, adj Highgate School", "King’s Lynn, opp King Edward VII School",
+    "Gaywood, adj Tesco", "King’s Lynn, adj Health Centre", "King’s Lynn, adj Kent Road",
+    "King’s Lynn, adj Queensway", "King’s Lynn, adj Elvington Road",
+    "Queen Elizabeth Hospital, adj Travel Hub", "King’s Lynn, opp Austin Fields",
+    "King’s Lynn, opp Retail Park", "King’s Lynn, opp Hamburg Way",
+    "King’s Lynn, adj St James Medical Practice", "South Wootton, adj Nursery Lane",
+    "South Wootton, adj Castle Rising Road", "South Wootton, adj Deas Road",
+    "South Wootton, adj Langley Road", "South Wootton, adj Sandy Lane",
+    "South Wootton, opp Castle Reach", "South Wootton, adj Knight’s Hill",
+    "Castle Rising, opp Mill House Turn", "Sandringham, opp Cross Cottages",
+    "Sandringham - A149 only, opp Cats Bottom Cottages", "Sandringham, opp Edinburgh Plantation",
+    "Dersingham, adj Manor Road", "Dersingham, adj Bank Road", "Dersingham, adj Thaxters",
+    "Dersingham, adj Clayton Close", "Dersingham, opp Kings Croft", "Ingoldisthorpe, adj Ingoldsby Avenue",
+    "Ingoldisthorpe, opp Pond", "Ingoldisthorpe, adj Coaly Lane", "Snettisham, adj Station Road",
+    "Snettisham, adj Strickland Avenue", "Snettisham, adj Grapes", "Snettisham, opp Bottom Farm",
+    "Heacham, adj Collingwood Close", "Heacham, opp Fenside", "Heacham, opp Fengate",
+    "Heacham, adj Jennings Close", "Heacham, opp College Drive", "Heacham, opp Poplar Avenue",
+    "Heacham, adj Fox & Hound", "Heacham, opp High Street", "Heacham, opp Church Lane",
+    "Heacham, opp Manor Road", "Heacham, adj Norfolk Lavender", "Hunstanton, adj Redgate Hill",
+    "Hunstanton, adj Phillips Chase", "Hunstanton, opp Tudor Crescent", "Hunstanton No 14 (os)",
+    "Hunstanton, adj Manor Park", "Hunstanton, adj Holiday Camp", "Hunstanton, opp Tesco",
+    "Hunstanton Travel Hub (Drop-off)"
+  ],
+
+  "33A": [
+    "Hunstanton Travel Hub (Stand A)", "Hunstanton, adj Tesco", "Hunstanton, adj Searles",
+    "Hunstanton, adj Manor Park", "Hunstanton No 14 (os)", "Hunstanton, opp Tudor Crescent",
+    "Hunstanton, adj Phillips Chase", "Hunstanton, adj Redgate Hill", "Hunstanton Travel Hub"
+  ],
+
+  "33B": [
+    "Hunstanton Travel Hub (Stand A)", "Hunstanton, adj Tesco", "Hunstanton, opp Searles",
+    "Hunstanton, opp Manor Park", "Hunstanton No 7 (os)", "Hunstanton, adj Tudor Crescent",
+    "Hunstanton, opp Phillips Chase", "Hunstanton, opp Redgate Hill", "Hunstanton Travel Hub"
+  ],
+
+  "33C": [
+    "Hunstanton, adj Smithdon High School", "Heacham, adj Norfolk Lavender",
+    "Sedgeford, opp The King William IV Country Inn", "Sedgeford, adj Docking Road",
+    "Sedgeford, adj Pump Cottages", "Docking, adj Primary & Nursery School",
+    "Docking, adj Village Hall", "Docking, adj King William", "Docking, adj Fakenham Road",
+    "Docking Crossroads (S-bound)", "Bircham Newton, adj turn", "Bircham Newton, adj CITB",
+    "Bircham Tofts, adj Stocks Close", "Bircham Tofts, adj Church Lane",
+    "Great Bircham, adj Bircham Road", "Bircham, opp Country Stores"
+  ],
+
+  "34": [
+    "King’s Lynn Transport Interchange (Stand E)", "King’s Lynn, adj Kettlewell Lane",
+    "King’s Lynn, adj Highgate School", "King’s Lynn, opp King Edward VII School",
+    "Gaywood, adj Tesco", "King’s Lynn, adj Health Centre", "King’s Lynn, adj Kent Road",
+    "King’s Lynn, adj Queensway", "King’s Lynn, adj Elvington Road",
+    "Queen Elizabeth Hospital, adj Travel Hub", "King’s Lynn, opp Austin Fields",
+    "King’s Lynn, opp Retail Park", "King’s Lynn, opp Bergen Way",
+    "King’s Lynn, opp Hamburg Way", "King’s Lynn, adj St James Medical Practice",
+    "South Wootton, adj Nursery Lane", "South Wootton, adj Deas Road",
+    "South Wootton, adj Langley Road", "South Wootton, adj Sandy Lane",
+    "South Wootton, opp Castle Reach", "South Wootton, adj Knight’s Hill",
+    "Castle Rising, opp Mill House Turn", "Dersingham, adj Manor Road",
+    "Dersingham, adj Bank Road", "Dersingham, adj Thaxters", "Dersingham, adj Clayton Close",
+    "Dersingham, opp Kings Croft", "Ingoldisthorpe, adj Ingoldsby Avenue",
+    "Ingoldisthorpe, opp Pond", "Ingoldisthorpe, adj Coaly Lane",
+    "Snettisham, adj Station Road", "Snettisham, adj Strickland Avenue",
+    "Snettisham, adj Grapes", "Snettisham, opp Bottom Farm", "Heacham, adj Collingwood Close",
+    "Heacham, opp Fenside", "Heacham, opp Fengate", "Heacham, adj Jennings Close",
+    "Heacham, opp College Drive", "Heacham, opp Poplar Avenue", "Heacham, adj Fox & Hound",
+    "Heacham, opp High Street", "Heacham, opp Church Lane", "Heacham, opp Manor Road",
+    "Hunstanton, adj Redgate Hill", "Hunstanton, adj Phillips Chase",
+    "Hunstanton, opp Tudor Crescent", "Hunstanton No 14 (os)", "Hunstanton, adj Manor Park",
+    "Hunstanton, adj Holiday Camp", "Hunstanton, opp Tesco", "Hunstanton Travel Hub (Drop-off)"
+  ],
+
+  "35": [
+    "King’s Lynn Transport Interchange (Stand E)", "King’s Lynn, adj Railway Station",
+    "King’s Lynn, adj Austin Fields", "King’s Lynn, adj Retail Park", "King’s Lynn, adj Bergen Way",
+    "King’s Lynn, adj Hamburg Way", "King’s Lynn, opp St James Medical Practice",
+    "South Wootton, opp Nursery Lane", "South Wootton, opp Deas Road", "South Wootton, opp Langley Road",
+    "South Wootton, opp Sandy Lane", "South Wootton, adj Castle Reach", "South Wootton, adj Knight’s Hill",
+    "Castle Rising, adj Mill House Turn", "Sandringham, adj Cross Cottages",
+    "Sandringham - A149 only, adj Cats Bottom Cottages", "Sandringham, adj Edinburgh Plantation",
+    "Dersingham, adj Manor Road", "Dersingham, adj Bank Road", "Dersingham, adj Thaxters",
+    "Dersingham, adj Clayton Close", "Dersingham, opp Kings Croft", "Ingoldisthorpe, adj Ingoldsby Avenue",
+    "Ingoldisthorpe, opp Pond", "Ingoldisthorpe, adj Coaly Lane", "Snettisham, adj Station Road",
+    "Snettisham, adj Strickland Avenue", "Snettisham, adj Grapes", "Snettisham, opp Bottom Farm",
+    "Heacham, adj Collingwood Close", "Heacham, opp Fenside", "Heacham, opp Fengate",
+    "Heacham, adj Jennings Close", "Heacham, opp College Drive", "Heacham, opp Poplar Avenue",
+    "Heacham, adj Fox & Hound", "Heacham, opp High Street", "Heacham, opp Church Lane",
+    "Heacham, adj Norfolk Lavender", "Hunstanton, opp Redgate Hill", "Hunstanton, adj Tesco",
+    "Hunstanton Travel Hub (Stand A)"
+  ],
+
+  "36": [
+    "King’s Lynn Transport Interchange (Stand E)", "King’s Lynn, opp Austin Fields",
+    "King’s Lynn, opp Retail Park", "King’s Lynn, opp Bergen Way", "King’s Lynn, opp Hamburg Way",
+    "King’s Lynn, adj St James Medical Practice", "South Wootton, adj Nursery Lane",
+    "South Wootton, adj Deas Road", "South Wootton, adj Langley Road", "South Wootton, adj Sandy Lane",
+    "South Wootton, opp Castle Reach", "South Wootton, adj Knight’s Hill",
+    "Castle Rising, opp Mill House Turn", "Sandringham, opp Cross Cottages",
+    "Sandringham - A149 only, opp Cats Bottom Cottages", "Sandringham, opp Edinburgh Plantation",
+    "Dersingham, adj Manor Road", "Dersingham, adj Bank Road", "Dersingham, adj Thaxters",
+    "Dersingham, adj Clayton Close", "Dersingham, opp Kings Croft", "Ingoldisthorpe, adj Ingoldsby Avenue",
+    "Ingoldisthorpe, opp Pond", "Ingoldisthorpe, adj Coaly Lane", "Snettisham, adj Station Road",
+    "Snettisham, adj Strickland Avenue", "Snettisham, adj Grapes", "Snettisham, opp Bottom Farm",
+    "Heacham, adj Collingwood Close", "Heacham, opp Fenside", "Heacham, opp Fengate",
+    "Heacham, adj Jennings Close", "Heacham, opp College Drive", "Heacham, opp Poplar Avenue",
+    "Heacham, adj Fox & Hound", "Heacham, opp High Street", "Heacham, opp Church Lane",
+    "Heacham, opp Manor Road", "Hunstanton, adj Redgate Hill", "Hunstanton Travel Hub (Stand B)",
+    "Hunstanton, opp Lincoln Square", "Hunstanton, adj Lighthouse Close",
+    "Old Hunstanton, adj Post Office", "Old Hunstanton, adj Waterworks Road", "Holme-next-the-Sea",
+    "Thornham, adj Church", "Thornham, adj The Orange Tree", "Titchwell, adj Manor House",
+    "Titchwell, opp RSPB Reserve", "Brancaster, adj The Ship", "Brancaster Staithe, adj White Horse",
+    "Burnham Deepdale, adj Delgate Market", "Burnham Overy Staithe, adj Hero",
+    "Burnham Overy Staithe, adj Ostrich House", "Burnham Market, adj green",
+    "Holkham, adj The Victoria", "Wells-next-the-Sea, adj Grove Road",
+    "Wells-next-the-Sea, opp Co-op", "Wells-next-the-Sea, opp Northfield Lane",
+    "Wells-next-the-Sea, opp Quay", "Wells-next-the-Sea, opp Mainsail Yard",
+    "Warham Road (opp)", "Wighton, opp High Street", "Wighton, opp Buddell’s Lane",
+    "Little Walsingham, opp school", "Little Walsingham, opp The Bull",
+    "Houghton St Giles, adj Fakenham Road", "East Barsham, opp Water Lane",
+    "Fakenham, opp Toll Bar", "Fakenham, opp Howland Close", "Fakenham Oak Street (Stand A)"
+  ],
+
+  "37": [
+    "King’s Lynn Transport Interchange (Stand F)", "King’s Lynn, adj Railway Station",
+    "King’s Lynn, opp Southgate Street", "King’s Lynn, adj Cemetery Lodge",
+    "King’s Lynn, opp Hardwick Tesco", "King’s Lynn, adj Hardwick Tesco",
+    "King’s Lynn, adj McDonalds layby", "West Winch, opp Esso Garage", "West Winch, adj The Winch",
+    "West Winch, adj Mill Lane", "West Winch, adj Rectory Lane", "West Winch, adj Chequers Lane",
+    "West Winch, opp Oak Avenue", "Setchey, adj Blackborough End", "Tottenhill, adj Green",
+    "Wormegay, adj Garage Lane", "Watlington, adj Mill Road", "Watlington, adj Church Road",
+    "Watlington, adj Railway Station", "Stowbridge, adj Barley Close", "Runcton Holme, adj School Road",
+    "Hilgay, adj Church Road", "Southery, adj The Old White Bell", "Southery, adj Bus Shelter",
+    "Southery, adj Feltwell Road", "Ten Mile Bank, adj Post Office", "Ten Mile Bank, adj Church Road",
+    "Denver, adj Sluice Road", "Downham Market, adj Railway Station", "Downham Market, adj Bus Shelter",
+    "Downham Market, adj Tesco Superstore"
+  ],
+
+  "38": [
+    "King’s Lynn Transport Interchange (Stand F)", "King’s Lynn, adj Railway Station",
+    "King’s Lynn, opp Southgate Street", "King’s Lynn, adj Cemetery Lodge",
+    "King’s Lynn, opp Hardwick Tesco", "West Winch, opp Esso Garage",
+    "West Winch, adj The Winch", "West Winch, adj Mill Lane", "West Winch, adj Back Lane",
+    "West Winch, opp Hall Lane", "West Winch, opp Fir Tree Drive", "West Winch, adj Oak Avenue",
+    "West Winch, opp Chequers Lane", "West Winch, adj Coronation Avenue",
+    "North Runcton, nr New Road", "North Runcton, opp Rectory Lane",
+    "Middleton, opp Church", "Middleton, adj Walter Howes Crescent",
+    "Fair Green, opp The Gate", "Fair Green, opp Brookwell Springs"
+  ],
+
+  "39": [
+    "King’s Lynn Transport Interchange (Stand F)", "King’s Lynn, adj Railway Station",
+    "King’s Lynn, opp Southgate Street", "King’s Lynn, adj Cemetery Lodge",
+    "King’s Lynn, opp Hardwick Tesco", "West Winch, opp Esso Garage",
+    "West Winch, adj The Winch", "West Winch, adj Mill Lane", "West Winch, adj Rectory Lane",
+    "West Winch, adj Chequers Lane", "West Winch, opp Oak Avenue",
+    "Shouldham Thorpe, adj Lime Kiln Lane", "Shouldham, adj The Green",
+    "Shouldham, adj Westgate Street", "Marham, adj Hillside", "Marham, adj Main Gates",
+    "Marham, adj Woodview Road", "Marham, adj Davamor", "Marham, adj Post Office"
+  ],
+
+  "41": [
+    "King’s Lynn Transport Interchange (Stand G)", "King’s Lynn, adj Kettlewell Lane",
+    "King’s Lynn, adj Highgate School", "King’s Lynn, opp King Edward VII School",
+    "Gaywood, adj Tesco", "King’s Lynn, adj Health Centre", "King’s Lynn, adj Kent Road",
+    "King’s Lynn, adj Queensway", "King’s Lynn, adj Elvington Road",
+    "Queen Elizabeth Hospital, adj Travel Hub", "King’s Lynn, opp Elvington Road",
+    "King’s Lynn, opp Queensway", "King’s Lynn, opp Health Centre", "Gaywood, opp Tesco",
+    "King’s Lynn, adj The Woolpack", "King’s Lynn, adj St Katherines Court",
+    "King’s Lynn, adj Railway Station", "King’s Reach"
+  ],
+
+  "42": [
+    "King’s Lynn Transport Interchange (Stand G)", "King’s Lynn, adj Kettlewell Lane",
+    "King’s Lynn, adj Highgate School", "King’s Lynn, opp King Edward VII School",
+    "Gaywood, adj Tesco", "King’s Lynn, adj Health Centre", "King’s Lynn, adj Kent Road",
+    "King’s Lynn, adj Queensway", "King’s Lynn, adj Elvington Road",
+    "Fairstead, adj William Booth Road", "Fairstead, adj Glaven",
+    "Fairstead, opp Mulberry Road", "Fairstead, adj Tennyson Avenue",
+    "Fairstead, adj Wootton Road", "Fairstead, adj Langley Road",
+    "Queen Elizabeth Hospital, adj Travel Hub", "King’s Lynn, opp Elvington Road",
+    "King’s Lynn, opp Queensway", "King’s Lynn, opp Health Centre",
+    "Gaywood, opp Tesco", "King’s Lynn, adj The Woolpack",
+    "King’s Lynn, adj St Katherines Court", "King’s Lynn, adj Railway Station",
+    "King’s Lynn Transport Interchange"
+  ],
+
+  "43": [
+    "King’s Lynn Transport Interchange", "King’s Lynn Railway Station", "Gaywood Tesco",
+    "Queen Elizabeth Hospital, Travel Hub", "South Wootton, Nursery Lane",
+    "South Wootton, Deas Road", "South Wootton, Langley Road", "South Wootton, Sandy Lane",
+    "North Wootton, Village Hall", "North Wootton, Priory Lane", "North Wootton"
+  ],
+
+  "44": [
+    "King’s Lynn Transport Interchange (Stand E)", "King’s Lynn, opp Austin Fields",
+    "King’s Lynn, opp Retail Park", "King’s Lynn, opp Bergen Way", "King’s Lynn, opp Hamburg Way",
+    "King’s Lynn, adj St James Medical Practice", "Edward Benefer Way", "Loke Road",
+    "South Wootton, adj Nursery Lane", "South Wootton, adj Castle Rising Road",
+    "South Wootton, adj Deas Road", "South Wootton, adj Langley Road",
+    "South Wootton, adj Sandy Lane", "South Wootton, opp Castle Reach",
+    "South Wootton, adj Knight’s Hill", "Queen Elizabeth Hospital, Travel Hub",
+    "Gaywood, adj Tesco", "King’s Lynn, adj Queensway", "King’s Lynn, adj Elvington Road",
+    "King’s Lynn, adj Health Centre", "King’s Lynn, adj Kent Road",
+    "King’s Lynn, adj St Katherines Court", "King’s Lynn, adj Railway Station",
+    "King’s Lynn Transport Interchange"
+  ],
+
+  "46": [
+    "King’s Lynn Transport Interchange", "King’s Lynn, adj Railway Station",
+    "King’s Lynn, opp Southgate Street", "King’s Lynn, opp Sandpiper Way",
+    "Saddlebow, adj Bentinck Dock", "Tilney cum Islington, adj Bus Shelter",
+    "Tilney All Saints, adj Spice Chase", "Tilney High End, adj School Road",
+    "Tilney St Lawrence, adj Bus Shelter", "Tilney St Lawrence, adj Westfields",
+    "Terrington St John, adj Kismet", "Terrington St John, adj School Road",
+    "Walpole Highway, adj Post Office", "Walpole Highway, adj School Road",
+    "West Walton, adj Church", "West Walton, adj School Road", "Walsoken, adj Black Bear Lane",
+    "Wisbech, adj Horsefair Bus Station"
+  ],
+
+  "X46": [
+    "King’s Lynn Transport Interchange", "King’s Lynn Railway Station", "Saddlebow",
+    "St Germans", "Walsoken", "Wisbech Horsefair Bus Station"
+  ],
+
+  "48": [
+    "King’s Lynn St Katherines Court", "King’s Lynn Railway Station",
+    "King’s Lynn Transport Interchange (Stand F)", "Queen Elizabeth Hospital, Travel Hub",
+    "King’s Lynn, adj Kent Road", "King’s Lynn, adj Queensway", "King’s Lynn, adj Elvington Road",
+    "Gayton, adj Crown", "Gayton, adj Back Street", "East Walton, adj Church",
+    "West Acre, adj Stag", "Castle Acre, adj Bailey Street", "Castle Acre, adj Foxes Meadow",
+    "Great Massingham, adj The Dabbling Duck", "Rougham, adj Church",
+    "Weasenham, adj Church", "Tittleshall, adj Church", "Whissonsett, adj Church",
+    "Fakenham Oak Street"
+  ],
+
+  "48A": [
+    "Middleton, adj Walter Howes Crescent", "Middleton, adj Church", "East Winch, adj Station Road",
+    "Ashwicken, adj The Crown", "Leziate, adj Common Road", "Bawsey, adj Church Road",
+    "King’s Lynn, Springwood High School"
+  ],
+
+  "49": [
+    "King’s Lynn Transport Interchange", "King’s Lynn Railway Station",
+    "King’s Lynn St Katherines Court", "Queen Elizabeth Hospital, Travel Hub",
+    "Gayton Road", "Grimston, adj Church", "Grimston, adj The Old Bell",
+    "Pott Row, adj Chapel Road", "Pott Row, adj Massingham Road",
+    "Great Massingham, adj The Dabbling Duck", "Rougham, adj Church",
+    "Weasenham, adj Church", "Tittleshall, adj Church", "Whissonsett, adj Church",
+    "Fakenham Oak Street"
+  ],
+
+  "49A": [
+    "King’s Lynn Transport Interchange", "King’s Lynn Railway Station",
+    "Queen Elizabeth Hospital, Travel Hub", "Gayton, adj Crown",
+    "Great Massingham, adj The Dabbling Duck", "Rougham, adj Church",
+    "The Rudhams", "Tittleshall", "Whissonsett", "Fakenham Oak Street"
+  ],
+
+  "54": [
+    "King’s Lynn Transport Interchange", "South Lynn, adj Vancouver Avenue",
+    "South Lynn, adj Wisbech Road", "West Lynn, adj Ferry Square",
+    "Clenchwarton, adj Church", "Clenchwarton, adj Jubilee Bank Road",
+    "Tilney All Saints, adj Spice Chase", "Tilney High End, adj School Road",
+    "Terrington St Clement, adj Churchgate Way", "Terrington St Clement, adj Marshland Street",
+    "Terrington St Clement, adj Wesley Road", "Walpole Cross Keys", "Walpole St Peter",
+    "Walpole Highway"
+  ],
+
+  "54A": [
+    "King’s Lynn Transport Interchange", "South Lynn", "West Lynn", "Clenchwarton",
+    "Tilney All Saints", "Tilney High End", "Terrington St Clement",
+    "Terrington High School"
+  ],
+
+  "60": [
+    "Wisbech Horsefair Bus Station", "Wisbech, adj Park Avenue", "Emneth, opp Hollycroft Close",
+    "Emneth, adj Bus Shelter", "Emneth, opp Church", "Emneth, adj Thatchwood Avenue",
+    "Emneth, adj Tram Station Lane", "Emneth, opp Elmfield Drive",
+    "Outwell, adj Isle Bridge Road", "Outwell, adj St Clement’s Church",
+    "Upwell, adj The Five Bells", "Upwell, adj New Road", "Three Holes, adj Village Hall",
+    "Three Holes, opp Mudds Drove", "Lotts Bridge, adj PO Box", "Nordelph, adj Thorpe Terrace",
+    "Nordelph, opp Coronation Avenue", "Nordelph, opp Chequers",
+    "Salter’s Lode, opp Kemps Close", "Downham Market, opp Bus Shelter",
+    "Downham Market, opp Railway Station", "Downham Market, adj Tesco Superstore"
+  ],
+
+  "414": [
+    "Dersingham", "Snettisham", "Heacham", "Docking", "Stanhoe", "Burnham Market",
+    "Wells-next-the-Sea", "Alderman Peel High School"
+  ],
+
+  "415": [
+    "Dersingham", "Ingoldisthorpe", "Snettisham", "Heacham", "Docking",
+    "Wells-next-the-Sea", "Alderman Peel High School"
+  ]
+};
+
+function stopsForLynxRoute(routeNo, destination){
+  const base = (LYNX_STOP_PATTERNS[routeNo] || []).slice();
+
+  const dest = String(destination || "").toLowerCase();
+
+  if(dest.includes("king") || dest.includes("wisbech") || dest.includes("dersingham") || dest.includes("middleton")){
+    return base.reverse();
+  }
+
+  return base;
+}
+
+function stopObjectsForLynxRoute(routeNo, destination){
+  return stopsForLynxRoute(routeNo, destination).map(function(name, index){
+    return {
+      name: name,
+      lat: null,
+      lng: null,
+      builtIn: true,
+      order: index + 1
+    };
+  });
+}
+
 let currentRouteKey = null;
 let currentStopIndex = 0;
 
@@ -638,6 +1020,42 @@ function saveRoutes(){
   localStorage.setItem("busRoutesV2",JSON.stringify(routes));
 }
 
+function loadAllLynxRoutes(){
+  LYNX_ROUTES.forEach(function(item){
+    const key = makeKey(item.lineNumber, item.routeNo, item.destination);
+
+    if(!routes[key]){
+      routes[key] = {
+        lineNumber: item.lineNumber,
+        routeNo: item.routeNo,
+        destination: item.destination,
+        via: item.via,
+        stops: stopObjectsForLynxRoute(item.routeNo, item.destination),
+        presetOperator: "Lynx"
+      };
+    }else{
+      routes[key].lineNumber = item.lineNumber;
+      routes[key].routeNo = item.routeNo;
+      routes[key].destination = item.destination;
+      routes[key].via = item.via;
+      routes[key].presetOperator = "Lynx";
+      routes[key].stops = stopObjectsForLynxRoute(item.routeNo, item.destination);
+    }
+  });
+
+  saveRoutes();
+  refreshRouteSelect();
+
+  if(!currentRouteKey && LYNX_ROUTES.length){
+    const first = LYNX_ROUTES[0];
+    currentRouteKey = makeKey(first.lineNumber, first.routeNo, first.destination);
+    document.getElementById("routeSelect").value = currentRouteKey;
+    loadRoute();
+  }
+
+  alert("Loaded Lynx routes with built-in stop lists. Select a route or type a line number on the controller.");
+}
+
 function makeKey(line,no,dest){
   return line + " | " + no + " - " + dest;
 }
@@ -656,7 +1074,7 @@ function createRoute(){
   const key = makeKey(line,no,dest);
 
   if(!routes[key]){
-    routes[key] = {lineNumber:line,routeNo:no,destination:dest,via:via,stops:[]};
+    routes[key] = {lineNumber:line,routeNo:no,destination:dest,via:via,stops:stopObjectsForLynxRoute(no, dest)};
   }else{
     routes[key].lineNumber = line;
     routes[key].routeNo = no;
@@ -670,7 +1088,6 @@ function createRoute(){
   saveRoutes();
   refreshRouteSelect();
   document.getElementById("routeSelect").value = key;
-  autoPickupStops(false);
   drawStops();
   updateDisplays();
 }
@@ -715,7 +1132,6 @@ function loadRoute(){
   document.getElementById("destination").value = r.destination || "";
   document.getElementById("viaText").value = r.via || "";
 
-  autoPickupStops(false);
   drawStops();
   updateDisplays();
 }
@@ -809,115 +1225,6 @@ function autoPickupStops(showAlert){
 }
 
 
-function toggleAutoNearbyStops(){
-  autoNearbyStopsEnabled = !autoNearbyStopsEnabled;
-
-  document.getElementById("autoNearbyBtn").textContent =
-    autoNearbyStopsEnabled ? "Auto Nearby Stops: ON" : "Auto Nearby Stops: OFF";
-
-  document.getElementById("nearbyStopStatus").textContent =
-    autoNearbyStopsEnabled
-      ? "Auto nearby stops is on. Start GPS and nearby stops will load automatically."
-      : "Auto nearby stops is off. Use saved map points instead.";
-}
-
-async function fetchNearbyStops(lat, lng){
-  if(!autoNearbyStopsEnabled) return;
-  if(!currentRouteKey || !routes[currentRouteKey]) return;
-
-  const now = Date.now();
-
-  // Do not spam the API. Search again every 20 seconds.
-  if(now - lastNearbyStopFetch < 20000) return;
-  lastNearbyStopFetch = now;
-
-  const status = document.getElementById("nearbyStopStatus");
-  if(status) status.textContent = "Searching nearby bus stops...";
-
-  const radius = 850;
-
-  const query = `
-    [out:json][timeout:15];
-    (
-      node["highway"="bus_stop"](around:${radius},${lat},${lng});
-      node["public_transport"="platform"](around:${radius},${lat},${lng});
-    );
-    out body;
-  `;
-
-  try{
-    const res = await fetch("https://overpass-api.de/api/interpreter", {
-      method: "POST",
-      body: query
-    });
-
-    if(!res.ok){
-      throw new Error("Stop search failed");
-    }
-
-    const data = await res.json();
-
-    const foundStops = (data.elements || [])
-      .filter(function(item){
-        return item.lat && item.lon && item.tags && item.tags.name;
-      })
-      .map(function(item){
-        return {
-          name: item.tags.name,
-          lat: item.lat,
-          lng: item.lon,
-          distance: getDistance(lat, lng, item.lat, item.lon)
-        };
-      })
-      .sort(function(a,b){
-        return a.distance - b.distance;
-      });
-
-    const uniqueStops = [];
-    const names = new Set();
-
-    foundStops.forEach(function(stop){
-      const cleanName = stop.name.trim().toLowerCase();
-
-      if(!names.has(cleanName)){
-        names.add(cleanName);
-        uniqueStops.push({
-          name: stop.name,
-          lat: stop.lat,
-          lng: stop.lng
-        });
-      }
-    });
-
-    if(uniqueStops.length === 0){
-      if(status) status.textContent = "No nearby stops found. Try moving closer to a road or bus stop.";
-      return;
-    }
-
-    routes[currentRouteKey].stops = uniqueStops.slice(0, 12);
-
-    currentStopIndex = 0;
-    showingThisStop = false;
-    dwellStopIndex = null;
-    dwellStartTime = null;
-
-    saveRoutes();
-    drawStops();
-    updateDisplays();
-
-    if(status){
-      status.textContent = "Auto loaded " + routes[currentRouteKey].stops.length + " nearby stops from your GPS location.";
-    }
-
-  }catch(err){
-    if(status){
-      status.textContent = "Could not search nearby stops. Try again in a moment.";
-    }
-    console.error(err);
-  }
-}
-
-
 function drawStops(){
   markers.forEach(m=>map.removeLayer(m));
   markers = [];
@@ -930,17 +1237,21 @@ function drawStops(){
   const route = routes[currentRouteKey];
 
   route.stops.forEach((stop,index)=>{
-    const marker = L.marker([stop.lat,stop.lng])
-      .addTo(map)
-      .bindPopup(`${index+1}. ${stop.name}`);
+    const hasCoords = typeof stop.lat === "number" && typeof stop.lng === "number";
 
-    markers.push(marker);
+    if(hasCoords){
+      const marker = L.marker([stop.lat,stop.lng])
+        .addTo(map)
+        .bindPopup(`${index+1}. ${stop.name}`);
+
+      markers.push(marker);
+    }
 
     const div = document.createElement("div");
     div.className = "stopItem";
     div.innerHTML = `
       <b>${index+1}. ${stop.name}</b>
-      <div class="mini">${stop.lat.toFixed(5)}, ${stop.lng.toFixed(5)}</div>
+      <div class="mini">${hasCoords ? stop.lat.toFixed(5) + ", " + stop.lng.toFixed(5) : "Built-in Lynx stop"}</div>
       <div class="grid3">
         <button class="dark" onclick="setStop(${index})">Set</button>
         <button class="dark" onclick="moveStopUp(${index})">Up</button>
@@ -950,8 +1261,10 @@ function drawStops(){
     list.appendChild(div);
   });
 
-  if(route.stops.length){
-    map.fitBounds(route.stops.map(s=>[s.lat,s.lng]),{padding:[40,40]});
+  const coordStops = route.stops.filter(s => typeof s.lat === "number" && typeof s.lng === "number");
+
+  if(coordStops.length){
+    map.fitBounds(coordStops.map(s=>[s.lat,s.lng]),{padding:[40,40]});
   }
 }
 
@@ -1209,8 +1522,6 @@ function startGPS(){
 
     document.getElementById("metricGps").textContent = accuracy + "m";
 
-    fetchNearbyStops(lat, lng);
-
     if(gpsMarker){
       gpsMarker.setLatLng([lat,lng]);
     }else{
@@ -1248,12 +1559,16 @@ function checkNearestStop(lat,lng){
   let nearestDistance = Infinity;
 
   r.stops.forEach((s,i)=>{
+    if(typeof s.lat !== "number" || typeof s.lng !== "number") return;
+
     const d = getDistance(lat,lng,s.lat,s.lng);
     if(d < nearestDistance){
       nearestDistance = d;
       nearestIndex = i;
     }
   });
+
+  if(nearestDistance === Infinity) return;
 
   if(nearestDistance < 90){
     if(currentStopIndex !== nearestIndex){
