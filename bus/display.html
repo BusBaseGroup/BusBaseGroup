@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Bus Display Control System</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
@@ -243,6 +243,20 @@ button.orange{background:#b86a00}
   text-overflow:ellipsis;
 }
 
+.lcdMiniProgress{
+  grid-column:1 / -1;
+  height:8px;
+  background:rgba(0,0,0,.22);
+  border-radius:999px;
+  overflow:hidden;
+}
+
+.lcdMiniProgress div{
+  height:100%;
+  width:0%;
+  background:#0d4b68;
+}
+
 .pad{
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -380,17 +394,6 @@ button.orange{background:#b86a00}
   line-height:1.18;
 }
 
-.nearestStopLine{
-  margin-top:12px;
-  color:#fff;
-  font-size:20px;
-  line-height:1.3;
-}
-
-.nearestStopLine span{
-  color:#7ee7ff;
-}
-
 .nextSub{
   margin-top:18px;
   color:#ffe775;
@@ -509,6 +512,236 @@ button.orange{background:#b86a00}
     height:520px;
   }
 }
+
+/* Mobile and tablet friendly layout */
+@media(max-width:900px){
+  body{
+    overflow-x:hidden;
+  }
+
+  .topbar{
+    height:auto;
+    padding:12px;
+    align-items:flex-start;
+    gap:10px;
+    flex-direction:column;
+  }
+
+  .brand strong{
+    font-size:16px;
+  }
+
+  .brand span{
+    font-size:11px;
+    line-height:1.35;
+  }
+
+  .app{
+    display:flex;
+    flex-direction:column;
+    padding:10px;
+    gap:10px;
+    height:auto;
+  }
+
+  .card{
+    border-radius:14px;
+  }
+
+  .cardHead{
+    padding:12px;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+
+  .cardHead h2{
+    font-size:14px;
+  }
+
+  .cardBody{
+    padding:12px;
+  }
+
+  input,select,button{
+    min-height:46px;
+    font-size:15px;
+    padding:11px;
+  }
+
+  .controllerShell{
+    padding:10px;
+    border-radius:16px;
+  }
+
+  .controllerTop{
+    grid-template-columns:1fr;
+  }
+
+  .lcd{
+    min-height:135px;
+    padding:10px;
+  }
+
+  .lcdMain{
+    font-size:19px;
+  }
+
+  .lcdGrid,
+  .lcdStatusBar{
+    font-size:12px;
+  }
+
+  .pad button,
+  .arrowRow button,
+  .fnRow button{
+    min-height:48px;
+    font-size:14px;
+  }
+
+  .arrowRow{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .fnRow{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .screenWall{
+    gap:10px;
+  }
+
+  .nextDisplay{
+    height:auto;
+    min-height:300px;
+    padding:18px 12px;
+    border-width:5px;
+    border-radius:16px;
+  }
+
+  .nextRouteInfo{
+    font-size:17px;
+    gap:8px;
+    margin-bottom:10px;
+  }
+
+  .nextLabel{
+    font-size:20px;
+    letter-spacing:2px;
+  }
+
+  .nextMain{
+    font-size:34px;
+    max-height:120px;
+    margin-top:14px;
+  }
+
+  .nextMain.messageMode{
+    font-size:24px;
+  }
+
+  .nextSub{
+    font-size:18px;
+    min-height:60px;
+    margin-top:14px;
+  }
+
+  .frontBlind{
+    min-height:115px;
+    grid-template-columns:1fr 82px;
+    gap:10px;
+    padding:12px;
+    border-width:5px;
+    border-radius:14px;
+  }
+
+  .blindDest{
+    font-size:29px;
+    line-height:31px;
+  }
+
+  .blindVia{
+    font-size:15px;
+    line-height:19px;
+  }
+
+  .blindRoute{
+    font-size:48px;
+    line-height:50px;
+    padding-left:8px;
+  }
+
+  .currentBox{
+    grid-template-columns:1fr 1fr;
+  }
+
+  #map{
+    height:360px;
+    min-height:360px;
+  }
+
+  .grid2,
+  .grid3{
+    grid-template-columns:1fr;
+  }
+
+  .stopItem .grid3{
+    grid-template-columns:1fr 1fr 1fr;
+  }
+
+  .fullscreenNextStop{
+    height:100vh !important;
+    min-height:100vh !important;
+    padding:22px !important;
+  }
+
+  .fullscreenNextStop .nextRouteInfo{
+    font-size:25px;
+    margin-bottom:22px;
+  }
+
+  .fullscreenNextStop .nextLabel{
+    font-size:28px;
+  }
+
+  .fullscreenNextStop .nextMain{
+    font-size:48px;
+  }
+
+  .fullscreenNextStop .nextMain.messageMode{
+    font-size:34px;
+  }
+
+  .fullscreenNextStop .nextSub{
+    font-size:25px;
+  }
+}
+
+@media(max-width:420px){
+  .nextMain{
+    font-size:29px;
+  }
+
+  .nextMain.messageMode{
+    font-size:21px;
+  }
+
+  .blindDest{
+    font-size:24px;
+  }
+
+  .blindRoute{
+    font-size:42px;
+  }
+
+  .currentBox{
+    grid-template-columns:1fr;
+  }
+
+  .stopItem .grid3{
+    grid-template-columns:1fr;
+  }
+}
+
 </style>
 </head>
 
@@ -547,7 +780,10 @@ button.orange{background:#b86a00}
               <div class="lcdStatusBar">
                 <span>Time:</span><span id="lcdTime">--:--</span>
                 <span>Mode:</span><span id="lcdMode">STANDBY</span>
-                <span>Near:</span><span id="lcdNearest">---</span>
+                <span>Prog:</span><span id="lcdProgress">0%</span>
+                <span>Next:</span><span id="lcdNextMini">---</span>
+                <span>Update:</span><span id="lcdLastUpdate">---</span>
+                <div class="lcdMiniProgress"><div id="lcdProgressBar"></div></div>
               </div>
             </div>
 
@@ -650,7 +886,6 @@ button.orange{background:#b86a00}
           <div id="nextDestination">NO DESTINATION</div>
         </div>
         <div class="nextLabel" id="stopScreenLabel">NEXT STOPS</div>
-        <div class="nearestStopLine">Nearest stop: <span id="nearestStopText">---</span></div>
         <div class="nextMain" id="nextStopText">No route selected</div>
         <div class="nextSub">
           <div id="stop2">---</div>
@@ -1529,7 +1764,6 @@ function updateDisplays(){
 
   const nextRouteNo = document.getElementById("nextRouteNo");
   const nextDestination = document.getElementById("nextDestination");
-  const nearestStopText = document.getElementById("nearestStopText");
   const label = document.getElementById("stopScreenLabel");
   const nextText = document.getElementById("nextStopText");
   nextText.classList.remove("messageMode");
@@ -1545,7 +1779,10 @@ function updateDisplays(){
   const lcdLine = document.getElementById("lcdLine");
   const lcdStop = document.getElementById("lcdStop");
   const lcdMode = document.getElementById("lcdMode");
-  const lcdNearest = document.getElementById("lcdNearest");
+  const lcdProgress = document.getElementById("lcdProgress");
+  const lcdProgressBar = document.getElementById("lcdProgressBar");
+  const lcdNextMini = document.getElementById("lcdNextMini");
+  const lcdLastUpdate = document.getElementById("lcdLastUpdate");
 
   const metricLine = document.getElementById("metricLine");
   const metricRoute = document.getElementById("metricRoute");
@@ -1554,7 +1791,6 @@ function updateDisplays(){
   if(!currentRouteKey || !routes[currentRouteKey]){
     nextRouteNo.textContent = "--";
     nextDestination.textContent = "NO DESTINATION";
-    nearestStopText.textContent = nearestStopName || "---";
     label.textContent = "NEXT STOPS";
     nextText.textContent = "No route selected";
     stop2.textContent = "---";
@@ -1567,7 +1803,10 @@ function updateDisplays(){
     lcdLine.textContent = typedLine || "---";
     lcdStop.textContent = "---";
     lcdMode.textContent = typedLine ? "LINE ENTRY" : "STANDBY";
-    lcdNearest.textContent = nearestStopName || "---";
+    lcdProgress.textContent = "0%";
+    lcdProgressBar.style.width = "0%";
+    lcdNextMini.textContent = "---";
+    lcdLastUpdate.textContent = "---";
     metricLine.textContent = "---";
     metricRoute.textContent = "---";
     metricCurrent.textContent = "---";
@@ -1579,10 +1818,6 @@ function updateDisplays(){
 
   nextRouteNo.textContent = r.routeNo || "--";
   nextDestination.textContent = (r.destination || "NO DESTINATION").toUpperCase();
-  nearestStopText.textContent = nearestStopDistance !== null
-    ? nearestStopName + " (" + Math.round(nearestStopDistance) + "m)"
-    : nearestStopName || "---";
-
   frontRoute.textContent = r.routeNo || "--";
   frontDest.textContent = (r.destination || "NO DESTINATION").toUpperCase();
   frontVia.textContent = r.via ? r.via.toUpperCase() : "via ---";
@@ -1592,7 +1827,15 @@ function updateDisplays(){
   lcdLine.textContent = r.lineNumber || "---";
   lcdStop.textContent = currentStop ? currentStop.name : "---";
   lcdMode.textContent = showingThisStop ? "AT STOP" : "IN SERVICE";
-  lcdNearest.textContent = nearestStopName || "---";
+
+  const totalStops = r.stops.length || 1;
+  const progress = totalStops > 1 ? Math.round((currentStopIndex / (totalStops - 1)) * 100) : 0;
+  const nextMini = r.stops[currentStopIndex + 1] ? r.stops[currentStopIndex + 1].name : "Terminus";
+
+  lcdProgress.textContent = progress + "%";
+  lcdProgressBar.style.width = progress + "%";
+  lcdNextMini.textContent = nextMini;
+  lcdLastUpdate.textContent = window.lastGpsUpdate || "Manual";
 
   metricLine.textContent = r.lineNumber || "---";
   metricRoute.textContent = r.routeNo || "---";
@@ -1634,7 +1877,6 @@ function showPassengerMessage(number){
 
   const nextRouteNo = document.getElementById("nextRouteNo");
   const nextDestination = document.getElementById("nextDestination");
-  const nearestStopText = document.getElementById("nearestStopText");
   const label = document.getElementById("stopScreenLabel");
   const nextText = document.getElementById("nextStopText");
   nextText.classList.remove("messageMode");
@@ -1800,6 +2042,11 @@ function startGPS(){
       `Location: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
 
     document.getElementById("metricGps").textContent = accuracy + "m";
+    window.lastGpsUpdate = new Date().toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
 
     if(gpsMarker){
       gpsMarker.setLatLng([lat,lng]);
