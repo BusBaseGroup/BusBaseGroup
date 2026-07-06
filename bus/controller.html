@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Phone Destination Controller</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at top,#23394d,#05080d 62%);color:white;font-family:Arial,Helvetica,sans-serif;min-height:100dvh}
+.wrap{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:12px}
+.controller{width:100%;max-width:540px;background:linear-gradient(180deg,#111a24,#070b10);border:1px solid #263647;border-radius:28px;padding:14px;box-shadow:0 30px 90px rgba(0,0,0,.65)}
+h1{margin:0 0 10px;text-align:center;font-size:21px}
+.status{text-align:center;color:#9fb1c5;font-size:13px;margin-bottom:10px}
+.connected{color:#45ff8a}
+.lcd{background:linear-gradient(180deg,#79e7ff,#38bce8);color:#0d4b68;border:6px solid #071018;border-radius:20px;padding:14px;font-family:"Courier New",monospace;min-height:170px}
+.lcdTop{display:flex;justify-content:space-between;gap:10px;border:2px solid rgba(0,0,0,.25);padding:10px;font-size:27px;font-weight:900}
+.lcdInfo{margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:7px;font-size:15px;font-weight:700}
+.pad{margin-top:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+button{min-height:58px;border:1px solid #526477;border-radius:14px;background:#05080c;color:white;font-size:18px;font-weight:800;box-shadow:inset 0 -3px 0 rgba(255,255,255,.08)}
+button:active{transform:scale(.98)}
+.ok{color:#51ff82}.cancel{color:#ff5555}.divOn{color:#ff9d00!important}
+.arrowRow,.fnRow{margin-top:10px;display:grid;gap:8px}.arrowRow{grid-template-columns:repeat(4,1fr)}.fnRow{grid-template-columns:repeat(3,1fr)}
+select,textarea{width:100%;border-radius:12px;background:#0b1119;color:white;border:1px solid #263647;padding:10px;font-size:14px}
+select{min-height:48px;margin-top:10px}
+.pair{margin-top:12px;background:#0b1119;border:1px solid #263647;border-radius:16px;padding:12px}
+.pair h2{margin:0 0 8px;font-size:15px}
+textarea{height:82px;margin-top:7px;font-size:11px}
+.help{margin-top:8px;color:#9fb1c5;font-size:12px;line-height:1.4}
+@media(max-width:430px){.wrap{align-items:flex-start;padding:0}.controller{min-height:100dvh;border-radius:0}.lcdTop{font-size:22px}button{min-height:54px;font-size:16px}.arrowRow{grid-template-columns:repeat(2,1fr)}.fnRow{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="controller">
+    <h1>Phone Destination Controller</h1>
+    <div class="status" id="status">Not paired</div>
+
+    <div class="lcd">
+      <div class="lcdTop"><span id="lcdRoute">----</span><span id="lcdDest">NO DEST</span></div>
+      <div class="lcdInfo">
+        <div>Line: <span id="lcdLine">---</span></div>
+        <div>Stop: <span id="lcdStop">---</span></div>
+        <div>Mode: <span id="lcdMode">READY</span></div>
+        <div>Prog: <span id="lcdProg">0%</span></div>
+      </div>
+    </div>
+
+    <div class="pad">
+      <button onclick="pressNum('1')">1</button><button onclick="pressNum('2')">2<br><small>ABC</small></button><button onclick="pressNum('3')">3<br><small>DEF</small></button>
+      <button onclick="pressNum('4')">4<br><small>GHI</small></button><button onclick="pressNum('5')">5<br><small>JKL</small></button><button onclick="pressNum('6')">6<br><small>MNO</small></button>
+      <button onclick="pressNum('7')">7<br><small>PQRS</small></button><button onclick="pressNum('8')">8<br><small>TUV</small></button><button onclick="pressNum('9')">9<br><small>WXYZ</small></button>
+      <button onclick="pressNum('0')">0</button><button class="cancel" onclick="clearEntry()">✕</button><button class="ok" onclick="confirmLine()">✓</button>
+    </div>
+
+    <div class="arrowRow">
+      <button onclick="prevStop()">←</button><button onclick="nextStop()">↑ Next</button><button onclick="nextStop()">→</button><button onclick="cycleDestination()">↓ Dest</button>
+    </div>
+
+    <div class="fnRow">
+      <button onclick="startLine()">F1<br><small>LINE</small></button>
+      <button onclick="toggleThisStop()">THIS<br><small>STOP</small></button>
+      <button id="divBtn" onclick="toggleDiversion()">DIV<br><small>OFF</small></button>
+    </div>
+
+    <select id="routeSelect" onchange="selectRouteFromDropdown()"></select>
+
+    <div class="pair">
+      <h2>No Firebase Pairing</h2>
+      <button onclick="makeAnswer()">Pair With Saloon Code</button>
+      <textarea id="saloonCode" placeholder="Paste saloon pairing code here"></textarea>
+      <textarea id="phoneCode" readonly placeholder="Phone return code appears here"></textarea>
+      <button onclick="copyPhoneCode()">Copy Phone Return Code</button>
+      <div class="help">Open saloon.html on the PC first, copy its code here, then paste the return code back into saloon.html.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+const LYNX_ROUTES = [
+  {line:"3401", route:"34", dest:"Hunstanton", via:"via Dersingham, Snettisham & Heacham", stops:["King’s Lynn Transport Interchange","Railway Station","Gaywood Tesco","Queen Elizabeth Hospital","Dersingham","Snettisham","Heacham","Hunstanton Tesco","Hunstanton Travel Hub"]},
+  {line:"3402", route:"34", dest:"King’s Lynn", via:"via Heacham, Snettisham & Dersingham", stops:["Hunstanton Travel Hub","Hunstanton Tesco","Heacham","Snettisham","Dersingham","Queen Elizabeth Hospital","Gaywood Tesco","Railway Station","King’s Lynn Transport Interchange"]},
+  {line:"3501", route:"35", dest:"Hunstanton", via:"via Sandringham, Dersingham & Heacham", stops:["King’s Lynn Transport Interchange","Railway Station","South Wootton","Castle Rising","Sandringham","Dersingham","Snettisham","Heacham","Hunstanton Travel Hub"]},
+  {line:"3601", route:"36", dest:"Fakenham", via:"Coastliner via Hunstanton, Wells & Walsingham", stops:["King’s Lynn Transport Interchange","Queen Elizabeth Hospital","Dersingham","Snettisham","Heacham","Hunstanton Travel Hub","Old Hunstanton","Thornham","Brancaster","Burnham Market","Wells-next-the-Sea","Walsingham","Fakenham Oak Street"]},
+  {line:"4401", route:"44", dest:"The Loop", via:"via South Wootton, QE Hospital & Hardwick", stops:["King’s Lynn Transport Interchange","St James Medical Practice","South Wootton","North Wootton","Knights Hill","Queen Elizabeth Hospital","Gaywood Tesco","Hardwick Retail Park","King’s Lynn Transport Interchange"]},
+  {line:"4601", route:"46", dest:"Wisbech", via:"via Tilney, Terrington St John & West Walton", stops:["King’s Lynn Transport Interchange","Saddlebow","Tilney All Saints","Tilney St Lawrence","Terrington St John","Walpole Highway","West Walton","Walsoken","Wisbech Horsefair"]},
+  {line:"4101", route:"41", dest:"King’s Reach", via:"via Gaywood & QE Hospital", stops:["King’s Lynn Transport Interchange","Railway Station","Gaywood Tesco","Queen Elizabeth Hospital","King’s Reach"]},
+  {line:"4201", route:"42", dest:"Fairstead", via:"via Gaywood", stops:["King’s Lynn Transport Interchange","Railway Station","Gaywood Tesco","Fairstead"]}
+];
+
+const DEFAULT_STATE = {
+  route:"--",
+  dest:"NO DESTINATION",
+  via:"via ---",
+  line:"",
+  stops:[],
+  currentStopIndex:0,
+  showingThisStop:false,
+  diversion:false,
+  message:null,
+  updatedAt:Date.now()
+};
+
+const PASSENGER_MESSAGES = {
+  "1":"NO SMOKING OR VAPING ON THIS BUS",
+  "2":"THE NEXT BUS STOP IS CLOSED",
+  "3":"THIS BUS WILL WAIT HERE UNTIL THE BUS COMING IN THE OPPOSITE DIRECTION PASSES SAFELY",
+  "4":"NO STANDING ON THE UPPER DECK OR STAIRS PLEASE",
+  "5":"PLEASE MOVE DOWN INSIDE THE BUS",
+  "6":"PLEASE HOLD ON WHILE THE BUS IS MOVING",
+  "7":"PLEASE HAVE YOUR TICKET OR PASS READY",
+  "8":"THIS BUS IS BEING HELD TO REGULATE THE SERVICE",
+  "9":"CCTV IS IN OPERATION ON THIS BUS"
+};
+
+function encodeSignal(obj){
+  return btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
+}
+
+function decodeSignal(txt){
+  return JSON.parse(decodeURIComponent(escape(atob(txt.trim()))));
+}
+
+async function waitForIceComplete(pc){
+  if(pc.iceGatheringState === "complete") return;
+
+  await new Promise(resolve => {
+    pc.addEventListener("icegatheringstatechange", () => {
+      if(pc.iceGatheringState === "complete") resolve();
+    });
+  });
+}
+
+
+let state = {...DEFAULT_STATE};
+let typedLine = "";
+let lineMode = false;
+let destinationMatches = [];
+let destinationChoiceIndex = 0;
+let messageTimer = null;
+let pc = null;
+let channel = null;
+
+function init(){
+  populateRoutes();
+  loadRoute(LYNX_ROUTES[0], false);
+}
+
+function populateRoutes(){
+  const s=document.getElementById("routeSelect");
+  s.innerHTML="";
+  LYNX_ROUTES.forEach((r,i)=>{
+    const o=document.createElement("option");
+    o.value=i;
+    o.textContent="Line "+r.line+" | "+r.route+" "+r.dest;
+    s.appendChild(o);
+  });
+}
+
+async function makeAnswer(){
+  try{
+    const offer = decodeSignal(document.getElementById("saloonCode").value);
+    pc = new RTCPeerConnection({iceServers:[{urls:"stun:stun.l.google.com:19302"}]});
+
+    pc.ondatachannel = ev => {
+      channel = ev.channel;
+      setupChannel();
+    };
+
+    await pc.setRemoteDescription(offer);
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    await waitForIceComplete(pc);
+
+    document.getElementById("phoneCode").value = encodeSignal(pc.localDescription);
+    document.getElementById("status").textContent = "Return code ready";
+  }catch(e){
+    alert("Pairing failed. Check the saloon code.");
+    console.error(e);
+  }
+}
+
+function setupChannel(){
+  channel.onopen = () => {
+    document.getElementById("status").innerHTML = '<span class="connected">Paired to saloon screen</span>';
+    publish();
+  };
+
+  channel.onclose = () => {
+    document.getElementById("status").textContent = "Disconnected";
+  };
+}
+
+function publish(){
+  if(channel && channel.readyState === "open"){
+    channel.send(JSON.stringify(state));
+  }
+}
+
+function copyPhoneCode(){
+  const t=document.getElementById("phoneCode");
+  t.select();
+  document.execCommand("copy");
+}
+
+function loadRoute(r, shouldPublish=true){
+  state = {...state,route:r.route,dest:r.dest,via:r.via,line:r.line,stops:r.stops,currentStopIndex:0,showingThisStop:false,message:null,updatedAt:Date.now()};
+  updateLcd();
+  if(shouldPublish) publish();
+}
+
+function selectRouteFromDropdown(){loadRoute(LYNX_ROUTES[Number(document.getElementById("routeSelect").value)]);}
+function startLine(){typedLine="";lineMode=true;destinationMatches=[];destinationChoiceIndex=0;document.getElementById("lcdMode").textContent="LINE ENTRY";document.getElementById("lcdLine").textContent="---";document.getElementById("lcdDest").textContent="TYPE LINE";}
+function pressNum(n){if(lineMode){typedLine+=n;document.getElementById("lcdLine").textContent=typedLine;document.getElementById("lcdDest").textContent="↓ DEST THEN ✓";return;}showMessage(n);}
+function cycleDestination(){if(!typedLine){alert("Press F1 and type a line number first.");return;}destinationMatches=LYNX_ROUTES.filter(r=>r.line===typedLine);if(!destinationMatches.length){document.getElementById("lcdDest").textContent="NO LINE FOUND";return;}const r=destinationMatches[destinationChoiceIndex];document.getElementById("lcdRoute").textContent=r.route;document.getElementById("lcdDest").textContent=r.dest;destinationChoiceIndex=(destinationChoiceIndex+1)%destinationMatches.length;}
+function confirmLine(){if(!typedLine)return;if(!destinationMatches.length)destinationMatches=LYNX_ROUTES.filter(r=>r.line===typedLine);if(!destinationMatches.length){alert("No route saved for line "+typedLine);return;}let idx=destinationChoiceIndex-1;if(idx<0)idx=0;loadRoute(destinationMatches[idx]);typedLine="";lineMode=false;}
+function clearEntry(){typedLine="";lineMode=false;state.message=null;updateLcd();publish();}
+function nextStop(){if(state.currentStopIndex<state.stops.length-1)state.currentStopIndex++;state.showingThisStop=false;state.message=null;state.updatedAt=Date.now();updateLcd();publish();}
+function prevStop(){if(state.currentStopIndex>0)state.currentStopIndex--;state.showingThisStop=false;state.message=null;state.updatedAt=Date.now();updateLcd();publish();}
+function toggleThisStop(){state.showingThisStop=!state.showingThisStop;state.message=null;state.updatedAt=Date.now();updateLcd();publish();}
+function toggleDiversion(){state.diversion=!state.diversion;document.getElementById("divBtn").classList.toggle("divOn",state.diversion);document.getElementById("divBtn").innerHTML=state.diversion?"DIV<br><small>ON</small>":"DIV<br><small>OFF</small>";state.updatedAt=Date.now();updateLcd();publish();}
+function showMessage(n){const msg=PASSENGER_MESSAGES[n];if(!msg)return;state.message=msg;state.updatedAt=Date.now();updateLcd();publish();clearTimeout(messageTimer);messageTimer=setTimeout(()=>{state.message=null;state.updatedAt=Date.now();updateLcd();publish();},15000);}
+function updateLcd(){document.getElementById("lcdRoute").textContent=state.route||"----";document.getElementById("lcdDest").textContent=state.message?"MESSAGE":(state.dest||"NO DEST");document.getElementById("lcdLine").textContent=state.line||"---";document.getElementById("lcdStop").textContent=state.stops[state.currentStopIndex]||"---";document.getElementById("lcdMode").textContent=state.message?"MESSAGE":(state.diversion?"DIVERSION":"IN SERVICE");const p=state.stops.length>1?Math.round((state.currentStopIndex/(state.stops.length-1))*100):0;document.getElementById("lcdProg").textContent=p+"%";}
+init();
+</script>
+</body>
+</html>
