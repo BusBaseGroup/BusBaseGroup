@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Saloon Next Stop Screen</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#000;color:white;font-family:Arial,Helvetica,sans-serif;overflow:hidden}
+.screen{width:100vw;height:100vh;height:100dvh;background:#000;display:flex;flex-direction:column;justify-content:center;text-align:center;padding:44px;font-family:Arial Black,Arial,sans-serif}
+.routeLine{font-size:46px;border-bottom:4px solid #222;padding-bottom:24px;margin-bottom:34px;display:flex;justify-content:center;gap:24px;flex-wrap:wrap}
+.routeLine span{color:#ffd400}.diversion{display:none;color:#ff9d00;border:3px solid #ff9d00;border-radius:18px;padding:12px 22px;margin:0 auto 28px;font-size:34px}.diversion.on{display:inline-block}
+.label{font-size:44px;letter-spacing:4px}.main{color:#ffd400;font-size:88px;line-height:1.05;margin-top:30px;word-break:break-word}.sub{color:#ffe775;font-size:42px;line-height:1.45;margin-top:36px}.message .main{font-size:62px}
+.pair{position:fixed;left:12px;right:12px;bottom:12px;background:#0b1119;border:1px solid #263647;border-radius:14px;padding:10px;font-family:Arial;color:white;text-align:left}
+.pair textarea{width:100%;height:70px;background:#000;color:white;border:1px solid #333;border-radius:10px;padding:8px;font-size:11px}.pair button{width:100%;min-height:42px;margin-top:6px;border:0;border-radius:10px;background:#263647;color:white;font-weight:800}.pair small{color:#9fb1c5}
+.status{position:fixed;left:10px;top:10px;color:#555;font:12px Arial}
+@media(max-width:700px){.screen{padding:22px}.routeLine{font-size:26px;margin-bottom:22px}.label{font-size:28px}.main{font-size:48px}.sub{font-size:26px}.message .main{font-size:34px}}
+</style>
+</head>
+<body>
+<div class="screen" id="screen">
+  <div class="diversion" id="diversion">ON DIVERSION</div>
+  <div class="routeLine"><div>Route <span id="route">--</span></div><div id="dest">NO DESTINATION</div></div>
+  <div class="label" id="label">NEXT STOPS</div>
+  <div class="main" id="main">Waiting for controller</div>
+  <div class="sub"><div id="sub1">---</div><div id="sub2">---</div></div>
+</div>
+
+<div class="status" id="status">Not paired</div>
+<div class="pair" id="pairBox">
+  <small>1. Copy this saloon pairing code to the phone controller.</small>
+  <textarea id="saloonCode" readonly></textarea>
+  <button onclick="copySaloonCode()">Copy Saloon Code</button>
+  <small>2. Paste the phone return code here.</small>
+  <textarea id="phoneCode"></textarea>
+  <button onclick="finishPairing()">Connect Phone Controller</button>
+</div>
+
+<script>
+
+const LYNX_ROUTES = [
+  {line:"3401", route:"34", dest:"Hunstanton", via:"via Dersingham, Snettisham & Heacham", stops:["King’s Lynn Transport Interchange","Railway Station","Gaywood Tesco","Queen Elizabeth Hospital","Dersingham","Snettisham","Heacham","Hunstanton Tesco","Hunstanton Travel Hub"]},
+  {line:"3402", route:"34", dest:"King’s Lynn", via:"via Heacham, Snettisham & Dersingham", stops:["Hunstanton Travel Hub","Hunstanton Tesco","Heacham","Snettisham","Dersingham","Queen Elizabeth Hospital","Gaywood Tesco","Railway Station","King’s Lynn Transport Interchange"]},
+  {line:"3501", route:"35", dest:"Hunstanton", via:"via Sandringham, Dersingham & Heacham", stops:["King’s Lynn Transport Interchange","Railway Station","South Wootton","Castle Rising","Sandringham","Dersingham","Snettisham","Heacham","Hunstanton Travel Hub"]},
+  {line:"3601", route:"36", dest:"Fakenham", via:"Coastliner via Hunstanton, Wells & Walsingham", stops:["King’s Lynn Transport Interchange","Queen Elizabeth Hospital","Dersingham","Snettisham","Heacham","Hunstanton Travel Hub","Old Hunstanton","Thornham","Brancaster","Burnham Market","Wells-next-the-Sea","Walsingham","Fakenham Oak Street"]},
+  {line:"4401", route:"44", dest:"The Loop", via:"via South Wootton, QE Hospital & Hardwick", stops:["King’s Lynn Transport Interchange","St James Medical Practice","South Wootton","North Wootton","Knights Hill","Queen Elizabeth Hospital","Gaywood Tesco","Hardwick Retail Park","King’s Lynn Transport Interchange"]},
+  {line:"4601", route:"46", dest:"Wisbech", via:"via Tilney, Terrington St John & West Walton", stops:["King’s Lynn Transport Interchange","Saddlebow","Tilney All Saints","Tilney St Lawrence","Terrington St John","Walpole Highway","West Walton","Walsoken","Wisbech Horsefair"]},
+  {line:"4101", route:"41", dest:"King’s Reach", via:"via Gaywood & QE Hospital", stops:["King’s Lynn Transport Interchange","Railway Station","Gaywood Tesco","Queen Elizabeth Hospital","King’s Reach"]},
+  {line:"4201", route:"42", dest:"Fairstead", via:"via Gaywood", stops:["King’s Lynn Transport Interchange","Railway Station","Gaywood Tesco","Fairstead"]}
+];
+
+const DEFAULT_STATE = {
+  route:"--",
+  dest:"NO DESTINATION",
+  via:"via ---",
+  line:"",
+  stops:[],
+  currentStopIndex:0,
+  showingThisStop:false,
+  diversion:false,
+  message:null,
+  updatedAt:Date.now()
+};
+
+const PASSENGER_MESSAGES = {
+  "1":"NO SMOKING OR VAPING ON THIS BUS",
+  "2":"THE NEXT BUS STOP IS CLOSED",
+  "3":"THIS BUS WILL WAIT HERE UNTIL THE BUS COMING IN THE OPPOSITE DIRECTION PASSES SAFELY",
+  "4":"NO STANDING ON THE UPPER DECK OR STAIRS PLEASE",
+  "5":"PLEASE MOVE DOWN INSIDE THE BUS",
+  "6":"PLEASE HOLD ON WHILE THE BUS IS MOVING",
+  "7":"PLEASE HAVE YOUR TICKET OR PASS READY",
+  "8":"THIS BUS IS BEING HELD TO REGULATE THE SERVICE",
+  "9":"CCTV IS IN OPERATION ON THIS BUS"
+};
+
+function encodeSignal(obj){
+  return btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
+}
+
+function decodeSignal(txt){
+  return JSON.parse(decodeURIComponent(escape(atob(txt.trim()))));
+}
+
+async function waitForIceComplete(pc){
+  if(pc.iceGatheringState === "complete") return;
+
+  await new Promise(resolve => {
+    pc.addEventListener("icegatheringstatechange", () => {
+      if(pc.iceGatheringState === "complete") resolve();
+    });
+  });
+}
+
+
+let pc = null;
+let channel = null;
+
+async function initPairing(){
+  pc = new RTCPeerConnection({iceServers:[{urls:"stun:stun.l.google.com:19302"}]});
+  channel = pc.createDataChannel("bus-control");
+
+  channel.onopen = () => {
+    document.getElementById("status").textContent = "Connected to phone";
+    document.getElementById("pairBox").style.display = "none";
+  };
+
+  channel.onmessage = ev => {
+    const data = JSON.parse(ev.data);
+    render(data);
+  };
+
+  const offer = await pc.createOffer();
+  await pc.setLocalDescription(offer);
+  await waitForIceComplete(pc);
+
+  document.getElementById("saloonCode").value = encodeSignal(pc.localDescription);
+}
+
+async function finishPairing(){
+  try{
+    const answer = decodeSignal(document.getElementById("phoneCode").value);
+    await pc.setRemoteDescription(answer);
+    document.getElementById("status").textContent = "Connecting...";
+  }catch(e){
+    alert("Could not connect. Check the phone return code.");
+    console.error(e);
+  }
+}
+
+function copySaloonCode(){
+  const t=document.getElementById("saloonCode");
+  t.select();
+  document.execCommand("copy");
+}
+
+function render(state){
+  document.getElementById("route").textContent=state.route||"--";
+  document.getElementById("dest").textContent=(state.dest||"NO DESTINATION").toUpperCase();
+  document.getElementById("diversion").classList.toggle("on",!!state.diversion);
+
+  const screen=document.getElementById("screen");
+  screen.classList.toggle("message",!!state.message);
+
+  if(state.message){
+    document.getElementById("label").textContent="INFORMATION";
+    document.getElementById("main").textContent=state.message;
+    document.getElementById("sub1").textContent="";
+    document.getElementById("sub2").textContent="";
+    return;
+  }
+
+  const stops=state.stops||[];
+  const i=Number(state.currentStopIndex||0);
+
+  if(state.showingThisStop){
+    document.getElementById("label").textContent="THIS STOP";
+    document.getElementById("main").textContent=(stops[i]||"TERMINUS").toUpperCase();
+    document.getElementById("sub1").textContent=stops[i+1]?"Next: "+stops[i+1]:"Terminus";
+    document.getElementById("sub2").textContent=stops[i+2]?"Then: "+stops[i+2]:"";
+  }else{
+    document.getElementById("label").textContent="NEXT STOPS";
+    document.getElementById("main").textContent=stops[i+1]?stops[i+1].toUpperCase():"TERMINUS";
+    document.getElementById("sub1").textContent=stops[i+2]?"Then: "+stops[i+2]:"";
+    document.getElementById("sub2").textContent=stops[i+3]?"Then: "+stops[i+3]:"";
+  }
+}
+
+initPairing();
+</script>
+</body>
+</html>
