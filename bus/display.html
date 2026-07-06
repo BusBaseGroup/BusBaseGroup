@@ -863,6 +863,26 @@ body.nextStopFullscreenActive #exitNextStopFullscreen{
   display:block !important;
 }
 
+
+/* Phone controller and PC passenger screen mode */
+body.screenMode{background:#000}
+body.screenMode .topbar,
+body.screenMode .app > section:first-child,
+body.screenMode .app > section:last-child,
+body.screenMode .frontBlind,
+body.screenMode .currentBox,
+body.screenMode .mapCard,
+body.screenMode .passengerFullButton{display:none!important}
+body.screenMode .app{display:block!important;height:100vh!important;padding:0!important}
+body.screenMode .screenWall{display:block!important;height:100vh!important}
+body.screenMode .nextDisplay{width:100vw!important;height:100vh!important;border:0!important;border-radius:0!important;display:flex!important;flex-direction:column!important;justify-content:center!important}
+body.controllerMode .mapCard,
+body.controllerMode #map{display:none!important}
+.syncBox{margin-top:10px;padding:10px;background:#0b1119;border:1px solid var(--line);border-radius:12px;color:var(--muted);font-size:12px;line-height:1.45}
+.syncBox b{color:#fff}
+.modeLinks{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.modeLinks a{color:white;background:#263647;padding:9px 12px;border-radius:10px;text-decoration:none;font-size:13px}
+
 </style>
 </head>
 
@@ -945,6 +965,14 @@ body.nextStopFullscreenActive #exitNextStopFullscreen{
           The line number is separate from the route number. Example: line <b>1001</b> can show route <b>34</b> to Hunstanton.
           Controller numbers <b>1–9</b> show passenger messages in normal mode. Press <b>F1</b> first to type a line number.
         </p>
+        <div class="syncBox">
+          <b>Room:</b> <span id="syncRoomLabel">bus1</span><br>
+          <b>Sync:</b> <span id="syncStatusLabel">Local only</span>
+          <div class="modeLinks">
+            <a id="controllerLink" href="#">Phone controller</a>
+            <a id="screenLink" href="#">PC next-stop screen</a>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1001,7 +1029,7 @@ body.nextStopFullscreenActive #exitNextStopFullscreen{
   <section class="stack">
 
     <div class="screenWall">
-      <button class="dark" onclick="toggleNextStopFullscreen()">⛶ Passenger Full Screen</button>
+      <button class="dark passengerFullButton" onclick="toggleNextStopFullscreen()">⛶ Passenger Full Screen</button>
       <div class="nextDisplay">
         <button id="exitNextStopFullscreen" onclick="toggleNextStopFullscreen()" style="position:absolute;top:10px;right:10px;width:auto;min-height:38px;padding:8px 12px;background:#111;color:#fff;border:1px solid #444;border-radius:10px;z-index:100001;">Exit</button>
         <div class="diversionBanner" id="diversionBanner">ON DIVERSION</div>
@@ -1061,18 +1089,7 @@ body.nextStopFullscreenActive #exitNextStopFullscreen{
           <button class="dark" onclick="nextStop()">Next Stop</button>
         </div>
 
-        <div class="grid2">
-          <button class="green" onclick="startGPS()">Start GPS</button>
-          <button class="red" onclick="stopGPS()">Stop GPS</button>
-        </div>
-
-        <button class="orange" onclick="setCurrentStopToMyGps()">Set This Stop To My GPS</button>
-        <p class="hint">
-          If auto-changing does not work, go to the stop, press Set This Stop To My GPS once, and it will save the exact coordinates for that stop.
-        </p>
-
-        <div class="statusLine" id="gpsStatus">GPS: Off</div>
-        <p class="hint">When GPS detects you within 90m of a mapped stop, it jumps to that stop automatically.</p>
+        <div class="statusLine">Location/GPS removed. Use your phone controller to change stops.</div>
       </div>
     </div>
 
@@ -1088,6 +1105,8 @@ body.nextStopFullscreenActive #exitNextStopFullscreen{
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
 <script>
 let map = L.map("map").setView([52.753,0.397],12);
@@ -1095,6 +1114,25 @@ let clickedLatLng = null;
 let markers = [];
 let gpsMarker = null;
 let watchId = null;
+
+// PHONE ↔ PC SYNC
+// Fill this with your Firebase Realtime Database config for phone-to-PC control.
+const FIREBASE_CONFIG = {
+  apiKey: "",
+  authDomain: "",
+  databaseURL: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: ""
+};
+
+const APP_MODE = new URLSearchParams(location.search).get("mode") || "controller";
+const SYNC_ROOM = new URLSearchParams(location.search).get("room") || localStorage.getItem("busDisplayRoom") || "bus1";
+localStorage.setItem("busDisplayRoom", SYNC_ROOM);
+
+let firebaseDb = null;
+let syncReady = false;
 let nearestStopName = "---";
 let nearestStopDistance = null;
 let currentGpsLat = null;
@@ -1564,7 +1602,115 @@ function loadAllLynxRoutes(){
   });
 
   saveRoutes();
-  function updateControllerClock(){
+  
+function initModeAndLinks(){
+  document.body.classList.toggle("screenMode", APP_MODE === "screen");
+  document.body.classList.toggle("controllerMode", APP_MODE !== "screen");
+
+  const base = location.origin + location.pathname;
+  const roomLabel = document.getElementById("syncRoomLabel");
+  const controllerLink = document.getElementById("controllerLink");
+  const screenLink = document.getElementById("screenLink");
+
+  if(roomLabel) roomLabel.textContent = SYNC_ROOM;
+  if(controllerLink) controllerLink.href = base + "?mode=controller&room=" + encodeURIComponent(SYNC_ROOM);
+  if(screenLink) screenLink.href = base + "?mode=screen&room=" + encodeURIComponent(SYNC_ROOM);
+}
+
+function firebaseConfigured(){
+  return FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.databaseURL && FIREBASE_CONFIG.projectId;
+}
+
+function initSync(){
+  initModeAndLinks();
+
+  const label = document.getElementById("syncStatusLabel");
+
+  if(!firebaseConfigured()){
+    if(label) label.textContent = "Local only - add Firebase config for phone to PC sync";
+    return;
+  }
+
+  try{
+    firebase.initializeApp(FIREBASE_CONFIG);
+    firebaseDb = firebase.database();
+    syncReady = true;
+
+    if(label) label.textContent = "Connected";
+
+    firebaseDb.ref("busDisplayRooms/" + SYNC_ROOM).on("value", function(snapshot){
+      if(APP_MODE !== "screen") return;
+
+      const data = snapshot.val();
+      if(!data) return;
+
+      applyRemoteState(data);
+    });
+
+    sendSyncState();
+  }catch(err){
+    console.warn(err);
+    if(label) label.textContent = "Firebase error";
+  }
+}
+
+function getCurrentSyncState(){
+  return {
+    currentRouteKey,
+    currentStopIndex,
+    showingThisStop,
+    diversionActive,
+    route: currentRouteKey && routes[currentRouteKey] ? routes[currentRouteKey] : null,
+    announcementActive,
+    announcementText: announcementActive ? document.getElementById("nextStopText").textContent : "",
+    updatedAt: Date.now()
+  };
+}
+
+function sendSyncState(){
+  if(APP_MODE === "screen") return;
+  if(!syncReady || !firebaseDb) return;
+
+  firebaseDb.ref("busDisplayRooms/" + SYNC_ROOM).set(getCurrentSyncState());
+}
+
+function applyRemoteState(data){
+  if(data.route){
+    const key = data.currentRouteKey || "remoteRoute";
+    routes[key] = data.route;
+    currentRouteKey = key;
+  }else if(data.currentRouteKey){
+    currentRouteKey = data.currentRouteKey;
+  }
+
+  currentStopIndex = Number(data.currentStopIndex || 0);
+  showingThisStop = !!data.showingThisStop;
+  diversionActive = !!data.diversionActive;
+  document.body.classList.toggle("diversionOn", diversionActive);
+
+  if(data.announcementActive && data.announcementText){
+    announcementActive = true;
+    document.getElementById("stopScreenLabel").textContent = "INFORMATION";
+    const nextText = document.getElementById("nextStopText");
+    nextText.classList.add("messageMode");
+    nextText.textContent = data.announcementText;
+    document.getElementById("stop2").textContent = "";
+    document.getElementById("stop3").textContent = "";
+    return;
+  }
+
+  announcementActive = false;
+  updateDisplays();
+  sendSyncState();
+}
+
+function pushAndUpdate(){
+  updateDisplays();
+  sendSyncState();
+}
+
+
+function updateControllerClock(){
   const el = document.getElementById("lcdTime");
   if(!el) return;
 
@@ -1693,7 +1839,115 @@ function createRoute(){
   currentStopIndex = 0;
   showingThisStop = false;
   saveRoutes();
-  function updateControllerClock(){
+  
+function initModeAndLinks(){
+  document.body.classList.toggle("screenMode", APP_MODE === "screen");
+  document.body.classList.toggle("controllerMode", APP_MODE !== "screen");
+
+  const base = location.origin + location.pathname;
+  const roomLabel = document.getElementById("syncRoomLabel");
+  const controllerLink = document.getElementById("controllerLink");
+  const screenLink = document.getElementById("screenLink");
+
+  if(roomLabel) roomLabel.textContent = SYNC_ROOM;
+  if(controllerLink) controllerLink.href = base + "?mode=controller&room=" + encodeURIComponent(SYNC_ROOM);
+  if(screenLink) screenLink.href = base + "?mode=screen&room=" + encodeURIComponent(SYNC_ROOM);
+}
+
+function firebaseConfigured(){
+  return FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.databaseURL && FIREBASE_CONFIG.projectId;
+}
+
+function initSync(){
+  initModeAndLinks();
+
+  const label = document.getElementById("syncStatusLabel");
+
+  if(!firebaseConfigured()){
+    if(label) label.textContent = "Local only - add Firebase config for phone to PC sync";
+    return;
+  }
+
+  try{
+    firebase.initializeApp(FIREBASE_CONFIG);
+    firebaseDb = firebase.database();
+    syncReady = true;
+
+    if(label) label.textContent = "Connected";
+
+    firebaseDb.ref("busDisplayRooms/" + SYNC_ROOM).on("value", function(snapshot){
+      if(APP_MODE !== "screen") return;
+
+      const data = snapshot.val();
+      if(!data) return;
+
+      applyRemoteState(data);
+    });
+
+    sendSyncState();
+  }catch(err){
+    console.warn(err);
+    if(label) label.textContent = "Firebase error";
+  }
+}
+
+function getCurrentSyncState(){
+  return {
+    currentRouteKey,
+    currentStopIndex,
+    showingThisStop,
+    diversionActive,
+    route: currentRouteKey && routes[currentRouteKey] ? routes[currentRouteKey] : null,
+    announcementActive,
+    announcementText: announcementActive ? document.getElementById("nextStopText").textContent : "",
+    updatedAt: Date.now()
+  };
+}
+
+function sendSyncState(){
+  if(APP_MODE === "screen") return;
+  if(!syncReady || !firebaseDb) return;
+
+  firebaseDb.ref("busDisplayRooms/" + SYNC_ROOM).set(getCurrentSyncState());
+}
+
+function applyRemoteState(data){
+  if(data.route){
+    const key = data.currentRouteKey || "remoteRoute";
+    routes[key] = data.route;
+    currentRouteKey = key;
+  }else if(data.currentRouteKey){
+    currentRouteKey = data.currentRouteKey;
+  }
+
+  currentStopIndex = Number(data.currentStopIndex || 0);
+  showingThisStop = !!data.showingThisStop;
+  diversionActive = !!data.diversionActive;
+  document.body.classList.toggle("diversionOn", diversionActive);
+
+  if(data.announcementActive && data.announcementText){
+    announcementActive = true;
+    document.getElementById("stopScreenLabel").textContent = "INFORMATION";
+    const nextText = document.getElementById("nextStopText");
+    nextText.classList.add("messageMode");
+    nextText.textContent = data.announcementText;
+    document.getElementById("stop2").textContent = "";
+    document.getElementById("stop3").textContent = "";
+    return;
+  }
+
+  announcementActive = false;
+  updateDisplays();
+  sendSyncState();
+}
+
+function pushAndUpdate(){
+  updateDisplays();
+  sendSyncState();
+}
+
+
+function updateControllerClock(){
   const el = document.getElementById("lcdTime");
   if(!el) return;
 
@@ -1708,10 +1962,13 @@ function createRoute(){
 setInterval(updateControllerClock, 1000);
 updateControllerClock();
 
+initSync();
+
 refreshRouteSelect();
   document.getElementById("routeSelect").value = key;
   drawStops();
   updateDisplays();
+  sendSyncState();
 }
 
 function refreshRouteSelect(){
@@ -1756,6 +2013,7 @@ function loadRoute(){
 
   drawStops();
   updateDisplays();
+  sendSyncState();
 }
 
 function addClickedStop(){
@@ -1787,6 +2045,7 @@ function addClickedStop(){
   saveRoutes();
   drawStops();
   updateDisplays();
+  sendSyncState();
 }
 
 function autoPickupStops(showAlert){
@@ -1896,6 +2155,7 @@ function setStop(index){
   dwellStopIndex = null;
   dwellStartTime = null;
   updateDisplays();
+  sendSyncState();
 }
 
 function moveStopUp(index){
@@ -1905,6 +2165,7 @@ function moveStopUp(index){
   saveRoutes();
   drawStops();
   updateDisplays();
+  sendSyncState();
 }
 
 function removeStop(index){
@@ -1914,6 +2175,7 @@ function removeStop(index){
   saveRoutes();
   drawStops();
   updateDisplays();
+  sendSyncState();
 }
 
 function nextStop(){
@@ -1924,6 +2186,7 @@ function nextStop(){
   dwellStopIndex = null;
   dwellStartTime = null;
   updateDisplays();
+  sendSyncState();
 }
 
 function previousStop(){
@@ -1933,6 +2196,7 @@ function previousStop(){
   dwellStopIndex = null;
   dwellStartTime = null;
   updateDisplays();
+  sendSyncState();
 }
 
 function updateDisplays(){
@@ -2163,6 +2427,7 @@ function clearTyped(){
   destinationMatches = [];
   destinationChoiceIndex = 0;
   updateDisplays();
+  sendSyncState();
 }
 
 function cycleDestination(){
@@ -2232,57 +2497,7 @@ function applyTypedLine(){
 }
 
 function startGPS(){
-  if(!navigator.geolocation){
-    alert("GPS is not supported on this device.");
-    return;
-  }
-
-  if(watchId) navigator.geolocation.clearWatch(watchId);
-
-  document.getElementById("gpsStatus").textContent = "GPS: On - using live location";
-  document.getElementById("gpsPill").classList.add("on");
-  document.getElementById("gpsPill").innerHTML = "GPS <b>ON</b>";
-  document.getElementById("lcdGps").textContent = "ON";
-
-  watchId = navigator.geolocation.watchPosition(pos=>{
-    const lat = pos.coords.latitude;
-    const lng = pos.coords.longitude;
-    const accuracy = Math.round(pos.coords.accuracy);
-
-    currentGpsLat = lat;
-    currentGpsLng = lng;
-    currentGpsAccuracy = accuracy;
-
-    document.getElementById("locationStatus").textContent =
-      `Location: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-
-    document.getElementById("metricGps").textContent = accuracy + "m";
-    const debugEl = document.getElementById("metricGpsDebug");
-    if(debugEl){
-      debugEl.textContent = currentRouteKey ? "Checking stops" : "No route";
-    }
-    window.lastGpsUpdate = new Date().toLocaleTimeString("en-GB", {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit"
-    });
-
-    if(gpsMarker){
-      gpsMarker.setLatLng([lat,lng]);
-    }else{
-      gpsMarker = L.marker([lat,lng]).addTo(map).bindPopup("Your real GPS location");
-    }
-
-    resolveBuiltInStopCoordinates(lat,lng);
-    checkNearestStop(lat,lng);
-
-  },err=>{
-    alert("GPS error: " + err.message);
-  },{
-    enableHighAccuracy:true,
-    maximumAge:1000,
-    timeout:10000
-  });
+  alert("Location/GPS has been removed. Use the phone controller to change stops.");
 }
 
 function stopGPS(){
@@ -2541,6 +2756,7 @@ function checkNearestStop(lat,lng){
   }
 
   updateDisplays();
+  sendSyncState();
 }
 
 function getDistance(lat1,lng1,lat2,lng2){
@@ -2596,26 +2812,112 @@ function deleteRoute(){
     currentRouteKey = null;
     currentStopIndex = 0;
     saveRoutes();
-    function updateControllerClock(){
-  const el = document.getElementById("lcdTime");
-  if(!el) return;
+    
+function initModeAndLinks(){
+  document.body.classList.toggle("screenMode", APP_MODE === "screen");
+  document.body.classList.toggle("controllerMode", APP_MODE !== "screen");
 
-  const now = new Date();
-  el.textContent = now.toLocaleTimeString("en-GB", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit"
-  });
+  const base = location.origin + location.pathname;
+  const roomLabel = document.getElementById("syncRoomLabel");
+  const controllerLink = document.getElementById("controllerLink");
+  const screenLink = document.getElementById("screenLink");
+
+  if(roomLabel) roomLabel.textContent = SYNC_ROOM;
+  if(controllerLink) controllerLink.href = base + "?mode=controller&room=" + encodeURIComponent(SYNC_ROOM);
+  if(screenLink) screenLink.href = base + "?mode=screen&room=" + encodeURIComponent(SYNC_ROOM);
 }
 
-setInterval(updateControllerClock, 1000);
-updateControllerClock();
+function firebaseConfigured(){
+  return FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.databaseURL && FIREBASE_CONFIG.projectId;
+}
 
-refreshRouteSelect();
-    drawStops();
-    updateDisplays();
+function initSync(){
+  initModeAndLinks();
+
+  const label = document.getElementById("syncStatusLabel");
+
+  if(!firebaseConfigured()){
+    if(label) label.textContent = "Local only - add Firebase config for phone to PC sync";
+    return;
+  }
+
+  try{
+    firebase.initializeApp(FIREBASE_CONFIG);
+    firebaseDb = firebase.database();
+    syncReady = true;
+
+    if(label) label.textContent = "Connected";
+
+    firebaseDb.ref("busDisplayRooms/" + SYNC_ROOM).on("value", function(snapshot){
+      if(APP_MODE !== "screen") return;
+
+      const data = snapshot.val();
+      if(!data) return;
+
+      applyRemoteState(data);
+    });
+
+    sendSyncState();
+  }catch(err){
+    console.warn(err);
+    if(label) label.textContent = "Firebase error";
   }
 }
+
+function getCurrentSyncState(){
+  return {
+    currentRouteKey,
+    currentStopIndex,
+    showingThisStop,
+    diversionActive,
+    route: currentRouteKey && routes[currentRouteKey] ? routes[currentRouteKey] : null,
+    announcementActive,
+    announcementText: announcementActive ? document.getElementById("nextStopText").textContent : "",
+    updatedAt: Date.now()
+  };
+}
+
+function sendSyncState(){
+  if(APP_MODE === "screen") return;
+  if(!syncReady || !firebaseDb) return;
+
+  firebaseDb.ref("busDisplayRooms/" + SYNC_ROOM).set(getCurrentSyncState());
+}
+
+function applyRemoteState(data){
+  if(data.route){
+    const key = data.currentRouteKey || "remoteRoute";
+    routes[key] = data.route;
+    currentRouteKey = key;
+  }else if(data.currentRouteKey){
+    currentRouteKey = data.currentRouteKey;
+  }
+
+  currentStopIndex = Number(data.currentStopIndex || 0);
+  showingThisStop = !!data.showingThisStop;
+  diversionActive = !!data.diversionActive;
+  document.body.classList.toggle("diversionOn", diversionActive);
+
+  if(data.announcementActive && data.announcementText){
+    announcementActive = true;
+    document.getElementById("stopScreenLabel").textContent = "INFORMATION";
+    const nextText = document.getElementById("nextStopText");
+    nextText.classList.add("messageMode");
+    nextText.textContent = data.announcementText;
+    document.getElementById("stop2").textContent = "";
+    document.getElementById("stop3").textContent = "";
+    return;
+  }
+
+  announcementActive = false;
+  updateDisplays();
+}
+
+function pushAndUpdate(){
+  updateDisplays();
+  sendSyncState();
+}
+
 
 function updateControllerClock(){
   const el = document.getElementById("lcdTime");
@@ -2631,6 +2933,138 @@ function updateControllerClock(){
 
 setInterval(updateControllerClock, 1000);
 updateControllerClock();
+
+initSync();
+
+refreshRouteSelect();
+    drawStops();
+    updateDisplays();
+  }
+}
+
+
+function initModeAndLinks(){
+  document.body.classList.toggle("screenMode", APP_MODE === "screen");
+  document.body.classList.toggle("controllerMode", APP_MODE !== "screen");
+
+  const base = location.origin + location.pathname;
+  const roomLabel = document.getElementById("syncRoomLabel");
+  const controllerLink = document.getElementById("controllerLink");
+  const screenLink = document.getElementById("screenLink");
+
+  if(roomLabel) roomLabel.textContent = SYNC_ROOM;
+  if(controllerLink) controllerLink.href = base + "?mode=controller&room=" + encodeURIComponent(SYNC_ROOM);
+  if(screenLink) screenLink.href = base + "?mode=screen&room=" + encodeURIComponent(SYNC_ROOM);
+}
+
+function firebaseConfigured(){
+  return FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.databaseURL && FIREBASE_CONFIG.projectId;
+}
+
+function initSync(){
+  initModeAndLinks();
+
+  const label = document.getElementById("syncStatusLabel");
+
+  if(!firebaseConfigured()){
+    if(label) label.textContent = "Local only - add Firebase config for phone to PC sync";
+    return;
+  }
+
+  try{
+    firebase.initializeApp(FIREBASE_CONFIG);
+    firebaseDb = firebase.database();
+    syncReady = true;
+
+    if(label) label.textContent = "Connected";
+
+    firebaseDb.ref("busDisplayRooms/" + SYNC_ROOM).on("value", function(snapshot){
+      if(APP_MODE !== "screen") return;
+
+      const data = snapshot.val();
+      if(!data) return;
+
+      applyRemoteState(data);
+    });
+
+    sendSyncState();
+  }catch(err){
+    console.warn(err);
+    if(label) label.textContent = "Firebase error";
+  }
+}
+
+function getCurrentSyncState(){
+  return {
+    currentRouteKey,
+    currentStopIndex,
+    showingThisStop,
+    diversionActive,
+    route: currentRouteKey && routes[currentRouteKey] ? routes[currentRouteKey] : null,
+    announcementActive,
+    announcementText: announcementActive ? document.getElementById("nextStopText").textContent : "",
+    updatedAt: Date.now()
+  };
+}
+
+function sendSyncState(){
+  if(APP_MODE === "screen") return;
+  if(!syncReady || !firebaseDb) return;
+
+  firebaseDb.ref("busDisplayRooms/" + SYNC_ROOM).set(getCurrentSyncState());
+}
+
+function applyRemoteState(data){
+  if(data.route){
+    const key = data.currentRouteKey || "remoteRoute";
+    routes[key] = data.route;
+    currentRouteKey = key;
+  }else if(data.currentRouteKey){
+    currentRouteKey = data.currentRouteKey;
+  }
+
+  currentStopIndex = Number(data.currentStopIndex || 0);
+  showingThisStop = !!data.showingThisStop;
+  diversionActive = !!data.diversionActive;
+  document.body.classList.toggle("diversionOn", diversionActive);
+
+  if(data.announcementActive && data.announcementText){
+    announcementActive = true;
+    document.getElementById("stopScreenLabel").textContent = "INFORMATION";
+    const nextText = document.getElementById("nextStopText");
+    nextText.classList.add("messageMode");
+    nextText.textContent = data.announcementText;
+    document.getElementById("stop2").textContent = "";
+    document.getElementById("stop3").textContent = "";
+    return;
+  }
+
+  announcementActive = false;
+  updateDisplays();
+}
+
+function pushAndUpdate(){
+  updateDisplays();
+  sendSyncState();
+}
+
+
+function updateControllerClock(){
+  const el = document.getElementById("lcdTime");
+  if(!el) return;
+
+  const now = new Date();
+  el.textContent = now.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+}
+
+setInterval(updateControllerClock, 1000);
+updateControllerClock();
+
+initSync();
 
 refreshRouteSelect();
 
