@@ -4,17 +4,21 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Lynx 34/35/36 GPS Display</title>
 <style>
-body{margin:0;background:#111;color:white;font-family:Arial}
-.controls{padding:10px;background:#222;display:grid;gap:8px}
-select,button{padding:12px;border:0;border-radius:8px;font-size:16px}
-button{background:#d71920;color:white;font-weight:bold}
-.screen{height:70vh;background:white;color:#000;display:flex;flex-direction:column;justify-content:space-between}
-.main{padding:35px}.label{font-size:24px;font-weight:bold;color:#555}
-.stop{font-size:52px;font-weight:900}.dest{font-size:28px;margin-top:25px}
-.redbar{background:#d71920;color:white;padding:18px;font-size:20px;display:flex;justify-content:space-between}
-.status{padding:10px;color:#ccc;font-size:14px}
+body{margin:0;background:#0b0b0b;color:white;font-family:Arial,Helvetica,sans-serif}
+.controls{padding:12px;background:#151515;display:grid;gap:10px;box-shadow:0 3px 15px #000}
+select,button{padding:13px;border:0;border-radius:10px;font-size:16px}
+select{background:#f3f3f3;color:#111}
+button{background:#d71920;color:white;font-weight:700}
+button:active{transform:scale(.98)}
+.screen{height:72vh;background:#f7f7f2;color:#111;display:flex;flex-direction:column;justify-content:space-between;border-top:5px solid #d71920}
+.main{padding:38px 32px}
+.label{font-size:22px;font-weight:800;color:#555;letter-spacing:1px}
+.stop{font-size:56px;font-weight:900;margin-top:12px;line-height:1.05}
+.dest{font-size:28px;margin-top:28px;color:#333}
+.redbar{background:#d71920;color:white;padding:18px 22px;font-size:20px;display:flex;justify-content:space-between;align-items:center;font-weight:700}
+.status{padding:10px;color:#bbb;font-size:14px}
 .full{position:fixed;inset:0;z-index:99;height:100vh}
-.diversion{position:fixed;inset:0;z-index:999;background:#d71920;color:white;display:none;align-items:center;justify-content:center;text-align:center;font-size:56px;font-weight:900;padding:30px}
+.diversion{position:fixed;inset:0;z-index:999;background:#d71920;color:white;display:none;align-items:center;justify-content:center;text-align:center;font-size:54px;font-weight:900;padding:30px;line-height:1.2}
 </style>
 </head>
 <body>
@@ -71,7 +75,40 @@ const fallback={
 "Warham Road":[52.9460,0.8610],"Wighton High Street":[52.9210,0.8800],"Walsingham":[52.8947,0.8731],"Fakenham Oak Street":[52.8310,0.8480]
 };
 
-const fleet=["31 YY24 EKZ Enviro200 MMC","32 YY24 ELC Enviro200 MMC","33 YY24 ELH Enviro200 MMC","34 YY24 ELJ Enviro200 MMC","61 SK21 FNG Enviro400 MMC","62 SK21 FNH Enviro400 MMC","63 YX22 OLN Enviro400 MMC","64 YX72 OLO Enviro400 MMC","65 YX72 OLP Enviro400 MMC","66 YX23 OSE Enviro400 MMC","67 YX73 PHJ Enviro400 MMC"];
+const fleet=[
+"4 - FX12 MUB - Mercedes-Benz Citaro O530",
+"8 - AF63 XKM - Mercedes-Benz Citaro O530",
+"11 - YJ07 VSK - Optare Tempo",
+"12 - YJ07 VSL - Optare Tempo",
+"18 - FD54 JYA - Optare Tempo",
+"19 - FD54 JYF - Optare Tempo",
+"21 - YJ60 KAA - Optare Tempo",
+"22 - YJ60 KAE - Optare Tempo",
+"23 - YJ60 KAK - Optare Tempo",
+"24 - YJ60 KAO - Optare Tempo",
+"25 - YJ60 KAU - Optare Tempo",
+"28 - T28 KLN - Optare Tempo",
+"29 - T29 KLN - Optare Tempo",
+"30 - MX05 ELH - Optare Tempo",
+"31 - YY24 EKZ - Alexander Dennis Enviro200 MMC",
+"32 - YY24 ELC - Alexander Dennis Enviro200 MMC",
+"33 - YY24 ELH - Alexander Dennis Enviro200 MMC",
+"34 - YY24 ELJ - Alexander Dennis Enviro200 MMC",
+"35 - YX75 LCL - Alexander Dennis Enviro200 MMC",
+"36 - YX75 KVF - Alexander Dennis Enviro200 MMC",
+"37 - YX75 KVG - Alexander Dennis Enviro200 MMC",
+"52 - LJ53 BFU - DAF DB250",
+"53 - LJ53 BGU - DAF DB250",
+"56 - LJ04 LDL - DAF DB250",
+"61 - SK21 FNG - Alexander Dennis Enviro400 MMC",
+"62 - SK21 FNH - Alexander Dennis Enviro400 MMC",
+"64 - YX72 OLO - Alexander Dennis Enviro400 MMC",
+"65 - YX72 OLP - Alexander Dennis Enviro400 MMC",
+"66 - YX23 OSE - Alexander Dennis Enviro400 MMC",
+"67 - YX73 PHJ - Alexander Dennis Enviro400 MMC",
+"81 - DU61 FVY - Alexander Dennis Enviro400",
+"82 - UWW 2X - Alexander Dennis Enviro400"
+];
 
 let routes={},idx=0,watch=null,welcomed=false,lastAnnounced=-1,passedStop=false,diversionOn=false;
 
@@ -148,19 +185,20 @@ function say(t){
 function welcome(){
  let list=routes[routeSel.value];
  let routeNo=routeSel.value.split(" ")[0];
- say("Welcome aboard. This is the "+routeNo+" to "+list[list.length-1].name+". Please sit back and relax.");
+ let destination=list[list.length-1].name;
+ say("Good morning, and welcome aboard. This is the Lynx "+routeNo+" service to "+destination+". Please sit back, relax, and enjoy your journey.");
 }
 
 function announceNext(){
  if(diversionOn){
-  say("This bus is currently on diversion. Please listen for further announcements.");
+  say("Just to let you know, this bus is currently on diversion. Please listen out for further announcements.");
   return;
  }
  let list=routes[routeSel.value];
  if(idx>=list.length-1){
-  say("This bus terminates here. Please take all your belongings with you.");
+  say("This is the final stop. Please remember to take all your belongings with you. Thank you for travelling with Lynx.");
  }else{
-  say("Next stop, "+list[idx].name);
+  say("The next stop is "+list[idx].name+".");
  }
 }
 
@@ -175,9 +213,9 @@ function toggleDiversion(){
  diversionScreen.style.display=diversionOn?"flex":"none";
  draw();
  if(diversionOn){
-  say("This bus is currently on diversion. Please listen for further announcements.");
+  say("Passenger announcement. This bus is now on diversion. We are sorry for any delay to your journey.");
  }else{
-  say("This bus is now returning to normal route.");
+  say("Passenger announcement. This bus has now returned to its normal route. Thank you for your patience.");
  }
 }
 
