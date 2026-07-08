@@ -1,292 +1,66 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Lynx 34/35/36 GPS Display</title>
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lynx Passenger Display</title>
 <style>
-body{margin:0;background:#0b0b0b;color:white;font-family:Arial,Helvetica,sans-serif}
-.controls{padding:12px;background:#151515;display:grid;gap:10px;box-shadow:0 3px 15px #000}
-select,button{padding:13px;border:0;border-radius:10px;font-size:16px}
-select{background:#f3f3f3;color:#111}
-button{background:#d71920;color:white;font-weight:700}
-button:active{transform:scale(.98)}
-.screen{height:72vh;background:#f7f7f2;color:#111;display:flex;flex-direction:column;justify-content:space-between;border-top:5px solid #d71920}
-.main{padding:38px 32px}
-.label{font-size:22px;font-weight:800;color:#555;letter-spacing:1px}
-.stop{font-size:56px;font-weight:900;margin-top:12px;line-height:1.05}
-.dest{font-size:28px;margin-top:28px;color:#333}
-.redbar{background:#d71920;color:white;padding:18px 22px;font-size:20px;display:flex;justify-content:space-between;align-items:center;font-weight:700}
-.status{padding:10px;color:#bbb;font-size:14px}
-.full{position:fixed;inset:0;z-index:99;height:100vh}
-.diversion{position:fixed;inset:0;z-index:999;background:#d71920;color:white;display:none;align-items:center;justify-content:center;text-align:center;font-size:54px;font-weight:900;padding:30px;line-height:1.2}
-</style>
-</head>
-<body>
-
-<div class="controls">
-<select id="route"></select>
-<select id="fleet"></select>
-<button onclick="loadOfficialStops()">Load Official Stops</button>
-<button onclick="startGPS()">Start GPS</button>
-<button onclick="manualNext()">Manual Next Stop</button>
-<button onclick="announceNext()">Announce Next Stop</button>
-<button onclick="toggleDiversion()">On Diversion</button>
-<button onclick="toggleFull()">Full Screen</button>
-</div>
-
-<div class="screen" id="screen">
- <div class="main">
-  <div class="label">NEXT STOP</div>
-  <div class="stop" id="stop">Loading...</div>
-  <div class="dest" id="dest">Destination</div>
+*{box-sizing:border-box}body{margin:0;background:#050505;color:#fff;font-family:Arial,Helvetica,sans-serif}.app{min-height:100vh;display:flex;flex-direction:column}.panel{background:#111;padding:10px;display:grid;gap:8px}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}select,button{border:0;border-radius:12px;padding:12px;font-size:15px}button{background:#d71920;color:#fff;font-weight:900}select{background:#f2f2f2}.screen{flex:1;background:#f6f4ed;color:#111;display:flex;flex-direction:column;justify-content:space-between;border-top:7px solid #d71920}.top{padding:28px}.pill{display:inline-flex;gap:12px;align-items:center;background:#d71920;color:white;border-radius:999px;padding:10px 18px;font-size:24px;font-weight:900}.next{margin-top:28px;color:#555;font-size:22px;font-weight:900;letter-spacing:1px}.stop{font-size:62px;line-height:1.03;font-weight:950;margin-top:6px}.sub{font-size:28px;color:#333;margin-top:16px;font-weight:800}.calling{margin-top:26px;background:#fff;border-radius:20px;padding:18px;box-shadow:0 8px 25px #0002}.calling h3{margin:0 0 10px;color:#777;font-size:18px;text-transform:uppercase}.calling div{border-top:1px solid #ddd;padding:9px 0;font-size:25px;font-weight:850}.bar{background:#d71920;color:#fff;padding:18px 22px;display:flex;justify-content:space-between;gap:15px;font-size:20px;font-weight:900}.status{background:#050505;color:#bbb;padding:8px 10px;font-size:13px}.diversion{position:fixed;inset:0;background:#d71920;color:#fff;z-index:50;display:none;align-items:center;justify-content:center;text-align:center;font-size:58px;font-weight:950;line-height:1.15;padding:30px}.full{position:fixed!important;inset:0!important;z-index:40!important;height:100vh!important}@media(max-width:650px){.row{grid-template-columns:1fr}.stop{font-size:44px}.calling div{font-size:20px}.bar{font-size:16px}.pill{font-size:19px}}
+</style></head><body>
+<div class="app">
+ <div class="panel">
+  <div class="row"><select id="route"></select><select id="fleet"></select></div>
+  <div class="row"><button onclick="startGps()">Start GPS</button><button onclick="nextStop()">Manual Next</button></div>
+  <div class="row"><button onclick="announce()">Announce</button><button onclick="toggleDiversion()">On Diversion</button></div>
+  <button onclick="display.classList.toggle('full')">Full Screen Passenger Display</button>
  </div>
- <div class="redbar">
-  <span id="routeText"></span>
-  <span id="clock"></span>
+
+ <div class="screen" id="display">
+  <div class="top">
+   <div class="pill"><span id="rNo">LYNX</span><span id="destShort">Destination</span></div>
+   <div class="next">NEXT STOP</div>
+   <div class="stop" id="stopName">Loading</div>
+   <div class="sub" id="towards">Towards</div>
+   <div class="calling">
+    <h3>Then calling at</h3>
+    <div id="call1">—</div><div id="call2">—</div>
+   </div>
+  </div>
+  <div class="bar"><span id="veh">Vehicle</span><span id="clock">--:--</span></div>
  </div>
+ <div class="status" id="status">Ready. Select route, then press Start GPS.</div>
 </div>
-
-<div class="diversion" id="diversionScreen">
- ON DIVERSION<br>
- PLEASE LISTEN FOR ANNOUNCEMENTS
-</div>
-
-<div class="status" id="status">Ready</div>
+<div class="diversion" id="divScreen">ON DIVERSION<br><span style="font-size:.45em">PLEASE LISTEN FOR ANNOUNCEMENTS</span></div>
 
 <script>
-const NAPTAN="https://naptan.api.dft.gov.uk/v1/access-nodes?dataFormat=csv";
-
-const routeTemplates={
-"34 King's Lynn to Hunstanton via QE Hospital":["King's Lynn Bus Station","Gaywood Tesco","Queen Elizabeth Hospital","Castle Rising","Dersingham Manor Road","Dersingham Viceroy Close","Ingoldisthorpe Pond","Snettisham","Heacham Lavender","Heacham","Hunstanton Tesco","Hunstanton Bus Station"],
-"34 Hunstanton to King's Lynn via QE Hospital":["Hunstanton Bus Station","Hunstanton Tesco","Heacham","Heacham Lavender","Snettisham","Ingoldisthorpe Pond","Dersingham Viceroy Close","Dersingham Manor Road","Castle Rising","Queen Elizabeth Hospital","Gaywood Tesco","King's Lynn Bus Station"],
-"35 King's Lynn to Hunstanton via Sandringham":["King's Lynn Bus Station","Gaywood Tesco","South Wootton","Castle Rising","Sandringham","Dersingham Manor Road","Dersingham Viceroy Close","Ingoldisthorpe Pond","Snettisham","Heacham Lavender","Heacham","Hunstanton Tesco","Hunstanton Bus Station"],
-"35 Hunstanton to King's Lynn via Sandringham":["Hunstanton Bus Station","Hunstanton Tesco","Heacham","Heacham Lavender","Snettisham","Ingoldisthorpe Pond","Dersingham Viceroy Close","Dersingham Manor Road","Sandringham","Castle Rising","South Wootton","Gaywood Tesco","King's Lynn Bus Station"],
-"36 Coastliner King's Lynn to Fakenham":["King's Lynn Bus Station","Gaywood Tesco","Queen Elizabeth Hospital","Dersingham Manor Road","Dersingham Viceroy Close","Ingoldisthorpe Pond","Snettisham","Heacham Lavender","Heacham","Hunstanton Tesco","Hunstanton Bus Station","Old Hunstanton Waterworks Road","Thornham","Brancaster","Burnham Deepdale","Burnham Market","Holkham","Wells-next-the-Sea Northfield Lane","Wells-next-the-Sea Co-op","Wells-next-the-Sea Grove Road","Warham Road","Wighton High Street","Walsingham","Fakenham Oak Street"],
-"36 Coastliner Fakenham to King's Lynn":["Fakenham Oak Street","Walsingham","Wighton High Street","Warham Road","Wells-next-the-Sea Grove Road","Wells-next-the-Sea Co-op","Wells-next-the-Sea Northfield Lane","Holkham","Burnham Market","Burnham Deepdale","Brancaster","Thornham","Old Hunstanton Waterworks Road","Hunstanton Bus Station","Hunstanton Tesco","Heacham","Heacham Lavender","Snettisham","Ingoldisthorpe Pond","Dersingham Viceroy Close","Dersingham Manor Road","Queen Elizabeth Hospital","Gaywood Tesco","King's Lynn Bus Station"]
+const routes={
+"34 King's Lynn → Hunstanton":["King's Lynn Transport Interchange","Kettlewell Lane","Highgate School","King Edward VII School","Gaywood Tesco","Health Centre","Kent Road","Queensway","Elvington Road","QE Hospital Travel Hub","Castle Rising","Dersingham Manor Road","Dersingham Viceroy Close","Ingoldisthorpe Ingoldsby Avenue","Ingoldisthorpe Pond","Ingoldisthorpe Coaly Lane","Snettisham Station Road","Snettisham Strickland Avenue","Snettisham The Grapes","Heacham Bottom Farm","Heacham Collingwood Close","Heacham Fenside","Heacham Fengate","Heacham Jennings Close","Heacham College Drive","Heacham Poplar Avenue","Heacham Fox & Hound","Heacham High Street","Heacham Nourse Drive","Heacham Ringstead Road","Norfolk Lavender","Hunstanton Redgate Hill","Hunstanton Tesco","Hunstanton Travel Hub"],
+"34 Hunstanton → King's Lynn":["Hunstanton Travel Hub","Hunstanton Tesco","Hunstanton Redgate Hill","Norfolk Lavender","Heacham Ringstead Road","Heacham Nourse Drive","Heacham High Street","Heacham Fox & Hound","Heacham Poplar Avenue","Heacham College Drive","Heacham Jennings Close","Heacham Fengate","Heacham Fenside","Heacham Collingwood Close","Heacham Bottom Farm","Snettisham The Grapes","Snettisham Strickland Avenue","Snettisham Station Road","Ingoldisthorpe Coaly Lane","Ingoldisthorpe Pond","Ingoldisthorpe Ingoldsby Avenue","Dersingham Viceroy Close","Dersingham Manor Road","Castle Rising","QE Hospital Travel Hub","Health Centre","Gaywood Tesco","King's Lynn Railway Station","King's Lynn Transport Interchange"],
+"35 King's Lynn → Hunstanton":["King's Lynn Transport Interchange","Kettlewell Lane","Highgate School","King Edward VII School","Gaywood Tesco","South Wootton Deas Road","Castle Rising","Sandringham","Dersingham Feathers","Dersingham Church Lane","Dersingham Kings Croft","Dersingham Clayton Close","Dersingham Thaxters","Ingoldisthorpe Ingoldsby Avenue","Ingoldisthorpe Pond","Ingoldisthorpe Coaly Lane","Snettisham Station Road","Snettisham Strickland Avenue","Snettisham The Grapes","Heacham Bottom Farm","Heacham Collingwood Close","Heacham Fenside","Heacham Fengate","Heacham Jennings Close","Heacham College Drive","Heacham Poplar Avenue","Heacham Fox & Hound","Heacham High Street","Heacham Nourse Drive","Heacham Ringstead Road","Norfolk Lavender","Hunstanton Redgate Hill","Hunstanton Tesco","Hunstanton Travel Hub"],
+"35 Hunstanton → King's Lynn":["Hunstanton Travel Hub","Hunstanton Tesco","Hunstanton Redgate Hill","Norfolk Lavender","Heacham Ringstead Road","Heacham Nourse Drive","Heacham High Street","Heacham Fox & Hound","Heacham Poplar Avenue","Heacham College Drive","Heacham Jennings Close","Heacham Fengate","Heacham Fenside","Heacham Collingwood Close","Heacham Bottom Farm","Snettisham The Grapes","Snettisham Strickland Avenue","Snettisham Station Road","Ingoldisthorpe Coaly Lane","Ingoldisthorpe Pond","Ingoldisthorpe Ingoldsby Avenue","Dersingham Thaxters","Dersingham Clayton Close","Dersingham Kings Croft","Dersingham Church Lane","Dersingham Feathers","Sandringham","Castle Rising","South Wootton Deas Road","Gaywood Tesco","King's Lynn Railway Station","King's Lynn Transport Interchange"],
+"36 King's Lynn → Fakenham":["King's Lynn Transport Interchange","Kettlewell Lane","Highgate School","King Edward VII School","Gaywood Tesco","QE Hospital Travel Hub","Dersingham Manor Road","Dersingham Bank Road","Dersingham Thaxters","Ingoldisthorpe Ingoldsby Avenue","Ingoldisthorpe Pond","Ingoldisthorpe Coaly Lane","Snettisham Station Road","Snettisham Strickland Avenue","Snettisham The Grapes","Heacham Bottom Farm","Heacham Collingwood Close","Heacham Fenside","Heacham Fengate","Heacham Jennings Close","Heacham College Drive","Heacham Poplar Avenue","Heacham Fox & Hound","Heacham High Street","Heacham Nourse Drive","Heacham Ringstead Road","Norfolk Lavender","Hunstanton Redgate Hill","Hunstanton Tesco","Hunstanton Travel Hub","Old Hunstanton Waterworks Road","Thornham","Brancaster","Burnham Deepdale","Burnham Market","Holkham","Wells Northfield Lane","Wells Co-op","Wells Grove Road","Warham Road","Wighton High Street","Little Walsingham School","East Barsham Water Lane","Fakenham Toll Bar","Fakenham Howland Close","Fakenham Oak Street"],
+"36 Fakenham → King's Lynn":["Fakenham Oak Street","Fakenham Howland Close","Fakenham Toll Bar","East Barsham Water Lane","Little Walsingham School","Wighton High Street","Warham Road","Wells Grove Road","Wells Co-op","Wells Northfield Lane","Holkham","Burnham Market","Burnham Deepdale","Brancaster","Thornham","Old Hunstanton Waterworks Road","Hunstanton Travel Hub","Hunstanton Tesco","Hunstanton Redgate Hill","Norfolk Lavender","Heacham Ringstead Road","Heacham Nourse Drive","Heacham High Street","Heacham Fox & Hound","Heacham Poplar Avenue","Heacham College Drive","Heacham Jennings Close","Heacham Fengate","Heacham Fenside","Heacham Collingwood Close","Heacham Bottom Farm","Snettisham The Grapes","Snettisham Strickland Avenue","Snettisham Station Road","Ingoldisthorpe Coaly Lane","Ingoldisthorpe Pond","Ingoldisthorpe Ingoldsby Avenue","Dersingham Thaxters","Dersingham Bank Road","Dersingham Manor Road","QE Hospital Travel Hub","Gaywood Tesco","King's Lynn Railway Station","King's Lynn Transport Interchange"]
 };
 
-const fallback={
-"King's Lynn Bus Station":[52.7544,0.3976],"Gaywood Tesco":[52.7601,0.4252],"Queen Elizabeth Hospital":[52.7566,0.4431],"South Wootton":[52.7792,0.4378],
-"Castle Rising":[52.7937,0.4705],"Sandringham":[52.8290,0.5050],"Dersingham Manor Road":[52.8463,0.5039],"Dersingham Viceroy Close":[52.8448,0.5028],
-"Ingoldisthorpe Pond":[52.8667,0.5010],"Snettisham":[52.8784,0.5006],"Heacham Lavender":[52.9072,0.4947],"Heacham":[52.9079,0.4931],
-"Hunstanton Tesco":[52.9347,0.4935],"Hunstanton Bus Station":[52.9403,0.4890],"Old Hunstanton Waterworks Road":[52.9570,0.5120],"Thornham":[52.9597,0.5792],
-"Brancaster":[52.9635,0.6404],"Burnham Deepdale":[52.9670,0.6850],"Burnham Market":[52.9451,0.7277],"Holkham":[52.9505,0.8032],
-"Wells-next-the-Sea Northfield Lane":[52.9562,0.8514],"Wells-next-the-Sea Co-op":[52.9545,0.8510],"Wells-next-the-Sea Grove Road":[52.9535,0.8500],
-"Warham Road":[52.9460,0.8610],"Wighton High Street":[52.9210,0.8800],"Walsingham":[52.8947,0.8731],"Fakenham Oak Street":[52.8310,0.8480]
-};
+const pos={"King's Lynn Transport Interchange":[52.7544,.3976],"Kettlewell Lane":[52.7526,.4018],"Highgate School":[52.751,.407],"King Edward VII School":[52.752,.413],"Gaywood Tesco":[52.7601,.4252],"Health Centre":[52.758,.42],"Kent Road":[52.756,.424],"Queensway":[52.756,.432],"Elvington Road":[52.756,.438],"QE Hospital Travel Hub":[52.7566,.4431],"South Wootton Deas Road":[52.779,.438],"Castle Rising":[52.7937,.4705],"Sandringham":[52.829,.505],"Dersingham Manor Road":[52.8463,.5039],"Dersingham Viceroy Close":[52.8448,.5028],"Dersingham Feathers":[52.844,.502],"Dersingham Church Lane":[52.843,.501],"Dersingham Kings Croft":[52.842,.502],"Dersingham Clayton Close":[52.845,.505],"Dersingham Thaxters":[52.846,.506],"Dersingham Bank Road":[52.847,.505],"Ingoldisthorpe Ingoldsby Avenue":[52.866,.502],"Ingoldisthorpe Pond":[52.8667,.501],"Ingoldisthorpe Coaly Lane":[52.868,.5],"Snettisham Station Road":[52.877,.501],"Snettisham Strickland Avenue":[52.879,.501],"Snettisham The Grapes":[52.8784,.5006],"Heacham Bottom Farm":[52.9,.496],"Heacham Collingwood Close":[52.903,.495],"Heacham Fenside":[52.905,.494],"Heacham Fengate":[52.906,.493],"Heacham Jennings Close":[52.907,.493],"Heacham College Drive":[52.908,.493],"Heacham Poplar Avenue":[52.909,.493],"Heacham Fox & Hound":[52.91,.493],"Heacham High Street":[52.9079,.4931],"Heacham Nourse Drive":[52.912,.493],"Heacham Ringstead Road":[52.914,.493],"Norfolk Lavender":[52.9072,.4947],"Hunstanton Redgate Hill":[52.932,.492],"Hunstanton Tesco":[52.9347,.4935],"Hunstanton Travel Hub":[52.9403,.489],"Old Hunstanton Waterworks Road":[52.957,.512],"Thornham":[52.9597,.5792],"Brancaster":[52.9635,.6404],"Burnham Deepdale":[52.967,.685],"Burnham Market":[52.9451,.7277],"Holkham":[52.9505,.8032],"Wells Northfield Lane":[52.9562,.8514],"Wells Co-op":[52.9545,.851],"Wells Grove Road":[52.9535,.85],"Warham Road":[52.946,.861],"Wighton High Street":[52.921,.88],"Little Walsingham School":[52.8947,.8731],"East Barsham Water Lane":[52.87,.875],"Fakenham Toll Bar":[52.838,.85],"Fakenham Howland Close":[52.835,.849],"Fakenham Oak Street":[52.831,.848],"King's Lynn Railway Station":[52.754,.404]};
 
-const fleet=[
-"4 - FX12 MUB - Mercedes-Benz Citaro O530",
-"8 - AF63 XKM - Mercedes-Benz Citaro O530",
-"11 - YJ07 VSK - Optare Tempo",
-"12 - YJ07 VSL - Optare Tempo",
-"18 - FD54 JYA - Optare Tempo",
-"19 - FD54 JYF - Optare Tempo",
-"21 - YJ60 KAA - Optare Tempo",
-"22 - YJ60 KAE - Optare Tempo",
-"23 - YJ60 KAK - Optare Tempo",
-"24 - YJ60 KAO - Optare Tempo",
-"25 - YJ60 KAU - Optare Tempo",
-"28 - T28 KLN - Optare Tempo",
-"29 - T29 KLN - Optare Tempo",
-"30 - MX05 ELH - Optare Tempo",
-"31 - YY24 EKZ - Alexander Dennis Enviro200 MMC",
-"32 - YY24 ELC - Alexander Dennis Enviro200 MMC",
-"33 - YY24 ELH - Alexander Dennis Enviro200 MMC",
-"34 - YY24 ELJ - Alexander Dennis Enviro200 MMC",
-"35 - YX75 LCL - Alexander Dennis Enviro200 MMC",
-"36 - YX75 KVF - Alexander Dennis Enviro200 MMC",
-"37 - YX75 KVG - Alexander Dennis Enviro200 MMC",
-"52 - LJ53 BFU - DAF DB250",
-"53 - LJ53 BGU - DAF DB250",
-"56 - LJ04 LDL - DAF DB250",
-"61 - SK21 FNG - Alexander Dennis Enviro400 MMC",
-"62 - SK21 FNH - Alexander Dennis Enviro400 MMC",
-"64 - YX72 OLO - Alexander Dennis Enviro400 MMC",
-"65 - YX72 OLP - Alexander Dennis Enviro400 MMC",
-"66 - YX23 OSE - Alexander Dennis Enviro400 MMC",
-"67 - YX73 PHJ - Alexander Dennis Enviro400 MMC",
-"81 - DU61 FVY - Alexander Dennis Enviro400",
-"82 - UWW 2X - Alexander Dennis Enviro400"
-];
+const fleet=["4 FX12 MUB Citaro","8 AF63 XKM Citaro","11 YJ07 VSK Tempo","12 YJ07 VSL Tempo","18 FD54 JYA Tempo","19 FD54 JYF Tempo","21 YJ60 KAA Tempo","22 YJ60 KAE Tempo","23 YJ60 KAK Tempo","24 YJ60 KAO Tempo","25 YJ60 KAU Tempo","28 T28 KLN Tempo","29 T29 KLN Tempo","30 MX05 ELH Tempo","31 YY24 EKZ Enviro200","32 YY24 ELC Enviro200","33 YY24 ELH Enviro200","34 YY24 ELJ Enviro200","35 YX75 LCL Enviro200","36 YX75 KVF Enviro200","37 YX75 KVG Enviro200","52 LJ53 BFU DB250","53 LJ53 BGU DB250","56 LJ04 LDL DB250","61 SK21 FNG Enviro400","62 SK21 FNH Enviro400","64 YX72 OLO Enviro400","65 YX72 OLP Enviro400","66 YX23 OSE Enviro400","67 YX73 PHJ Enviro400","81 DU61 FVY Enviro400","82 UWW 2X Enviro400"];
 
-let routes={},idx=0,watch=null,welcomed=false,lastAnnounced=-1,passedStop=false,diversionOn=false;
+let idx=0,watch=null,lastAnn=-1,passed=false,welcomeDone=false,onDiv=false,voice=null;
+Object.keys(routes).forEach(x=>route.add(new Option(x,x)));fleet.forEach(x=>fleet.add(new Option(x,x)));
+route.onchange=()=>{idx=0;lastAnn=-1;passed=false;welcomeDone=false;draw()};fleet.onchange=draw;
 
-const routeSel=document.getElementById("route"),fleetSel=document.getElementById("fleet");
-
-Object.keys(routeTemplates).forEach(r=>routeSel.add(new Option(r,r)));
-fleet.forEach(f=>fleetSel.add(new Option(f,f)));
-
-routeSel.onchange=()=>{idx=0;welcomed=false;lastAnnounced=-1;passedStop=false;buildFallback();draw()};
-fleetSel.onchange=draw;
-
-function buildFallback(){
- routes={};
- for(const r in routeTemplates){
-  routes[r]=routeTemplates[r].map(n=>{
-   let p=fallback[n]||[0,0];
-   return{name:n,lat:p[0],lng:p[1],official:false};
-  });
- }
-}
-
-async function loadOfficialStops(){
- status.textContent="Loading official NaPTAN stops...";
- try{
-  const res=await fetch(NAPTAN);
-  const text=await res.text();
-  const rows=parseCSV(text), head=rows.shift();
-  const iName=head.indexOf("CommonName"),iLat=head.indexOf("Latitude"),iLng=head.indexOf("Longitude"),iAtco=head.indexOf("ATCOCode");
-  const stops=rows.map(r=>({name:r[iName]||"",lat:+r[iLat],lng:+r[iLng],atco:r[iAtco]||""}))
-  .filter(s=>s.atco.startsWith("290")&&s.name&&isFinite(s.lat)&&isFinite(s.lng));
-
-  routes={};
-  for(const r in routeTemplates){
-   routes[r]=routeTemplates[r].map(n=>{
-    let b=findStop(n,stops), p=fallback[n]||[0,0];
-    return b?{name:b.name,lat:b.lat,lng:b.lng,official:true}:{name:n,lat:p[0],lng:p[1],official:false};
-   });
-  }
-  idx=0;draw();status.textContent="Official stops loaded";
- }catch(e){
-  buildFallback();draw();status.textContent="Could not load official stops, using fallback";
- }
-}
-
-function findStop(name,stops){
- let s=clean(name);
- let exact=stops.find(x=>clean(x.name)===s);
- if(exact)return exact;
- let words=s.split(" ").filter(w=>w.length>2);
- let scored=stops.map(x=>{
-  let n=clean(x.name),score=0;
-  words.forEach(w=>{if(n.includes(w))score++});
-  return{x,score};
- }).filter(a=>a.score>=2).sort((a,b)=>b.score-a.score);
- return scored[0]?.x||null;
-}
-
-function clean(x){return x.toLowerCase().replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim()}
-
-function draw(){
- let list=routes[routeSel.value]; if(!list)return;
- stop.textContent=diversionOn?"ON DIVERSION":list[idx].name;
- dest.textContent=diversionOn?"Please listen for announcements":"Towards "+list[list.length-1].name;
- routeText.textContent=routeSel.value.split(" ")[0]+" | "+fleetSel.value;
-}
-
-function say(t){
- speechSynthesis.cancel();
- let u=new SpeechSynthesisUtterance(t);
- u.lang="en-GB";u.rate=.92;u.pitch=1;
- speechSynthesis.speak(u);
-}
-
-function welcome(){
- let list=routes[routeSel.value];
- let routeNo=routeSel.value.split(" ")[0];
- let destination=list[list.length-1].name;
- say("Good morning, and welcome aboard. This is the Lynx "+routeNo+" service to "+destination+". Please sit back, relax, and enjoy your journey.");
-}
-
-function announceNext(){
- if(diversionOn){
-  say("Just to let you know, this bus is currently on diversion. Please listen out for further announcements.");
-  return;
- }
- let list=routes[routeSel.value];
- if(idx>=list.length-1){
-  say("This is the final stop. Please remember to take all your belongings with you. Thank you for travelling with Lynx.");
- }else{
-  say("The next stop is "+list[idx].name+".");
- }
-}
-
-function manualNext(){
- let list=routes[routeSel.value];
- if(idx<list.length-1)idx++;
- draw();announceNext();
-}
-
-function toggleDiversion(){
- diversionOn=!diversionOn;
- diversionScreen.style.display=diversionOn?"flex":"none";
- draw();
- if(diversionOn){
-  say("Passenger announcement. This bus is now on diversion. We are sorry for any delay to your journey.");
- }else{
-  say("Passenger announcement. This bus has now returned to its normal route. Thank you for your patience.");
- }
-}
-
-function startGPS(){
- let list=routes[routeSel.value];
- if(!list){buildFallback();draw()}
- if(!navigator.geolocation){status.textContent="GPS not supported";return}
- if(watch)navigator.geolocation.clearWatch(watch);
-
- watch=navigator.geolocation.watchPosition(p=>{
-  if(diversionOn){
-   status.textContent="GPS on | diversion mode active";
-   return;
-  }
-
-  const lat=p.coords.latitude,lng=p.coords.longitude;
-  list=routes[routeSel.value];
-
-  let next=idx, nextDist=dist(lat,lng,list[next].lat,list[next].lng);
-
-  if(nextDist<=60 && lastAnnounced!==idx){
-   lastAnnounced=idx;
-   passedStop=true;
-   announceNext();
-  }
-
-  if(passedStop && nextDist>30){
-   if(!welcomed){
-    welcomed=true;
-    welcome();
-   }
-   if(idx<list.length-1){
-    idx++;
-    passedStop=false;
-    draw();
-   }
-  }
-
-  status.textContent="GPS on | next stop "+Math.round(nextDist)+"m away";
- },e=>status.textContent="GPS error: "+e.message,{enableHighAccuracy:true,maximumAge:1000,timeout:10000});
-}
-
-function dist(a,b,c,d){
- const R=6371000,rad=x=>x*Math.PI/180;
- const x=rad(c-a),y=rad(d-b);
- const q=Math.sin(x/2)**2+Math.cos(rad(a))*Math.cos(rad(c))*Math.sin(y/2)**2;
- return R*2*Math.atan2(Math.sqrt(q),Math.sqrt(1-q));
-}
-
-function parseCSV(t){
- const rows=[];let row=[],cell="",q=false;
- for(let i=0;i<t.length;i++){
-  let ch=t[i],nx=t[i+1];
-  if(ch=='"'&&q&&nx=='"'){cell+='"';i++}
-  else if(ch=='"')q=!q;
-  else if(ch==","&&!q){row.push(cell);cell=""}
-  else if((ch=="\n"||ch=="\r")&&!q){
-   if(cell||row.length){row.push(cell);rows.push(row);row=[];cell=""}
-   if(ch=="\r"&&nx=="\n")i++;
-  }else cell+=ch;
- }
- if(cell||row.length){row.push(cell);rows.push(row)}
- return rows;
-}
-
-function toggleFull(){screen.classList.toggle("full")}
-
+function stops(){return routes[route.value].map(n=>({n,lat:pos[n]?.[0]||0,lng:pos[n]?.[1]||0}))}
+function routeNo(){return route.value.split(" ")[0]}
+function destination(){let s=stops();return s[s.length-1].n}
+function draw(){let s=stops();rNo.textContent="LYNX "+routeNo();destShort.textContent=destination();stopName.textContent=onDiv?"ON DIVERSION":s[idx].n;towards.textContent=onDiv?"Listen for announcements":"Towards "+destination();call1.textContent=s[idx+1]?.n||"Final stop";call2.textContent=s[idx+2]?.n||"";veh.textContent=fleet.value}
+function loadVoice(){let v=speechSynthesis.getVoices();voice=v.find(x=>x.lang==="en-GB"&&/natural|google|microsoft|serena|daniel|samantha/i.test(x.name))||v.find(x=>x.lang==="en-GB")||v[0]}
+speechSynthesis.onvoiceschanged=loadVoice;loadVoice();
+function say(t){speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(t);u.lang="en-GB";u.rate=.88;u.pitch=.96;if(voice)u.voice=voice;speechSynthesis.speak(u)}
+function welcome(){say("Welcome aboard. Lynx "+routeNo()+" to "+destination()+".")}
+function announce(){let s=stops();if(onDiv)return say("This bus is on diversion. Please listen for updates.");if(idx>=s.length-1)return say("Final stop. Please take your belongings with you.");let msg="Next stop, "+s[idx].n+".";if(s[idx+1])msg+=" Then "+s[idx+1].n+".";say(msg)}
+function nextStop(){let s=stops();if(idx<s.length-1)idx++;draw();announce()}
+function toggleDiversion(){onDiv=!onDiv;divScreen.style.display=onDiv?"flex":"none";draw();say(onDiv?"This bus is now on diversion. Sorry for the delay.":"This bus is back on normal route. Thank you.")}
+function startGps(){if(!navigator.geolocation)return status.textContent="GPS not supported";if(watch)navigator.geolocation.clearWatch(watch);watch=navigator.geolocation.watchPosition(p=>{if(onDiv)return status.textContent="GPS on | diversion";let s=stops(),d=dist(p.coords.latitude,p.coords.longitude,s[idx].lat,s[idx].lng);if(d<=60&&lastAnn!==idx){lastAnn=idx;passed=true;announce()}if(passed&&d>30){if(!welcomeDone){welcomeDone=true;welcome()}if(idx<s.length-1){idx++;passed=false;draw()}}status.textContent="GPS on | next stop "+Math.round(d)+"m away"},e=>status.textContent="GPS error: "+e.message,{enableHighAccuracy:true,maximumAge:1000,timeout:10000})}
+function dist(a,b,c,d){let R=6371000,r=x=>x*Math.PI/180,x=r(c-a),y=r(d-b),q=Math.sin(x/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(y/2)**2;return R*2*Math.atan2(Math.sqrt(q),Math.sqrt(1-q))}
 setInterval(()=>clock.textContent=new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}),1000);
-
-buildFallback();
 draw();
 </script>
-</body>
-</html>
+</body></html>
