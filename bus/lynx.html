@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lynx 34/35/36 GPS Display</title>
+<style>
+body{margin:0;background:#111;color:white;font-family:Arial}
+.controls{padding:10px;background:#222;display:grid;gap:8px}
+select,button{padding:12px;border:0;border-radius:8px;font-size:16px}
+button{background:#d71920;color:white;font-weight:bold}
+.screen{height:70vh;background:white;color:#000;display:flex;flex-direction:column;justify-content:space-between}
+.main{padding:35px}.label{font-size:24px;font-weight:bold;color:#555}
+.stop{font-size:52px;font-weight:900}.dest{font-size:28px;margin-top:25px}
+.redbar{background:#d71920;color:white;padding:18px;font-size:20px;display:flex;justify-content:space-between}
+.status{padding:10px;color:#ccc;font-size:14px}
+.full{position:fixed;inset:0;z-index:99;height:100vh}
+.diversion{position:fixed;inset:0;z-index:999;background:#d71920;color:white;display:none;align-items:center;justify-content:center;text-align:center;font-size:56px;font-weight:900;padding:30px}
+</style>
+</head>
+<body>
+
+<div class="controls">
+<select id="route"></select>
+<select id="fleet"></select>
+<button onclick="loadOfficialStops()">Load Official Stops</button>
+<button onclick="startGPS()">Start GPS</button>
+<button onclick="manualNext()">Manual Next Stop</button>
+<button onclick="announceNext()">Announce Next Stop</button>
+<button onclick="toggleDiversion()">On Diversion</button>
+<button onclick="toggleFull()">Full Screen</button>
+</div>
+
+<div class="screen" id="screen">
+ <div class="main">
+  <div class="label">NEXT STOP</div>
+  <div class="stop" id="stop">Loading...</div>
+  <div class="dest" id="dest">Destination</div>
+ </div>
+ <div class="redbar">
+  <span id="routeText"></span>
+  <span id="clock"></span>
+ </div>
+</div>
+
+<div class="diversion" id="diversionScreen">
+ ON DIVERSION<br>
+ PLEASE LISTEN FOR ANNOUNCEMENTS
+</div>
+
+<div class="status" id="status">Ready</div>
+
+<script>
+const NAPTAN="https://naptan.api.dft.gov.uk/v1/access-nodes?dataFormat=csv";
+
+const routeTemplates={
+"34 King's Lynn to Hunstanton via QE Hospital":["King's Lynn Bus Station","Gaywood Tesco","Queen Elizabeth Hospital","Castle Rising","Dersingham Manor Road","Dersingham Viceroy Close","Ingoldisthorpe Pond","Snettisham","Heacham Lavender","Heacham","Hunstanton Tesco","Hunstanton Bus Station"],
+"34 Hunstanton to King's Lynn via QE Hospital":["Hunstanton Bus Station","Hunstanton Tesco","Heacham","Heacham Lavender","Snettisham","Ingoldisthorpe Pond","Dersingham Viceroy Close","Dersingham Manor Road","Castle Rising","Queen Elizabeth Hospital","Gaywood Tesco","King's Lynn Bus Station"],
+"35 King's Lynn to Hunstanton via Sandringham":["King's Lynn Bus Station","Gaywood Tesco","South Wootton","Castle Rising","Sandringham","Dersingham Manor Road","Dersingham Viceroy Close","Ingoldisthorpe Pond","Snettisham","Heacham Lavender","Heacham","Hunstanton Tesco","Hunstanton Bus Station"],
+"35 Hunstanton to King's Lynn via Sandringham":["Hunstanton Bus Station","Hunstanton Tesco","Heacham","Heacham Lavender","Snettisham","Ingoldisthorpe Pond","Dersingham Viceroy Close","Dersingham Manor Road","Sandringham","Castle Rising","South Wootton","Gaywood Tesco","King's Lynn Bus Station"],
+"36 Coastliner King's Lynn to Fakenham":["King's Lynn Bus Station","Gaywood Tesco","Queen Elizabeth Hospital","Dersingham Manor Road","Dersingham Viceroy Close","Ingoldisthorpe Pond","Snettisham","Heacham Lavender","Heacham","Hunstanton Tesco","Hunstanton Bus Station","Old Hunstanton Waterworks Road","Thornham","Brancaster","Burnham Deepdale","Burnham Market","Holkham","Wells-next-the-Sea Northfield Lane","Wells-next-the-Sea Co-op","Wells-next-the-Sea Grove Road","Warham Road","Wighton High Street","Walsingham","Fakenham Oak Street"],
+"36 Coastliner Fakenham to King's Lynn":["Fakenham Oak Street","Walsingham","Wighton High Street","Warham Road","Wells-next-the-Sea Grove Road","Wells-next-the-Sea Co-op","Wells-next-the-Sea Northfield Lane","Holkham","Burnham Market","Burnham Deepdale","Brancaster","Thornham","Old Hunstanton Waterworks Road","Hunstanton Bus Station","Hunstanton Tesco","Heacham","Heacham Lavender","Snettisham","Ingoldisthorpe Pond","Dersingham Viceroy Close","Dersingham Manor Road","Queen Elizabeth Hospital","Gaywood Tesco","King's Lynn Bus Station"]
+};
+
+const fallback={
+"King's Lynn Bus Station":[52.7544,0.3976],"Gaywood Tesco":[52.7601,0.4252],"Queen Elizabeth Hospital":[52.7566,0.4431],"South Wootton":[52.7792,0.4378],
+"Castle Rising":[52.7937,0.4705],"Sandringham":[52.8290,0.5050],"Dersingham Manor Road":[52.8463,0.5039],"Dersingham Viceroy Close":[52.8448,0.5028],
+"Ingoldisthorpe Pond":[52.8667,0.5010],"Snettisham":[52.8784,0.5006],"Heacham Lavender":[52.9072,0.4947],"Heacham":[52.9079,0.4931],
+"Hunstanton Tesco":[52.9347,0.4935],"Hunstanton Bus Station":[52.9403,0.4890],"Old Hunstanton Waterworks Road":[52.9570,0.5120],"Thornham":[52.9597,0.5792],
+"Brancaster":[52.9635,0.6404],"Burnham Deepdale":[52.9670,0.6850],"Burnham Market":[52.9451,0.7277],"Holkham":[52.9505,0.8032],
+"Wells-next-the-Sea Northfield Lane":[52.9562,0.8514],"Wells-next-the-Sea Co-op":[52.9545,0.8510],"Wells-next-the-Sea Grove Road":[52.9535,0.8500],
+"Warham Road":[52.9460,0.8610],"Wighton High Street":[52.9210,0.8800],"Walsingham":[52.8947,0.8731],"Fakenham Oak Street":[52.8310,0.8480]
+};
+
+const fleet=["31 YY24 EKZ Enviro200 MMC","32 YY24 ELC Enviro200 MMC","33 YY24 ELH Enviro200 MMC","34 YY24 ELJ Enviro200 MMC","61 SK21 FNG Enviro400 MMC","62 SK21 FNH Enviro400 MMC","63 YX22 OLN Enviro400 MMC","64 YX72 OLO Enviro400 MMC","65 YX72 OLP Enviro400 MMC","66 YX23 OSE Enviro400 MMC","67 YX73 PHJ Enviro400 MMC"];
+
+let routes={},idx=0,watch=null,welcomed=false,lastAnnounced=-1,passedStop=false,diversionOn=false;
+
+const routeSel=document.getElementById("route"),fleetSel=document.getElementById("fleet");
+
+Object.keys(routeTemplates).forEach(r=>routeSel.add(new Option(r,r)));
+fleet.forEach(f=>fleetSel.add(new Option(f,f)));
+
+routeSel.onchange=()=>{idx=0;welcomed=false;lastAnnounced=-1;passedStop=false;buildFallback();draw()};
+fleetSel.onchange=draw;
+
+function buildFallback(){
+ routes={};
+ for(const r in routeTemplates){
+  routes[r]=routeTemplates[r].map(n=>{
+   let p=fallback[n]||[0,0];
+   return{name:n,lat:p[0],lng:p[1],official:false};
+  });
+ }
+}
+
+async function loadOfficialStops(){
+ status.textContent="Loading official NaPTAN stops...";
+ try{
+  const res=await fetch(NAPTAN);
+  const text=await res.text();
+  const rows=parseCSV(text), head=rows.shift();
+  const iName=head.indexOf("CommonName"),iLat=head.indexOf("Latitude"),iLng=head.indexOf("Longitude"),iAtco=head.indexOf("ATCOCode");
+  const stops=rows.map(r=>({name:r[iName]||"",lat:+r[iLat],lng:+r[iLng],atco:r[iAtco]||""}))
+  .filter(s=>s.atco.startsWith("290")&&s.name&&isFinite(s.lat)&&isFinite(s.lng));
+
+  routes={};
+  for(const r in routeTemplates){
+   routes[r]=routeTemplates[r].map(n=>{
+    let b=findStop(n,stops), p=fallback[n]||[0,0];
+    return b?{name:b.name,lat:b.lat,lng:b.lng,official:true}:{name:n,lat:p[0],lng:p[1],official:false};
+   });
+  }
+  idx=0;draw();status.textContent="Official stops loaded";
+ }catch(e){
+  buildFallback();draw();status.textContent="Could not load official stops, using fallback";
+ }
+}
+
+function findStop(name,stops){
+ let s=clean(name);
+ let exact=stops.find(x=>clean(x.name)===s);
+ if(exact)return exact;
+ let words=s.split(" ").filter(w=>w.length>2);
+ let scored=stops.map(x=>{
+  let n=clean(x.name),score=0;
+  words.forEach(w=>{if(n.includes(w))score++});
+  return{x,score};
+ }).filter(a=>a.score>=2).sort((a,b)=>b.score-a.score);
+ return scored[0]?.x||null;
+}
+
+function clean(x){return x.toLowerCase().replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim()}
+
+function draw(){
+ let list=routes[routeSel.value]; if(!list)return;
+ stop.textContent=diversionOn?"ON DIVERSION":list[idx].name;
+ dest.textContent=diversionOn?"Please listen for announcements":"Towards "+list[list.length-1].name;
+ routeText.textContent=routeSel.value.split(" ")[0]+" | "+fleetSel.value;
+}
+
+function say(t){
+ speechSynthesis.cancel();
+ let u=new SpeechSynthesisUtterance(t);
+ u.lang="en-GB";u.rate=.92;u.pitch=1;
+ speechSynthesis.speak(u);
+}
+
+function welcome(){
+ let list=routes[routeSel.value];
+ let routeNo=routeSel.value.split(" ")[0];
+ say("Welcome aboard. This is the "+routeNo+" to "+list[list.length-1].name+". Please sit back and relax.");
+}
+
+function announceNext(){
+ if(diversionOn){
+  say("This bus is currently on diversion. Please listen for further announcements.");
+  return;
+ }
+ let list=routes[routeSel.value];
+ if(idx>=list.length-1){
+  say("This bus terminates here. Please take all your belongings with you.");
+ }else{
+  say("Next stop, "+list[idx].name);
+ }
+}
+
+function manualNext(){
+ let list=routes[routeSel.value];
+ if(idx<list.length-1)idx++;
+ draw();announceNext();
+}
+
+function toggleDiversion(){
+ diversionOn=!diversionOn;
+ diversionScreen.style.display=diversionOn?"flex":"none";
+ draw();
+ if(diversionOn){
+  say("This bus is currently on diversion. Please listen for further announcements.");
+ }else{
+  say("This bus is now returning to normal route.");
+ }
+}
+
+function startGPS(){
+ let list=routes[routeSel.value];
+ if(!list){buildFallback();draw()}
+ if(!navigator.geolocation){status.textContent="GPS not supported";return}
+ if(watch)navigator.geolocation.clearWatch(watch);
+
+ watch=navigator.geolocation.watchPosition(p=>{
+  if(diversionOn){
+   status.textContent="GPS on | diversion mode active";
+   return;
+  }
+
+  const lat=p.coords.latitude,lng=p.coords.longitude;
+  list=routes[routeSel.value];
+
+  let next=idx, nextDist=dist(lat,lng,list[next].lat,list[next].lng);
+
+  if(nextDist<=60 && lastAnnounced!==idx){
+   lastAnnounced=idx;
+   passedStop=true;
+   announceNext();
+  }
+
+  if(passedStop && nextDist>30){
+   if(!welcomed){
+    welcomed=true;
+    welcome();
+   }
+   if(idx<list.length-1){
+    idx++;
+    passedStop=false;
+    draw();
+   }
+  }
+
+  status.textContent="GPS on | next stop "+Math.round(nextDist)+"m away";
+ },e=>status.textContent="GPS error: "+e.message,{enableHighAccuracy:true,maximumAge:1000,timeout:10000});
+}
+
+function dist(a,b,c,d){
+ const R=6371000,rad=x=>x*Math.PI/180;
+ const x=rad(c-a),y=rad(d-b);
+ const q=Math.sin(x/2)**2+Math.cos(rad(a))*Math.cos(rad(c))*Math.sin(y/2)**2;
+ return R*2*Math.atan2(Math.sqrt(q),Math.sqrt(1-q));
+}
+
+function parseCSV(t){
+ const rows=[];let row=[],cell="",q=false;
+ for(let i=0;i<t.length;i++){
+  let ch=t[i],nx=t[i+1];
+  if(ch=='"'&&q&&nx=='"'){cell+='"';i++}
+  else if(ch=='"')q=!q;
+  else if(ch==","&&!q){row.push(cell);cell=""}
+  else if((ch=="\n"||ch=="\r")&&!q){
+   if(cell||row.length){row.push(cell);rows.push(row);row=[];cell=""}
+   if(ch=="\r"&&nx=="\n")i++;
+  }else cell+=ch;
+ }
+ if(cell||row.length){row.push(cell);rows.push(row)}
+ return rows;
+}
+
+function toggleFull(){screen.classList.toggle("full")}
+
+setInterval(()=>clock.textContent=new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"}),1000);
+
+buildFallback();
+draw();
+</script>
+</body>
+</html>
