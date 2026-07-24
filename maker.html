@@ -1,409 +1,246 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Monthly Rota Maker</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Monthly Rota Manager</title>
 <style>
 :root{
-  --bg:#edf1f3;--panel:#fff;--ink:#17201e;--muted:#65706c;--line:#d8dfdc;
-  --brand:#176452;--brand-dark:#10483d;--soft:#e8f4f0;--danger:#a9281f;
-  --off:#fff0ee;--empty:#fff5d8;--shadow:0 12px 32px rgba(21,45,38,.08)
+  --bg:#f2f5f4;--panel:#fff;--ink:#17211e;--muted:#67736e;--line:#d9e1de;
+  --brand:#176452;--brand2:#0f4b3e;--brand-soft:#e9f5f1;--danger:#b3261e;
+  --danger-soft:#fff0ee;--warning:#8b6400;--warning-soft:#fff7dc;--weekend:#f8faf9;
+  --shadow:0 12px 34px rgba(16,48,39,.08)
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
 button,input,select{font:inherit}
-header{background:#102923;color:#fff;position:sticky;top:0;z-index:30}
-.header-inner{max-width:1500px;margin:auto;padding:15px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px}
-.brand{display:flex;align-items:center;gap:11px}.logo{width:42px;height:42px;border-radius:12px;background:#5bd1af;color:#102923;display:grid;place-items:center;font-weight:900}
-.brand h1{font-size:18px;margin:0}.brand p{font-size:12px;color:#c4d3cf;margin:3px 0 0}.nav a{color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:9px 12px}
-main{max-width:1500px;margin:25px auto;padding:0 16px 48px}.hero{display:flex;align-items:end;justify-content:space-between;gap:15px;margin-bottom:16px}
-.hero h2{font-size:30px;letter-spacing:-.04em;margin:0 0 6px}.hero p{margin:0;color:var(--muted)}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:17px;box-shadow:var(--shadow)}
-.toolbar{display:flex;gap:10px;align-items:end;flex-wrap:wrap;padding:14px;margin-bottom:15px}
-.field{display:flex;flex-direction:column;gap:6px;min-width:180px}.field.grow{flex:1}
-label{font-size:12px;font-weight:800;color:#4e5955}
-input,select{width:100%;border:1px solid #c8d1cd;border-radius:10px;padding:10px 11px;background:#fff;color:var(--ink);outline:none}
+button{touch-action:manipulation}
+.topbar{position:sticky;top:0;z-index:40;background:#102923;color:#fff;border-bottom:1px solid rgba(255,255,255,.08)}
+.topbar-inner{max-width:1500px;margin:auto;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.brand{display:flex;align-items:center;gap:11px}.mark{width:42px;height:42px;border-radius:13px;background:#62d6b4;color:#102923;display:grid;place-items:center;font-weight:900;font-size:20px}
+.brand-title{font-weight:850}.brand-sub{font-size:12px;color:#c7d7d2;margin-top:2px}
+.top-link{color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.24);padding:9px 12px;border-radius:10px;font-weight:750}
+main{max-width:1500px;margin:24px auto;padding:0 16px 110px}
+.hero{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:18px}
+.hero h1{margin:0;font-size:32px;letter-spacing:-.04em}.hero p{margin:7px 0 0;color:var(--muted)}
+.btn{border:0;border-radius:11px;padding:10px 14px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px}
+.btn-primary{background:var(--brand);color:#fff}.btn-primary:hover{background:var(--brand2)}
+.btn-secondary{background:#eaf0ee;color:#28473f}.btn-danger{background:var(--danger-soft);color:var(--danger)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+.notice{display:none;padding:13px 15px;border-radius:12px;margin-bottom:14px}.notice.show{display:block}.notice.ok{background:#e7f6ef;color:#155d46}.notice.error{background:var(--danger-soft);color:#92251e}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:15px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:15px;padding:13px}.stat-label{font-size:12px;color:var(--muted);font-weight:750}.stat-value{font-size:24px;font-weight:900;margin-top:3px}
+.toolbar{padding:14px;display:flex;align-items:end;gap:10px;flex-wrap:wrap;margin-bottom:15px}.field{min-width:190px}.field label{display:block;font-size:12px;font-weight:800;margin-bottom:6px}
+input,select{width:100%;border:1px solid #c7d2ce;border-radius:11px;padding:10px 11px;background:#fff;color:var(--ink);outline:none}
 input:focus,select:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(23,100,82,.12)}
-.btn{border:0;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}.btn-primary{background:var(--brand);color:#fff}.btn-primary:hover{background:var(--brand-dark)}
-.btn-light{background:#edf2f0;color:#23473e}.btn-danger{background:#fff0ee;color:var(--danger)}.btn:disabled{opacity:.55;cursor:not-allowed}
-.notice{display:none;padding:12px 14px;border-radius:11px;margin-bottom:14px}.notice.show{display:block}.notice.ok{background:#e4f5ee;color:#176048}.notice.error{background:#feeceb;color:#98251c}
-.layout{display:grid;grid-template-columns:310px minmax(0,1fr);gap:15px}.sidebar{padding:15px;height:max-content}.section+.section{margin-top:22px}
-.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}.section-head h3{font-size:15px;margin:0}.small{font-size:11px;color:var(--muted)}
-.list{display:flex;flex-direction:column;gap:7px}.list-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px;border:1px solid var(--line);border-radius:11px}
-.item-name{font-weight:800;overflow:hidden;text-overflow:ellipsis}.item-sub{font-size:11px;color:var(--muted);margin-top:2px}.item-actions{display:flex;gap:5px;align-items:center}
-.icon-btn{border:0;border-radius:8px;background:#eff3f1;padding:7px 9px;cursor:pointer}.icon-btn.danger{color:var(--danger)}
-.add-row{display:flex;gap:7px;margin-top:8px}.add-row input{min-width:0}.month-wrap{overflow:auto;border-radius:17px}
-.rota{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%;background:#fff}.rota th,.rota td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px;vertical-align:top}
-.rota thead th{background:#f7f9f8;position:sticky;top:72px;z-index:6}.rota thead th:first-child{left:0;z-index:10}
-.rota td:first-child{position:sticky;left:0;background:#fff;z-index:4;min-width:135px}.date-cell strong{display:block}.date-cell span{font-size:11px;color:var(--muted)}
-.ride-head{min-width:175px}.ride-head strong{display:block}.ride-head span{display:block;font-size:11px;color:var(--muted);margin-top:2px}
-.assignment{display:block;width:100%;border:1px solid #cbd6d2;background:#edf7f3;border-radius:9px;padding:7px;margin-bottom:5px;font-size:12px;font-weight:750}
-.assignment.empty{background:var(--empty);border-color:#e5d391;color:#795d06}.assignment.off{background:var(--off);border-color:#efc4bf;color:#9c291f}
-.dayoff-btn{margin-top:6px;width:100%;font-size:11px;padding:6px}.empty-state{padding:40px;text-align:center;color:var(--muted)}
-.modal{display:none;position:fixed;inset:0;background:rgba(8,27,22,.58);z-index:50;align-items:center;justify-content:center;padding:16px}.modal.show{display:flex}
-.modal-card{width:min(560px,100%);max-height:90vh;overflow:auto;padding:20px}.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.modal-head h3{margin:0}
-.check-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}.check-row{display:flex;gap:9px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:9px}.check-row input{width:auto}
-.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:15px}
-.summary{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.summary-chip{background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 10px;font-size:12px}
-@media(max-width:920px){.layout{grid-template-columns:1fr}.sidebar{order:2}}
-@media(max-width:650px){.header-inner{padding:12px}.brand p{display:none}.hero{flex-direction:column;align-items:stretch}.hero h2{font-size:26px}.toolbar>*{width:100%}.field{min-width:100%}.check-list{grid-template-columns:1fr}}
+.helper{font-size:12px;color:var(--muted);max-width:520px;line-height:1.45}
+.tabs{display:flex;gap:7px;margin-bottom:12px;overflow:auto;padding-bottom:2px}.tab{border:1px solid var(--line);background:#fff;border-radius:11px;padding:10px 14px;font-weight:800;cursor:pointer;white-space:nowrap}.tab.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+.panel{display:none}.panel.active{display:block}
+.setup-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.setup-card{padding:17px}.section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:13px}.section-head h2{font-size:18px;margin:0}.count{font-size:12px;color:var(--muted);background:#f0f4f2;border-radius:999px;padding:5px 9px}
+.add-row{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:12px}.list{display:flex;flex-direction:column;gap:8px}.item{display:flex;align-items:center;justify-content:space-between;gap:9px;border:1px solid var(--line);border-radius:12px;padding:10px}.item-main{min-width:0}.item-name{font-weight:820;overflow:hidden;text-overflow:ellipsis}.item-sub{font-size:11px;color:var(--muted);margin-top:3px}.actions{display:flex;align-items:center;gap:6px}.icon-btn{border:0;background:#edf2f0;border-radius:9px;min-width:36px;height:36px;cursor:pointer;font-weight:850}.icon-btn.danger{background:var(--danger-soft);color:var(--danger)}
+.empty-box{text-align:center;padding:24px;color:var(--muted);border:1px dashed #cbd6d2;border-radius:12px}
+.rota-card{overflow:hidden}.rota-top{padding:14px 15px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}.rota-top h2{margin:0;font-size:18px}.legend{display:flex;gap:8px;flex-wrap:wrap}.legend span{font-size:11px;padding:5px 8px;border-radius:999px}.leg-auto{background:var(--brand-soft);color:#155743}.leg-off{background:var(--danger-soft);color:#97291f}.leg-empty{background:var(--warning-soft);color:#785700}
+.table-wrap{overflow:auto;max-height:70vh}.rota{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%;background:#fff}.rota th,.rota td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:9px;vertical-align:top}
+.rota thead th{position:sticky;top:0;background:#f7faf8;z-index:6}.rota th:first-child{left:0;z-index:10}.rota td:first-child{position:sticky;left:0;background:#fff;z-index:5;min-width:148px}
+.rota tr.weekend td{background:var(--weekend)}.rota tr.weekend td:first-child{background:#f3f7f5}
+.date-title{font-weight:850}.date-meta{font-size:11px;color:var(--muted);margin-top:3px}.off-summary{font-size:11px;color:var(--danger);margin-top:5px;min-height:16px}
+.ride-head{min-width:190px}.ride-head strong{display:block}.ride-head span{font-size:11px;color:var(--muted)}
+.assign{display:block;margin-bottom:6px;background:var(--brand-soft);border-color:#bcd9cf;font-weight:750}.assign.unfilled{background:var(--warning-soft);border-color:#e5d391}
+.dayoff{width:100%;margin-top:6px;padding:7px 9px;font-size:11px}
+.modal{display:none;position:fixed;inset:0;background:rgba(8,27,22,.62);z-index:80;align-items:center;justify-content:center;padding:16px}.modal.show{display:flex}
+.modal-card{width:min(620px,100%);max-height:90vh;overflow:auto;padding:20px}.modal-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.modal-head h2{font-size:20px;margin:0}.checks{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}.check{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:11px;padding:10px}.check input{width:auto}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+.publish-bar{position:fixed;left:0;right:0;bottom:0;z-index:35;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);border-top:1px solid var(--line)}
+.publish-inner{max-width:1500px;margin:auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}.publish-copy strong{display:block}.publish-copy span{font-size:12px;color:var(--muted)}
+@media(max-width:900px){.setup-grid{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:650px){
+ .topbar-inner{padding:11px 12px}.brand-sub{display:none}.hero{align-items:stretch;flex-direction:column}.hero h1{font-size:27px}
+ .stats{grid-template-columns:1fr 1fr}.toolbar>*{width:100%}.field{min-width:100%}.setup-card{padding:14px}.checks{grid-template-columns:1fr}
+ .publish-inner{align-items:stretch;flex-direction:column}.publish-inner .btn{width:100%}.publish-copy{text-align:center}
+}
 </style>
 </head>
 <body>
-<header><div class="header-inner">
-  <div class="brand"><div class="logo">R</div><div><h1>Monthly Rota Maker</h1><p>Automatic cover for staff days off</p></div></div>
-  <div class="nav"><a href="viewer.html">Viewer page</a></div>
-</div></header>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="mark">R</div>
+      <div><div class="brand-title">Monthly Rota Manager</div><div class="brand-sub">GitHub-only automatic staff scheduling</div></div>
+    </div>
+    <a class="top-link" href="viewer.html">Open public viewer</a>
+  </div>
+</header>
+
 <main>
   <section class="hero">
-    <div><h2>Build the monthly rota</h2><p>Mark a staff member off and another available person is assigned immediately.</p></div>
-    <button id="saveBtn" class="btn btn-primary">Save changes</button>
+    <div>
+      <h1>Plan your staff rota</h1>
+      <p>Add staff and rides, mark days off, then let the rota fill available cover automatically.</p>
+    </div>
   </section>
+
   <div id="notice" class="notice"></div>
 
-  <section class="card toolbar">
-    <div class="field grow"><label for="adminKey">Admin password</label><input id="adminKey" type="password" placeholder="Worker ADMIN_KEY"></div>
-    <div class="field"><label for="month">Month</label><input id="month" type="month"></div>
-    <button id="regenerateBtn" class="btn btn-light">Regenerate month</button>
+  <section class="stats">
+    <div class="stat"><div class="stat-label">Active staff</div><div id="staffStat" class="stat-value">0</div></div>
+    <div class="stat"><div class="stat-label">Rides</div><div id="rideStat" class="stat-value">0</div></div>
+    <div class="stat"><div class="stat-label">Days in month</div><div id="dayStat" class="stat-value">0</div></div>
+    <div class="stat"><div class="stat-label">Unfilled positions</div><div id="emptyStat" class="stat-value">0</div></div>
   </section>
 
-  <div id="summary" class="summary"></div>
+  <section class="card toolbar">
+    <div class="field">
+      <label for="month">Rota month</label>
+      <input id="month" type="month">
+    </div>
+    <button id="currentMonth" class="btn btn-secondary">Current month</button>
+    <button id="resetMonth" class="btn btn-secondary">Clear manual changes</button>
+    <div class="helper">The rota updates instantly. Use the tabs below to add staff, add rides, or manage the monthly rota.</div>
+  </section>
 
-  <div class="layout">
-    <aside class="card sidebar">
-      <section class="section">
-        <div class="section-head"><h3>Staff</h3><span id="staffCount" class="small"></span></div>
+  <nav class="tabs" aria-label="Rota sections">
+    <button class="tab active" data-panel="rotaPanel">Monthly rota</button>
+    <button class="tab" data-panel="staffPanel">Staff</button>
+    <button class="tab" data-panel="ridesPanel">Rides</button>
+  </nav>
+
+  <section id="rotaPanel" class="panel active">
+    <div class="card rota-card">
+      <div class="rota-top">
+        <h2>Monthly assignments</h2>
+        <div class="legend">
+          <span class="leg-auto">Assigned</span>
+          <span class="leg-off">Day off</span>
+          <span class="leg-empty">Needs cover</span>
+        </div>
+      </div>
+      <div class="table-wrap"><div id="rota"></div></div>
+    </div>
+  </section>
+
+  <section id="staffPanel" class="panel">
+    <div class="setup-grid">
+      <div class="card setup-card">
+        <div class="section-head"><h2>Add staff</h2><span id="staffCount" class="count">0 people</span></div>
+        <div class="add-row">
+          <input id="newStaff" placeholder="Enter staff member's name">
+          <button id="addStaff" class="btn btn-primary">Add person</button>
+        </div>
         <div id="staffList" class="list"></div>
-        <div class="add-row"><input id="newStaff" placeholder="Staff name"><button id="addStaff" class="btn btn-primary">Add</button></div>
-      </section>
+      </div>
+      <div class="card setup-card">
+        <div class="section-head"><h2>How staff cover works</h2></div>
+        <div class="helper">
+          Marking somebody off removes them from every ride on that date. The system then selects another available person, avoids double-booking them, and balances assignments across the month.
+        </div>
+      </div>
+    </div>
+  </section>
 
-      <section class="section">
-        <div class="section-head"><h3>Rides</h3><span id="rideCount" class="small"></span></div>
+  <section id="ridesPanel" class="panel">
+    <div class="setup-grid">
+      <div class="card setup-card">
+        <div class="section-head"><h2>Add rides</h2><span id="rideCount" class="count">0 rides</span></div>
+        <div class="add-row">
+          <input id="newRide" placeholder="Enter ride name">
+          <button id="addRide" class="btn btn-primary">Add ride</button>
+        </div>
         <div id="rideList" class="list"></div>
-        <div class="add-row"><input id="newRide" placeholder="Ride name"><button id="addRide" class="btn btn-primary">Add</button></div>
-        <p class="small">The number beside each ride controls how many staff are assigned every day.</p>
-      </section>
-    </aside>
-
-    <section class="card month-wrap"><div id="rota"></div></section>
-  </div>
+      </div>
+      <div class="card setup-card">
+        <div class="section-head"><h2>Staff needed</h2></div>
+        <div class="helper">Use the number control beside each ride to choose how many members of staff it needs every day.</div>
+      </div>
+    </div>
+  </section>
 </main>
 
-<div id="daysOffModal" class="modal">
+<div id="modal" class="modal">
   <div class="card modal-card">
-    <div class="modal-head"><h3 id="modalTitle">Days off</h3><button id="closeModal" class="icon-btn">×</button></div>
-    <p class="small">Tick everyone who needs this date off. Their existing assignment is removed and another available staff member takes their place automatically.</p>
-    <div id="daysOffList" class="check-list"></div>
-    <div class="modal-actions"><button id="cancelModal" class="btn btn-light">Cancel</button><button id="applyDaysOff" class="btn btn-primary">Apply days off</button></div>
+    <div class="modal-head">
+      <div><h2 id="modalTitle">Days off</h2><div class="helper">Select everyone who cannot work on this date.</div></div>
+      <button id="closeModal" class="icon-btn">×</button>
+    </div>
+    <div id="checks" class="checks"></div>
+    <div class="modal-actions">
+      <button id="cancel" class="btn btn-secondary">Cancel</button>
+      <button id="apply" class="btn btn-primary">Apply and find cover</button>
+    </div>
+  </div>
+</div>
+
+<div class="publish-bar">
+  <div class="publish-inner">
+    <div class="publish-copy">
+      <strong>Ready to publish?</strong>
+      <span>Download the data file, then replace rota-data.json in your GitHub folder.</span>
+    </div>
+    <button id="exportBtn" class="btn btn-primary">Download rota-data.json</button>
   </div>
 </div>
 
 <script src="config.js"></script>
 <script>
-function esc(value){
-  return String(value ?? "").replace(/[&<>"']/g, char => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-  }[char]));
-}
-function dateISO(date){ return date.toISOString().slice(0,10); }
-function parseDate(value){ return new Date(value + "T12:00:00"); }
-function monthDates(monthValue){
-  const [year, month] = monthValue.split("-").map(Number);
-  const dates = [];
-  const last = new Date(year, month, 0).getDate();
-  for(let day=1; day<=last; day++){
-    dates.push(`${year}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}`);
+const $=id=>document.getElementById(id);
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));}
+function monthDates(v){const[y,m]=v.split("-").map(Number),out=[],last=new Date(y,m,0).getDate();for(let d=1;d<=last;d++)out.push(`${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`);return out;}
+function niceDate(v){return new Date(v+"T12:00:00").toLocaleDateString("en-GB",{weekday:"short",day:"numeric",month:"short"});}
+function isWeekend(v){const d=new Date(v+"T12:00:00").getDay();return d===0||d===6;}
+function auto(data,dates){
+ const result={},load={},recent={},staff=data.staff.filter(x=>x.active!==false).sort((a,b)=>(a.order||0)-(b.order||0)),rides=data.rides.filter(x=>x.active!==false).sort((a,b)=>(a.order||0)-(b.order||0));
+ staff.forEach(x=>load[x.id]=0);
+ for(const date of dates){const off=new Set(data.daysOff[date]||[]),used=new Set();
+  for(const ride of rides){const key=`${date}|${ride.id}`;let manual=Array.isArray(data.manualAssignments[key])?data.manualAssignments[key].filter(id=>staff.some(s=>s.id===id)&&!off.has(id)):null;
+   if(manual){result[key]=manual.slice(0,ride.staffNeeded);result[key].forEach(id=>{used.add(id);load[id]++;recent[id]=ride.id});continue;}
+   const chosen=[];for(let i=0;i<ride.staffNeeded;i++){const candidates=staff.filter(s=>!off.has(s.id)&&!used.has(s.id)&&!chosen.includes(s.id)).sort((a,b)=>((recent[a.id]===ride.id)-(recent[b.id]===ride.id))||load[a.id]-load[b.id]||(a.order||0)-(b.order||0));if(!candidates.length)break;const p=candidates[0];chosen.push(p.id);used.add(p.id);load[p.id]++;recent[p.id]=ride.id;}result[key]=chosen;
   }
-  return dates;
+ }return result;
 }
-function niceDate(value){
-  return parseDate(value).toLocaleDateString("en-GB", {weekday:"short",day:"numeric",month:"short"});
-}
-function staffById(data){ return Object.fromEntries(data.staff.map(person => [person.id, person])); }
+let data={staff:[],rides:[],daysOff:{},manualAssignments:{},updatedAt:null},generated={},editingDate=null;
+const month=$("month"),modal=$("modal");month.value=new Date().toISOString().slice(0,7);
 
-function automaticAssignments(data, dates){
-  const result = {};
-  const totalLoad = {};
-  const recentRide = {};
-  const activeStaff = data.staff.filter(person => person.active)
-    .sort((a,b) => a.order-b.order || a.name.localeCompare(b.name));
-  const activeRides = data.rides.filter(ride => ride.active)
-    .sort((a,b) => a.order-b.order || a.name.localeCompare(b.name));
-
-  activeStaff.forEach(person => totalLoad[person.id] = 0);
-
-  for(const date of dates){
-    const off = new Set(data.daysOff[date] || []);
-    const usedToday = new Set();
-
-    for(const ride of activeRides){
-      const key = `${date}|${ride.id}`;
-      const manuallyChosen = Array.isArray(data.manualAssignments[key])
-        ? data.manualAssignments[key].filter(id =>
-            activeStaff.some(person => person.id === id) && !off.has(id)
-          )
-        : null;
-
-      if(manuallyChosen){
-        result[key] = manuallyChosen.slice(0, ride.staffNeeded);
-        result[key].forEach(id => {
-          usedToday.add(id);
-          totalLoad[id] = (totalLoad[id] || 0) + 1;
-          recentRide[id] = ride.id;
-        });
-        continue;
-      }
-
-      const chosen = [];
-      for(let slot=0; slot<ride.staffNeeded; slot++){
-        const candidates = activeStaff
-          .filter(person =>
-            !off.has(person.id) &&
-            !usedToday.has(person.id) &&
-            !chosen.includes(person.id)
-          )
-          .sort((a,b) => {
-            const aSameRide = recentRide[a.id] === ride.id ? 1 : 0;
-            const bSameRide = recentRide[b.id] === ride.id ? 1 : 0;
-            return aSameRide-bSameRide ||
-              (totalLoad[a.id]||0)-(totalLoad[b.id]||0) ||
-              a.order-b.order ||
-              a.name.localeCompare(b.name);
-          });
-
-        if(!candidates.length) break;
-        const chosenPerson = candidates[0];
-        chosen.push(chosenPerson.id);
-        usedToday.add(chosenPerson.id);
-        totalLoad[chosenPerson.id] = (totalLoad[chosenPerson.id] || 0) + 1;
-        recentRide[chosenPerson.id] = ride.id;
-      }
-      result[key] = chosen;
-    }
-  }
-  return result;
-}
-</script>
-<script>
-const API=window.ROTA_CONFIG.API_URL.replace(/\/$/,"");
-let data={staff:[],rides:[],daysOff:{},manualAssignments:{},updatedAt:null};
-let generated={};
-let editingDate=null;
-
-const monthInput=document.getElementById("month");
-const adminKey=document.getElementById("adminKey");
-const modal=document.getElementById("daysOffModal");
-monthInput.value=new Date().toISOString().slice(0,7);
-adminKey.value=localStorage.getItem("rotaAdminKey")||"";
-
-function notice(message,type="ok"){
-  const box=document.getElementById("notice");
-  box.textContent=message;
-  box.className="notice show "+type;
-  setTimeout(()=>box.className="notice",4500);
-}
-async function load(){
-  if(API.includes("YOUR-WORKER")){notice("Paste your Worker URL into config.js.","error");return;}
-  try{
-    const response=await fetch(API+"/data");
-    const body=await response.json();
-    if(!response.ok) throw new Error(body.error);
-    data=body;
-    refresh();
-  }catch(error){notice(error.message,"error");}
-}
-function refresh(){
-  renderLists();
-  generated=automaticAssignments(data,monthDates(monthInput.value));
-  renderRota();
+function flash(message,type="ok"){const n=$("notice");n.textContent=message;n.className=`notice show ${type}`;setTimeout(()=>n.className="notice",4200);}
+async function load(){try{const r=await fetch(window.ROTA_CONFIG.DATA_FILE+"?v="+Date.now(),{cache:"no-store"});if(r.ok)data=await r.json();}catch(e){}refresh();}
+function refresh(){generated=auto(data,monthDates(month.value));renderStats();renderLists();renderRota();}
+function renderStats(){
+ const dates=monthDates(month.value),rides=data.rides.filter(x=>x.active!==false);let empty=0;
+ dates.forEach(date=>rides.forEach(ride=>empty+=Math.max(0,ride.staffNeeded-(generated[`${date}|${ride.id}`]||[]).length)));
+ $("staffStat").textContent=data.staff.filter(x=>x.active!==false).length;
+ $("rideStat").textContent=rides.length;$("dayStat").textContent=dates.length;$("emptyStat").textContent=empty;
 }
 function renderLists(){
-  const staff=[...data.staff].sort((a,b)=>a.order-b.order);
-  document.getElementById("staffCount").textContent=`${staff.length} people`;
-  document.getElementById("staffList").innerHTML=staff.length ? staff.map(person=>`
-    <div class="list-item">
-      <div><div class="item-name">${esc(person.name)}</div><div class="item-sub">${person.active?"Active":"Hidden"}</div></div>
-      <div class="item-actions">
-        <button class="icon-btn toggle-staff" data-id="${person.id}">${person.active?"Hide":"Show"}</button>
-        <button class="icon-btn danger remove-staff" data-id="${person.id}">×</button>
-      </div>
-    </div>`).join("") : '<div class="small">No staff added.</div>';
-
-  const rides=[...data.rides].sort((a,b)=>a.order-b.order);
-  document.getElementById("rideCount").textContent=`${rides.length} rides`;
-  document.getElementById("rideList").innerHTML=rides.length ? rides.map(ride=>`
-    <div class="list-item">
-      <div><div class="item-name">${esc(ride.name)}</div><div class="item-sub">${ride.active?"Shown":"Hidden"}</div></div>
-      <div class="item-actions">
-        <input class="needed-input" data-id="${ride.id}" type="number" min="1" max="10" value="${ride.staffNeeded}" style="width:58px;padding:7px">
-        <button class="icon-btn toggle-ride" data-id="${ride.id}">${ride.active?"Hide":"Show"}</button>
-        <button class="icon-btn danger remove-ride" data-id="${ride.id}">×</button>
-      </div>
-    </div>`).join("") : '<div class="small">No rides added.</div>';
-
-  document.querySelectorAll(".toggle-staff").forEach(button=>button.addEventListener("click",()=>toggleStaff(button.dataset.id)));
-  document.querySelectorAll(".remove-staff").forEach(button=>button.addEventListener("click",()=>removeStaff(button.dataset.id)));
-  document.querySelectorAll(".toggle-ride").forEach(button=>button.addEventListener("click",()=>toggleRide(button.dataset.id)));
-  document.querySelectorAll(".remove-ride").forEach(button=>button.addEventListener("click",()=>removeRide(button.dataset.id)));
-  document.querySelectorAll(".needed-input").forEach(input=>input.addEventListener("change",()=>setNeeded(input.dataset.id,input.value)));
+ $("staffCount").textContent=`${data.staff.length} people`;
+ $("staffList").innerHTML=data.staff.length?data.staff.map(s=>`<div class="item"><div class="item-main"><div class="item-name">${esc(s.name)}</div><div class="item-sub">Available for automatic assignment</div></div><div class="actions"><button class="icon-btn danger remove-staff" data-id="${s.id}" title="Remove">×</button></div></div>`).join(""):'<div class="empty-box">No staff added yet.</div>';
+ $("rideCount").textContent=`${data.rides.length} rides`;
+ $("rideList").innerHTML=data.rides.length?data.rides.map(r=>`<div class="item"><div class="item-main"><div class="item-name">${esc(r.name)}</div><div class="item-sub">Required every day</div></div><div class="actions"><input class="needed" data-id="${r.id}" type="number" min="1" max="10" value="${r.staffNeeded}" aria-label="Staff needed for ${esc(r.name)}" style="width:64px;padding:8px"><button class="icon-btn danger remove-ride" data-id="${r.id}" title="Remove">×</button></div></div>`).join(""):'<div class="empty-box">No rides added yet.</div>';
+ document.querySelectorAll(".remove-staff").forEach(b=>b.onclick=()=>{if(!confirm("Remove this staff member?"))return;data.staff=data.staff.filter(x=>x.id!==b.dataset.id);Object.keys(data.daysOff).forEach(d=>data.daysOff[d]=data.daysOff[d].filter(id=>id!==b.dataset.id));Object.keys(data.manualAssignments).forEach(k=>data.manualAssignments[k]=data.manualAssignments[k].filter(id=>id!==b.dataset.id));refresh();});
+ document.querySelectorAll(".remove-ride").forEach(b=>b.onclick=()=>{if(!confirm("Remove this ride?"))return;data.rides=data.rides.filter(x=>x.id!==b.dataset.id);Object.keys(data.manualAssignments).filter(k=>k.endsWith("|"+b.dataset.id)).forEach(k=>delete data.manualAssignments[k]);refresh();});
+ document.querySelectorAll(".needed").forEach(i=>i.onchange=()=>{const r=data.rides.find(x=>x.id===i.dataset.id);r.staffNeeded=Math.max(1,Math.min(10,Number(i.value)||1));refresh();});
 }
 function renderRota(){
-  const dates=monthDates(monthInput.value);
-  const rides=data.rides.filter(ride=>ride.active).sort((a,b)=>a.order-b.order);
-  const staff=data.staff.filter(person=>person.active).sort((a,b)=>a.order-b.order);
-  const map=staffById(data);
-
-  document.getElementById("summary").innerHTML=
-    `<span class="summary-chip">${dates.length} days</span>`+
-    `<span class="summary-chip">${staff.length} active staff</span>`+
-    `<span class="summary-chip">${rides.length} rides</span>`;
-
-  if(!rides.length){
-    document.getElementById("rota").innerHTML='<div class="empty-state">Add at least one ride to create the monthly rota.</div>';
-    return;
-  }
-
-  let html='<table class="rota"><thead><tr><th>Date</th>';
-  rides.forEach(ride=>html+=`<th class="ride-head"><strong>${esc(ride.name)}</strong><span>${ride.staffNeeded} staff needed</span></th>`);
-  html+='</tr></thead><tbody>';
-
-  dates.forEach(date=>{
-    const offCount=(data.daysOff[date]||[]).length;
-    html+=`<tr><td class="date-cell"><strong>${niceDate(date)}</strong><span>${offCount} off</span><button class="btn btn-light dayoff-btn" data-date="${date}">Days off</button></td>`;
-    rides.forEach(ride=>{
-      const key=`${date}|${ride.id}`;
-      const ids=generated[key]||[];
-      html+='<td>';
-      for(let slot=0;slot<ride.staffNeeded;slot++){
-        const selected=ids[slot]||"";
-        html+=`<select class="assignment-select" data-date="${date}" data-ride="${ride.id}" data-slot="${slot}"><option value="">Unfilled</option>`;
-        staff.forEach(person=>{
-          const off=(data.daysOff[date]||[]).includes(person.id);
-          html+=`<option value="${person.id}" ${selected===person.id?"selected":""} ${off?"disabled":""}>${esc(person.name)}${off?" (off)":""}</option>`;
-        });
-        html+='</select>';
-      }
-      html+='</td>';
-    });
-    html+='</tr>';
-  });
-  html+='</tbody></table>';
-  document.getElementById("rota").innerHTML=html;
-
-  document.querySelectorAll(".dayoff-btn").forEach(button=>button.addEventListener("click",()=>openDaysOff(button.dataset.date)));
-  document.querySelectorAll(".assignment-select").forEach(select=>select.addEventListener("change",()=>manualSet(
-    select.dataset.date,select.dataset.ride,Number(select.dataset.slot),select.value
-  )));
+ const dates=monthDates(month.value),rides=data.rides.filter(x=>x.active!==false),staff=data.staff.filter(x=>x.active!==false),map=Object.fromEntries(staff.map(s=>[s.id,s]));
+ if(!rides.length){$("rota").innerHTML='<div class="empty-box" style="margin:18px">Add at least one ride using the Rides tab.</div>';return;}
+ let html='<table class="rota"><thead><tr><th>Date</th>';rides.forEach(r=>html+=`<th class="ride-head"><strong>${esc(r.name)}</strong><span>${r.staffNeeded} staff required</span></th>`);html+='</tr></thead><tbody>';
+ dates.forEach(date=>{const offIds=data.daysOff[date]||[],offNames=offIds.map(id=>map[id]?.name).filter(Boolean);html+=`<tr class="${isWeekend(date)?"weekend":""}"><td><div class="date-title">${niceDate(date)}</div><div class="date-meta">${date}</div><div class="off-summary">${offNames.length?esc(offNames.join(", "))+" off":"Nobody off"}</div><button class="btn btn-secondary dayoff" data-date="${date}">Manage days off</button></td>`;
+  rides.forEach(r=>{const ids=generated[`${date}|${r.id}`]||[];html+='<td>';for(let slot=0;slot<r.staffNeeded;slot++){const selected=ids[slot]||"";html+=`<select class="assign ${selected?"":"unfilled"}" data-date="${date}" data-ride="${r.id}" data-slot="${slot}"><option value="">Needs cover</option>`;staff.forEach(s=>{const off=offIds.includes(s.id);html+=`<option value="${s.id}" ${selected===s.id?"selected":""} ${off?"disabled":""}>${esc(s.name)}${off?" — off":""}</option>`});html+='</select>';}html+='</td>';});
+  html+='</tr>';
+ });html+='</tbody></table>';$("rota").innerHTML=html;
+ document.querySelectorAll(".dayoff").forEach(b=>b.onclick=()=>openDaysOff(b.dataset.date));
+ document.querySelectorAll(".assign").forEach(s=>s.onchange=()=>manualSet(s.dataset.date,s.dataset.ride,Number(s.dataset.slot),s.value));
 }
-function toggleStaff(id){const person=data.staff.find(item=>item.id===id);person.active=!person.active;refresh();}
-function removeStaff(id){
-  if(!confirm("Remove this staff member?")) return;
-  data.staff=data.staff.filter(item=>item.id!==id);
-  Object.keys(data.daysOff).forEach(date=>data.daysOff[date]=data.daysOff[date].filter(item=>item!==id));
-  Object.keys(data.manualAssignments).forEach(key=>data.manualAssignments[key]=data.manualAssignments[key].filter(item=>item!==id));
-  refresh();
-}
-function toggleRide(id){const ride=data.rides.find(item=>item.id===id);ride.active=!ride.active;refresh();}
-function removeRide(id){
-  if(!confirm("Remove this ride?")) return;
-  data.rides=data.rides.filter(item=>item.id!==id);
-  Object.keys(data.manualAssignments).filter(key=>key.endsWith("|"+id)).forEach(key=>delete data.manualAssignments[key]);
-  refresh();
-}
-function setNeeded(id,value){
-  const ride=data.rides.find(item=>item.id===id);
-  ride.staffNeeded=Math.max(1,Math.min(10,Number(value)||1));
-  refresh();
-}
-function manualSet(date,rideId,slot,staffId){
-  const key=`${date}|${rideId}`;
-  const ride=data.rides.find(item=>item.id===rideId);
-  const current=Array.isArray(data.manualAssignments[key])
-    ? [...data.manualAssignments[key]]
-    : [...(generated[key]||[])];
-
-  while(current.length<ride.staffNeeded) current.push("");
-  current[slot]=staffId;
-  data.manualAssignments[key]=current.filter(Boolean);
-  generated=automaticAssignments(data,monthDates(monthInput.value));
-  renderRota();
-}
-function openDaysOff(date){
-  editingDate=date;
-  document.getElementById("modalTitle").textContent=`Days off — ${niceDate(date)}`;
-  const current=new Set(data.daysOff[date]||[]);
-  const staff=data.staff.filter(person=>person.active).sort((a,b)=>a.order-b.order);
-  document.getElementById("daysOffList").innerHTML=staff.length ? staff.map(person=>`
-    <label class="check-row">
-      <input class="off-check" type="checkbox" value="${person.id}" ${current.has(person.id)?"checked":""}>
-      <span>${esc(person.name)}</span>
-    </label>`).join("") : '<div class="small">Add staff first.</div>';
-  modal.classList.add("show");
-}
-function closeDaysOff(){modal.classList.remove("show");editingDate=null;}
-function applyDaysOff(){
-  if(!editingDate) return;
-  const selected=[...document.querySelectorAll(".off-check:checked")].map(input=>input.value);
-  data.daysOff[editingDate]=selected;
-
-  Object.keys(data.manualAssignments)
-    .filter(key=>key.startsWith(editingDate+"|"))
-    .forEach(key=>{
-      data.manualAssignments[key]=data.manualAssignments[key].filter(id=>!selected.includes(id));
-      if(!data.manualAssignments[key].length) delete data.manualAssignments[key];
-    });
-
-  closeDaysOff();
-  refresh();
-  notice("Days off updated. Replacement staff have been assigned automatically.");
-}
-
-document.getElementById("addStaff").addEventListener("click",()=>{
-  const input=document.getElementById("newStaff");
-  const name=input.value.trim();
-  if(!name) return;
-  data.staff.push({id:crypto.randomUUID(),name,active:true,order:data.staff.length});
-  input.value="";
-  refresh();
-});
-document.getElementById("addRide").addEventListener("click",()=>{
-  const input=document.getElementById("newRide");
-  const name=input.value.trim();
-  if(!name) return;
-  data.rides.push({id:crypto.randomUUID(),name,staffNeeded:1,active:true,order:data.rides.length});
-  input.value="";
-  refresh();
-});
-document.getElementById("regenerateBtn").addEventListener("click",()=>{
-  const dates=new Set(monthDates(monthInput.value));
-  Object.keys(data.manualAssignments).forEach(key=>{
-    if(dates.has(key.split("|")[0])) delete data.manualAssignments[key];
-  });
-  refresh();
-  notice("The full month has been regenerated.");
-});
-document.getElementById("saveBtn").addEventListener("click",async()=>{
-  const key=adminKey.value.trim();
-  if(!key){notice("Enter the admin password.","error");return;}
-  localStorage.setItem("rotaAdminKey",key);
-  try{
-    const response=await fetch(API+"/data",{
-      method:"PUT",
-      headers:{"Content-Type":"application/json","X-Admin-Key":key},
-      body:JSON.stringify(data)
-    });
-    const body=await response.json();
-    if(!response.ok) throw new Error(body.error);
-    data=body;
-    refresh();
-    notice("Monthly rota saved and published to the viewer page.");
-  }catch(error){notice(error.message,"error");}
-});
-monthInput.addEventListener("change",refresh);
-document.getElementById("closeModal").addEventListener("click",closeDaysOff);
-document.getElementById("cancelModal").addEventListener("click",closeDaysOff);
-document.getElementById("applyDaysOff").addEventListener("click",applyDaysOff);
-modal.addEventListener("click",event=>{if(event.target===modal) closeDaysOff();});
+function openDaysOff(date){editingDate=date;$("modalTitle").textContent="Days off — "+niceDate(date);const current=new Set(data.daysOff[date]||[]);$("checks").innerHTML=data.staff.length?data.staff.map(s=>`<label class="check"><input class="offcheck" type="checkbox" value="${s.id}" ${current.has(s.id)?"checked":""}><span>${esc(s.name)}</span></label>`).join(""):'<div class="empty-box">Add staff first.</div>';modal.classList.add("show");}
+function closeModal(){modal.classList.remove("show");editingDate=null;}
+function manualSet(date,rideId,slot,staffId){const key=`${date}|${rideId}`,ride=data.rides.find(r=>r.id===rideId),current=Array.isArray(data.manualAssignments[key])?[...data.manualAssignments[key]]:[...(generated[key]||[])];while(current.length<ride.staffNeeded)current.push("");current[slot]=staffId;data.manualAssignments[key]=current.filter(Boolean);refresh();}
+$("addStaff").onclick=()=>{const i=$("newStaff"),name=i.value.trim();if(!name)return flash("Enter a staff name.","error");data.staff.push({id:crypto.randomUUID(),name,active:true,order:data.staff.length});i.value="";refresh();flash(`${name} added.`);};
+$("newStaff").addEventListener("keydown",e=>{if(e.key==="Enter")$("addStaff").click();});
+$("addRide").onclick=()=>{const i=$("newRide"),name=i.value.trim();if(!name)return flash("Enter a ride name.","error");data.rides.push({id:crypto.randomUUID(),name,staffNeeded:1,active:true,order:data.rides.length});i.value="";refresh();flash(`${name} added.`);};
+$("newRide").addEventListener("keydown",e=>{if(e.key==="Enter")$("addRide").click();});
+$("apply").onclick=()=>{if(!editingDate)return;data.daysOff[editingDate]=[...document.querySelectorAll(".offcheck:checked")].map(i=>i.value);Object.keys(data.manualAssignments).filter(k=>k.startsWith(editingDate+"|")).forEach(k=>{data.manualAssignments[k]=data.manualAssignments[k].filter(id=>!data.daysOff[editingDate].includes(id));if(!data.manualAssignments[k].length)delete data.manualAssignments[k];});closeModal();refresh();flash("Days off updated and replacement cover assigned.");};
+$("cancel").onclick=closeModal;$("closeModal").onclick=closeModal;modal.onclick=e=>{if(e.target===modal)closeModal();};
+$("resetMonth").onclick=()=>{if(!confirm("Clear manual assignment changes for this month?"))return;const dates=new Set(monthDates(month.value));Object.keys(data.manualAssignments).forEach(k=>{if(dates.has(k.split("|")[0]))delete data.manualAssignments[k];});refresh();flash("Manual changes cleared. The month was regenerated.");};
+$("currentMonth").onclick=()=>{month.value=new Date().toISOString().slice(0,7);refresh();};month.onchange=refresh;
+$("exportBtn").onclick=()=>{data.updatedAt=new Date().toISOString();const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="rota-data.json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);flash("Downloaded rota-data.json. Replace the old file in GitHub.");};
+document.querySelectorAll(".tab").forEach(tab=>tab.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));tab.classList.add("active");$(tab.dataset.panel).classList.add("active");});
 load();
 </script>
-</body></html>
+</body>
+</html>
