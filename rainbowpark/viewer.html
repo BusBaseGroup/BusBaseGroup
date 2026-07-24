@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Monthly Staff Rota</title>
+<style>
+:root{
+  --bg:#edf1f3;--panel:#fff;--ink:#17201e;--muted:#65706c;--line:#d8dfdc;
+  --brand:#176452;--brand-dark:#10483d;--soft:#e8f4f0;--danger:#a9281f;
+  --off:#fff0ee;--empty:#fff5d8;--shadow:0 12px 32px rgba(21,45,38,.08)
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input,select{font:inherit}
+header{background:#102923;color:#fff;position:sticky;top:0;z-index:30}
+.header-inner{max-width:1500px;margin:auto;padding:15px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.brand{display:flex;align-items:center;gap:11px}.logo{width:42px;height:42px;border-radius:12px;background:#5bd1af;color:#102923;display:grid;place-items:center;font-weight:900}
+.brand h1{font-size:18px;margin:0}.brand p{font-size:12px;color:#c4d3cf;margin:3px 0 0}.nav a{color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:9px 12px}
+main{max-width:1500px;margin:25px auto;padding:0 16px 48px}.hero{display:flex;align-items:end;justify-content:space-between;gap:15px;margin-bottom:16px}
+.hero h2{font-size:30px;letter-spacing:-.04em;margin:0 0 6px}.hero p{margin:0;color:var(--muted)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:17px;box-shadow:var(--shadow)}
+.toolbar{display:flex;gap:10px;align-items:end;flex-wrap:wrap;padding:14px;margin-bottom:15px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:180px}.field.grow{flex:1}
+label{font-size:12px;font-weight:800;color:#4e5955}
+input,select{width:100%;border:1px solid #c8d1cd;border-radius:10px;padding:10px 11px;background:#fff;color:var(--ink);outline:none}
+input:focus,select:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(23,100,82,.12)}
+.btn{border:0;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}.btn-primary{background:var(--brand);color:#fff}.btn-primary:hover{background:var(--brand-dark)}
+.btn-light{background:#edf2f0;color:#23473e}.btn-danger{background:#fff0ee;color:var(--danger)}.btn:disabled{opacity:.55;cursor:not-allowed}
+.notice{display:none;padding:12px 14px;border-radius:11px;margin-bottom:14px}.notice.show{display:block}.notice.ok{background:#e4f5ee;color:#176048}.notice.error{background:#feeceb;color:#98251c}
+.layout{display:grid;grid-template-columns:310px minmax(0,1fr);gap:15px}.sidebar{padding:15px;height:max-content}.section+.section{margin-top:22px}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}.section-head h3{font-size:15px;margin:0}.small{font-size:11px;color:var(--muted)}
+.list{display:flex;flex-direction:column;gap:7px}.list-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px;border:1px solid var(--line);border-radius:11px}
+.item-name{font-weight:800;overflow:hidden;text-overflow:ellipsis}.item-sub{font-size:11px;color:var(--muted);margin-top:2px}.item-actions{display:flex;gap:5px;align-items:center}
+.icon-btn{border:0;border-radius:8px;background:#eff3f1;padding:7px 9px;cursor:pointer}.icon-btn.danger{color:var(--danger)}
+.add-row{display:flex;gap:7px;margin-top:8px}.add-row input{min-width:0}.month-wrap{overflow:auto;border-radius:17px}
+.rota{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%;background:#fff}.rota th,.rota td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px;vertical-align:top}
+.rota thead th{background:#f7f9f8;position:sticky;top:72px;z-index:6}.rota thead th:first-child{left:0;z-index:10}
+.rota td:first-child{position:sticky;left:0;background:#fff;z-index:4;min-width:135px}.date-cell strong{display:block}.date-cell span{font-size:11px;color:var(--muted)}
+.ride-head{min-width:175px}.ride-head strong{display:block}.ride-head span{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+.assignment{display:block;width:100%;border:1px solid #cbd6d2;background:#edf7f3;border-radius:9px;padding:7px;margin-bottom:5px;font-size:12px;font-weight:750}
+.assignment.empty{background:var(--empty);border-color:#e5d391;color:#795d06}.assignment.off{background:var(--off);border-color:#efc4bf;color:#9c291f}
+.dayoff-btn{margin-top:6px;width:100%;font-size:11px;padding:6px}.empty-state{padding:40px;text-align:center;color:var(--muted)}
+.modal{display:none;position:fixed;inset:0;background:rgba(8,27,22,.58);z-index:50;align-items:center;justify-content:center;padding:16px}.modal.show{display:flex}
+.modal-card{width:min(560px,100%);max-height:90vh;overflow:auto;padding:20px}.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.modal-head h3{margin:0}
+.check-list{display:grid;grid-template-columns:1fr 1fr;gap:8px}.check-row{display:flex;gap:9px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:9px}.check-row input{width:auto}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:15px}
+.summary{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.summary-chip{background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 10px;font-size:12px}
+@media(max-width:920px){.layout{grid-template-columns:1fr}.sidebar{order:2}}
+@media(max-width:650px){.header-inner{padding:12px}.brand p{display:none}.hero{flex-direction:column;align-items:stretch}.hero h2{font-size:26px}.toolbar>*{width:100%}.field{min-width:100%}.check-list{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="header-inner">
+  <div class="brand"><div class="logo">R</div><div><h1>Monthly Staff Rota</h1><p>Public ride assignments</p></div></div>
+  <div class="nav"><a href="maker.html">Maker page</a></div>
+</div></header>
+<main>
+  <section class="hero"><div><h2>Monthly rota</h2><p>Days off are automatically covered by another available staff member.</p></div></section>
+  <div id="notice" class="notice"></div>
+  <section class="card toolbar">
+    <div class="field"><label for="month">Month</label><input id="month" type="month"></div>
+    <button id="currentMonth" class="btn btn-light">Current month</button>
+  </section>
+  <div id="summary" class="summary"></div>
+  <section class="card month-wrap"><div id="rota"></div></section>
+</main>
+<script src="config.js"></script>
+<script>
+function esc(value){
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+  }[char]));
+}
+function dateISO(date){ return date.toISOString().slice(0,10); }
+function parseDate(value){ return new Date(value + "T12:00:00"); }
+function monthDates(monthValue){
+  const [year, month] = monthValue.split("-").map(Number);
+  const dates = [];
+  const last = new Date(year, month, 0).getDate();
+  for(let day=1; day<=last; day++){
+    dates.push(`${year}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}`);
+  }
+  return dates;
+}
+function niceDate(value){
+  return parseDate(value).toLocaleDateString("en-GB", {weekday:"short",day:"numeric",month:"short"});
+}
+function staffById(data){ return Object.fromEntries(data.staff.map(person => [person.id, person])); }
+
+function automaticAssignments(data, dates){
+  const result = {};
+  const totalLoad = {};
+  const recentRide = {};
+  const activeStaff = data.staff.filter(person => person.active)
+    .sort((a,b) => a.order-b.order || a.name.localeCompare(b.name));
+  const activeRides = data.rides.filter(ride => ride.active)
+    .sort((a,b) => a.order-b.order || a.name.localeCompare(b.name));
+
+  activeStaff.forEach(person => totalLoad[person.id] = 0);
+
+  for(const date of dates){
+    const off = new Set(data.daysOff[date] || []);
+    const usedToday = new Set();
+
+    for(const ride of activeRides){
+      const key = `${date}|${ride.id}`;
+      const manuallyChosen = Array.isArray(data.manualAssignments[key])
+        ? data.manualAssignments[key].filter(id =>
+            activeStaff.some(person => person.id === id) && !off.has(id)
+          )
+        : null;
+
+      if(manuallyChosen){
+        result[key] = manuallyChosen.slice(0, ride.staffNeeded);
+        result[key].forEach(id => {
+          usedToday.add(id);
+          totalLoad[id] = (totalLoad[id] || 0) + 1;
+          recentRide[id] = ride.id;
+        });
+        continue;
+      }
+
+      const chosen = [];
+      for(let slot=0; slot<ride.staffNeeded; slot++){
+        const candidates = activeStaff
+          .filter(person =>
+            !off.has(person.id) &&
+            !usedToday.has(person.id) &&
+            !chosen.includes(person.id)
+          )
+          .sort((a,b) => {
+            const aSameRide = recentRide[a.id] === ride.id ? 1 : 0;
+            const bSameRide = recentRide[b.id] === ride.id ? 1 : 0;
+            return aSameRide-bSameRide ||
+              (totalLoad[a.id]||0)-(totalLoad[b.id]||0) ||
+              a.order-b.order ||
+              a.name.localeCompare(b.name);
+          });
+
+        if(!candidates.length) break;
+        const chosenPerson = candidates[0];
+        chosen.push(chosenPerson.id);
+        usedToday.add(chosenPerson.id);
+        totalLoad[chosenPerson.id] = (totalLoad[chosenPerson.id] || 0) + 1;
+        recentRide[chosenPerson.id] = ride.id;
+      }
+      result[key] = chosen;
+    }
+  }
+  return result;
+}
+</script>
+<script>
+const API = window.ROTA_CONFIG.API_URL.replace(/\/$/,"");
+let data = null;
+const monthInput = document.getElementById("month");
+monthInput.value = new Date().toISOString().slice(0,7);
+
+function notice(message,type="error"){
+  const box=document.getElementById("notice");
+  box.textContent=message;
+  box.className="notice show "+type;
+}
+async function load(){
+  if(API.includes("YOUR-WORKER")){notice("Paste your Worker URL into config.js.");return;}
+  try{
+    const response=await fetch(API+"/data");
+    const body=await response.json();
+    if(!response.ok) throw new Error(body.error);
+    data=body;
+    render();
+  }catch(error){notice(error.message);}
+}
+function render(){
+  if(!data) return;
+  const dates=monthDates(monthInput.value);
+  const rides=data.rides.filter(ride=>ride.active).sort((a,b)=>a.order-b.order);
+  const map=staffById(data);
+  const assignments=automaticAssignments(data,dates);
+
+  document.getElementById("summary").innerHTML=
+    `<span class="summary-chip">${dates.length} days</span>`+
+    `<span class="summary-chip">${data.staff.filter(x=>x.active).length} active staff</span>`+
+    `<span class="summary-chip">${rides.length} rides</span>`;
+
+  if(!rides.length){
+    document.getElementById("rota").innerHTML='<div class="empty-state">No rides have been added.</div>';
+    return;
+  }
+
+  let html='<table class="rota"><thead><tr><th>Date</th>';
+  rides.forEach(ride=>{
+    html+=`<th class="ride-head"><strong>${esc(ride.name)}</strong><span>${ride.staffNeeded} staff needed</span></th>`;
+  });
+  html+='</tr></thead><tbody>';
+
+  dates.forEach(date=>{
+    html+=`<tr><td class="date-cell"><strong>${niceDate(date)}</strong><span>${date}</span></td>`;
+    rides.forEach(ride=>{
+      const ids=assignments[`${date}|${ride.id}`]||[];
+      html+='<td>';
+      ids.forEach(id=>html+=`<div class="assignment">${esc(map[id]?.name||"Unknown")}</div>`);
+      for(let i=ids.length;i<ride.staffNeeded;i++) html+='<div class="assignment empty">Unfilled</div>';
+      html+='</td>';
+    });
+    html+='</tr>';
+  });
+
+  html+='</tbody></table>';
+  document.getElementById("rota").innerHTML=html;
+}
+monthInput.addEventListener("change",render);
+document.getElementById("currentMonth").addEventListener("click",()=>{
+  monthInput.value=new Date().toISOString().slice(0,7);
+  render();
+});
+load();
+</script>
+</body></html>
