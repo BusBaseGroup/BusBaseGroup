@@ -345,6 +345,7 @@ async function routeChanged() {
     console.error(error);
     el.routeLoadedBadge.textContent = "Route failed";
     showError(
+      error?.message ||
       `The file routes/route-${route}.js could not be loaded.`
     );
   }
@@ -363,7 +364,7 @@ function loadRouteScript(route) {
     }
 
     const script = document.createElement("script");
-    script.src = `routes/route-${route}.js`;
+    script.src = `routes/route-${route}.js?v=${Date.now()}`;
     script.async = true;
 
     script.onload = resolve;
