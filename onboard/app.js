@@ -689,6 +689,32 @@ function gpsUpdated(position) {
 
   state.accuracy = coords.accuracy;
 
+  /*
+   * On the first reliable GPS update, move the journey to the stop
+   * nearest to the phone. This means the system works even when the
+   * journey is started part-way along the route.
+   */
+  if (
+    state.stops.length &&
+    Number.isFinite(state.position.lat) &&
+    Number.isFinite(state.position.lng)
+  ) {
+    const nearestIndex = findNearestStopIndex();
+
+    if (
+      nearestIndex !== -1 &&
+      (
+        state.currentStopIndex === 0 ||
+        distanceToStop(state.stops[nearestIndex]) + 150 <
+          distanceToStop(getCurrentStop())
+      )
+    ) {
+      state.currentStopIndex = nearestIndex;
+      state.stationarySince = null;
+      updatePassengerDisplay();
+    }
+  }
+
   el.gpsStatus.textContent = "Active";
   el.gpsAccuracyBadge.textContent =
     `Accurate to ${Math.round(state.accuracy)} m`;
@@ -715,6 +741,39 @@ function gpsFailed(error) {
   el.gpsAccuracyBadge.textContent = "Unavailable";
 
   showError(message);
+}
+
+function distanceToStop(stop) {
+  if (!stop || !state.position) {
+    return Infinity;
+  }
+
+  return distanceMetres(
+    state.position.lat,
+    state.position.lng,
+    stop.lat,
+    stop.lng
+  );
+}
+
+function findNearestStopIndex() {
+  if (!state.position || !state.stops.length) {
+    return -1;
+  }
+
+  let nearestIndex = -1;
+  let nearestDistance = Infinity;
+
+  state.stops.forEach((stop, index) => {
+    const distance = distanceToStop(stop);
+
+    if (distance < nearestDistance) {
+      nearestDistance = distance;
+      nearestIndex = index;
+    }
+  });
+
+  return nearestIndex;
 }
 
 function processLocation() {
