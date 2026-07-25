@@ -872,7 +872,6 @@ window.LYNX_ROUTES = window.LYNX_ROUTES || {};
       nextRadius: 320
     })
   ];
-    ];
 
   const outboundDepartures = [
     "06:10",
@@ -936,8 +935,6 @@ window.LYNX_ROUTES = window.LYNX_ROUTES || {};
     "21:05",
     "22:05"
   ];
-
-  function buildStops(pattern, departureTime) {
 
   function buildStops(pattern, departureTime) {
     return pattern.map(stop => ({
