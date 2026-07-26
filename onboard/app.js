@@ -55,6 +55,7 @@ const state = {
 
   active: false,
   currentStopIndex: 0,
+  atStop: false,
 
   gpsWatchId: null,
   position: null,
@@ -345,7 +346,6 @@ async function routeChanged() {
     console.error(error);
     el.routeLoadedBadge.textContent = "Route failed";
     showError(
-      error?.message ||
       `The file routes/route-${route}.js could not be loaded.`
     );
   }
@@ -561,7 +561,9 @@ function prepareStops(stops) {
     specialAnnouncement:
       stop.specialAnnouncement || null,
     connectionMessage:
-      stop.connectionMessage || null
+      stop.connectionMessage || null,
+    preArrivalAnnouncement:
+      stop.preArrivalAnnouncement || null
   }));
 }
 
@@ -608,10 +610,22 @@ function updateLinkedJourneyNotice() {
   el.linkedJourneyNotice.classList.remove("hidden");
 }
 
-function startJourney() {
+async function startJourney() {
   if (!state.departure || !state.stops.length) {
     showError("Select a valid journey and departure first.");
     return;
+  }
+
+  if (state.routeData?.ready) {
+    el.systemStatus.textContent = "Loading official stop locations";
+    try {
+      await state.routeData.ready;
+      const selected = state.departure.stops;
+      state.stops = prepareStops(selected);
+    } catch (error) {
+      showError(error?.message || "Official stop coordinates could not be loaded.");
+      return;
+    }
   }
 
   stopJourney(false);
@@ -689,32 +703,6 @@ function gpsUpdated(position) {
 
   state.accuracy = coords.accuracy;
 
-  /*
-   * On the first reliable GPS update, move the journey to the stop
-   * nearest to the phone. This means the system works even when the
-   * journey is started part-way along the route.
-   */
-  if (
-    state.stops.length &&
-    Number.isFinite(state.position.lat) &&
-    Number.isFinite(state.position.lng)
-  ) {
-    const nearestIndex = findNearestStopIndex();
-
-    if (
-      nearestIndex !== -1 &&
-      (
-        state.currentStopIndex === 0 ||
-        distanceToStop(state.stops[nearestIndex]) + 150 <
-          distanceToStop(getCurrentStop())
-      )
-    ) {
-      state.currentStopIndex = nearestIndex;
-      state.stationarySince = null;
-      updatePassengerDisplay();
-    }
-  }
-
   el.gpsStatus.textContent = "Active";
   el.gpsAccuracyBadge.textContent =
     `Accurate to ${Math.round(state.accuracy)} m`;
@@ -743,39 +731,6 @@ function gpsFailed(error) {
   showError(message);
 }
 
-function distanceToStop(stop) {
-  if (!stop || !state.position) {
-    return Infinity;
-  }
-
-  return distanceMetres(
-    state.position.lat,
-    state.position.lng,
-    stop.lat,
-    stop.lng
-  );
-}
-
-function findNearestStopIndex() {
-  if (!state.position || !state.stops.length) {
-    return -1;
-  }
-
-  let nearestIndex = -1;
-  let nearestDistance = Infinity;
-
-  state.stops.forEach((stop, index) => {
-    const distance = distanceToStop(stop);
-
-    if (distance < nearestDistance) {
-      nearestDistance = distance;
-      nearestIndex = index;
-    }
-  });
-
-  return nearestIndex;
-}
-
 function processLocation() {
   const stop = getCurrentStop();
 
@@ -793,6 +748,12 @@ function processLocation() {
   el.distanceDisplay.textContent = formatDistance(distance);
   el.currentStopDisplay.textContent = stop.name;
   el.scheduledTimeDisplay.textContent = stop.time || "—";
+
+  const nowAtStop = distance <= stop.arrivalRadius && state.speedMph <= 4;
+  if (nowAtStop !== state.atStop) {
+    state.atStop = nowAtStop;
+    updatePassengerDisplay();
+  }
 
   updateRunningStatus(stop);
   processStopAnnouncements(stop, distance);
@@ -929,6 +890,7 @@ function processDeparture(stop, distance) {
 
   if (state.currentStopIndex < state.stops.length - 1) {
     state.currentStopIndex += 1;
+    state.atStop = false;
 
     state.earlyAnnouncementPlayed = false;
     state.departureThanksPlayed = false;
@@ -1025,11 +987,15 @@ function announceNextStop() {
     return;
   }
 
+  const extra = stop.preArrivalAnnouncement
+    ? ` ${cleanText(stop.preArrivalAnnouncement)}`
+    : "";
+
   playAnnouncement(
     `The next stop is ${cleanText(
       stop.announcementName
-    )}.`,
-    9000
+    )}.${extra}`,
+    extra ? 15000 : 9000
   );
 }
 
@@ -1466,6 +1432,16 @@ function updatePassengerDisplay() {
 
   el.displayDestination.textContent =
     getDestination();
+
+  const nextLabel =
+    document.getElementById("nextStopLabel") ||
+    document.querySelector("[data-next-stop-label]") ||
+    document.querySelector(".next-stop-label") ||
+    el.nextStopName?.previousElementSibling;
+
+  if (nextLabel) {
+    nextLabel.textContent = state.atStop ? "This stop" : "Next stop";
+  }
 
   el.nextStopName.textContent =
     stop?.name || "Journey complete";
