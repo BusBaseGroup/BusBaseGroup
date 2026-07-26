@@ -2213,7 +2213,11 @@ window.LYNX_ROUTES = window.LYNX_ROUTES || {};
     })
     .catch(error => {
       route.coordinateError = error;
+      route.coordinatesReady = false;
       console.error("Route 36 coordinate error:", error);
-      throw error;
+
+      // Keep Service 36 available even when the external NaPTAN
+      // request is blocked, unavailable or cannot match a stop.
+      return route;
     });
 })();
