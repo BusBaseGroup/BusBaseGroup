@@ -90,8 +90,8 @@ const state = {
     departureThanks: true
   },
 
-  nextRadiusMetres: 250,
-  arrivalRadiusMetres: 75,
+  nextRadiusMetres: 350,
+  arrivalRadiusMetres: 100,
   departureRadiusMetres: 130,
   stationarySpeedMph: 1,
   earlyThresholdSeconds: 60,
@@ -734,9 +734,7 @@ function gpsFailed(error) {
 function processLocation() {
   const stop = getCurrentStop();
 
-  if (!stop || !state.position) {
-    return;
-  }
+  if (!stop || !state.position) return;
 
   const distance = distanceMetres(
     state.position.lat,
@@ -749,9 +747,17 @@ function processLocation() {
   el.currentStopDisplay.textContent = stop.name;
   el.scheduledTimeDisplay.textContent = stop.time || "—";
 
-  const nowAtStop = distance <= stop.arrivalRadius && state.speedMph <= 4;
-  if (nowAtStop !== state.atStop) {
-    state.atStop = nowAtStop;
+  /*
+   * Route 36 passenger display:
+   * over 100 m  = NEXT STOP
+   * within 100 m = THIS STOP
+   * remain THIS STOP until the bus has left the stop
+   */
+  const thisStopNow =
+    distance <= stop.arrivalRadius;
+
+  if (thisStopNow && !state.atStop) {
+    state.atStop = true;
     updatePassengerDisplay();
   }
 
@@ -764,6 +770,7 @@ function processLocation() {
 function processStopAnnouncements(stop, distance) {
   const key = stopKey(stop);
 
+  /* Announce NEXT STOP once when the bus comes within 350 m. */
   if (
     state.settings.automaticNext &&
     distance <= stop.nextRadius &&
@@ -774,30 +781,19 @@ function processStopAnnouncements(stop, distance) {
     state.nextPlayed.add(key);
   }
 
+  /*
+   * At 100 m change the screen to THIS STOP and play one combined
+   * arrival/alight announcement. Do not repeat it while stationary.
+   */
   if (
     state.settings.automaticArrival &&
     distance <= stop.arrivalRadius &&
     !state.arrivalPlayed.has(key)
   ) {
+    state.atStop = true;
+    updatePassengerDisplay();
     announceArrival(stop);
     state.arrivalPlayed.add(key);
-
-    if (stop.connectionMessage) {
-      setTimeout(() => {
-        playConnectionAnnouncement(
-          stop.connectionMessage
-        );
-      }, 3500);
-    }
-
-    if (stop.specialAnnouncement) {
-      setTimeout(() => {
-        playAnnouncement(
-          stop.specialAnnouncement,
-          15000
-        );
-      }, 6500);
-    }
   }
 }
 
@@ -859,17 +855,16 @@ function processStationaryAnnouncements(stop, distance) {
 }
 
 function processDeparture(stop, distance) {
-  const hasArrived =
-    state.arrivalPlayed.has(stopKey(stop));
+  const key = stopKey(stop);
+  const hasReachedStop =
+    state.arrivalPlayed.has(key);
 
   const leaving =
-    hasArrived &&
+    hasReachedStop &&
     distance > state.departureRadiusMetres &&
     state.speedMph > 2;
 
-  if (!leaving) {
-    return;
-  }
+  if (!leaving) return;
 
   if (
     state.waitingBecauseEarly &&
@@ -877,11 +872,9 @@ function processDeparture(stop, distance) {
     !state.departureThanksPlayed
   ) {
     playAnnouncement(
-      "Thank you for your patience. " +
-      "We will now continue our journey.",
+      "Thank you for your patience. We will now continue our journey.",
       9000
     );
-
     state.departureThanksPlayed = true;
   }
 
@@ -890,8 +883,9 @@ function processDeparture(stop, distance) {
 
   if (state.currentStopIndex < state.stops.length - 1) {
     state.currentStopIndex += 1;
-    state.atStop = false;
 
+    /* Immediately show NEXT STOP for the following stop. */
+    state.atStop = false;
     state.earlyAnnouncementPlayed = false;
     state.departureThanksPlayed = false;
     state.lateAnnouncementPlayed = false;
@@ -982,20 +976,11 @@ function timeToday(value) {
 
 function announceNextStop() {
   const stop = getCurrentStop();
-
-  if (!stop) {
-    return;
-  }
-
-  const extra = stop.preArrivalAnnouncement
-    ? ` ${cleanText(stop.preArrivalAnnouncement)}`
-    : "";
+  if (!stop) return;
 
   playAnnouncement(
-    `The next stop is ${cleanText(
-      stop.announcementName
-    )}.${extra}`,
-    extra ? 15000 : 9000
+    `Next stop, ${cleanText(stop.announcementName)}.`,
+    9000
   );
 }
 
@@ -1015,12 +1000,51 @@ function announceArrival(stop) {
     return;
   }
 
+  const alight = getRoute36AlightMessage(stop);
+
   playAnnouncement(
-    `This stop is ${cleanText(
-      stop.announcementName
-    )}.`,
-    9000
+    `This stop, ${cleanText(stop.announcementName)}.` +
+    (alight ? ` ${cleanText(alight)}` : ""),
+    alight ? 14000 : 9000
   );
+}
+
+
+function getRoute36AlightMessage(stop) {
+  if (stop.alightMessage) return stop.alightMessage;
+
+  const name = String(stop.name || stop.announcementName || "")
+    .toLowerCase();
+
+  if (name.includes("hunstanton travel hub")) {
+    return "Alight here for Hunstanton Beach.";
+  }
+
+  if (name.includes("old hunstanton")) {
+    return "Alight here for Old Hunstanton Beach.";
+  }
+
+  if (name.includes("holme")) {
+    return "Alight here for the Norfolk Coast Path.";
+  }
+
+  if (name.includes("brancaster")) {
+    return "Alight here for Brancaster Beach.";
+  }
+
+  if (name.includes("holkham")) {
+    return "Alight here for Holkham Beach.";
+  }
+
+  if (name.includes("wells") && name.includes("quay")) {
+    return "Alight here for Wells Beach.";
+  }
+
+  if (name.includes("grove road")) {
+    return "Alight here for C H one to Cromer.";
+  }
+
+  return "";
 }
 
 function handleFinalStop(stop) {
