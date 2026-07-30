@@ -5,552 +5,342 @@
 
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
   >
 
-  <meta name="theme-color" content="#d71920">
+  <meta
+    name="theme-color"
+    content="#b40018"
+  >
 
-  <title>Lynx On-board Announcements</title>
+  <title>Onboard Passenger Information</title>
 
   <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-  <header class="main-header">
-    <div class="header-inner">
-      <div class="brand-mark">L</div>
-
-      <div class="header-text">
-        <h1>Lynx Announcements</h1>
-        <p>GPS passenger information system</p>
-      </div>
-
-      <div id="systemStatus" class="system-status">
-        Offline
-      </div>
+  <noscript>
+    <div class="noscript-warning">
+      JavaScript must be enabled to use the onboard passenger information
+      system.
     </div>
-  </header>
+  </noscript>
 
-  <main class="page">
+  <main id="app" class="app-shell">
 
-    <!-- Journey setup -->
-    <section class="card setup-card">
-      <div class="section-heading">
+    <!-- =========================================================
+         START / DRIVER SETUP SCREEN
+         ========================================================= -->
+    <section id="setupScreen" class="screen setup-screen">
+      <div class="setup-card">
+
+        <header class="setup-header">
+          <p class="eyebrow">Passenger information system</p>
+          <h1>Start a journey</h1>
+          <p class="setup-description">
+            Select the route, direction and journey before enabling GPS.
+          </p>
+        </header>
+
+        <form id="journeyForm" class="journey-form" autocomplete="off">
+
+          <label class="field">
+            <span class="field-label">Route</span>
+            <select id="routeSelect" required>
+              <option value="">Select route</option>
+              <option value="34">34</option>
+              <option value="35">35</option>
+              <option value="36">36</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span class="field-label">Direction</span>
+            <select id="directionSelect" required disabled>
+              <option value="">Select direction</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span class="field-label">Journey</span>
+            <select id="journeySelect" required disabled>
+              <option value="">Select journey</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span class="field-label">Vehicle</span>
+            <input
+              id="vehicleInput"
+              type="text"
+              inputmode="text"
+              placeholder="Optional fleet number or registration"
+            >
+          </label>
+
+          <div id="setupMessage" class="setup-message" role="status"></div>
+
+          <button id="startJourneyButton" class="primary-button" type="submit">
+            Start journey
+          </button>
+
+        </form>
+      </div>
+    </section>
+
+
+    <!-- =========================================================
+         PASSENGER DISPLAY
+         No BusBase logo and no journey progress bar.
+         ========================================================= -->
+    <section
+      id="passengerScreen"
+      class="screen passenger-screen is-hidden"
+      aria-live="polite"
+    >
+
+      <header class="service-header">
+        <div id="routeNumber" class="route-number">36</div>
+
+        <div class="destination-block">
+          <span class="destination-label">To</span>
+          <strong id="destinationName" class="destination-name">
+            Hunstanton
+          </strong>
+        </div>
+      </header>
+
+
+      <section id="normalDisplay" class="display-content">
+
+        <div id="stopStatePanel" class="stop-state-panel">
+          <p id="stopStateLabel" class="stop-state-label">
+            Next stop
+          </p>
+
+          <h2 id="currentStopName" class="current-stop-name">
+            Waiting for location
+          </h2>
+
+          <div
+            id="connectionMessage"
+            class="connection-message is-hidden"
+          ></div>
+        </div>
+
+
+        <div id="followingStopsPanel" class="following-panel">
+          <span class="following-label">Following</span>
+
+          <div class="following-stops">
+            <strong id="followingStopName">—</strong>
+            <span id="secondFollowingStopName" class="second-following-stop"></span>
+          </div>
+        </div>
+
+      </section>
+
+
+      <!-- CONTINUATION SCREEN:
+           Used when the 18:00 Route 36 from Fakenham reaches
+           Hunstanton and continues as Route 34 to King's Lynn. -->
+      <section
+        id="continuationDisplay"
+        class="special-display continuation-display is-hidden"
+      >
+        <p class="special-kicker">This bus continues as</p>
+
+        <div id="continuationRouteNumber" class="continuation-route-number">
+          34
+        </div>
+
+        <p class="special-destination">
+          To <strong id="continuationDestination">King's Lynn</strong>
+        </p>
+
+        <p class="special-message">
+          Please remain seated if you are continuing your journey.
+        </p>
+      </section>
+
+
+      <!-- DIVERSION / SERVICE DISRUPTION SCREEN -->
+      <section
+        id="disruptionDisplay"
+        class="special-display disruption-display is-hidden"
+      >
+        <p class="disruption-title">Service disruption</p>
+
+        <p class="disruption-message">
+          This bus is currently on diversion.
+        </p>
+
+        <p class="disruption-help">
+          Please listen for driver announcements.
+        </p>
+      </section>
+
+
+      <!-- TERMINUS SCREEN -->
+      <section
+        id="terminusDisplay"
+        class="special-display terminus-display is-hidden"
+      >
+        <p class="special-kicker">This bus terminates here</p>
+
+        <h2 id="terminusName" class="terminus-name">
+          Hunstanton
+        </h2>
+
+        <p class="special-message">
+          Please take all belongings with you.
+        </p>
+      </section>
+
+
+      <footer class="information-footer">
+
+        <time id="currentTime" class="clock" datetime="">
+          --:--
+        </time>
+
+        <div id="runningStatus" class="running-status running-on-time">
+          On time
+        </div>
+
+        <div id="gpsStatus" class="gps-status gps-waiting">
+          <span class="gps-dot" aria-hidden="true"></span>
+          <span id="gpsStatusText">Waiting for GPS</span>
+        </div>
+
+        <div id="vehicleDisplay" class="vehicle-display is-hidden"></div>
+
+      </footer>
+    </section>
+
+
+    <!-- =========================================================
+         DRIVER CONTROLS
+         Hidden during normal passenger use.
+         ========================================================= -->
+    <aside id="driverPanel" class="driver-panel is-hidden">
+
+      <div class="driver-panel-header">
         <div>
-          <span class="eyebrow">Driver setup</span>
-          <h2>Select journey</h2>
+          <p class="eyebrow">Driver controls</p>
+          <h2>Journey control</h2>
         </div>
 
-        <span id="routeLoadedBadge" class="badge">
-          No route loaded
-        </span>
+        <button
+          id="closeDriverPanelButton"
+          class="icon-button"
+          type="button"
+          aria-label="Close driver controls"
+        >
+          ×
+        </button>
       </div>
 
-      <div class="form-grid">
 
-        <div class="form-group">
-          <label for="routeSelect">Service</label>
-
-          <select id="routeSelect">
-            <option value="">Select a service</option>
-
-            <option value="33">33</option>
-            <option value="33A">33A</option>
-            <option value="33B">33B</option>
-            <option value="33C">33C</option>
-            <option value="34">34</option>
-            <option value="35">35</option>
-            <option value="36">36 Coastliner</option>
-            <option value="37">37</option>
-            <option value="38">38</option>
-            <option value="39">39</option>
-            <option value="41">41</option>
-            <option value="42">42 Fairstead</option>
-            <option value="43">43</option>
-            <option value="44">44 The Loop</option>
-            <option value="46">46</option>
-            <option value="X46">X46</option>
-            <option value="48">48</option>
-            <option value="49">49</option>
-            <option value="49A">49A</option>
-            <option value="54">54</option>
-            <option value="54A">54A</option>
-            <option value="60">60</option>
-            <option value="414">414</option>
-            <option value="415">415</option>
-          </select>
+      <div class="driver-status-grid">
+        <div class="driver-status-card">
+          <span>Current stop</span>
+          <strong id="driverCurrentStop">—</strong>
         </div>
 
-        <div class="form-group">
-          <label for="journeySelect">Journey</label>
-
-          <select id="journeySelect" disabled>
-            <option value="">Select a route first</option>
-          </select>
+        <div class="driver-status-card">
+          <span>Distance</span>
+          <strong id="driverDistance">—</strong>
         </div>
 
-        <div class="form-group">
-          <label for="directionSelect">Direction</label>
-
-          <select id="directionSelect" disabled>
-            <option value="">Select a journey first</option>
-          </select>
+        <div class="driver-status-card">
+          <span>GPS accuracy</span>
+          <strong id="driverAccuracy">—</strong>
         </div>
 
-        <div class="form-group">
-          <label for="departureSelect">Departure</label>
-
-          <select id="departureSelect" disabled>
-            <option value="">Select a direction first</option>
-          </select>
+        <div class="driver-status-card">
+          <span>Speed</span>
+          <strong id="driverSpeed">—</strong>
         </div>
       </div>
 
-      <div id="linkedJourneyNotice" class="notice hidden">
-        This journey continues as another service.
-      </div>
 
-      <div class="button-grid">
-        <button id="startJourneyButton" class="primary-button" disabled>
-          Start journey
+      <div class="driver-button-grid">
+        <button id="previousStopButton" type="button">
+          Previous stop
         </button>
 
-        <button id="stopJourneyButton" class="dark-button" disabled>
+        <button id="nextStopButton" type="button">
+          Next stop
+        </button>
+
+        <button id="repeatAnnouncementButton" type="button">
+          Repeat announcement
+        </button>
+
+        <button id="toggleDiversionButton" type="button">
+          Toggle diversion
+        </button>
+
+        <button id="restartJourneyButton" type="button">
+          Restart journey
+        </button>
+
+        <button id="endJourneyButton" class="danger-button" type="button">
           End journey
         </button>
       </div>
 
-      <div class="button-grid secondary-buttons">
-        <button id="enableAudioButton" class="outline-button">
-          Enable announcements
-        </button>
 
-        <button id="testAudioButton" class="outline-button">
-          Test voice
-        </button>
-      </div>
-    </section>
-
-    <!-- Live passenger display -->
-    <section class="passenger-display">
-      <div class="display-header">
-        <div>
-          <span class="display-label">Service</span>
-          <strong id="displayRoute">—</strong>
-        </div>
-
-        <div class="destination-area">
-          <span class="display-label">Destination</span>
-          <strong id="displayDestination">
-            Select a journey
-          </strong>
-        </div>
+      <div class="driver-gps-log">
+        <p class="field-label">Location status</p>
+        <pre id="gpsDebugOutput">No GPS fix received.</pre>
       </div>
 
-      <div class="next-stop-panel">
-        <span class="next-stop-label">Next stop</span>
+    </aside>
 
-        <h2 id="nextStopName">
-          Journey not started
-        </h2>
 
-        <p id="followingStopName">
-          Following stop: —
-        </p>
-      </div>
+    <!-- Driver panel opener. Kept small so it does not distract
+         passengers. -->
+    <button
+      id="openDriverPanelButton"
+      class="driver-panel-trigger is-hidden"
+      type="button"
+      aria-label="Open driver controls"
+    >
+      Controls
+    </button>
 
-      <div id="connectionBanner" class="connection-banner hidden">
-        Alight here for CH1 to Cromer
-      </div>
 
-      <div id="runningStatusPanel" class="running-status">
-        <span>Running status</span>
+    <!-- Fullscreen prompt for mobile/tablet use. -->
+    <button
+      id="fullscreenButton"
+      class="fullscreen-button is-hidden"
+      type="button"
+    >
+      Full screen
+    </button>
 
-        <strong id="runningStatusText">
-          Timetable not loaded
-        </strong>
-      </div>
 
-      <div class="journey-progress">
-        <div
-          id="journeyProgressBar"
-          class="journey-progress-bar"
-        ></div>
-      </div>
-
-      <div class="display-footer">
-        <span id="currentTime">--:--</span>
-
-        <span id="stopProgress">
-          Stop 0 of 0
-        </span>
-      </div>
-    </section>
-
-    <!-- GPS information -->
-    <section class="card">
-      <div class="section-heading">
-        <div>
-          <span class="eyebrow">Location</span>
-          <h2>GPS status</h2>
-        </div>
-
-        <span id="gpsAccuracyBadge" class="badge">
-          Not active
-        </span>
-      </div>
-
-      <div class="status-grid">
-
-        <div class="status-item">
-          <span>GPS</span>
-          <strong id="gpsStatus">
-            Not started
-          </strong>
-        </div>
-
-        <div class="status-item">
-          <span>Speed</span>
-          <strong id="speedDisplay">
-            — mph
-          </strong>
-        </div>
-
-        <div class="status-item">
-          <span>Distance to stop</span>
-          <strong id="distanceDisplay">
-            —
-          </strong>
-        </div>
-
-        <div class="status-item">
-          <span>Current stop</span>
-          <strong id="currentStopDisplay">
-            —
-          </strong>
-        </div>
-
-        <div class="status-item">
-          <span>Scheduled time</span>
-          <strong id="scheduledTimeDisplay">
-            —
-          </strong>
-        </div>
-
-        <div class="status-item">
-          <span>Time difference</span>
-          <strong id="timeDifferenceDisplay">
-            —
-          </strong>
-        </div>
-      </div>
-
-      <p class="help-text">
-        Keep this page open while travelling. On iPhone, GPS and audio may
-        pause if the screen is locked or the browser is placed in the
-        background.
-      </p>
-    </section>
-
-    <!-- Announcement status -->
-    <section class="card">
-      <div class="section-heading">
-        <div>
-          <span class="eyebrow">Audio</span>
-          <h2>Announcement system</h2>
-        </div>
-
-        <span id="audioStatusBadge" class="badge">
-          Disabled
-        </span>
-      </div>
-
-      <div class="announcement-now">
-        <span>Last announcement</span>
-
-        <p id="lastAnnouncement">
-          No announcements have played.
-        </p>
-      </div>
-
-      <div class="button-grid">
-        <button id="replayAnnouncementButton" class="outline-button">
-          Replay
-        </button>
-
-        <button id="cancelAnnouncementButton" class="outline-button">
-          Stop audio
-        </button>
-      </div>
-    </section>
-
-    <!-- Manual driver controls -->
-    <section class="card">
-      <div class="section-heading">
-        <div>
-          <span class="eyebrow">Driver controls</span>
-          <h2>Manual controls</h2>
-        </div>
-      </div>
-
-      <div class="button-grid">
-        <button id="previousStopButton" class="outline-button" disabled>
-          Previous stop
-        </button>
-
-        <button id="nextStopButton" class="outline-button" disabled>
-          Next stop
-        </button>
-      </div>
-
-      <div class="button-grid secondary-buttons">
-        <button id="announceNextButton" class="outline-button" disabled>
-          Announce next stop
-        </button>
-
-        <button id="announceThisButton" class="outline-button" disabled>
-          Announce this stop
-        </button>
-      </div>
-
-      <div class="button-grid secondary-buttons">
-        <button id="announceDelayButton" class="outline-button" disabled>
-          Delay announcement
-        </button>
-
-        <button id="announceEarlyButton" class="outline-button" disabled>
-          Early-running announcement
-        </button>
-      </div>
-    </section>
-
-    <!-- Special messages -->
-    <section class="card">
-      <div class="section-heading">
-        <div>
-          <span class="eyebrow">Passenger messages</span>
-          <h2>Special announcements</h2>
-        </div>
-      </div>
-
-      <div class="message-grid">
-        <button
-          class="message-button"
-          data-message="diversion"
-          disabled
-        >
-          On diversion
-        </button>
-
-        <button
-          class="message-button"
-          data-message="delay"
-          disabled
-        >
-          Running late
-        </button>
-
-        <button
-          class="message-button"
-          data-message="early"
-          disabled
-        >
-          Running early
-        </button>
-
-        <button
-          class="message-button"
-          data-message="connection"
-          disabled
-        >
-          CH1 connection
-        </button>
-
-        <button
-          class="message-button"
-          data-message="remain-seated"
-          disabled
-        >
-          Remain seated
-        </button>
-
-        <button
-          class="message-button"
-          data-message="terminating"
-          disabled
-        >
-          Journey terminating
-        </button>
-      </div>
-    </section>
-
-    <!-- Settings -->
-    <section class="card">
-      <div class="section-heading">
-        <div>
-          <span class="eyebrow">Settings</span>
-          <h2>Announcement settings</h2>
-        </div>
-      </div>
-
-      <div class="settings-list">
-
-        <label class="switch-row">
-          <span>
-            <strong>Automatic next-stop announcements</strong>
-            <small>
-              Plays when approaching the next stop.
-            </small>
-          </span>
-
-          <input
-            id="automaticNextStopToggle"
-            type="checkbox"
-            checked
-          >
-        </label>
-
-        <label class="switch-row">
-          <span>
-            <strong>Automatic arrival announcements</strong>
-            <small>
-              Plays when arriving at the stop.
-            </small>
-          </span>
-
-          <input
-            id="automaticArrivalToggle"
-            type="checkbox"
-            checked
-          >
-        </label>
-
-        <label class="switch-row">
-          <span>
-            <strong>Welcome announcement</strong>
-            <small>
-              Plays after the bus has been stationary for 20 seconds.
-            </small>
-          </span>
-
-          <input
-            id="welcomeAnnouncementToggle"
-            type="checkbox"
-            checked
-          >
-        </label>
-
-        <label class="switch-row">
-          <span>
-            <strong>Early-running announcement</strong>
-            <small>
-              Plays after waiting for 20 seconds while ahead of schedule.
-            </small>
-          </span>
-
-          <input
-            id="earlyAnnouncementToggle"
-            type="checkbox"
-            checked
-          >
-        </label>
-
-        <label class="switch-row">
-          <span>
-            <strong>Late-running announcement</strong>
-            <small>
-              Plays when the service is more than five minutes late.
-            </small>
-          </span>
-
-          <input
-            id="lateAnnouncementToggle"
-            type="checkbox"
-            checked
-          >
-        </label>
-
-        <label class="switch-row">
-          <span>
-            <strong>Departure-after-wait announcement</strong>
-            <small>
-              Thanks passengers when the bus continues after waiting.
-            </small>
-          </span>
-
-          <input
-            id="departureAnnouncementToggle"
-            type="checkbox"
-            checked
-          >
-        </label>
-      </div>
-    </section>
-
-    <!-- Announcement history -->
-    <section class="card">
-      <div class="section-heading">
-        <div>
-          <span class="eyebrow">History</span>
-          <h2>Announcement log</h2>
-        </div>
-
-        <button id="clearHistoryButton" class="small-button">
-          Clear
-        </button>
-      </div>
-
-      <div id="announcementHistory" class="history-list">
-        <p class="empty-history">
-          No announcements yet.
-        </p>
-      </div>
-    </section>
+    <!-- Accessible announcement status. -->
+    <div
+      id="announcementStatus"
+      class="sr-only"
+      role="status"
+      aria-live="assertive"
+    ></div>
 
   </main>
 
-  <!-- Full-width announcement banner -->
-  <div
-    id="announcementBanner"
-    class="announcement-banner"
-    role="status"
-    aria-live="polite"
-  >
-    <span id="announcementBannerText"></span>
-  </div>
 
-  <!-- Route loading error -->
-  <div id="errorModal" class="modal hidden">
-    <div class="modal-card">
-      <h2>Unable to load route</h2>
-
-      <p id="errorModalText">
-        The selected route file could not be loaded.
-      </p>
-
-      <button id="closeErrorModalButton" class="primary-button">
-        Close
-      </button>
-    </div>
-  </div>
-
-  <!--
-    app.js loads files such as:
-
-    routes/route-34.js
-    routes/route-35.js
-    routes/route-36.js
-
-    Each route file should register itself using:
-
-    window.LYNX_ROUTES = window.LYNX_ROUTES || {};
-    window.LYNX_ROUTES["34"] = { ... };
-  -->
-
+  <!-- Route files register their route data in window.LYNX_ROUTES. -->
   <script>
     window.LYNX_ROUTES = window.LYNX_ROUTES || {};
   </script>
 
+  <script src="routes/route-34.js"></script>
+  <script src="routes/route-35.js"></script>
+  <script src="routes/route-36.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
