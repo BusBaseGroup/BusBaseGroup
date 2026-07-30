@@ -1,114 +1,48 @@
 "use strict";
 
-/*
-  BusBase onboard app — rewritten GPS progression engine.
-  The first valid GPS fix selects the nearest point on the route and targets
-  the stop ahead. Stops then progress forwards using arrival/departure radii,
-  route-segment pass detection and a conservative forward recovery check.
-*/
-
-/*
-Expected folder structure:
-
-index.html
-style.css
-app.js
-routes/
-  route-34.js
-  route-35.js
-  route-36.js
-
-Each route file must register itself like this:
-
 window.LYNX_ROUTES = window.LYNX_ROUTES || {};
 
-window.LYNX_ROUTES["34"] = {
-  service: "34",
-  brand: "Lynx",
-  journeys: [
-    {
-      id: "34-outbound",
-      name: "King's Lynn to Hunstanton",
-      direction: "outbound",
-      destination: "Hunstanton Travel Hub",
-      departures: [
-        {
-          id: "34-0800",
-          time: "08:00",
-          stops: [
-            {
-              name: "King's Lynn Transport Interchange",
-              lat: 52.75543,
-              lng: 0.40443,
-              time: "08:00",
-              timingPoint: true
-            }
-          ]
-        }
-      ]
-    }
-  ]
-};
-*/
-
-window.LYNX_ROUTES = window.LYNX_ROUTES || {};
+const CONFIG = Object.freeze({
+  nextDistance: 350,
+  arrivalDistance: 100,
+  departureDistance: 200,
+  offRouteDistance: 150,
+  offRouteDelayMs: 30000,
+  continuationDurationMs: 10000,
+  gpsOptions: {
+    enableHighAccuracy: true,
+    maximumAge: 1000,
+    timeout: 20000
+  }
+});
 
 const state = {
-  selectedRoute: "",
-  routeData: null,
-  journey: null,
+  route: null,
+  direction: null,
   departure: null,
   stops: [],
-
+  stopIndex: 0,
   active: false,
-  currentStopIndex: 0,
   atStop: false,
-
-  gpsWatchId: null,
   position: null,
   speedMph: 0,
   accuracy: null,
-  gpsStopLocked: false,
+  gpsWatchId: null,
   gpsInitialised: false,
-  targetMinimumDistance: Infinity,
-  lastTargetDistance: Infinity,
-  lastGpsTimestamp: 0,
-  validCoordinateCount: 0,
-
-  audioEnabled: false,
-  voice: null,
+  nextAnnounced: new Set(),
+  arrivalAnnounced: new Set(),
   lastAnnouncement: "",
-
-  stationarySince: null,
-  waitingBecauseEarly: false,
-  earlyAnnouncementPlayed: false,
-  departureThanksPlayed: false,
-  lateAnnouncementPlayed: false,
-
-  nextPlayed: new Set(),
-  arrivalPlayed: new Set(),
-  welcomePlayed: new Set(),
-  specialPlayed: new Set(),
-
-  routeScript: null,
-  bannerTimer: null,
-  clockTimer: null,
-
-  settings: {
-    automaticNext: true,
-    automaticArrival: true,
-    welcome: true,
-    early: true,
-    late: true,
-    departureThanks: true
-  },
-
-  nextRadiusMetres: 350,
-  arrivalRadiusMetres: 100,
-  departureRadiusMetres: 200,
-  stationarySpeedMph: 1,
-  earlyThresholdSeconds: 60,
-  lateThresholdSeconds: 300
+  voice: null,
+  audioEnabled: false,
+  manualDiversion: false,
+  automaticDiversion: false,
+  offRouteSince: null,
+  continuationShown: false,
+  continuationActive: false,
+  displayedService: null,
+  displayedDestination: null,
+  lastGpsFixAt: null,
+  clockTimer: null
 };
 
 const el = {};
@@ -118,10 +52,9 @@ document.addEventListener("DOMContentLoaded", initialise);
 function initialise() {
   cacheElements();
   bindEvents();
-  loadSavedSettings();
   loadVoices();
+  resetSetup();
   startClock();
-  resetPage();
 
   if ("speechSynthesis" in window) {
     speechSynthesis.onvoiceschanged = loadVoices;
@@ -129,675 +62,408 @@ function initialise() {
 }
 
 function cacheElements() {
-  const ids = [
-    "systemStatus",
-    "routeLoadedBadge",
-    "routeSelect",
-    "journeySelect",
-    "directionSelect",
-    "departureSelect",
-    "linkedJourneyNotice",
-    "startJourneyButton",
-    "stopJourneyButton",
-    "enableAudioButton",
-    "testAudioButton",
-    "displayRoute",
-    "displayDestination",
-    "nextStopName",
-    "followingStopName",
-    "connectionBanner",
-    "runningStatusText",
-    "journeyProgressBar",
-    "currentTime",
-    "stopProgress",
-    "gpsAccuracyBadge",
-    "gpsStatus",
-    "speedDisplay",
-    "distanceDisplay",
-    "currentStopDisplay",
-    "scheduledTimeDisplay",
-    "timeDifferenceDisplay",
-    "audioStatusBadge",
-    "lastAnnouncement",
-    "replayAnnouncementButton",
-    "cancelAnnouncementButton",
-    "previousStopButton",
-    "nextStopButton",
-    "announceNextButton",
-    "announceThisButton",
-    "announceDelayButton",
-    "announceEarlyButton",
-    "automaticNextStopToggle",
-    "automaticArrivalToggle",
-    "welcomeAnnouncementToggle",
-    "earlyAnnouncementToggle",
-    "lateAnnouncementToggle",
-    "departureAnnouncementToggle",
-    "clearHistoryButton",
-    "announcementHistory",
-    "announcementBanner",
-    "announcementBannerText",
-    "errorModal",
-    "errorModalText",
-    "closeErrorModalButton"
-  ];
-
-  ids.forEach(id => {
+  [
+    "setupScreen", "passengerScreen", "journeyForm", "routeSelect",
+    "directionSelect", "journeySelect", "vehicleInput", "setupMessage",
+    "startJourneyButton", "routeNumber", "destinationName", "normalDisplay",
+    "stopStatePanel", "stopStateLabel", "currentStopName", "connectionMessage",
+    "followingStopsPanel", "followingStopName", "secondFollowingStopName",
+    "continuationDisplay", "continuationRouteNumber", "continuationDestination",
+    "disruptionDisplay", "terminusDisplay", "terminusName", "currentTime",
+    "runningStatus", "gpsStatus", "gpsStatusText", "vehicleDisplay",
+    "driverPanel", "openDriverPanelButton", "closeDriverPanelButton",
+    "driverCurrentStop", "driverDistance", "driverAccuracy", "driverSpeed",
+    "previousStopButton", "nextStopButton", "repeatAnnouncementButton",
+    "toggleDiversionButton", "restartJourneyButton", "endJourneyButton",
+    "gpsDebugOutput", "fullscreenButton", "announcementStatus"
+  ].forEach(id => {
     el[id] = document.getElementById(id);
   });
-
-  el.messageButtons = document.querySelectorAll(".message-button");
 }
 
 function bindEvents() {
   el.routeSelect.addEventListener("change", routeChanged);
-  el.journeySelect.addEventListener("change", journeyChanged);
   el.directionSelect.addEventListener("change", directionChanged);
-  el.departureSelect.addEventListener("change", departureChanged);
+  el.journeySelect.addEventListener("change", departureChanged);
+  el.journeyForm.addEventListener("submit", startJourney);
 
-  el.startJourneyButton.addEventListener("click", startJourney);
-  el.stopJourneyButton.addEventListener("click", () => stopJourney(true));
-
-  el.enableAudioButton.addEventListener("click", enableAudio);
-  el.testAudioButton.addEventListener("click", testVoice);
-
-  el.replayAnnouncementButton.addEventListener("click", replayAnnouncement);
-  el.cancelAnnouncementButton.addEventListener("click", stopAudio);
+  el.openDriverPanelButton.addEventListener("click", () => {
+    el.driverPanel.classList.remove("is-hidden");
+  });
+  el.closeDriverPanelButton.addEventListener("click", () => {
+    el.driverPanel.classList.add("is-hidden");
+  });
 
   el.previousStopButton.addEventListener("click", previousStop);
   el.nextStopButton.addEventListener("click", nextStop);
+  el.repeatAnnouncementButton.addEventListener("click", repeatAnnouncement);
+  el.toggleDiversionButton.addEventListener("click", toggleManualDiversion);
+  el.restartJourneyButton.addEventListener("click", restartJourney);
+  el.endJourneyButton.addEventListener("click", endJourney);
+  el.fullscreenButton.addEventListener("click", enterFullscreen);
 
-  el.announceNextButton.addEventListener("click", announceNextStop);
-  el.announceThisButton.addEventListener("click", announceCurrentStop);
-  el.announceDelayButton.addEventListener("click", playDelayAnnouncement);
-  el.announceEarlyButton.addEventListener("click", playEarlyAnnouncement);
-
-  el.clearHistoryButton.addEventListener("click", clearHistory);
-  el.closeErrorModalButton.addEventListener("click", hideError);
-
-  el.messageButtons.forEach(button => {
-    button.addEventListener("click", () => {
-      playSpecialMessage(button.dataset.message);
-    });
-  });
-
-  bindSetting(
-    el.automaticNextStopToggle,
-    "automaticNext"
-  );
-
-  bindSetting(
-    el.automaticArrivalToggle,
-    "automaticArrival"
-  );
-
-  bindSetting(
-    el.welcomeAnnouncementToggle,
-    "welcome"
-  );
-
-  bindSetting(
-    el.earlyAnnouncementToggle,
-    "early"
-  );
-
-  bindSetting(
-    el.lateAnnouncementToggle,
-    "late"
-  );
-
-  bindSetting(
-    el.departureAnnouncementToggle,
-    "departureThanks"
-  );
-}
-
-function bindSetting(input, key) {
-  input.addEventListener("change", () => {
-    state.settings[key] = input.checked;
-    saveSettings();
+  document.addEventListener("keydown", event => {
+    if (!state.active) return;
+    if (event.key === "ArrowLeft") previousStop();
+    if (event.key === "ArrowRight") nextStop();
+    if (event.key.toLowerCase() === "d") toggleManualDiversion();
   });
 }
 
-function loadSavedSettings() {
-  try {
-    const saved = JSON.parse(
-      localStorage.getItem("lynxAnnouncementSettings") || "{}"
-    );
-
-    state.settings = {
-      ...state.settings,
-      ...saved
-    };
-  } catch (error) {
-    console.warn("Could not load settings.", error);
-  }
-
-  el.automaticNextStopToggle.checked =
-    state.settings.automaticNext;
-
-  el.automaticArrivalToggle.checked =
-    state.settings.automaticArrival;
-
-  el.welcomeAnnouncementToggle.checked =
-    state.settings.welcome;
-
-  el.earlyAnnouncementToggle.checked =
-    state.settings.early;
-
-  el.lateAnnouncementToggle.checked =
-    state.settings.late;
-
-  el.departureAnnouncementToggle.checked =
-    state.settings.departureThanks;
-}
-
-function saveSettings() {
-  localStorage.setItem(
-    "lynxAnnouncementSettings",
-    JSON.stringify(state.settings)
-  );
-}
-
-function resetPage() {
-  el.systemStatus.textContent = "Offline";
-  el.routeLoadedBadge.textContent = "No route loaded";
-
-  el.displayRoute.textContent = "—";
-  el.displayDestination.textContent = "Select a journey";
-  el.nextStopName.textContent = "Journey not started";
-  el.followingStopName.textContent = "Following stop: —";
-
-  el.runningStatusText.textContent = "Timetable not loaded";
-  el.stopProgress.textContent = "Stop 0 of 0";
-  el.journeyProgressBar.style.width = "0%";
-
-  el.gpsStatus.textContent = "Not started";
-  el.gpsAccuracyBadge.textContent = "Not active";
-  el.speedDisplay.textContent = "— mph";
-  el.distanceDisplay.textContent = "—";
-  el.currentStopDisplay.textContent = "—";
-  el.scheduledTimeDisplay.textContent = "—";
-  el.timeDifferenceDisplay.textContent = "—";
-
-  setJourneyControls(false);
-}
-
-async function routeChanged() {
-  const route = el.routeSelect.value;
-
-  stopJourney(false);
-  resetRouteSelectors();
-
-  if (!route) {
-    state.selectedRoute = "";
-    state.routeData = null;
-    el.routeLoadedBadge.textContent = "No route loaded";
-    return;
-  }
-
-  state.selectedRoute = route;
-  el.routeLoadedBadge.textContent = "Loading route...";
-
-  try {
-    await loadRouteScript(route);
-
-    const routeData = window.LYNX_ROUTES[route];
-
-    if (!routeData) {
-      throw new Error(
-        `Route ${route} did not register itself in window.LYNX_ROUTES.`
-      );
-    }
-
-    state.routeData = routeData;
-    populateJourneys();
-
-    el.routeLoadedBadge.textContent = `Service ${route} loaded`;
-    el.systemStatus.textContent = "Ready";
-  } catch (error) {
-    console.error(error);
-    el.routeLoadedBadge.textContent = "Route failed";
-    showError(
-      `The file routes/route-${route}.js could not be loaded.`
-    );
-  }
-}
-
-function loadRouteScript(route) {
-  return new Promise((resolve, reject) => {
-    if (window.LYNX_ROUTES[route]) {
-      resolve();
-      return;
-    }
-
-    if (state.routeScript) {
-      state.routeScript.remove();
-      state.routeScript = null;
-    }
-
-    const script = document.createElement("script");
-    script.src = `routes/route-${route}.js?v=${Date.now()}`;
-    script.async = true;
-
-    script.onload = resolve;
-    script.onerror = reject;
-
-    document.body.appendChild(script);
-    state.routeScript = script;
-  });
-}
-
-function resetRouteSelectors() {
-  state.journey = null;
+function resetSetup() {
+  stopGps();
+  stopSpeech();
+  state.active = false;
+  state.route = null;
+  state.direction = null;
   state.departure = null;
   state.stops = [];
+  state.stopIndex = 0;
+  state.position = null;
+  state.gpsInitialised = false;
+  state.displayedService = null;
+  state.displayedDestination = null;
+  state.manualDiversion = false;
+  state.automaticDiversion = false;
+  state.offRouteSince = null;
 
-  el.journeySelect.innerHTML =
-    `<option value="">Select a journey</option>`;
+  el.setupScreen.classList.remove("is-hidden");
+  el.passengerScreen.classList.add("is-hidden");
+  el.driverPanel.classList.add("is-hidden");
+  el.openDriverPanelButton.classList.add("is-hidden");
+  el.fullscreenButton.classList.add("is-hidden");
+  el.setupMessage.textContent = "";
+}
 
-  el.directionSelect.innerHTML =
-    `<option value="">Select a journey first</option>`;
+function routeChanged() {
+  const service = el.routeSelect.value;
+  state.route = window.LYNX_ROUTES[service] || null;
+  state.direction = null;
+  state.departure = null;
 
-  el.departureSelect.innerHTML =
-    `<option value="">Select a direction first</option>`;
-
-  el.journeySelect.disabled = true;
+  el.directionSelect.innerHTML = '<option value="">Select direction</option>';
+  el.journeySelect.innerHTML = '<option value="">Select journey</option>';
   el.directionSelect.disabled = true;
-  el.departureSelect.disabled = true;
+  el.journeySelect.disabled = true;
   el.startJourneyButton.disabled = true;
-}
 
-function populateJourneys() {
-  const journeys = state.routeData.journeys || [];
-
-  el.journeySelect.innerHTML =
-    `<option value="">Select a journey</option>`;
-
-  journeys.forEach((journey, index) => {
-    const option = document.createElement("option");
-    option.value = String(index);
-    option.textContent =
-      journey.name ||
-      `${journey.origin || "Origin"} to ${
-        journey.destination || "Destination"
-      }`;
-
-    el.journeySelect.appendChild(option);
-  });
-
-  el.journeySelect.disabled = journeys.length === 0;
-}
-
-function journeyChanged() {
-  const index = Number(el.journeySelect.value);
-
-  if (
-    el.journeySelect.value === "" ||
-    !state.routeData?.journeys?.[index]
-  ) {
-    state.journey = null;
-    el.directionSelect.disabled = true;
+  if (!service) {
+    el.setupMessage.textContent = "";
     return;
   }
 
-  state.journey = state.routeData.journeys[index];
-  populateDirections();
-}
+  if (!state.route) {
+    el.setupMessage.textContent =
+      `Route ${service} is not included in this upload. Add routes/route-${service}.js to enable it.`;
+    return;
+  }
 
-function populateDirections() {
-  const directions = getJourneyDirections(state.journey);
-
-  el.directionSelect.innerHTML =
-    `<option value="">Select a direction</option>`;
-
-  directions.forEach(direction => {
+  const directions = getDirections(state.route);
+  directions.forEach((direction, index) => {
     const option = document.createElement("option");
-    option.value = direction;
-    option.textContent = formatDirection(direction);
+    option.value = String(index);
+    option.textContent = direction.name || formatDirection(direction.id);
     el.directionSelect.appendChild(option);
   });
 
   el.directionSelect.disabled = directions.length === 0;
-
-  if (directions.length === 1) {
-    el.directionSelect.value = directions[0];
-    directionChanged();
-  }
-}
-
-function getJourneyDirections(journey) {
-  if (Array.isArray(journey.directions)) {
-    return journey.directions.map(item =>
-      typeof item === "string" ? item : item.id
-    );
-  }
-
-  return [journey.direction || "outbound"];
+  el.setupMessage.textContent = directions.length
+    ? `${state.route.name || `Service ${service}`} loaded.`
+    : "No directions were found in this route file.";
 }
 
 function directionChanged() {
-  populateDepartures();
-}
+  const directions = getDirections(state.route);
+  const index = Number(el.directionSelect.value);
+  state.direction = el.directionSelect.value === "" ? null : directions[index];
+  state.departure = null;
 
-function populateDepartures() {
-  const direction = el.directionSelect.value;
+  el.journeySelect.innerHTML = '<option value="">Select journey</option>';
+  el.journeySelect.disabled = true;
+  el.startJourneyButton.disabled = true;
 
-  el.departureSelect.innerHTML =
-    `<option value="">Select a departure</option>`;
+  if (!state.direction) return;
 
-  if (!direction || !state.journey) {
-    el.departureSelect.disabled = true;
-    return;
-  }
-
-  const departures = getDeparturesForDirection(
-    state.journey,
-    direction
-  );
-
-  departures.forEach((departure, index) => {
+  const departures = state.direction.departures || [];
+  departures.forEach((departure, departureIndex) => {
     const option = document.createElement("option");
-    option.value = String(index);
-    option.textContent =
-      departure.label ||
-      departure.time ||
-      `Journey ${index + 1}`;
-
-    el.departureSelect.appendChild(option);
+    option.value = String(departureIndex);
+    option.textContent = departure.label || departure.time || `Journey ${departureIndex + 1}`;
+    el.journeySelect.appendChild(option);
   });
 
-  el.departureSelect.disabled = departures.length === 0;
-
-  if (departures.length === 1) {
-    el.departureSelect.value = "0";
-    departureChanged();
-  }
-}
-
-function getDeparturesForDirection(journey, direction) {
-  if (Array.isArray(journey.directions)) {
-    const directionData = journey.directions.find(item =>
-      typeof item === "object" && item.id === direction
-    );
-
-    if (directionData) {
-      return directionData.departures || [];
-    }
-  }
-
-  return journey.departures || [];
+  el.journeySelect.disabled = departures.length === 0;
 }
 
 function departureChanged() {
-  const direction = el.directionSelect.value;
-  const index = Number(el.departureSelect.value);
+  const departures = state.direction?.departures || [];
+  const index = Number(el.journeySelect.value);
+  state.departure = el.journeySelect.value === "" ? null : departures[index];
+  el.startJourneyButton.disabled = !state.departure;
+}
 
-  const departures = getDeparturesForDirection(
-    state.journey,
-    direction
-  );
+function getDirections(route) {
+  const journey = route?.journeys?.[0];
+  if (!journey) return [];
+  if (Array.isArray(journey.directions)) return journey.directions;
+  return [{
+    id: journey.direction || "outbound",
+    name: journey.name,
+    destination: journey.destination,
+    departures: journey.departures || []
+  }];
+}
 
-  if (
-    el.departureSelect.value === "" ||
-    !departures[index]
-  ) {
-    state.departure = null;
-    el.startJourneyButton.disabled = true;
+function startJourney(event) {
+  event.preventDefault();
+
+  if (!state.route || !state.direction || !state.departure) {
+    el.setupMessage.textContent = "Select a route, direction and journey first.";
     return;
   }
 
-  state.departure = departures[index];
-  state.stops = prepareStops(state.departure.stops || []);
-
-  updateLinkedJourneyNotice();
-  previewJourney();
-
-  el.startJourneyButton.disabled =
-    state.stops.length === 0;
-}
-
-function prepareStops(stops) {
-  return stops.map((stop, index) => ({
+  const stops = (state.departure.stops || []).map((stop, index) => ({
+    ...stop,
     id: stop.id || `stop-${index}`,
     name: stop.name || `Stop ${index + 1}`,
+    announcementName: stop.announcementName || stop.name || `Stop ${index + 1}`,
     lat: Number(stop.lat ?? stop.latitude),
     lng: Number(stop.lng ?? stop.longitude),
-    time: stop.time || "",
-    timingPoint: Boolean(stop.timingPoint),
-    nextRadius:
-      Number(stop.nextRadius) || state.nextRadiusMetres,
-    arrivalRadius:
-      Number(stop.arrivalRadius) || state.arrivalRadiusMetres,
-    announcementName:
-      stop.announcementName || stop.name,
-    specialAnnouncement:
-      stop.specialAnnouncement || null,
-    connectionMessage:
-      stop.connectionMessage || null,
-    preArrivalAnnouncement:
-      stop.preArrivalAnnouncement || null
+    nextRadius: Number(stop.nextRadius) || CONFIG.nextDistance,
+    arrivalRadius: Number(stop.arrivalRadius) || CONFIG.arrivalDistance
   }));
-}
 
-function previewJourney() {
-  const destination =
-    state.departure.destination ||
-    state.journey.destination ||
-    state.routeData.destination ||
-    "Destination";
-
-  el.displayRoute.textContent =
-    state.routeData.service || state.selectedRoute;
-
-  el.displayDestination.textContent = destination;
-
-  el.nextStopName.textContent =
-    state.stops[0]?.name || "No stops loaded";
-
-  el.followingStopName.textContent =
-    state.stops[1]
-      ? `Following stop: ${state.stops[1].name}`
-      : "Following stop: —";
-
-  el.stopProgress.textContent =
-    `Stop 0 of ${state.stops.length}`;
-}
-
-function updateLinkedJourneyNotice() {
-  const linked =
-    state.departure?.linkedJourney ||
-    state.journey?.linkedJourney;
-
-  if (!linked) {
-    el.linkedJourneyNotice.classList.add("hidden");
+  if (!stops.length) {
+    el.setupMessage.textContent = "This journey contains no stops.";
     return;
   }
 
-  const route =
-    linked.route || linked.service || "another service";
-
-  el.linkedJourneyNotice.textContent =
-    `This journey continues as service ${route}.`;
-
-  el.linkedJourneyNotice.classList.remove("hidden");
-}
-
-async function startJourney() {
-  if (!state.departure || !state.stops.length) {
-    showError("Select a valid journey and departure first.");
-    return;
-  }
-
-  if (state.routeData?.ready) {
-    el.systemStatus.textContent = "Loading official stop locations";
-    try {
-      await state.routeData.ready;
-      const selected = state.departure.stops;
-      state.stops = prepareStops(selected);
-    } catch (error) {
-      showError(error?.message || "Official stop coordinates could not be loaded.");
-      return;
-    }
-  }
-
-  stopJourney(false);
-  resetJourneyState();
-
+  state.stops = stops;
+  state.stopIndex = 0;
   state.active = true;
-  state.currentStopIndex = 0;
+  state.atStop = false;
+  state.position = null;
+  state.gpsInitialised = false;
+  state.nextAnnounced.clear();
+  state.arrivalAnnounced.clear();
+  state.manualDiversion = false;
+  state.automaticDiversion = false;
+  state.offRouteSince = null;
+  state.continuationShown = false;
+  state.continuationActive = false;
+  state.displayedService = state.route.service;
+  state.displayedDestination = getDestination();
+  state.audioEnabled = true;
 
-  setJourneyControls(true);
-  updatePassengerDisplay();
+  el.setupScreen.classList.add("is-hidden");
+  el.passengerScreen.classList.remove("is-hidden");
+  el.openDriverPanelButton.classList.remove("is-hidden");
+  el.fullscreenButton.classList.remove("is-hidden");
 
-  el.systemStatus.textContent = "Running";
-  el.stopJourneyButton.disabled = false;
-  el.startJourneyButton.disabled = true;
+  const vehicle = el.vehicleInput.value.trim();
+  el.vehicleDisplay.textContent = vehicle;
+  el.vehicleDisplay.classList.toggle("is-hidden", !vehicle);
 
-  playAnnouncement(
-    `Welcome on board ${getBrandName()}. ` +
-    `This is service ${getServiceNumber()} to ${cleanText(
-      getDestination()
-    )}.`,
-    12000
-  );
-
+  updateDisplay();
+  setGpsStatus("waiting", "Waiting for GPS");
   startGps();
+
+  speak(
+    `Welcome on board Lynx. This is service ${state.displayedService} to ${cleanForSpeech(state.displayedDestination)}.`
+  );
 }
 
-function resetJourneyState() {
-  state.gpsStopLocked = false;
-  state.gpsInitialised = false;
-  state.targetMinimumDistance = Infinity;
-  state.lastTargetDistance = Infinity;
-  state.lastGpsTimestamp = 0;
-  state.validCoordinateCount = state.stops.filter(hasCoordinates).length;
-  state.stationarySince = null;
-  state.waitingBecauseEarly = false;
-  state.earlyAnnouncementPlayed = false;
-  state.departureThanksPlayed = false;
-  state.lateAnnouncementPlayed = false;
-
-  state.nextPlayed.clear();
-  state.arrivalPlayed.clear();
-  state.welcomePlayed.clear();
-  state.specialPlayed.clear();
+function getDestination() {
+  return state.departure?.destination ||
+    state.direction?.destination ||
+    state.route?.destination ||
+    "Destination";
 }
 
 function startGps() {
+  stopGps();
+
   if (!navigator.geolocation) {
-    el.gpsStatus.textContent = "Not supported";
-    showError("This device does not support browser GPS.");
+    setGpsStatus("error", "GPS not supported");
+    updateGpsDebug("This browser does not support geolocation.");
     return;
   }
-
-  el.gpsStatus.textContent = "Requesting permission";
 
   state.gpsWatchId = navigator.geolocation.watchPosition(
     gpsUpdated,
     gpsFailed,
-    {
-      enableHighAccuracy: true,
-      maximumAge: 1000,
-      timeout: 20000
-    }
+    CONFIG.gpsOptions
   );
+}
+
+function stopGps() {
+  if (state.gpsWatchId !== null) {
+    navigator.geolocation.clearWatch(state.gpsWatchId);
+    state.gpsWatchId = null;
+  }
 }
 
 function gpsUpdated(position) {
   if (!state.active) return;
 
-  const coords = position.coords;
-  const latitude = Number(coords.latitude);
-  const longitude = Number(coords.longitude);
-
-  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
-    el.gpsStatus.textContent = "Invalid GPS reading";
-    return;
-  }
+  const { latitude, longitude, accuracy, speed } = position.coords;
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
 
   state.position = { lat: latitude, lng: longitude };
-  state.lastGpsTimestamp = Number(position.timestamp) || Date.now();
-  state.speedMph = Number.isFinite(coords.speed)
-    ? Math.max(0, coords.speed * 2.236936)
-    : 0;
-  state.accuracy = Number.isFinite(coords.accuracy)
-    ? coords.accuracy
-    : null;
+  state.accuracy = Number.isFinite(accuracy) ? accuracy : null;
+  state.speedMph = Number.isFinite(speed) ? Math.max(0, speed * 2.236936) : 0;
+  state.lastGpsFixAt = new Date();
 
-  el.gpsStatus.textContent = "Active";
-  el.gpsAccuracyBadge.textContent = state.accuracy === null
-    ? "Accuracy unavailable"
-    : `Accurate to ${Math.round(state.accuracy)} m`;
-  el.speedDisplay.textContent = `${state.speedMph.toFixed(1)} mph`;
+  setGpsStatus("active", state.accuracy === null
+    ? "GPS active"
+    : `GPS ±${Math.round(state.accuracy)} m`);
 
-  if (!state.validCoordinateCount) {
-    state.validCoordinateCount = state.stops.filter(hasCoordinates).length;
-  }
-
-  if (!state.validCoordinateCount) {
-    el.gpsStatus.textContent = "No stop coordinates";
-    el.distanceDisplay.textContent = "—";
-    return;
-  }
-
-  if (!state.gpsInitialised) initialiseGpsTarget();
+  if (!state.gpsInitialised) initialiseFromNearestRoutePoint();
   processLocation();
 }
 
-function hasCoordinates(stop) {
-  return Boolean(
-    stop &&
-    Number.isFinite(Number(stop.lat)) &&
-    Number.isFinite(Number(stop.lng)) &&
-    Math.abs(Number(stop.lat)) <= 90 &&
-    Math.abs(Number(stop.lng)) <= 180
-  );
+function gpsFailed(error) {
+  const messages = {
+    1: "Location permission denied",
+    2: "Location unavailable",
+    3: "GPS timed out"
+  };
+  const message = messages[error.code] || "GPS error";
+  setGpsStatus("error", message);
+  updateGpsDebug(`${message}. ${error.message || ""}`.trim());
 }
 
-function stopDistance(index) {
-  const stop = state.stops[index];
-  if (!state.position || !hasCoordinates(stop)) return Infinity;
-  return distanceMetres(
-    state.position.lat,
-    state.position.lng,
-    Number(stop.lat),
-    Number(stop.lng)
-  );
-}
-
-function initialiseGpsTarget() {
-  if (!state.position || !state.stops.length) return;
+function initialiseFromNearestRoutePoint() {
+  if (!state.position) return;
 
   let nearestStopIndex = -1;
   let nearestStopDistance = Infinity;
 
   state.stops.forEach((stop, index) => {
-    const distance = stopDistance(index);
+    const distance = distanceToStop(index);
     if (distance < nearestStopDistance) {
       nearestStopDistance = distance;
       nearestStopIndex = index;
     }
   });
 
-  if (nearestStopIndex < 0) return;
+  const segment = nearestRouteSegment();
+  let target = nearestStopIndex;
 
-  let targetIndex = nearestStopIndex;
-  const nearestStop = state.stops[nearestStopIndex];
-
-  /* When between stops, target the stop ahead rather than the stop behind. */
-  if (nearestStopDistance > nearestStop.arrivalRadius) {
-    const segment = nearestRouteSegment();
-    if (segment) targetIndex = Math.min(segment.index + 1, state.stops.length - 1);
+  if (segment && nearestStopDistance > getStop(nearestStopIndex)?.arrivalRadius) {
+    target = Math.min(segment.index + 1, state.stops.length - 1);
   }
 
-  setCurrentStop(targetIndex, nearestStopDistance <= nearestStop.arrivalRadius);
+  state.stopIndex = Math.max(0, target);
+  state.atStop = distanceToStop(state.stopIndex) <= getStop(state.stopIndex).arrivalRadius;
   state.gpsInitialised = true;
-  state.gpsStopLocked = true;
-  el.gpsStatus.textContent = `Active — tracking stop ${targetIndex + 1}`;
+  updateDisplay();
+}
+
+function processLocation() {
+  const stop = getStop();
+  if (!stop || !hasCoordinates(stop)) return;
+
+  const distance = distanceToStop(state.stopIndex);
+  const arrivalRadius = stop.arrivalRadius || CONFIG.arrivalDistance;
+  const nextRadius = stop.nextRadius || CONFIG.nextDistance;
+
+  if (distance <= nextRadius && distance > arrivalRadius && !state.nextAnnounced.has(stopKey(stop))) {
+    state.nextAnnounced.add(stopKey(stop));
+    speak(`Next stop, ${cleanForSpeech(stop.announcementName)}.`);
+  }
+
+  if (distance <= arrivalRadius) {
+    state.atStop = true;
+    if (!state.arrivalAnnounced.has(stopKey(stop))) {
+      state.arrivalAnnounced.add(stopKey(stop));
+      speakArrival(stop);
+      handleContinuationAtHunstanton(stop);
+    }
+  }
+
+  if (state.atStop && distance > CONFIG.departureDistance && state.stopIndex < state.stops.length - 1) {
+    state.stopIndex += 1;
+    state.atStop = false;
+  } else if (!state.atStop) {
+    recoverForwardIfNeeded(distance);
+  }
+
+  checkDiversion();
+  updateDisplay(distance);
+}
+
+function recoverForwardIfNeeded(currentDistance) {
+  let bestIndex = state.stopIndex;
+  let bestDistance = currentDistance;
+  const end = Math.min(state.stops.length - 1, state.stopIndex + 4);
+
+  for (let index = state.stopIndex + 1; index <= end; index += 1) {
+    const distance = distanceToStop(index);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      bestIndex = index;
+    }
+  }
+
+  if (bestIndex > state.stopIndex && bestDistance < 250 && bestDistance + 120 < currentDistance) {
+    state.stopIndex = bestIndex;
+    state.atStop = bestDistance <= getStop(bestIndex).arrivalRadius;
+  }
+}
+
+function handleContinuationAtHunstanton(stop) {
+  if (state.continuationShown) return;
+
+  const isSpecialJourney =
+    String(state.route?.service) === "36" &&
+    state.direction?.id === "inbound" &&
+    state.departure?.time === "18:00" &&
+    /hunstanton/i.test(stop.name);
+
+  if (!isSpecialJourney) return;
+
+  state.continuationShown = true;
+  state.continuationActive = true;
+  el.continuationRouteNumber.textContent = "34";
+  el.continuationDestination.textContent = "King's Lynn";
+  showOnlySpecial(el.continuationDisplay);
+
+  speak(
+    "This bus continues as service 34 to Kings Lynn. Passengers travelling onwards may remain on board."
+  );
+
+  setTimeout(() => {
+    if (!state.active) return;
+    state.continuationActive = false;
+    state.displayedService = "34";
+    state.displayedDestination = "King's Lynn";
+    updateDisplay();
+  }, CONFIG.continuationDurationMs);
+}
+
+function checkDiversion() {
+  const segment = nearestRouteSegment();
+  if (!segment) return;
+
+  const offRoute = segment.distance > CONFIG.offRouteDistance;
+
+  if (offRoute) {
+    if (!state.offRouteSince) state.offRouteSince = Date.now();
+    if (Date.now() - state.offRouteSince >= CONFIG.offRouteDelayMs) {
+      if (!state.automaticDiversion) {
+        state.automaticDiversion = true;
+        speak("This bus is currently on diversion. Please listen for driver announcements.");
+      }
+    }
+  } else {
+    state.offRouteSince = null;
+    state.automaticDiversion = false;
+  }
 }
 
 function nearestRouteSegment() {
+  if (!state.position || state.stops.length < 2) return null;
   let best = null;
 
   for (let index = 0; index < state.stops.length - 1; index += 1) {
@@ -808,38 +474,229 @@ function nearestRouteSegment() {
     const result = distanceToSegmentMetres(
       state.position.lat,
       state.position.lng,
-      Number(first.lat),
-      Number(first.lng),
-      Number(second.lat),
-      Number(second.lng)
+      first.lat,
+      first.lng,
+      second.lat,
+      second.lng
     );
 
     if (!best || result.distance < best.distance) {
-      best = { index, distance: result.distance, progress: result.progress };
+      best = { index, ...result };
     }
   }
 
   return best;
 }
 
-function setCurrentStop(index, atStop = false) {
-  const safeIndex = Math.max(0, Math.min(index, state.stops.length - 1));
-  state.currentStopIndex = safeIndex;
-  state.atStop = Boolean(atStop);
-  state.targetMinimumDistance = stopDistance(safeIndex);
-  state.lastTargetDistance = state.targetMinimumDistance;
-  state.stationarySince = null;
-  state.earlyAnnouncementPlayed = false;
-  state.departureThanksPlayed = false;
-  state.lateAnnouncementPlayed = false;
-  updatePassengerDisplay();
+function speakArrival(stop) {
+  const extra = getAlightMessage(stop);
+  speak(`This stop, ${cleanForSpeech(stop.announcementName)}.${extra ? ` ${extra}` : ""}`);
+}
+
+function getAlightMessage(stop) {
+  if (stop.alightMessage) return stop.alightMessage;
+  const name = `${stop.name} ${stop.announcementName}`.toLowerCase();
+
+  if (name.includes("hunstanton") && !name.includes("old hunstanton")) {
+    return "Alight here for Hunstanton Beach.";
+  }
+  if (name.includes("old hunstanton")) {
+    return "Alight here for Old Hunstanton Beach.";
+  }
+  if (name.includes("holme")) {
+    return "Alight here for the Norfolk Coast Path.";
+  }
+  if (name.includes("brancaster")) {
+    return "Alight here for Brancaster Beach.";
+  }
+  if (name.includes("holkham")) {
+    return "Alight here for Holkham Beach.";
+  }
+  if (name.includes("wells") && name.includes("quay")) {
+    return "Alight here for Wells Beach.";
+  }
+  if (name.includes("wells") && name.includes("grove road")) {
+    return "Alight here for C H one to Cromer.";
+  }
+  return "";
+}
+
+function updateDisplay(distanceOverride) {
+  if (!state.active) return;
+
+  const stop = getStop();
+  const following = getStop(state.stopIndex + 1);
+  const secondFollowing = getStop(state.stopIndex + 2);
+  const distance = Number.isFinite(distanceOverride)
+    ? distanceOverride
+    : distanceToStop(state.stopIndex);
+
+  el.routeNumber.textContent = state.displayedService || state.route?.service || "—";
+  el.destinationName.textContent = state.displayedDestination || getDestination();
+  el.stopStateLabel.textContent = state.atStop ? "This stop" : "Next stop";
+  el.currentStopName.textContent = stop?.name || "Journey complete";
+  el.followingStopName.textContent = following?.name || "Final stop";
+  el.secondFollowingStopName.textContent = secondFollowing?.name || "";
+  el.driverCurrentStop.textContent = stop?.name || "Journey complete";
+  el.driverDistance.textContent = Number.isFinite(distance) ? formatDistance(distance) : "—";
+  el.driverAccuracy.textContent = state.accuracy === null ? "—" : `${Math.round(state.accuracy)} m`;
+  el.driverSpeed.textContent = `${state.speedMph.toFixed(1)} mph`;
+
+  const finalStop = state.stopIndex >= state.stops.length - 1 && state.atStop;
+  const diversion = state.manualDiversion || state.automaticDiversion;
+
+  if (diversion) {
+    showOnlySpecial(el.disruptionDisplay);
+  } else if (state.continuationActive) {
+    showOnlySpecial(el.continuationDisplay);
+  } else if (finalStop) {
+    el.terminusName.textContent = stop?.name || state.displayedDestination;
+    showOnlySpecial(el.terminusDisplay);
+  } else {
+    showNormalDisplay();
+  }
+
+  updateRunningStatus(stop);
+  updateGpsDebug(buildGpsDebug(distance));
+  updateDriverButtons();
+}
+
+function showOnlySpecial(section) {
+  el.normalDisplay.classList.add("is-hidden");
+  el.continuationDisplay.classList.add("is-hidden");
+  el.disruptionDisplay.classList.add("is-hidden");
+  el.terminusDisplay.classList.add("is-hidden");
+  section.classList.remove("is-hidden");
+}
+
+function showNormalDisplay() {
+  el.normalDisplay.classList.remove("is-hidden");
+  el.continuationDisplay.classList.add("is-hidden");
+  el.disruptionDisplay.classList.add("is-hidden");
+  el.terminusDisplay.classList.add("is-hidden");
+}
+
+function updateRunningStatus(stop) {
+  if (!stop?.time) {
+    el.runningStatus.textContent = "No timetable";
+    el.runningStatus.className = "running-status";
+    return;
+  }
+
+  const scheduled = timeToday(stop.time);
+  if (!scheduled) return;
+  const differenceSeconds = Math.round((Date.now() - scheduled.getTime()) / 1000);
+  const absoluteMinutes = Math.floor(Math.abs(differenceSeconds) / 60);
+
+  el.runningStatus.className = "running-status";
+
+  if (Math.abs(differenceSeconds) < 60) {
+    el.runningStatus.textContent = "On time";
+    el.runningStatus.classList.add("running-on-time");
+  } else if (differenceSeconds < 0) {
+    el.runningStatus.textContent = `${absoluteMinutes} min early`;
+    el.runningStatus.classList.add("running-early");
+  } else {
+    el.runningStatus.textContent = `${absoluteMinutes} min late`;
+    el.runningStatus.classList.add("running-late");
+  }
+}
+
+function previousStop() {
+  if (!state.active || state.stopIndex <= 0) return;
+  state.stopIndex -= 1;
+  state.atStop = false;
+  updateDisplay();
+}
+
+function nextStop() {
+  if (!state.active || state.stopIndex >= state.stops.length - 1) return;
+  state.stopIndex += 1;
+  state.atStop = false;
+  updateDisplay();
+}
+
+function restartJourney() {
+  if (!state.active) return;
+  state.stopIndex = 0;
+  state.atStop = false;
+  state.gpsInitialised = false;
+  state.nextAnnounced.clear();
+  state.arrivalAnnounced.clear();
+  state.continuationShown = false;
+  state.continuationActive = false;
+  state.displayedService = state.route.service;
+  state.displayedDestination = getDestination();
+  updateDisplay();
+}
+
+function toggleManualDiversion() {
+  state.manualDiversion = !state.manualDiversion;
+  el.toggleDiversionButton.textContent = state.manualDiversion
+    ? "Clear diversion"
+    : "Toggle diversion";
+  if (state.manualDiversion) {
+    speak("This bus is currently on diversion. Please listen for driver announcements.");
+  }
+  updateDisplay();
+}
+
+function repeatAnnouncement() {
+  if (state.lastAnnouncement) speak(state.lastAnnouncement);
+}
+
+function endJourney() {
+  resetSetup();
+  el.routeSelect.value = "";
+  el.directionSelect.innerHTML = '<option value="">Select direction</option>';
+  el.journeySelect.innerHTML = '<option value="">Select journey</option>';
+  el.directionSelect.disabled = true;
+  el.journeySelect.disabled = true;
+}
+
+function updateDriverButtons() {
+  el.previousStopButton.disabled = state.stopIndex <= 0;
+  el.nextStopButton.disabled = state.stopIndex >= state.stops.length - 1;
+}
+
+function getStop(index = state.stopIndex) {
+  return state.stops[index] || null;
+}
+
+function stopKey(stop) {
+  return `${state.stopIndex}:${stop.id}:${stop.name}`;
+}
+
+function hasCoordinates(stop) {
+  return stop &&
+    Number.isFinite(Number(stop.lat)) &&
+    Number.isFinite(Number(stop.lng)) &&
+    Math.abs(Number(stop.lat)) <= 90 &&
+    Math.abs(Number(stop.lng)) <= 180;
+}
+
+function distanceToStop(index) {
+  const stop = getStop(index);
+  if (!state.position || !hasCoordinates(stop)) return Infinity;
+  return distanceMetres(state.position.lat, state.position.lng, stop.lat, stop.lng);
+}
+
+function distanceMetres(lat1, lng1, lat2, lng2) {
+  const radius = 6371000;
+  const toRadians = value => value * Math.PI / 180;
+  const dLat = toRadians(lat2 - lat1);
+  const dLng = toRadians(lng2 - lng1);
+  const firstLat = toRadians(lat1);
+  const secondLat = toRadians(lat2);
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(firstLat) * Math.cos(secondLat) * Math.sin(dLng / 2) ** 2;
+  return 2 * radius * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 function distanceToSegmentMetres(lat, lng, lat1, lng1, lat2, lng2) {
-  const referenceLat = (lat + lat1 + lat2) / 3 * Math.PI / 180;
+  const referenceLat = ((lat + lat1 + lat2) / 3) * Math.PI / 180;
   const metresPerLat = 111320;
   const metresPerLng = 111320 * Math.cos(referenceLat);
-
   const px = (lng - lng1) * metresPerLng;
   const py = (lat - lat1) * metresPerLat;
   const vx = (lng2 - lng1) * metresPerLng;
@@ -850,1028 +707,121 @@ function distanceToSegmentMetres(lat, lng, lat1, lng1, lat2, lng2) {
 
   const rawProgress = (px * vx + py * vy) / lengthSquared;
   const progress = Math.max(0, Math.min(1, rawProgress));
-  const closestX = vx * progress;
-  const closestY = vy * progress;
-
   return {
-    distance: Math.hypot(px - closestX, py - closestY),
+    distance: Math.hypot(px - vx * progress, py - vy * progress),
     progress: rawProgress
   };
 }
 
-function gpsFailed(error) {
-  let message = "Unable to access GPS.";
-
-  if (error.code === 1) {
-    message =
-      "Location permission was denied. Allow location access in the browser settings.";
-  } else if (error.code === 2) {
-    message = "The device could not determine its location.";
-  } else if (error.code === 3) {
-    message = "The GPS request timed out.";
-  }
-
-  el.gpsStatus.textContent = "GPS error";
-  el.gpsAccuracyBadge.textContent = "Unavailable";
-
-  showError(message);
-}
-
-function processLocation() {
-  if (!state.gpsInitialised) return;
-
-  const stop = getCurrentStop();
-  if (!stop || !state.position || !hasCoordinates(stop)) {
-    el.gpsStatus.textContent = "Current stop has no coordinates";
-    return;
-  }
-
-  const distance = stopDistance(state.currentStopIndex);
-  state.targetMinimumDistance = Math.min(state.targetMinimumDistance, distance);
-
-  el.distanceDisplay.textContent = formatDistance(distance);
-  el.currentStopDisplay.textContent = stop.name;
-  el.scheduledTimeDisplay.textContent = stop.time || "—";
-
-  if (distance <= stop.arrivalRadius) {
-    if (!state.atStop) {
-      state.atStop = true;
-      updatePassengerDisplay();
-    }
-  }
-
-  updateRunningStatus(stop);
-  processStopAnnouncements(stop, distance);
-  processStationaryAnnouncements(stop, distance);
-
-  if (!advanceAfterPassingStop(stop, distance)) {
-    recoverToCloserStopAhead(distance);
-  }
-
-  state.lastTargetDistance = distance;
-}
-
-function advanceAfterPassingStop(stop, distance) {
-  if (state.currentStopIndex >= state.stops.length - 1) return false;
-
-  /* Normal progression: enter the stop area, then travel 200 m away. */
-  if (state.atStop && distance > state.departureRadiusMetres) {
-    completeStopAndAdvance();
-    return true;
-  }
-
-  /* Backup progression when a GPS fix misses the 100 m arrival circle. */
-  if (state.currentStopIndex > 0) {
-    const previous = state.stops[state.currentStopIndex - 1];
-    if (hasCoordinates(previous)) {
-      const segment = distanceToSegmentMetres(
-        state.position.lat, state.position.lng,
-        Number(previous.lat), Number(previous.lng),
-        Number(stop.lat), Number(stop.lng)
-      );
-
-      const nextDistance = stopDistance(state.currentStopIndex + 1);
-      const clearlyPast = segment.progress > 1.08;
-      const nextClearlyCloser =
-        Number.isFinite(nextDistance) &&
-        nextDistance + 80 < distance &&
-        nextDistance < 450;
-
-      if (clearlyPast || nextClearlyCloser) {
-        completeStopAndAdvance();
-        return true;
-      }
-    }
-  }
-
-  return false;
-}
-
-function recoverToCloserStopAhead(currentDistance) {
-  const lastIndex = Math.min(
-    state.stops.length - 1,
-    state.currentStopIndex + 4
-  );
-
-  let bestIndex = state.currentStopIndex;
-  let bestDistance = currentDistance;
-
-  for (let index = state.currentStopIndex + 1; index <= lastIndex; index += 1) {
-    const distance = stopDistance(index);
-    if (distance < bestDistance) {
-      bestDistance = distance;
-      bestIndex = index;
-    }
-  }
-
-  /* Only jump forward when the evidence is strong enough to reject GPS noise. */
-  if (
-    bestIndex > state.currentStopIndex &&
-    bestDistance < 250 &&
-    bestDistance + 120 < currentDistance
-  ) {
-    setCurrentStop(bestIndex, bestDistance <= state.stops[bestIndex].arrivalRadius);
-    el.gpsStatus.textContent = `Active — recovered to stop ${bestIndex + 1}`;
-  }
-}
-
-function completeStopAndAdvance() {
-  if (
-    state.waitingBecauseEarly &&
-    state.settings.departureThanks &&
-    !state.departureThanksPlayed
-  ) {
-    playAnnouncement(
-      "Thank you for your patience. We will now continue our journey.",
-      9000
-    );
-  }
-
-  state.waitingBecauseEarly = false;
-  setCurrentStop(state.currentStopIndex + 1, false);
-  el.gpsStatus.textContent = `Active — tracking stop ${state.currentStopIndex + 1}`;
-}
-
-function processStopAnnouncements(stop, distance) {
-  const key = stopKey(stop);
-
-  /* Announce NEXT STOP once when the bus comes within 350 m. */
-  if (
-    state.settings.automaticNext &&
-    distance <= stop.nextRadius &&
-    distance > stop.arrivalRadius &&
-    !state.nextPlayed.has(key)
-  ) {
-    announceNextStop();
-    state.nextPlayed.add(key);
-  }
-
-  /*
-   * At 100 m change the screen to THIS STOP and play one combined
-   * arrival/alight announcement. Do not repeat it while stationary.
-   */
-  if (
-    state.settings.automaticArrival &&
-    distance <= stop.arrivalRadius &&
-    !state.arrivalPlayed.has(key)
-  ) {
-    state.atStop = true;
-    updatePassengerDisplay();
-    announceArrival(stop);
-    state.arrivalPlayed.add(key);
-  }
-}
-
-function processStationaryAnnouncements(stop, distance) {
-  const isStationary =
-    state.speedMph <= state.stationarySpeedMph;
-
-  const isAtStop =
-    distance <= stop.arrivalRadius;
-
-  if (!isStationary || !isAtStop) {
-    state.stationarySince = null;
-    return;
-  }
-
-  if (!state.stationarySince) {
-    state.stationarySince = Date.now();
-  }
-
-  const stationarySeconds =
-    (Date.now() - state.stationarySince) / 1000;
-
-  if (stationarySeconds < 20) {
-    return;
-  }
-
-  const difference = getScheduleDifference(stop);
-
-  if (
-    stop.timingPoint &&
-    state.settings.early &&
-    difference !== null &&
-    difference <= -state.earlyThresholdSeconds &&
-    !state.earlyAnnouncementPlayed
-  ) {
-    playEarlyAnnouncement();
-    state.earlyAnnouncementPlayed = true;
-    state.waitingBecauseEarly = true;
-    return;
-  }
-
-  const key = stopKey(stop);
-
-  if (
-    state.settings.welcome &&
-    !isFinalStop() &&
-    !state.welcomePlayed.has(key)
-  ) {
-    playAnnouncement(
-      `Welcome on board ${getBrandName()}. ` +
-      `This is service ${getServiceNumber()} to ${cleanText(
-        getDestination()
-      )}.`,
-      12000
-    );
-
-    state.welcomePlayed.add(key);
-  }
-}
-
-function processDeparture() {
-  /* Progression is handled by advanceAfterPassingStop(). */
-}
-
-function updateRunningStatus(stop) {
-  const difference = getScheduleDifference(stop);
-
-  if (difference === null) {
-    el.runningStatusText.textContent =
-      "No scheduled time";
-    el.timeDifferenceDisplay.textContent = "—";
-    return;
-  }
-
-  const absolute = Math.abs(difference);
-
-  if (absolute < 60) {
-    el.runningStatusText.textContent = "On time";
-    el.timeDifferenceDisplay.textContent = "On time";
-  } else if (difference < 0) {
-    const minutes = Math.floor(absolute / 60);
-
-    el.runningStatusText.textContent =
-      `${minutes} min early`;
-
-    el.timeDifferenceDisplay.textContent =
-      `${minutes} min early`;
-  } else {
-    const minutes = Math.floor(difference / 60);
-
-    el.runningStatusText.textContent =
-      `${minutes} min late`;
-
-    el.timeDifferenceDisplay.textContent =
-      `${minutes} min late`;
-
-    if (
-      state.settings.late &&
-      difference >= state.lateThresholdSeconds &&
-      !state.lateAnnouncementPlayed
-    ) {
-      playDelayAnnouncement();
-      state.lateAnnouncementPlayed = true;
-    }
-  }
-}
-
-function getScheduleDifference(stop) {
-  if (!stop.time) {
-    return null;
-  }
-
-  const scheduled = timeToday(stop.time);
-
-  if (!scheduled) {
-    return null;
-  }
-
-  return Math.round(
-    (Date.now() - scheduled.getTime()) / 1000
-  );
-}
-
 function timeToday(value) {
-  const match = String(value).match(
-    /^(\d{1,2}):(\d{2})$/
-  );
-
-  if (!match) {
-    return null;
-  }
-
-  const date = new Date();
-
-  date.setHours(
-    Number(match[1]),
-    Number(match[2]),
-    0,
-    0
-  );
-
-  return date;
+  const match = String(value).match(/^(\d{1,2}):(\d{2})$/);
+  if (!match) return null;
+  const result = new Date();
+  result.setHours(Number(match[1]), Number(match[2]), 0, 0);
+  return result;
 }
 
-function announceNextStop() {
-  const stop = getCurrentStop();
-  if (!stop) return;
-
-  playAnnouncement(
-    `Next stop, ${cleanText(stop.announcementName)}.`,
-    9000
-  );
-}
-
-function announceCurrentStop() {
-  const stop = getCurrentStop();
-
-  if (!stop) {
-    return;
-  }
-
-  announceArrival(stop);
-}
-
-function announceArrival(stop) {
-  if (isFinalStop()) {
-    handleFinalStop(stop);
-    return;
-  }
-
-  const alight = getRoute36AlightMessage(stop);
-
-  playAnnouncement(
-    `This stop, ${cleanText(stop.announcementName)}.` +
-    (alight ? ` ${cleanText(alight)}` : ""),
-    alight ? 14000 : 9000
-  );
-}
-
-
-function getRoute36AlightMessage(stop) {
-  if (stop.alightMessage) return stop.alightMessage;
-
-  const name = String(stop.name || stop.announcementName || "")
-    .toLowerCase();
-
-  if (name.includes("hunstanton travel hub")) {
-    return "Alight here for Hunstanton Beach.";
-  }
-
-  if (name.includes("old hunstanton")) {
-    return "Alight here for Old Hunstanton Beach.";
-  }
-
-  if (name.includes("holme")) {
-    return "Alight here for the Norfolk Coast Path.";
-  }
-
-  if (name.includes("brancaster")) {
-    return "Alight here for Brancaster Beach.";
-  }
-
-  if (name.includes("holkham")) {
-    return "Alight here for Holkham Beach.";
-  }
-
-  if (name.includes("wells") && name.includes("quay")) {
-    return "Alight here for Wells Beach.";
-  }
-
-  if (name.includes("grove road")) {
-    return "Alight here for C H one to Cromer.";
-  }
-
-  return "";
-}
-
-function handleFinalStop(stop) {
-  const linked =
-    state.departure?.linkedJourney ||
-    state.journey?.linkedJourney;
-
-  if (linked) {
-    const route =
-      linked.route ||
-      linked.service ||
-      "the next service";
-
-    const destination =
-      linked.destination || "";
-
-    const message =
-      linked.announcement ||
-      `This stop is ${cleanText(stop.name)}. ` +
-      `This service will continue as service ${route}` +
-      `${destination ? ` to ${cleanText(destination)}` : ""}. ` +
-      `Passengers travelling onwards may remain on board.`;
-
-    playAnnouncement(message, 20000);
-
-    if (linked.autoChange !== false) {
-      setTimeout(() => {
-        changeToLinkedJourney(linked);
-      }, Number(linked.changeDelay) || 10000);
-    }
-
-    return;
-  }
-
-  playAnnouncement(
-    `Last stop, ${cleanText(stop.name)}. ` +
-    `Please make sure you have all your personal belongings ` +
-    `with you before leaving the bus. ` +
-    `Thanks for travelling with Lynx.`,
-    20000
-  );
-}
-
-async function changeToLinkedJourney(linked) {
-  try {
-    const route =
-      linked.route || linked.service;
-
-    if (!route) {
-      return;
-    }
-
-    await loadRouteScript(route);
-
-    const routeData = window.LYNX_ROUTES[route];
-
-    if (!routeData) {
-      throw new Error(
-        `Linked route ${route} is unavailable.`
-      );
-    }
-
-    const journey =
-      routeData.journeys.find(item =>
-        linked.journeyId
-          ? item.id === linked.journeyId
-          : true
-      );
-
-    if (!journey) {
-      throw new Error(
-        `No linked journey was found for route ${route}.`
-      );
-    }
-
-    const direction =
-      linked.direction ||
-      getJourneyDirections(journey)[0];
-
-    const departures =
-      getDeparturesForDirection(journey, direction);
-
-    const departure =
-      departures.find(item =>
-        linked.departureId
-          ? item.id === linked.departureId
-          : true
-      );
-
-    if (!departure) {
-      throw new Error(
-        `No linked departure was found for route ${route}.`
-      );
-    }
-
-    state.selectedRoute = route;
-    state.routeData = routeData;
-    state.journey = journey;
-    state.departure = departure;
-    state.stops = prepareStops(departure.stops || []);
-
-    state.currentStopIndex =
-      Number.isInteger(linked.startStopIndex)
-        ? linked.startStopIndex
-        : 0;
-
-    resetJourneyState();
-    updatePassengerDisplay();
-
-    playAnnouncement(
-      linked.welcomeAnnouncement ||
-      `The service number is now ${route}. ` +
-      `Welcome on board ${routeData.brand || "Lynx"}. ` +
-      `This is service ${route} to ${cleanText(
-        getDestination()
-      )}.`,
-      16000
-    );
-  } catch (error) {
-    console.error(error);
-    showError(
-      "The linked journey could not be loaded."
-    );
-  }
-}
-
-function playEarlyAnnouncement() {
-  playAnnouncement(
-    "This bus is currently running ahead of schedule. " +
-    "We will be waiting here briefly to help keep the " +
-    "service running on time. Thank you for your patience.",
-    17000
-  );
-
-  state.waitingBecauseEarly = true;
-}
-
-function playDelayAnnouncement() {
-  playAnnouncement(
-    "We apologise that this service is currently running late. " +
-    "Thank you for your patience.",
-    12000
-  );
-}
-
-function playConnectionAnnouncement(message) {
-  const text =
-    message ||
-    "Alight here for C H one to Cromer.";
-
-  el.connectionBanner.textContent = text;
-  el.connectionBanner.classList.remove("hidden");
-
-  playAnnouncement(text, 45000);
-
-  setTimeout(() => {
-    el.connectionBanner.classList.add("hidden");
-  }, 45000);
-}
-
-function playSpecialMessage(type) {
-  const messages = {
-    diversion:
-      "This service is currently operating on diversion. " +
-      "Please listen for further announcements.",
-
-    delay:
-      "We apologise that this service is currently running late. " +
-      "Thank you for your patience.",
-
-    early:
-      "This bus is currently running ahead of schedule. " +
-      "We will be waiting here briefly to help keep the " +
-      "service running on time. Thank you for your patience.",
-
-    connection:
-      "Alight here for C H one to Cromer.",
-
-    "remain-seated":
-      "For your safety, please remain seated until the bus has stopped.",
-
-    terminating:
-      "This journey will terminate at the next stop. " +
-      "Please make sure you have all your belongings with you."
-  };
-
-  const message = messages[type];
-
-  if (message) {
-    playAnnouncement(
-      message,
-      type === "connection" ? 45000 : 14000
-    );
-  }
-}
-
-function enableAudio() {
-  state.audioEnabled = true;
-  loadVoices();
-
-  el.audioStatusBadge.textContent = "Enabled";
-  el.enableAudioButton.textContent =
-    "Announcements enabled";
-
-  playAnnouncement(
-    "Passenger announcements are now enabled.",
-    6000
-  );
-}
-
-function testVoice() {
-  state.audioEnabled = true;
-  loadVoices();
-
-  el.audioStatusBadge.textContent = "Enabled";
-
-  playAnnouncement(
-    "This is a test of the passenger announcement system.",
-    8000
-  );
-}
-
-function loadVoices() {
-  if (!("speechSynthesis" in window)) {
-    return;
-  }
-
-  const voices = speechSynthesis.getVoices();
-
-  const preferredNames = [
-    "Microsoft Sonia Online",
-    "Microsoft Ryan Online",
-    "Microsoft Libby Online",
-    "Google UK English Female",
-    "Google UK English Male",
-    "Serena",
-    "Daniel",
-    "Kate",
-    "Martha",
-    "Arthur"
-  ];
-
-  state.voice =
-    preferredNames
-      .map(name =>
-        voices.find(voice =>
-          voice.name.includes(name)
-        )
-      )
-      .find(Boolean) ||
-    voices.find(voice =>
-      voice.lang === "en-GB" &&
-      /natural|enhanced|premium/i.test(voice.name)
-    ) ||
-    voices.find(voice =>
-      voice.lang === "en-GB"
-    ) ||
-    voices.find(voice =>
-      voice.lang.startsWith("en")
-    ) ||
-    null;
-}
-
-function playAnnouncement(text, duration = 9000) {
-  state.lastAnnouncement = text;
-
-  el.lastAnnouncement.textContent = text;
-  showBanner(text, duration);
-  addHistory(text);
-
-  if (
-    !state.audioEnabled ||
-    !("speechSynthesis" in window)
-  ) {
-    return;
-  }
-
-  speechSynthesis.cancel();
-
-  const sections = text
-    .replace(/([.!?])\s+/g, "$1|")
-    .split("|")
-    .map(section => section.trim())
-    .filter(Boolean);
-
-  sections.forEach(section => {
-    const utterance =
-      new SpeechSynthesisUtterance(section);
-
-    utterance.lang = "en-GB";
-    utterance.voice = state.voice;
-    utterance.volume = 1;
-    utterance.pitch = 0.96;
-
-    if (/welcome on board/i.test(section)) {
-      utterance.rate = 0.86;
-    } else if (/last stop/i.test(section)) {
-      utterance.rate = 0.81;
-    } else if (/running ahead|running late/i.test(section)) {
-      utterance.rate = 0.83;
-    } else {
-      utterance.rate = 0.84;
-    }
-
-    speechSynthesis.speak(utterance);
-  });
-}
-
-function replayAnnouncement() {
-  if (state.lastAnnouncement) {
-    playAnnouncement(
-      state.lastAnnouncement,
-      9000
-    );
-  }
-}
-
-function stopAudio() {
-  if ("speechSynthesis" in window) {
-    speechSynthesis.cancel();
-  }
-
-  hideBanner();
-}
-
-function showBanner(text, duration) {
-  clearTimeout(state.bannerTimer);
-
-  el.announcementBannerText.textContent = text;
-  el.announcementBanner.classList.add("show");
-
-  state.bannerTimer = setTimeout(() => {
-    hideBanner();
-  }, duration);
-}
-
-function hideBanner() {
-  clearTimeout(state.bannerTimer);
-  el.announcementBanner.classList.remove("show");
-}
-
-function addHistory(text) {
-  const empty =
-    el.announcementHistory.querySelector(
-      ".empty-history"
-    );
-
-  if (empty) {
-    empty.remove();
-  }
-
-  const entry = document.createElement("div");
-  entry.className = "history-entry";
-
-  const time = document.createElement("time");
-  time.textContent = new Date().toLocaleTimeString(
-    "en-GB",
-    {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit"
-    }
-  );
-
-  const paragraph = document.createElement("p");
-  paragraph.textContent = text;
-
-  entry.append(time, paragraph);
-  el.announcementHistory.prepend(entry);
-}
-
-function clearHistory() {
-  el.announcementHistory.innerHTML =
-    `<p class="empty-history">No announcements yet.</p>`;
-}
-
-function previousStop() {
-  if (!state.active || state.currentStopIndex <= 0) {
-    return;
-  }
-
-  setCurrentStop(state.currentStopIndex - 1, false);
-  state.gpsInitialised = true;
-  state.gpsStopLocked = true;
-}
-
-function nextStop() {
-  if (
-    !state.active ||
-    state.currentStopIndex >= state.stops.length - 1
-  ) {
-    return;
-  }
-
-  setCurrentStop(state.currentStopIndex + 1, false);
-  state.gpsInitialised = true;
-  state.gpsStopLocked = true;
-}
-
-function updatePassengerDisplay() {
-  const stop = getCurrentStop();
-  const following =
-    state.stops[state.currentStopIndex + 1];
-
-  el.displayRoute.textContent =
-    getServiceNumber();
-
-  el.displayDestination.textContent =
-    getDestination();
-
-  const nextLabel =
-    document.getElementById("nextStopLabel") ||
-    document.querySelector("[data-next-stop-label]") ||
-    document.querySelector(".next-stop-label") ||
-    el.nextStopName?.previousElementSibling;
-
-  if (nextLabel) {
-    nextLabel.textContent = state.atStop ? "This stop" : "Next stop";
-  }
-
-  el.nextStopName.textContent =
-    stop?.name || "Journey complete";
-
-  el.followingStopName.textContent =
-    following
-      ? `Following stop: ${following.name}`
-      : "Final stop";
-
-  el.currentStopDisplay.textContent =
-    stop?.name || "—";
-
-  el.scheduledTimeDisplay.textContent =
-    stop?.time || "—";
-
-  el.stopProgress.textContent =
-    `Stop ${Math.min(
-      state.currentStopIndex + 1,
-      state.stops.length
-    )} of ${state.stops.length}`;
-
-  const percentage =
-    state.stops.length > 0
-      ? ((state.currentStopIndex + 1) /
-          state.stops.length) *
-        100
-      : 0;
-
-  el.journeyProgressBar.style.width =
-    `${percentage}%`;
-
-  el.previousStopButton.disabled =
-    state.currentStopIndex <= 0;
-
-  el.nextStopButton.disabled =
-    state.currentStopIndex >=
-    state.stops.length - 1;
-}
-
-function stopJourney(playEndMessage = true) {
-  if (state.gpsWatchId !== null) {
-    navigator.geolocation.clearWatch(
-      state.gpsWatchId
-    );
-
-    state.gpsWatchId = null;
-  }
-
-  state.active = false;
-  state.position = null;
-  state.gpsStopLocked = false;
-  state.gpsInitialised = false;
-  state.targetMinimumDistance = Infinity;
-  state.lastTargetDistance = Infinity;
-  state.stationarySince = null;
-
-  el.systemStatus.textContent = "Offline";
-  el.gpsStatus.textContent = "Stopped";
-  el.gpsAccuracyBadge.textContent = "Not active";
-  el.speedDisplay.textContent = "— mph";
-  el.distanceDisplay.textContent = "—";
-
-  setJourneyControls(false);
-
-  el.startJourneyButton.disabled =
-    !state.departure;
-
-  el.stopJourneyButton.disabled = true;
-
-  if (playEndMessage) {
-    stopAudio();
-  }
-}
-
-function setJourneyControls(enabled) {
-  el.previousStopButton.disabled = !enabled;
-  el.nextStopButton.disabled = !enabled;
-  el.announceNextButton.disabled = !enabled;
-  el.announceThisButton.disabled = !enabled;
-  el.announceDelayButton.disabled = !enabled;
-  el.announceEarlyButton.disabled = !enabled;
-
-  el.messageButtons.forEach(button => {
-    button.disabled = !enabled;
-  });
-}
-
-function getCurrentStop() {
-  return state.stops[state.currentStopIndex] || null;
-}
-
-function isFinalStop() {
-  return (
-    state.currentStopIndex ===
-    state.stops.length - 1
-  );
-}
-
-function stopKey(stop) {
-  return `${state.currentStopIndex}-${stop.id}-${stop.name}`;
-}
-
-function getServiceNumber() {
-  return (
-    state.routeData?.service ||
-    state.selectedRoute ||
-    "—"
-  );
-}
-
-function getBrandName() {
-  return (
-    state.departure?.brand ||
-    state.journey?.brand ||
-    state.routeData?.brand ||
-    "Lynx"
-  );
-}
-
-function getDestination() {
-  return (
-    state.departure?.destination ||
-    state.journey?.destination ||
-    state.routeData?.destination ||
-    "the destination"
-  );
-}
-
-function cleanText(value) {
+function formatDirection(value) {
   return String(value || "")
-    .replace(/Wells-next-the-Sea/gi, "Wells next the Sea")
+    .replace(/[-_]/g, " ")
+    .replace(/\b\w/g, character => character.toUpperCase());
+}
+
+function formatDistance(distance) {
+  return distance < 1000
+    ? `${Math.round(distance)} m`
+    : `${(distance / 1000).toFixed(1)} km`;
+}
+
+function cleanForSpeech(value) {
+  return String(value || "")
     .replace(/King's Lynn/gi, "Kings Lynn")
-    .replace(/\bCo-Op\b/gi, "Co-op")
+    .replace(/Wells-next-the-Sea/gi, "Wells next the Sea")
     .replace(/\bCH1\b/gi, "C H one")
     .replace(/\s+/g, " ")
     .trim();
 }
 
-function distanceMetres(lat1, lng1, lat2, lng2) {
-  if (
-    !Number.isFinite(lat1) ||
-    !Number.isFinite(lng1) ||
-    !Number.isFinite(lat2) ||
-    !Number.isFinite(lng2)
-  ) {
-    return Infinity;
-  }
-
-  const radius = 6371000;
-  const toRadians = value =>
-    value * Math.PI / 180;
-
-  const latitude1 = toRadians(lat1);
-  const latitude2 = toRadians(lat2);
-
-  const latitudeDifference =
-    toRadians(lat2 - lat1);
-
-  const longitudeDifference =
-    toRadians(lng2 - lng1);
-
-  const a =
-    Math.sin(latitudeDifference / 2) ** 2 +
-    Math.cos(latitude1) *
-      Math.cos(latitude2) *
-      Math.sin(longitudeDifference / 2) ** 2;
-
-  return (
-    2 *
-    radius *
-    Math.atan2(
-      Math.sqrt(a),
-      Math.sqrt(1 - a)
-    )
-  );
+function loadVoices() {
+  if (!("speechSynthesis" in window)) return;
+  const voices = speechSynthesis.getVoices();
+  state.voice =
+    voices.find(voice => voice.lang === "en-GB" && /natural|enhanced|premium/i.test(voice.name)) ||
+    voices.find(voice => voice.lang === "en-GB") ||
+    voices.find(voice => voice.lang.startsWith("en")) ||
+    null;
 }
 
-function formatDistance(distance) {
-  if (!Number.isFinite(distance)) {
-    return "—";
-  }
+function speak(text) {
+  state.lastAnnouncement = text;
+  el.announcementStatus.textContent = text;
+  if (!state.audioEnabled || !("speechSynthesis" in window)) return;
 
-  if (distance < 1000) {
-    return `${Math.round(distance)} m`;
-  }
-
-  return `${(distance / 1000).toFixed(1)} km`;
+  speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "en-GB";
+  utterance.voice = state.voice;
+  utterance.rate = 0.84;
+  utterance.pitch = 0.98;
+  utterance.volume = 1;
+  speechSynthesis.speak(utterance);
 }
 
-function formatDirection(direction) {
-  return String(direction)
-    .replace(/[-_]/g, " ")
-    .replace(/\b\w/g, character =>
-      character.toUpperCase()
-    );
+function stopSpeech() {
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+}
+
+function setGpsStatus(type, text) {
+  el.gpsStatus.className = `gps-status gps-${type}`;
+  el.gpsStatusText.textContent = text;
+}
+
+function buildGpsDebug(distance) {
+  const fix = state.lastGpsFixAt
+    ? state.lastGpsFixAt.toLocaleTimeString("en-GB")
+    : "none";
+  const segment = nearestRouteSegment();
+  return [
+    `Last fix: ${fix}`,
+    `Latitude: ${state.position?.lat?.toFixed(6) ?? "—"}`,
+    `Longitude: ${state.position?.lng?.toFixed(6) ?? "—"}`,
+    `Accuracy: ${state.accuracy === null ? "—" : `${Math.round(state.accuracy)} m`}`,
+    `Speed: ${state.speedMph.toFixed(1)} mph`,
+    `Target stop: ${state.stopIndex + 1}/${state.stops.length}`,
+    `Distance to stop: ${Number.isFinite(distance) ? formatDistance(distance) : "—"}`,
+    `Distance from route: ${segment ? formatDistance(segment.distance) : "—"}`,
+    `Diversion timer: ${state.offRouteSince ? `${Math.floor((Date.now() - state.offRouteSince) / 1000)} s` : "not active"}`
+  ].join("\n");
+}
+
+function updateGpsDebug(text) {
+  el.gpsDebugOutput.textContent = text;
 }
 
 function startClock() {
-  function update() {
-    el.currentTime.textContent =
-      new Date().toLocaleTimeString("en-GB", {
-        hour: "2-digit",
-        minute: "2-digit"
-      });
-  }
-
+  const update = () => {
+    const now = new Date();
+    el.currentTime.textContent = now.toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+    el.currentTime.dateTime = now.toISOString();
+    if (state.active) updateRunningStatus(getStop());
+  };
   update();
-
-  state.clockTimer = setInterval(
-    update,
-    1000
-  );
+  state.clockTimer = setInterval(update, 1000);
 }
 
-function showError(message) {
-  el.errorModalText.textContent = message;
-  el.errorModal.classList.remove("hidden");
-}
-
-function hideError() {
-  el.errorModal.classList.add("hidden");
+async function enterFullscreen() {
+  try {
+    if (!document.fullscreenElement) {
+      await document.documentElement.requestFullscreen();
+      el.fullscreenButton.textContent = "Exit full screen";
+    } else {
+      await document.exitFullscreen();
+      el.fullscreenButton.textContent = "Full screen";
+    }
+  } catch (error) {
+    updateGpsDebug(`Full screen could not be enabled: ${error.message}`);
+  }
 }
