@@ -61,6 +61,7 @@ const state = {
   position: null,
   speedMph: 0,
   accuracy: null,
+  gpsStopLocked: false,
 
   audioEnabled: false,
   voice: null,
@@ -653,6 +654,7 @@ async function startJourney() {
 }
 
 function resetJourneyState() {
+  state.gpsStopLocked = false;
   state.stationarySince = null;
   state.waitingBecauseEarly = false;
   state.earlyAnnouncementPlayed = false;
@@ -710,7 +712,45 @@ function gpsUpdated(position) {
   el.speedDisplay.textContent =
     `${state.speedMph.toFixed(1)} mph`;
 
+  lockToNearestStopOnce();
   processLocation();
+}
+
+function lockToNearestStopOnce() {
+  if (state.gpsStopLocked || !state.position || !state.stops.length) {
+    return;
+  }
+
+  let nearestIndex = -1;
+  let nearestDistance = Infinity;
+
+  state.stops.forEach((stop, index) => {
+    if (!Number.isFinite(stop.lat) || !Number.isFinite(stop.lng)) {
+      return;
+    }
+
+    const distance = distanceMetres(
+      state.position.lat,
+      state.position.lng,
+      stop.lat,
+      stop.lng
+    );
+
+    if (distance < nearestDistance) {
+      nearestDistance = distance;
+      nearestIndex = index;
+    }
+  });
+
+  if (nearestIndex < 0) {
+    el.gpsStatus.textContent = "Active — stop coordinates unavailable";
+    return;
+  }
+
+  state.currentStopIndex = nearestIndex;
+  state.gpsStopLocked = true;
+  state.atStop = nearestDistance <= state.stops[nearestIndex].arrivalRadius;
+  updatePassengerDisplay();
 }
 
 function gpsFailed(error) {
@@ -855,12 +895,12 @@ function processStationaryAnnouncements(stop, distance) {
 }
 
 function processDeparture(stop, distance) {
-  const key = stopKey(stop);
-  const hasReachedStop =
-    state.arrivalPlayed.has(key);
-
+  /*
+   * Once the bus has entered the 100 m arrival area, keep THIS STOP
+   * displayed until it has moved more than 200 m from that stop.
+   */
   const leaving =
-    hasReachedStop &&
+    state.atStop &&
     distance > state.departureRadiusMetres;
 
   if (!leaving) return;
@@ -1039,7 +1079,7 @@ function getRoute36AlightMessage(stop) {
     return "Alight here for Wells Beach.";
   }
 
-  if (name.includes("wells") && name.includes("grove road")) {
+  if (name.includes("grove road")) {
     return "Alight here for C H one to Cromer.";
   }
 
@@ -1426,6 +1466,8 @@ function previousStop() {
   }
 
   state.currentStopIndex -= 1;
+  state.gpsStopLocked = true;
+  state.atStop = false;
   state.stationarySince = null;
 
   updatePassengerDisplay();
@@ -1440,6 +1482,8 @@ function nextStop() {
   }
 
   state.currentStopIndex += 1;
+  state.gpsStopLocked = true;
+  state.atStop = false;
   state.stationarySince = null;
 
   updatePassengerDisplay();
@@ -1515,6 +1559,7 @@ function stopJourney(playEndMessage = true) {
 
   state.active = false;
   state.position = null;
+  state.gpsStopLocked = false;
   state.stationarySince = null;
 
   el.systemStatus.textContent = "Offline";
