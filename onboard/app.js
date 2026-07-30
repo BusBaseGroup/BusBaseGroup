@@ -61,12 +61,6 @@ const state = {
   position: null,
   speedMph: 0,
   accuracy: null,
-  gpsLockedToRoute: false,
-
-  diversionActive: false,
-  diversionStartedAt: null,
-  rejoinStartedAt: null,
-  diversionAnnounced: false,
 
   audioEnabled: false,
   voice: null,
@@ -98,15 +92,10 @@ const state = {
 
   nextRadiusMetres: 350,
   arrivalRadiusMetres: 100,
-  departureRadiusMetres: 130,
+  departureRadiusMetres: 200,
   stationarySpeedMph: 1,
   earlyThresholdSeconds: 60,
-  lateThresholdSeconds: 300,
-
-  diversionTriggerMetres: 150,
-  diversionTriggerSeconds: 30,
-  diversionClearMetres: 75,
-  diversionClearSeconds: 8
+  lateThresholdSeconds: 300
 };
 
 const el = {};
@@ -674,12 +663,6 @@ function resetJourneyState() {
   state.arrivalPlayed.clear();
   state.welcomePlayed.clear();
   state.specialPlayed.clear();
-
-  state.gpsLockedToRoute = false;
-  state.diversionActive = false;
-  state.diversionStartedAt = null;
-  state.rejoinStartedAt = null;
-  state.diversionAnnounced = false;
 }
 
 function startGps() {
@@ -749,26 +732,9 @@ function gpsFailed(error) {
 }
 
 function processLocation() {
-  if (!state.position || !state.stops.length) return;
-
-  /*
-   * On the first reliable GPS update, lock the journey to the nearest
-   * stop instead of always remaining at stop 1.
-   */
-  if (!state.gpsLockedToRoute) {
-    const nearest = findNearestStopIndex();
-
-    if (nearest.index !== -1 && Number.isFinite(nearest.distance)) {
-      state.currentStopIndex = nearest.index;
-      state.atStop = nearest.distance <=
-        state.stops[nearest.index].arrivalRadius;
-      state.gpsLockedToRoute = true;
-      updatePassengerDisplay();
-    }
-  }
-
   const stop = getCurrentStop();
-  if (!stop) return;
+
+  if (!stop || !state.position) return;
 
   const distance = distanceMetres(
     state.position.lat,
@@ -781,125 +747,24 @@ function processLocation() {
   el.currentStopDisplay.textContent = stop.name;
   el.scheduledTimeDisplay.textContent = stop.time || "—";
 
-  const thisStopNow = distance <= stop.arrivalRadius;
+  /*
+   * Route 36 passenger display:
+   * over 100 m  = NEXT STOP
+   * within 100 m = THIS STOP
+   * remain THIS STOP until the bus has left the stop
+   */
+  const thisStopNow =
+    distance <= stop.arrivalRadius;
 
   if (thisStopNow && !state.atStop) {
     state.atStop = true;
     updatePassengerDisplay();
   }
 
-  processDiversionDetection();
-
-  if (state.diversionActive) {
-    return;
-  }
-
   updateRunningStatus(stop);
   processStopAnnouncements(stop, distance);
   processStationaryAnnouncements(stop, distance);
   processDeparture(stop, distance);
-}
-
-function findNearestStopIndex(startIndex = 0) {
-  let bestIndex = -1;
-  let bestDistance = Infinity;
-
-  for (let index = Math.max(0, startIndex); index < state.stops.length; index += 1) {
-    const stop = state.stops[index];
-    const distance = distanceMetres(
-      state.position.lat,
-      state.position.lng,
-      stop.lat,
-      stop.lng
-    );
-
-    if (distance < bestDistance) {
-      bestDistance = distance;
-      bestIndex = index;
-    }
-  }
-
-  return { index: bestIndex, distance: bestDistance };
-}
-
-function processDiversionDetection() {
-  const nearest = findNearestStopIndex(state.currentStopIndex);
-  const now = Date.now();
-
-  if (!Number.isFinite(nearest.distance)) {
-    return;
-  }
-
-  if (!state.diversionActive) {
-    if (nearest.distance > state.diversionTriggerMetres) {
-      if (!state.diversionStartedAt) {
-        state.diversionStartedAt = now;
-      }
-
-      const awaySeconds = (now - state.diversionStartedAt) / 1000;
-
-      if (awaySeconds >= state.diversionTriggerSeconds) {
-        activateDiversion();
-      }
-    } else {
-      state.diversionStartedAt = null;
-    }
-
-    return;
-  }
-
-  if (nearest.distance <= state.diversionClearMetres) {
-    if (!state.rejoinStartedAt) {
-      state.rejoinStartedAt = now;
-    }
-
-    const rejoinedSeconds = (now - state.rejoinStartedAt) / 1000;
-
-    if (rejoinedSeconds >= state.diversionClearSeconds) {
-      state.currentStopIndex = Math.max(
-        state.currentStopIndex,
-        nearest.index
-      );
-      clearDiversion();
-    }
-  } else {
-    state.rejoinStartedAt = null;
-  }
-}
-
-function activateDiversion() {
-  state.diversionActive = true;
-  state.diversionStartedAt = null;
-  state.rejoinStartedAt = null;
-
-  document.body.classList.add("service-disruption");
-  el.systemStatus.textContent = "Service disruption";
-  el.displayDestination.textContent = "SERVICE DISRUPTION";
-  el.nextStopName.textContent = "This bus is currently on diversion";
-  el.followingStopName.textContent =
-    "Please listen for driver announcements";
-  el.runningStatusText.textContent = "Operating on diversion";
-
-  if (!state.diversionAnnounced) {
-    playAnnouncement(
-      "This service is currently operating on diversion. " +
-      "Please listen for further announcements.",
-      14000
-    );
-    state.diversionAnnounced = true;
-  }
-}
-
-function clearDiversion() {
-  state.diversionActive = false;
-  state.diversionStartedAt = null;
-  state.rejoinStartedAt = null;
-  state.diversionAnnounced = false;
-
-  document.body.classList.remove("service-disruption");
-  el.systemStatus.textContent = "Running";
-  state.atStop = false;
-  updatePassengerDisplay();
 }
 
 function processStopAnnouncements(stop, distance) {
@@ -996,8 +861,7 @@ function processDeparture(stop, distance) {
 
   const leaving =
     hasReachedStop &&
-    distance > state.departureRadiusMetres &&
-    state.speedMph > 2;
+    distance > state.departureRadiusMetres;
 
   if (!leaving) return;
 
@@ -1175,7 +1039,10 @@ function getRoute36AlightMessage(stop) {
     return "Alight here for Wells Beach.";
   }
 
-  if (name.includes("grove road")) {
+  if (
+    name.includes("wells") &&
+    name.includes("grove road")
+  ) {
     return "Alight here for C H one to Cromer.";
   }
 
@@ -1563,6 +1430,7 @@ function previousStop() {
 
   state.currentStopIndex -= 1;
   state.stationarySince = null;
+  state.atStop = false;
 
   updatePassengerDisplay();
 }
@@ -1577,6 +1445,7 @@ function nextStop() {
 
   state.currentStopIndex += 1;
   state.stationarySince = null;
+  state.atStop = false;
 
   updatePassengerDisplay();
 }
@@ -1604,6 +1473,17 @@ function updatePassengerDisplay() {
 
   el.nextStopName.textContent =
     stop?.name || "Journey complete";
+
+  const alightMessage = stop
+    ? getRoute36AlightMessage(stop)
+    : "";
+
+  if (state.atStop && alightMessage) {
+    el.connectionBanner.textContent = alightMessage;
+    el.connectionBanner.classList.remove("hidden");
+  } else {
+    el.connectionBanner.classList.add("hidden");
+  }
 
   el.followingStopName.textContent =
     following
@@ -1652,12 +1532,6 @@ function stopJourney(playEndMessage = true) {
   state.active = false;
   state.position = null;
   state.stationarySince = null;
-  state.gpsLockedToRoute = false;
-  state.diversionActive = false;
-  state.diversionStartedAt = null;
-  state.rejoinStartedAt = null;
-  state.diversionAnnounced = false;
-  document.body.classList.remove("service-disruption");
 
   el.systemStatus.textContent = "Offline";
   el.gpsStatus.textContent = "Stopped";
