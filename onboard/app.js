@@ -1,6 +1,13 @@
 "use strict";
 
 /*
+  BusBase onboard app — rewritten GPS progression engine.
+  The first valid GPS fix selects the nearest point on the route and targets
+  the stop ahead. Stops then progress forwards using arrival/departure radii,
+  route-segment pass detection and a conservative forward recovery check.
+*/
+
+/*
 Expected folder structure:
 
 index.html
@@ -62,6 +69,11 @@ const state = {
   speedMph: 0,
   accuracy: null,
   gpsStopLocked: false,
+  gpsInitialised: false,
+  targetMinimumDistance: Infinity,
+  lastTargetDistance: Infinity,
+  lastGpsTimestamp: 0,
+  validCoordinateCount: 0,
 
   audioEnabled: false,
   voice: null,
@@ -655,6 +667,11 @@ async function startJourney() {
 
 function resetJourneyState() {
   state.gpsStopLocked = false;
+  state.gpsInitialised = false;
+  state.targetMinimumDistance = Infinity;
+  state.lastTargetDistance = Infinity;
+  state.lastGpsTimestamp = 0;
+  state.validCoordinateCount = state.stops.filter(hasCoordinates).length;
   state.stationarySince = null;
   state.waitingBecauseEarly = false;
   state.earlyAnnouncementPlayed = false;
@@ -688,69 +705,158 @@ function startGps() {
 }
 
 function gpsUpdated(position) {
-  if (!state.active) {
+  if (!state.active) return;
+
+  const coords = position.coords;
+  const latitude = Number(coords.latitude);
+  const longitude = Number(coords.longitude);
+
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+    el.gpsStatus.textContent = "Invalid GPS reading";
     return;
   }
 
-  const coords = position.coords;
-
-  state.position = {
-    lat: coords.latitude,
-    lng: coords.longitude
-  };
-
+  state.position = { lat: latitude, lng: longitude };
+  state.lastGpsTimestamp = Number(position.timestamp) || Date.now();
   state.speedMph = Number.isFinite(coords.speed)
     ? Math.max(0, coords.speed * 2.236936)
     : 0;
-
-  state.accuracy = coords.accuracy;
+  state.accuracy = Number.isFinite(coords.accuracy)
+    ? coords.accuracy
+    : null;
 
   el.gpsStatus.textContent = "Active";
-  el.gpsAccuracyBadge.textContent =
-    `Accurate to ${Math.round(state.accuracy)} m`;
+  el.gpsAccuracyBadge.textContent = state.accuracy === null
+    ? "Accuracy unavailable"
+    : `Accurate to ${Math.round(state.accuracy)} m`;
+  el.speedDisplay.textContent = `${state.speedMph.toFixed(1)} mph`;
 
-  el.speedDisplay.textContent =
-    `${state.speedMph.toFixed(1)} mph`;
+  if (!state.validCoordinateCount) {
+    state.validCoordinateCount = state.stops.filter(hasCoordinates).length;
+  }
 
-  lockToNearestStopOnce();
+  if (!state.validCoordinateCount) {
+    el.gpsStatus.textContent = "No stop coordinates";
+    el.distanceDisplay.textContent = "—";
+    return;
+  }
+
+  if (!state.gpsInitialised) initialiseGpsTarget();
   processLocation();
 }
 
-function lockToNearestStopOnce() {
-  if (state.gpsStopLocked || !state.position || !state.stops.length) {
-    return;
-  }
+function hasCoordinates(stop) {
+  return Boolean(
+    stop &&
+    Number.isFinite(Number(stop.lat)) &&
+    Number.isFinite(Number(stop.lng)) &&
+    Math.abs(Number(stop.lat)) <= 90 &&
+    Math.abs(Number(stop.lng)) <= 180
+  );
+}
 
-  let nearestIndex = -1;
-  let nearestDistance = Infinity;
+function stopDistance(index) {
+  const stop = state.stops[index];
+  if (!state.position || !hasCoordinates(stop)) return Infinity;
+  return distanceMetres(
+    state.position.lat,
+    state.position.lng,
+    Number(stop.lat),
+    Number(stop.lng)
+  );
+}
+
+function initialiseGpsTarget() {
+  if (!state.position || !state.stops.length) return;
+
+  let nearestStopIndex = -1;
+  let nearestStopDistance = Infinity;
 
   state.stops.forEach((stop, index) => {
-    if (!Number.isFinite(stop.lat) || !Number.isFinite(stop.lng)) {
-      return;
-    }
-
-    const distance = distanceMetres(
-      state.position.lat,
-      state.position.lng,
-      stop.lat,
-      stop.lng
-    );
-
-    if (distance < nearestDistance) {
-      nearestDistance = distance;
-      nearestIndex = index;
+    const distance = stopDistance(index);
+    if (distance < nearestStopDistance) {
+      nearestStopDistance = distance;
+      nearestStopIndex = index;
     }
   });
 
-  if (nearestIndex < 0) {
-    el.gpsStatus.textContent = "Active — stop coordinates unavailable";
-    return;
+  if (nearestStopIndex < 0) return;
+
+  let targetIndex = nearestStopIndex;
+  const nearestStop = state.stops[nearestStopIndex];
+
+  /* When between stops, target the stop ahead rather than the stop behind. */
+  if (nearestStopDistance > nearestStop.arrivalRadius) {
+    const segment = nearestRouteSegment();
+    if (segment) targetIndex = Math.min(segment.index + 1, state.stops.length - 1);
   }
 
-  state.currentStopIndex = nearestIndex;
+  setCurrentStop(targetIndex, nearestStopDistance <= nearestStop.arrivalRadius);
+  state.gpsInitialised = true;
   state.gpsStopLocked = true;
-  state.atStop = nearestDistance <= state.stops[nearestIndex].arrivalRadius;
+  el.gpsStatus.textContent = `Active — tracking stop ${targetIndex + 1}`;
+}
+
+function nearestRouteSegment() {
+  let best = null;
+
+  for (let index = 0; index < state.stops.length - 1; index += 1) {
+    const first = state.stops[index];
+    const second = state.stops[index + 1];
+    if (!hasCoordinates(first) || !hasCoordinates(second)) continue;
+
+    const result = distanceToSegmentMetres(
+      state.position.lat,
+      state.position.lng,
+      Number(first.lat),
+      Number(first.lng),
+      Number(second.lat),
+      Number(second.lng)
+    );
+
+    if (!best || result.distance < best.distance) {
+      best = { index, distance: result.distance, progress: result.progress };
+    }
+  }
+
+  return best;
+}
+
+function setCurrentStop(index, atStop = false) {
+  const safeIndex = Math.max(0, Math.min(index, state.stops.length - 1));
+  state.currentStopIndex = safeIndex;
+  state.atStop = Boolean(atStop);
+  state.targetMinimumDistance = stopDistance(safeIndex);
+  state.lastTargetDistance = state.targetMinimumDistance;
+  state.stationarySince = null;
+  state.earlyAnnouncementPlayed = false;
+  state.departureThanksPlayed = false;
+  state.lateAnnouncementPlayed = false;
   updatePassengerDisplay();
+}
+
+function distanceToSegmentMetres(lat, lng, lat1, lng1, lat2, lng2) {
+  const referenceLat = (lat + lat1 + lat2) / 3 * Math.PI / 180;
+  const metresPerLat = 111320;
+  const metresPerLng = 111320 * Math.cos(referenceLat);
+
+  const px = (lng - lng1) * metresPerLng;
+  const py = (lat - lat1) * metresPerLat;
+  const vx = (lng2 - lng1) * metresPerLng;
+  const vy = (lat2 - lat1) * metresPerLat;
+  const lengthSquared = vx * vx + vy * vy;
+
+  if (!lengthSquared) return { distance: Math.hypot(px, py), progress: 0 };
+
+  const rawProgress = (px * vx + py * vy) / lengthSquared;
+  const progress = Math.max(0, Math.min(1, rawProgress));
+  const closestX = vx * progress;
+  const closestY = vy * progress;
+
+  return {
+    distance: Math.hypot(px - closestX, py - closestY),
+    progress: rawProgress
+  };
 }
 
 function gpsFailed(error) {
@@ -772,39 +878,118 @@ function gpsFailed(error) {
 }
 
 function processLocation() {
+  if (!state.gpsInitialised) return;
+
   const stop = getCurrentStop();
+  if (!stop || !state.position || !hasCoordinates(stop)) {
+    el.gpsStatus.textContent = "Current stop has no coordinates";
+    return;
+  }
 
-  if (!stop || !state.position) return;
-
-  const distance = distanceMetres(
-    state.position.lat,
-    state.position.lng,
-    stop.lat,
-    stop.lng
-  );
+  const distance = stopDistance(state.currentStopIndex);
+  state.targetMinimumDistance = Math.min(state.targetMinimumDistance, distance);
 
   el.distanceDisplay.textContent = formatDistance(distance);
   el.currentStopDisplay.textContent = stop.name;
   el.scheduledTimeDisplay.textContent = stop.time || "—";
 
-  /*
-   * Route 36 passenger display:
-   * over 100 m  = NEXT STOP
-   * within 100 m = THIS STOP
-   * remain THIS STOP until the bus has left the stop
-   */
-  const thisStopNow =
-    distance <= stop.arrivalRadius;
-
-  if (thisStopNow && !state.atStop) {
-    state.atStop = true;
-    updatePassengerDisplay();
+  if (distance <= stop.arrivalRadius) {
+    if (!state.atStop) {
+      state.atStop = true;
+      updatePassengerDisplay();
+    }
   }
 
   updateRunningStatus(stop);
   processStopAnnouncements(stop, distance);
   processStationaryAnnouncements(stop, distance);
-  processDeparture(stop, distance);
+
+  if (!advanceAfterPassingStop(stop, distance)) {
+    recoverToCloserStopAhead(distance);
+  }
+
+  state.lastTargetDistance = distance;
+}
+
+function advanceAfterPassingStop(stop, distance) {
+  if (state.currentStopIndex >= state.stops.length - 1) return false;
+
+  /* Normal progression: enter the stop area, then travel 200 m away. */
+  if (state.atStop && distance > state.departureRadiusMetres) {
+    completeStopAndAdvance();
+    return true;
+  }
+
+  /* Backup progression when a GPS fix misses the 100 m arrival circle. */
+  if (state.currentStopIndex > 0) {
+    const previous = state.stops[state.currentStopIndex - 1];
+    if (hasCoordinates(previous)) {
+      const segment = distanceToSegmentMetres(
+        state.position.lat, state.position.lng,
+        Number(previous.lat), Number(previous.lng),
+        Number(stop.lat), Number(stop.lng)
+      );
+
+      const nextDistance = stopDistance(state.currentStopIndex + 1);
+      const clearlyPast = segment.progress > 1.08;
+      const nextClearlyCloser =
+        Number.isFinite(nextDistance) &&
+        nextDistance + 80 < distance &&
+        nextDistance < 450;
+
+      if (clearlyPast || nextClearlyCloser) {
+        completeStopAndAdvance();
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+function recoverToCloserStopAhead(currentDistance) {
+  const lastIndex = Math.min(
+    state.stops.length - 1,
+    state.currentStopIndex + 4
+  );
+
+  let bestIndex = state.currentStopIndex;
+  let bestDistance = currentDistance;
+
+  for (let index = state.currentStopIndex + 1; index <= lastIndex; index += 1) {
+    const distance = stopDistance(index);
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      bestIndex = index;
+    }
+  }
+
+  /* Only jump forward when the evidence is strong enough to reject GPS noise. */
+  if (
+    bestIndex > state.currentStopIndex &&
+    bestDistance < 250 &&
+    bestDistance + 120 < currentDistance
+  ) {
+    setCurrentStop(bestIndex, bestDistance <= state.stops[bestIndex].arrivalRadius);
+    el.gpsStatus.textContent = `Active — recovered to stop ${bestIndex + 1}`;
+  }
+}
+
+function completeStopAndAdvance() {
+  if (
+    state.waitingBecauseEarly &&
+    state.settings.departureThanks &&
+    !state.departureThanksPlayed
+  ) {
+    playAnnouncement(
+      "Thank you for your patience. We will now continue our journey.",
+      9000
+    );
+  }
+
+  state.waitingBecauseEarly = false;
+  setCurrentStop(state.currentStopIndex + 1, false);
+  el.gpsStatus.textContent = `Active — tracking stop ${state.currentStopIndex + 1}`;
 }
 
 function processStopAnnouncements(stop, distance) {
@@ -894,43 +1079,8 @@ function processStationaryAnnouncements(stop, distance) {
   }
 }
 
-function processDeparture(stop, distance) {
-  /*
-   * Once the bus has entered the 100 m arrival area, keep THIS STOP
-   * displayed until it has moved more than 200 m from that stop.
-   */
-  const leaving =
-    state.atStop &&
-    distance > state.departureRadiusMetres;
-
-  if (!leaving) return;
-
-  if (
-    state.waitingBecauseEarly &&
-    state.settings.departureThanks &&
-    !state.departureThanksPlayed
-  ) {
-    playAnnouncement(
-      "Thank you for your patience. We will now continue our journey.",
-      9000
-    );
-    state.departureThanksPlayed = true;
-  }
-
-  state.waitingBecauseEarly = false;
-  state.stationarySince = null;
-
-  if (state.currentStopIndex < state.stops.length - 1) {
-    state.currentStopIndex += 1;
-
-    /* Immediately show NEXT STOP for the following stop. */
-    state.atStop = false;
-    state.earlyAnnouncementPlayed = false;
-    state.departureThanksPlayed = false;
-    state.lateAnnouncementPlayed = false;
-
-    updatePassengerDisplay();
-  }
+function processDeparture() {
+  /* Progression is handled by advanceAfterPassingStop(). */
 }
 
 function updateRunningStatus(stop) {
@@ -1465,12 +1615,9 @@ function previousStop() {
     return;
   }
 
-  state.currentStopIndex -= 1;
+  setCurrentStop(state.currentStopIndex - 1, false);
+  state.gpsInitialised = true;
   state.gpsStopLocked = true;
-  state.atStop = false;
-  state.stationarySince = null;
-
-  updatePassengerDisplay();
 }
 
 function nextStop() {
@@ -1481,12 +1628,9 @@ function nextStop() {
     return;
   }
 
-  state.currentStopIndex += 1;
+  setCurrentStop(state.currentStopIndex + 1, false);
+  state.gpsInitialised = true;
   state.gpsStopLocked = true;
-  state.atStop = false;
-  state.stationarySince = null;
-
-  updatePassengerDisplay();
 }
 
 function updatePassengerDisplay() {
@@ -1560,6 +1704,9 @@ function stopJourney(playEndMessage = true) {
   state.active = false;
   state.position = null;
   state.gpsStopLocked = false;
+  state.gpsInitialised = false;
+  state.targetMinimumDistance = Infinity;
+  state.lastTargetDistance = Infinity;
   state.stationarySince = null;
 
   el.systemStatus.textContent = "Offline";
