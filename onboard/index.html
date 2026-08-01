@@ -19,7 +19,7 @@
 
   <title>Onboard Passenger Information</title>
 
-  <link rel="stylesheet" href="style.css?v=real-pis-v4">
+  <link rel="stylesheet" href="style.css?v=network-v6">
 </head>
 
 <body>
@@ -52,9 +52,31 @@
             <span class="field-label">Route</span>
             <select id="routeSelect" required>
               <option value="">Select route</option>
+              <option value="33">33</option>
+              <option value="33A">33A</option>
+              <option value="33B">33B</option>
+              <option value="33C">33C</option>
               <option value="34">34</option>
               <option value="35">35</option>
-              <option value="36">36</option>
+              <option value="36">36 Coastliner</option>
+              <option value="37">37</option>
+              <option value="38">38</option>
+              <option value="39">39</option>
+              <option value="41">41</option>
+              <option value="42">42</option>
+              <option value="43">43</option>
+              <option value="44">44 the loop</option>
+              <option value="46">46</option>
+              <option value="X46">X46</option>
+              <option value="48">48</option>
+              <option value="49">49</option>
+              <option value="49A">49A</option>
+              <option value="48A">48A</option>
+              <option value="54">54</option>
+              <option value="54A">54A</option>
+              <option value="60">60</option>
+              <option value="414">414</option>
+              <option value="415">415</option>
             </select>
           </label>
 
@@ -102,7 +124,7 @@
         <div id="routeNumber" class="route-number">36</div>
 
         <div class="destination-block">
-          <span class="destination-label">Destination</span>
+          <span class="destination-label">To</span>
           <strong id="destinationName" class="destination-name">Hunstanton</strong>
         </div>
 
@@ -136,7 +158,7 @@
           <div id="followingStopsPanel" class="following-panel">
             <div class="following-arrow" aria-hidden="true">→</div>
             <div class="following-copy">
-              <span class="following-label">Next stop</span>
+              <span class="following-label">Then</span>
               <strong id="followingStopName">—</strong>
               <span id="secondFollowingStopName" class="second-following-stop"></span>
             </div>
@@ -177,7 +199,7 @@
         </div>
 
         <aside class="route-map-panel" aria-label="Upcoming stops">
-          <h3>Route map</h3>
+          <h3>Upcoming stops</h3>
           <div id="routeMapStops" class="route-map-stops"></div>
         </aside>
       </section>
@@ -333,6 +355,7 @@
     window.LYNX_ROUTES = window.LYNX_ROUTES || {};
   </script>
 
+  <script src="routes/route-network.js?v=network-v6"></script>
   <script src="routes/route-34.js"></script>
   <script src="routes/route-36.js"></script>
   <script src="app.js?v=real-pis-v4"></script>

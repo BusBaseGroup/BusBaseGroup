@@ -232,7 +232,7 @@ function routeChanged() {
 
   el.directionSelect.disabled = directions.length === 0;
   el.setupMessage.textContent = directions.length
-    ? `${state.route.name || `Service ${service}`} loaded.`
+    ? state.route.manualOnly ? `${state.route.name || `Service ${service}`} loaded — manual stop mode.` : `${state.route.name || `Service ${service}`} loaded.`
     : "No directions were found in this route file.";
 }
 
