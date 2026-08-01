@@ -89,7 +89,9 @@ function cacheElements() {
     "gpsDebugOutput", "fullscreenButton", "announcementStatus",
     "nextStopEta", "nextStopDistance", "informationCard",
     "informationCardLabel", "informationCardTitle", "informationCardText",
-    "routeMapStops", "busStoppingDisplay", "busStoppingButton"
+    "routeMapStops", "busStoppingDisplay", "busStoppingButton",
+    "headerWeatherTemperature", "headerWeatherDescription",
+    "nextStopEtaMirror", "nextStopDistanceMirror"
   ].forEach(id => {
     el[id] = document.getElementById(id);
   });
@@ -101,9 +103,29 @@ function bindEvents() {
   el.journeySelect.addEventListener("change", departureChanged);
   el.journeyForm.addEventListener("submit", startJourney);
 
-  el.openDriverPanelButton.addEventListener("click", () => {
-    el.driverPanel.classList.remove("is-hidden");
+  // The driver menu is keyboard-only so passengers never see a menu button.
+  // Press M to open/close it. Press Escape to close it.
+  document.addEventListener("keydown", event => {
+    const target = event.target;
+    const typing = target && (
+      target.tagName === "INPUT" ||
+      target.tagName === "SELECT" ||
+      target.tagName === "TEXTAREA" ||
+      target.isContentEditable
+    );
+
+    if (typing) return;
+
+    if (event.key.toLowerCase() === "m") {
+      event.preventDefault();
+      el.driverPanel.classList.toggle("is-hidden");
+    }
+
+    if (event.key === "Escape") {
+      el.driverPanel.classList.add("is-hidden");
+    }
   });
+
   el.closeDriverPanelButton.addEventListener("click", () => {
     el.driverPanel.classList.add("is-hidden");
   });
@@ -275,7 +297,7 @@ function startJourney(event) {
 
   el.setupScreen.classList.add("is-hidden");
   el.passengerScreen.classList.remove("is-hidden");
-  el.openDriverPanelButton.classList.remove("is-hidden");
+  el.openDriverPanelButton.classList.add("is-hidden");
   el.fullscreenButton.classList.remove("is-hidden");
 
   const vehicle = el.vehicleInput.value.trim();
@@ -658,6 +680,7 @@ window.triggerBusStopping = triggerBusStopping;
 function updateEta(distance, stop) {
   if (!el.nextStopEta || !stop) return;
   el.nextStopDistance.textContent = Number.isFinite(distance) ? formatDistance(distance) : "";
+  if (el.nextStopDistanceMirror) el.nextStopDistanceMirror.textContent = el.nextStopDistance.textContent;
 
   let seconds = null;
   if (Number.isFinite(distance) && state.speedMph >= 3) {
@@ -677,6 +700,7 @@ function updateEta(distance, stop) {
   } else {
     el.nextStopEta.textContent = `Approx. ${Math.max(1, Math.round(seconds / 60))} min`;
   }
+  if (el.nextStopEtaMirror) el.nextStopEtaMirror.textContent = el.nextStopEta.textContent;
 }
 
 function updateConnectionMessage(stop) {
@@ -816,6 +840,12 @@ async function refreshDestinationWeather() {
       description: weatherDescription(data.current?.weather_code)
     };
     state.weatherUpdatedAt = Date.now();
+    if (el.headerWeatherTemperature) {
+      el.headerWeatherTemperature.textContent = `${Math.round(state.weather.temperature)}°C`;
+    }
+    if (el.headerWeatherDescription) {
+      el.headerWeatherDescription.textContent = state.weather.description;
+    }
     updateInformationCard();
   } catch (error) {
     /* Weather is optional. Passenger display remains usable offline. */

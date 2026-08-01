@@ -19,7 +19,7 @@
 
   <title>Onboard Passenger Information</title>
 
-  <link rel="stylesheet" href="style.css?v=passenger-3">
+  <link rel="stylesheet" href="style.css?v=dashboard-1">
 </head>
 
 <body>
@@ -94,148 +94,120 @@
 
 
     <!-- =========================================================
-         PASSENGER DISPLAY
-         No BusBase logo and no journey progress bar.
+         PASSENGER DISPLAY — modern, high-contrast layout
          ========================================================= -->
-    <section
-      id="passengerScreen"
-      class="screen passenger-screen is-hidden"
-      aria-live="polite"
-    >
+    <section id="passengerScreen" class="screen passenger-screen is-hidden" aria-live="polite">
 
       <header class="service-header">
         <div id="routeNumber" class="route-number">36</div>
 
         <div class="destination-block">
-          <span class="destination-label">To</span>
-          <strong id="destinationName" class="destination-name">
-            Hunstanton
-          </strong>
+          <span class="destination-label">Destination</span>
+          <strong id="destinationName" class="destination-name">Hunstanton</strong>
+        </div>
+
+        <div class="header-status" aria-label="Live journey information">
+          <div class="header-status-item">
+            <span class="status-icon" aria-hidden="true">◷</span>
+            <time id="currentTime" class="clock" datetime="">--:--</time>
+          </div>
+
+          <div id="runningStatus" class="header-status-item running-status running-on-time">
+            On time
+          </div>
+
+          <div class="header-status-item weather-status">
+            <span class="status-icon" aria-hidden="true">☁</span>
+            <span id="headerWeatherTemperature">--°C</span>
+            <span id="headerWeatherDescription" class="weather-description">Weather</span>
+          </div>
+
+          <button id="openDriverPanelButton" class="header-menu-button is-hidden" type="button" aria-label="Open driver controls" hidden tabindex="-1"></button>
         </div>
       </header>
 
-
       <section id="normalDisplay" class="display-content">
+        <div class="main-information-column">
+          <div id="stopStatePanel" class="stop-state-panel">
+            <p id="stopStateLabel" class="stop-state-label">Next stop</p>
+            <h2 id="currentStopName" class="current-stop-name">Waiting for location</h2>
+          </div>
 
-        <div id="stopStatePanel" class="stop-state-panel">
-          <p id="stopStateLabel" class="stop-state-label">
-            Next stop
-          </p>
+          <div id="followingStopsPanel" class="following-panel">
+            <div class="following-arrow" aria-hidden="true">→</div>
+            <div class="following-copy">
+              <span class="following-label">Next stop</span>
+              <strong id="followingStopName">—</strong>
+              <span id="secondFollowingStopName" class="second-following-stop"></span>
+            </div>
+            <div class="following-eta">
+              <strong id="nextStopEta">Calculating…</strong>
+              <span id="nextStopDistance" class="extra-detail"></span>
+            </div>
+          </div>
 
-          <h2 id="currentStopName" class="current-stop-name">
-            Waiting for location
-          </h2>
+          <section class="passenger-extras" aria-label="Journey information">
+            <div class="eta-card passenger-card">
+              <span class="card-icon" aria-hidden="true">◷</span>
+              <div>
+                <span class="extra-label">Time to next stop</span>
+                <strong id="nextStopEtaMirror">Calculating…</strong>
+                <span id="nextStopDistanceMirror" class="extra-detail"></span>
+              </div>
+            </div>
 
-          <div
-            id="connectionMessage"
-            class="connection-message is-hidden"
-          ></div>
+            <div id="informationCard" class="information-card passenger-card">
+              <span class="card-icon" aria-hidden="true">i</span>
+              <div>
+                <span id="informationCardLabel" class="extra-label">Journey information</span>
+                <strong id="informationCardTitle">Welcome aboard</strong>
+                <span id="informationCardText" class="extra-detail">Useful information will appear here during your journey.</span>
+              </div>
+            </div>
+
+            <div class="connection-card passenger-card">
+              <span class="card-icon" aria-hidden="true">⌖</span>
+              <div>
+                <span class="extra-label">Passenger information</span>
+                <strong>Alight and connection information</strong>
+                <span id="connectionMessage" class="extra-detail">Information will appear when relevant.</span>
+              </div>
+            </div>
+          </section>
         </div>
 
-
-        <div id="followingStopsPanel" class="following-panel">
-          <span class="following-label">Following</span>
-
-          <div class="following-stops">
-            <strong id="followingStopName">—</strong>
-            <span id="secondFollowingStopName" class="second-following-stop"></span>
-          </div>
-        </div>
-
-        <section class="passenger-extras" aria-label="Journey information">
-          <div class="eta-card">
-            <span class="extra-label">Estimated arrival</span>
-            <strong id="nextStopEta">Calculating…</strong>
-            <span id="nextStopDistance" class="extra-detail"></span>
-          </div>
-
-          <div id="informationCard" class="information-card">
-            <span id="informationCardLabel" class="extra-label">Journey information</span>
-            <strong id="informationCardTitle">Welcome aboard</strong>
-            <span id="informationCardText" class="extra-detail">Please remain seated while the bus is moving.</span>
-          </div>
-
-          <div class="mini-route-map" aria-label="Upcoming stops">
-            <div id="routeMapStops" class="route-map-stops"></div>
-          </div>
-        </section>
-
+        <aside class="route-map-panel" aria-label="Upcoming stops">
+          <h3>Route map</h3>
+          <div id="routeMapStops" class="route-map-stops"></div>
+        </aside>
       </section>
 
-
-      <!-- BUS STOPPING SIGN -->
       <section id="busStoppingDisplay" class="bus-stopping-display is-hidden" aria-live="assertive">
         <div class="stop-request-icon" aria-hidden="true">STOP</div>
         <div>BUS STOPPING</div>
       </section>
 
-
-      <!-- CONTINUATION SCREEN:
-           Used when the 18:00 Route 36 from Fakenham reaches
-           Hunstanton and continues as Route 34 to King's Lynn. -->
-      <section
-        id="continuationDisplay"
-        class="special-display continuation-display is-hidden"
-      >
+      <section id="continuationDisplay" class="special-display continuation-display is-hidden">
         <p class="special-kicker">This bus continues as</p>
-
-        <div id="continuationRouteNumber" class="continuation-route-number">
-          34
-        </div>
-
-        <p class="special-destination">
-          To <strong id="continuationDestination">King's Lynn</strong>
-        </p>
-
-        <p class="special-message">
-          Please remain seated if you are continuing your journey.
-        </p>
+        <div id="continuationRouteNumber" class="continuation-route-number">34</div>
+        <p class="special-destination">To <strong id="continuationDestination">King's Lynn</strong></p>
+        <p class="special-message">Please remain seated if you are continuing your journey.</p>
       </section>
 
-
-      <!-- DIVERSION / SERVICE DISRUPTION SCREEN -->
-      <section
-        id="disruptionDisplay"
-        class="special-display disruption-display is-hidden"
-      >
+      <section id="disruptionDisplay" class="special-display disruption-display is-hidden">
         <p class="disruption-title">Service disruption</p>
-
-        <p class="disruption-message">
-          This bus is currently on diversion.
-        </p>
-
-        <p class="disruption-help">
-          Please listen for driver announcements.
-        </p>
+        <p class="disruption-message">This bus is currently on diversion.</p>
+        <p class="disruption-help">Please listen for driver announcements.</p>
       </section>
 
-
-      <!-- TERMINUS SCREEN -->
-      <section
-        id="terminusDisplay"
-        class="special-display terminus-display is-hidden"
-      >
+      <section id="terminusDisplay" class="special-display terminus-display is-hidden">
         <p class="special-kicker">This bus terminates here</p>
-
-        <h2 id="terminusName" class="terminus-name">
-          Hunstanton
-        </h2>
-
-        <p class="special-message">
-          Please take all belongings with you.
-        </p>
+        <h2 id="terminusName" class="terminus-name">Hunstanton</h2>
+        <p class="special-message">Please take all belongings with you.</p>
       </section>
-
 
       <footer class="information-footer">
-
-        <time id="currentTime" class="clock" datetime="">
-          --:--
-        </time>
-
-        <div id="runningStatus" class="running-status running-on-time">
-          On time
-        </div>
+        <button id="fullscreenButton" class="footer-button is-hidden" type="button">Full screen</button>
 
         <div id="gpsStatus" class="gps-status gps-waiting">
           <span class="gps-dot" aria-hidden="true"></span>
@@ -243,10 +215,8 @@
         </div>
 
         <div id="vehicleDisplay" class="vehicle-display is-hidden"></div>
-
       </footer>
     </section>
-
 
     <!-- =========================================================
          DRIVER CONTROLS
@@ -333,28 +303,6 @@
     </aside>
 
 
-    <!-- Driver panel opener. Kept small so it does not distract
-         passengers. -->
-    <button
-      id="openDriverPanelButton"
-      class="driver-panel-trigger is-hidden"
-      type="button"
-      aria-label="Open driver controls"
-    >
-      Controls
-    </button>
-
-
-    <!-- Fullscreen prompt for mobile/tablet use. -->
-    <button
-      id="fullscreenButton"
-      class="fullscreen-button is-hidden"
-      type="button"
-    >
-      Full screen
-    </button>
-
-
     <!-- Accessible announcement status. -->
     <div
       id="announcementStatus"
@@ -373,6 +321,6 @@
 
   <script src="routes/route-34.js"></script>
   <script src="routes/route-36.js"></script>
-  <script src="app.js?v=mobile-2"></script>
+  <script src="app.js?v=dashboard-1"></script>
 </body>
 </html>
