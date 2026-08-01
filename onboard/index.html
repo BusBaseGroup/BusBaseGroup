@@ -19,7 +19,7 @@
 
   <title>Onboard Passenger Information</title>
 
-  <link rel="stylesheet" href="style.css?v=dashboard-1">
+  <link rel="stylesheet" href="style.css?v=dual-layout-1">
 </head>
 
 <body>
@@ -264,6 +264,20 @@
       </div>
 
 
+      <section class="layout-picker" aria-labelledby="layoutPickerTitle">
+        <p id="layoutPickerTitle" class="field-label">Passenger screen style</p>
+        <div class="layout-options">
+          <label class="layout-option">
+            <input type="radio" name="displayLayout" value="full" checked>
+            <span><strong>Full screen</strong><small>Large 22-inch passenger information display</small></span>
+          </label>
+          <label class="layout-option">
+            <input type="radio" name="displayLayout" value="slim">
+            <span><strong>Compact bar</strong><small>Short rectangular next-stop display</small></span>
+          </label>
+        </div>
+      </section>
+
       <div class="driver-button-grid">
         <button id="previousStopButton" type="button">
           Previous stop
@@ -321,6 +335,6 @@
 
   <script src="routes/route-34.js"></script>
   <script src="routes/route-36.js"></script>
-  <script src="app.js?v=dashboard-1"></script>
+  <script src="app.js?v=dual-layout-1"></script>
 </body>
 </html>

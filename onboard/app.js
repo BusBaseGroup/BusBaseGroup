@@ -53,7 +53,8 @@ const state = {
   informationCardIndex: 0,
   weather: null,
   weatherUpdatedAt: 0,
-  speechGeneration: 0
+  speechGeneration: 0,
+  displayLayout: localStorage.getItem("busbaseDisplayLayout") || "full"
 };
 
 const el = {};
@@ -66,6 +67,7 @@ function initialise() {
   loadVoices();
   resetSetup();
   startClock();
+  setDisplayLayout(state.displayLayout);
 
   if ("speechSynthesis" in window) {
     speechSynthesis.onvoiceschanged = loadVoices;
@@ -95,6 +97,7 @@ function cacheElements() {
   ].forEach(id => {
     el[id] = document.getElementById(id);
   });
+  el.displayLayoutOptions = document.querySelectorAll('input[name="displayLayout"]');
 }
 
 function bindEvents() {
@@ -139,12 +142,33 @@ function bindEvents() {
   el.endJourneyButton.addEventListener("click", endJourney);
   el.fullscreenButton.addEventListener("click", enterFullscreen);
 
+  el.displayLayoutOptions.forEach(option => {
+    option.checked = option.value === state.displayLayout;
+    option.addEventListener("change", () => setDisplayLayout(option.value));
+  });
+  setDisplayLayout(state.displayLayout);
+
   document.addEventListener("keydown", event => {
     if (!state.active) return;
     if (event.key === "ArrowLeft") previousStop();
     if (event.key === "ArrowRight") nextStop();
     if (event.key.toLowerCase() === "d") toggleManualDiversion();
     if (event.key.toLowerCase() === "b") triggerBusStopping();
+    if (event.key.toLowerCase() === "l") {
+      setDisplayLayout(state.displayLayout === "full" ? "slim" : "full");
+    }
+  });
+}
+
+function setDisplayLayout(layout) {
+  state.displayLayout = layout === "slim" ? "slim" : "full";
+  localStorage.setItem("busbaseDisplayLayout", state.displayLayout);
+  if (el.passengerScreen) {
+    el.passengerScreen.classList.toggle("layout-full", state.displayLayout === "full");
+    el.passengerScreen.classList.toggle("layout-slim", state.displayLayout === "slim");
+  }
+  el.displayLayoutOptions?.forEach(option => {
+    option.checked = option.value === state.displayLayout;
   });
 }
 
