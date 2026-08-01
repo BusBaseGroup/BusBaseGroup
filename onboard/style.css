@@ -1,6 +1,174 @@
-:root{--ink:#101316;--paper:#f4f1e8;--panel:#fff;--accent:#ffb000;--accent2:#006e78;--muted:#5a6268;--line:#d7d2c7;--danger:#b42318;--ok:#176b3a}
-*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;background:#0b0d0f;color:var(--ink);font-family:Inter,Arial,Helvetica,sans-serif}button,input,select{font:inherit}.is-hidden{display:none!important}.screen{min-height:100vh}.setup-screen{display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 20% 20%,#26303a,#0c0f12 60%)}.setup-card{width:min(720px,96vw);background:#f7f5ef;border:1px solid #43494f;border-radius:22px;padding:34px;box-shadow:0 30px 80px #0008}.eyebrow{text-transform:uppercase;letter-spacing:.16em;font-weight:800;color:var(--accent2);font-size:.82rem}.setup-header h1{font-size:clamp(2rem,5vw,3.6rem);margin:.2em 0}.setup-description{color:var(--muted);font-size:1.08rem}.journey-form{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:26px}.field{display:grid;gap:7px}.field-label{font-size:.86rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em}select,input{width:100%;min-height:54px;border:2px solid #c5c1b8;border-radius:12px;background:#fff;padding:0 14px;color:var(--ink)}.primary-button{grid-column:1/-1;border:0;border-radius:12px;background:var(--accent);color:#15110a;font-weight:900;min-height:58px;cursor:pointer}.setup-message{grid-column:1/-1;min-height:1.4em;color:var(--muted)}
-.passenger-screen{height:100vh;overflow:hidden;background:var(--paper);display:grid;grid-template-rows:112px 1fr 70px}.service-header{display:grid;grid-template-columns:150px 1fr auto;align-items:stretch;background:var(--ink);color:#fff;border-bottom:8px solid var(--accent)}.route-number{display:grid;place-items:center;background:var(--accent);color:#17130c;font-size:clamp(3rem,5.4vw,5.5rem);font-weight:950;line-height:1}.destination-block{display:flex;align-items:baseline;gap:18px;padding:0 30px;min-width:0}.destination-label{font-size:1.1rem;text-transform:uppercase;letter-spacing:.13em;color:#aeb6bc}.destination-name{font-size:clamp(2.2rem,4vw,4.2rem);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.header-status{display:flex;align-items:stretch}.header-status-item{min-width:130px;border-left:1px solid #343a40;display:grid;place-content:center;text-align:center;padding:8px 18px;font-size:1.15rem;font-weight:800}.weather-description{font-size:.72rem;color:#aeb6bc;text-transform:uppercase}.display-content{min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,31vw);gap:0}.main-information-column{min-width:0;display:grid;grid-template-rows:minmax(0,1fr) auto auto;padding:34px 42px 30px}.stop-state-panel{display:flex;flex-direction:column;justify-content:center;border-left:14px solid var(--accent);padding-left:34px}.stop-state-label{margin:0 0 12px;text-transform:uppercase;letter-spacing:.16em;font-weight:950;color:var(--accent2);font-size:clamp(1.25rem,2.2vw,2.2rem)}.current-stop-name{margin:0;max-width:100%;font-size:clamp(3.4rem,7vw,7.4rem);line-height:.98;letter-spacing:-.045em}.following-panel{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:18px;border-top:2px solid var(--line);padding:22px 0}.following-arrow{width:50px;height:50px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:#fff;font-size:1.8rem}.following-copy{display:grid}.following-label,.extra-label{font-size:.8rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:900}.following-copy strong{font-size:clamp(1.5rem,2.4vw,2.5rem)}.following-eta{text-align:right}.following-eta strong{font-size:1.6rem}.extra-detail{display:block;color:var(--muted);margin-top:3px}.passenger-extras{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.passenger-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;gap:13px;align-items:flex-start;min-width:0}.card-icon{flex:0 0 36px;width:36px;height:36px;border-radius:9px;background:#e9f0ef;color:var(--accent2);display:grid;place-items:center;font-weight:950}.passenger-card strong{display:block;font-size:1.05rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.route-map-panel{background:#1b2025;color:#fff;padding:30px 26px;overflow:hidden}.route-map-panel h3{margin:0 0 22px;text-transform:uppercase;letter-spacing:.12em;font-size:1rem;color:#aeb6bc}.route-map-stops{display:grid;gap:0}.route-map-stop{position:relative;padding:0 0 24px 34px;font-size:clamp(1rem,1.4vw,1.35rem);font-weight:750}.route-map-stop:before{content:"";position:absolute;left:5px;top:5px;width:15px;height:15px;border:4px solid var(--accent);border-radius:50%;background:#1b2025;z-index:2}.route-map-stop:after{content:"";position:absolute;left:14px;top:22px;bottom:-3px;width:3px;background:#606970}.route-map-stop:last-child:after{display:none}.route-map-stop.current{color:var(--accent);font-size:clamp(1.15rem,1.7vw,1.55rem)}.information-footer{background:#0d1013;color:#e9edf0;display:flex;align-items:center;justify-content:space-between;padding:0 28px;border-top:1px solid #343a40}.gps-status{display:flex;align-items:center;gap:10px;font-weight:800}.gps-dot{width:12px;height:12px;border-radius:50%;background:#7e8790}.gps-active .gps-dot{background:#42d77d;box-shadow:0 0 14px #42d77d}.running-on-time{color:#59df8b}.bus-stopping-display{position:absolute;inset:112px 0 70px;background:var(--accent);color:#111;z-index:20;display:grid;place-content:center;text-align:center;font-size:clamp(4rem,10vw,11rem);font-weight:1000;letter-spacing:.02em}.stop-request-icon{font-size:.28em;letter-spacing:.18em}.special-display{position:absolute;inset:112px 0 70px;z-index:15;display:grid;place-content:center;text-align:center;padding:40px;background:var(--paper)}.continuation-route-number{font-size:clamp(8rem,22vw,18rem);font-weight:1000;color:var(--accent2);line-height:.8}.special-kicker,.disruption-title{font-size:clamp(2rem,4vw,4rem);font-weight:950;text-transform:uppercase}.special-destination{font-size:clamp(2rem,4vw,4rem)}.special-message{font-size:clamp(1.3rem,2vw,2.2rem)}.disruption-display{background:#fff0d6}.disruption-title{color:var(--danger)}
-.driver-panel{position:fixed;right:16px;top:16px;bottom:16px;width:min(420px,calc(100vw - 32px));z-index:40;background:#f7f5ef;border:1px solid #8f9498;border-radius:18px;padding:22px;overflow:auto;box-shadow:0 25px 80px #0009}.driver-panel-header{display:flex;justify-content:space-between;align-items:start}.driver-panel-header h2{margin:.15em 0 1em}.icon-button{border:0;background:#24292e;color:#fff;border-radius:50%;width:42px;height:42px;font-size:1.6rem}.driver-status-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.driver-status-card{background:#fff;border:1px solid var(--line);padding:12px;border-radius:10px;display:grid;gap:5px}.driver-status-card span{font-size:.75rem;text-transform:uppercase;color:var(--muted)}.driver-button-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.driver-button-grid button,.footer-button{border:0;border-radius:10px;background:#22282d;color:#fff;padding:13px;font-weight:800}.danger-button{background:var(--danger)!important}.driver-gps-log pre{white-space:pre-wrap;background:#111;color:#d8e0e5;padding:12px;border-radius:10px}.layout-options{display:grid;gap:8px}.layout-option{display:flex;gap:8px;align-items:center}
-.layout-slim{grid-template-rows:70px 1fr 42px}.layout-slim .service-header{grid-template-columns:100px 1fr auto}.layout-slim .route-number{font-size:3rem}.layout-slim .destination-name{font-size:2rem}.layout-slim .display-content{grid-template-columns:1fr}.layout-slim .route-map-panel,.layout-slim .passenger-extras{display:none}.layout-slim .main-information-column{padding:18px 28px;grid-template-rows:1fr auto}.layout-slim .current-stop-name{font-size:clamp(2.8rem,7vw,5.5rem)}.layout-slim .bus-stopping-display,.layout-slim .special-display{inset:70px 0 42px}
-@media(max-width:900px){.journey-form{grid-template-columns:1fr}.primary-button,.setup-message{grid-column:1}.passenger-screen{grid-template-rows:86px 1fr 58px}.service-header{grid-template-columns:105px 1fr}.header-status{display:none}.route-number{font-size:3.6rem}.destination-block{padding:0 18px}.destination-name{font-size:clamp(1.7rem,6vw,3rem)}.display-content{grid-template-columns:1fr}.route-map-panel{display:none}.main-information-column{padding:24px}.passenger-extras{grid-template-columns:1fr}.passenger-card:nth-child(n+2){display:none}.current-stop-name{font-size:clamp(3rem,12vw,6rem)}.bus-stopping-display,.special-display{inset:86px 0 58px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+:root{
+  --lynx-navy:#082f33;
+  --lynx-navy-2:#0e474b;
+  --lynx-magenta:#f2b705;
+  --lynx-purple:#147d80;
+  --lynx-cyan:#39bfc1;
+  --lynx-lime:#d8e85a;
+  --paper:#f5f2e9;
+  --panel:#fffdf7;
+  --ink:#102b2d;
+  --muted:#5d6d6b;
+  --line:#d7ddd5;
+  --danger:#c94a36;
+  --ok:#74b83e;
+  --shadow:0 12px 30px rgba(8,47,51,.12);
+}
+
+*{box-sizing:border-box}
+html,body{width:100%;height:100%;margin:0}
+body{
+  background:#061f22;
+  color:var(--ink);
+  font-family:Inter,"Segoe UI",Arial,Helvetica,sans-serif;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+button,input,select{font:inherit}
+.is-hidden{display:none!important}
+.screen{min-height:100vh}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* Setup / driver start screen */
+.setup-screen{display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 15% 12%,#1c6b6e 0,#0b3d40 46%,#061f22 100%)}
+.setup-card{width:min(720px,96vw);background:#fff;border-radius:24px;padding:34px;box-shadow:0 30px 90px rgba(0,0,0,.5);border-top:8px solid var(--lynx-magenta)}
+.eyebrow{text-transform:uppercase;letter-spacing:.17em;font-weight:900;color:var(--lynx-magenta);font-size:.82rem}
+.setup-header h1{font-size:clamp(2rem,5vw,3.6rem);margin:.2em 0;color:var(--lynx-navy)}
+.setup-description{color:var(--muted);font-size:1.08rem}
+.journey-form{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:26px}
+.field{display:grid;gap:7px}.field-label{font-size:.86rem;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--lynx-navy)}
+select,input{width:100%;min-height:54px;border:2px solid #cbd4df;border-radius:12px;background:#fff;padding:0 14px;color:var(--ink)}
+select:focus,input:focus{outline:4px solid rgba(22,185,231,.22);border-color:var(--lynx-cyan)}
+.primary-button{grid-column:1/-1;border:0;border-radius:12px;background:linear-gradient(100deg,var(--lynx-magenta),var(--lynx-purple));color:#fff;font-weight:950;min-height:58px;cursor:pointer}
+.setup-message{grid-column:1/-1;min-height:1.4em;color:var(--muted)}
+
+/* 22-inch, 16:9 passenger display */
+.passenger-screen{
+  height:100vh;
+  overflow:hidden;
+  position:relative;
+  background:var(--paper);
+  display:grid;
+  grid-template-rows:116px minmax(0,1fr) 72px;
+}
+
+.service-header{
+  display:grid;
+  grid-template-columns:164px minmax(0,1fr) auto;
+  align-items:stretch;
+  background:linear-gradient(105deg,var(--lynx-navy) 0%,#0a3d40 58%,#13585b 100%);
+  color:#fff;
+  border-bottom:7px solid transparent;
+  border-image:linear-gradient(90deg,#f2b705,#147d80,#39bfc1) 1;
+}
+.route-number{
+  margin:16px 0 16px 22px;
+  border-radius:16px;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(145deg,#f6c445,#f2b705 48%,#d99000);
+  color:#082f33;
+  font-size:clamp(3.3rem,5.3vw,5.7rem);
+  font-weight:1000;
+  line-height:1;
+  box-shadow:0 8px 24px rgba(242,183,5,.28);
+}
+.destination-block{display:flex;flex-direction:column;justify-content:center;padding:0 34px;min-width:0}
+.destination-label{font-size:1rem;text-transform:uppercase;letter-spacing:.15em;color:#c4d7d4;font-weight:800}
+.destination-name{font-size:clamp(2.3rem,4vw,4.1rem);line-height:1.02;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:950}
+.header-status{display:flex;align-items:stretch;margin-right:18px}
+.header-status-item{min-width:136px;border-left:1px solid rgba(255,255,255,.18);display:grid;place-content:center;text-align:center;padding:8px 18px;font-size:1.15rem;font-weight:850}
+.header-status-item .clock{font-size:1.55rem;font-variant-numeric:tabular-nums}
+.header-status-item.running-on-time{color:var(--lynx-lime)}
+.header-status-item.weather-status{min-width:150px}
+.status-icon{font-size:1.3rem}.weather-description{font-size:.68rem;color:#9fb0c0;text-transform:uppercase;letter-spacing:.07em}
+.header-menu-button{display:none!important}
+
+.display-content{min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(330px,29vw);gap:20px;padding:24px 28px 22px}
+.main-information-column{min-width:0;display:grid;grid-template-rows:minmax(0,1fr) auto auto;gap:18px}
+.stop-state-panel{position:relative;display:flex;flex-direction:column;justify-content:center;background:var(--panel);border-radius:20px;padding:34px 40px 32px 54px;box-shadow:var(--shadow);overflow:hidden}
+.stop-state-panel:before{content:"";position:absolute;left:0;top:0;bottom:0;width:13px;background:linear-gradient(180deg,var(--lynx-magenta),var(--lynx-purple))}
+.stop-state-panel:after{content:"";position:absolute;right:-90px;bottom:-100px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(22,185,231,.12),transparent 68%);pointer-events:none}
+.stop-state-label{margin:0 0 12px;text-transform:uppercase;letter-spacing:.13em;font-weight:1000;color:var(--lynx-purple);font-size:clamp(1.15rem,2vw,2rem)}
+.current-stop-name{position:relative;z-index:1;margin:0;max-width:100%;font-size:clamp(3.2rem,6.2vw,6.6rem);line-height:.98;letter-spacing:-.04em;font-weight:1000;color:var(--lynx-navy)}
+
+.following-panel{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:18px;background:#edf7f4;border:1px solid #c9ded9;border-radius:18px;padding:17px 22px}
+.following-arrow{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:var(--lynx-purple);color:#fff;font-size:1.8rem;font-weight:900}
+.following-copy{display:grid;min-width:0}.following-label,.extra-label{font-size:.74rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:950}
+.following-copy strong{font-size:clamp(1.35rem,2vw,2.15rem);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--lynx-navy)}
+.second-following-stop{font-size:.95rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.following-eta{text-align:right;min-width:110px}.following-eta strong{font-size:1.55rem;color:var(--lynx-purple)}
+.extra-detail{display:block;color:var(--muted);margin-top:3px;line-height:1.25}
+
+.passenger-extras{display:grid;grid-template-columns:.72fr .88fr 1.4fr;gap:16px}
+.passenger-card{background:#fffdf7;border:1px solid var(--line);border-radius:18px;padding:20px 20px;display:flex;gap:15px;align-items:flex-start;min-width:0;box-shadow:0 6px 18px rgba(8,47,51,.07)}
+.passenger-card:nth-child(1){border-top:6px solid var(--lynx-cyan)}
+.passenger-card:nth-child(2){border-top:6px solid var(--lynx-lime)}
+.passenger-card:nth-child(3){border-top:6px solid var(--lynx-magenta);min-height:128px}
+.card-icon{flex:0 0 46px;width:46px;height:46px;border-radius:13px;background:#e4f3ef;color:#147d80;display:grid;place-items:center;font-weight:1000;font-size:1.3rem}
+.passenger-card strong{display:block;font-size:1.18rem;line-height:1.2;white-space:normal;overflow:visible;color:var(--lynx-navy)}
+
+.route-map-panel{background:linear-gradient(180deg,var(--lynx-navy),#0a4144);color:#fff;padding:26px 24px;border-radius:20px;overflow:hidden;box-shadow:var(--shadow)}
+.route-map-panel h3{margin:0 0 20px;text-transform:uppercase;letter-spacing:.12em;font-size:1rem;color:#b8c7d5}
+.route-map-stops{display:grid;gap:0}
+.route-map-stop{position:relative;padding:0 0 22px 34px;font-size:clamp(.96rem,1.25vw,1.25rem);font-weight:740;color:#e6edf4}
+.route-map-stop:before{content:"";position:absolute;left:4px;top:4px;width:15px;height:15px;border:4px solid var(--lynx-cyan);border-radius:50%;background:var(--lynx-navy);z-index:2}
+.route-map-stop:after{content:"";position:absolute;left:13px;top:22px;bottom:-3px;width:3px;background:linear-gradient(var(--lynx-cyan),var(--lynx-purple))}
+.route-map-stop:last-child:after{display:none}
+.route-map-stop.current{color:#ffe28a;font-size:clamp(1.08rem,1.5vw,1.45rem);font-weight:950}
+.route-map-stop.current:before{background:var(--lynx-magenta);border-color:#ffe28a;box-shadow:0 0 15px rgba(242,183,5,.75)}
+
+.information-footer{background:#061f22;color:#edf4fa;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:0 28px;border-top:1px solid #1c5d60;min-width:0}
+.passenger-safety-message{display:flex;align-items:center;gap:13px;font-size:1.05rem;font-weight:700;white-space:nowrap}.speaker-symbol{font-size:1.35rem;color:var(--lynx-cyan)}
+.lynx-wordmark{font-style:italic;font-size:2rem;font-weight:1000;letter-spacing:.08em;color:#fff;position:relative;padding-left:24px}
+.lynx-wordmark:before{content:"";position:absolute;left:0;top:50%;width:15px;height:15px;transform:translateY(-50%) rotate(45deg);background:linear-gradient(135deg,var(--lynx-magenta),var(--lynx-cyan));border-radius:2px}
+.gps-status{justify-self:end;display:flex;align-items:center;gap:10px;font-weight:850;white-space:nowrap}.gps-dot{width:12px;height:12px;border-radius:50%;background:#7f8b96}.gps-active .gps-dot{background:var(--lynx-lime);box-shadow:0 0 14px rgba(184,230,0,.75)}
+.footer-button{position:absolute;left:10px;bottom:10px;z-index:10;border:0;border-radius:8px;background:#14263a;color:#fff;padding:8px 12px;font-weight:800}
+
+.bus-stopping-display{position:absolute;inset:116px 0 72px;background:linear-gradient(135deg,#ffd400,#ffb800);color:#101010;z-index:20;display:grid;place-content:center;text-align:center;font-size:clamp(4rem,9vw,10rem);font-weight:1000;letter-spacing:.025em}.stop-request-icon{font-size:.25em;letter-spacing:.2em;border:6px solid #111;border-radius:18px;padding:.25em .5em;margin:0 auto .35em}
+.special-display{position:absolute;inset:116px 0 72px;z-index:15;display:grid;place-content:center;text-align:center;padding:40px;background:var(--paper)}
+.continuation-display{background:linear-gradient(145deg,#f8f5ff,#e8f8fc)}
+.continuation-route-number{font-size:clamp(8rem,21vw,17rem);font-weight:1000;color:var(--lynx-magenta);line-height:.8}
+.special-kicker,.disruption-title{font-size:clamp(2rem,4vw,4rem);font-weight:1000;text-transform:uppercase;color:var(--lynx-navy)}
+.special-destination{font-size:clamp(2rem,4vw,4rem)}.special-message{font-size:clamp(1.3rem,2vw,2.2rem)}
+.disruption-display{background:#fff3e5}.disruption-title{color:var(--danger)}
+
+/* Hidden driver controls */
+.driver-panel{position:fixed;right:16px;top:16px;bottom:16px;width:min(430px,calc(100vw - 32px));z-index:40;background:#f7f9fc;border:1px solid #8fa0b3;border-radius:20px;padding:22px;overflow:auto;box-shadow:0 25px 90px rgba(0,0,0,.65)}
+.driver-panel-header{display:flex;justify-content:space-between;align-items:start}.driver-panel-header h2{margin:.15em 0 1em;color:var(--lynx-navy)}
+.icon-button{border:0;background:var(--lynx-navy);color:#fff;border-radius:50%;width:42px;height:42px;font-size:1.6rem}
+.driver-status-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.driver-status-card{background:#fff;border:1px solid var(--line);padding:12px;border-radius:12px;display:grid;gap:5px}.driver-status-card span{font-size:.75rem;text-transform:uppercase;color:var(--muted)}
+.driver-button-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.driver-button-grid button{border:0;border-radius:11px;background:var(--lynx-navy);color:#fff;padding:13px;font-weight:850}.driver-button-grid button:hover{background:var(--lynx-purple)}.danger-button{background:var(--danger)!important}
+.driver-gps-log pre{white-space:pre-wrap;background:#071426;color:#dceaf6;padding:12px;border-radius:10px}.layout-options{display:grid;gap:8px}.layout-option{display:flex;gap:8px;align-items:center}
+
+/* Compact rectangular bar option */
+.layout-slim{grid-template-rows:78px minmax(0,1fr) 48px}
+.layout-slim .service-header{grid-template-columns:110px minmax(0,1fr) auto}
+.layout-slim .route-number{margin:9px 0 9px 12px;border-radius:11px;font-size:3.1rem}
+.layout-slim .destination-block{padding:0 20px}.layout-slim .destination-name{font-size:2rem}.layout-slim .destination-label{font-size:.75rem}
+.layout-slim .header-status-item{min-width:110px;font-size:.95rem}.layout-slim .weather-status{display:none}
+.layout-slim .display-content{grid-template-columns:1fr;padding:12px 18px}.layout-slim .route-map-panel,.layout-slim .passenger-extras{display:none}
+.layout-slim .main-information-column{grid-template-rows:minmax(0,1fr) auto;gap:10px}.layout-slim .stop-state-panel{padding:20px 28px 18px 38px;border-radius:13px}.layout-slim .current-stop-name{font-size:clamp(2.6rem,6.3vw,5rem)}.layout-slim .stop-state-label{font-size:1rem;margin-bottom:5px}
+.layout-slim .following-panel{padding:10px 14px;border-radius:12px}.layout-slim .following-arrow{width:38px;height:38px;border-radius:10px}.layout-slim .following-copy strong{font-size:1.4rem}
+.layout-slim .information-footer{padding:0 18px}.layout-slim .lynx-wordmark{font-size:1.3rem}.layout-slim .passenger-safety-message{font-size:.85rem}
+.layout-slim .bus-stopping-display,.layout-slim .special-display{inset:78px 0 48px}
+
+@media(max-width:1000px){
+  .journey-form{grid-template-columns:1fr}.primary-button,.setup-message{grid-column:1}
+  .passenger-screen{grid-template-rows:92px 1fr 60px}.service-header{grid-template-columns:112px 1fr}.header-status{display:none}.route-number{margin:12px 0 12px 14px;font-size:3.5rem}.destination-block{padding:0 18px}.destination-name{font-size:clamp(1.7rem,6vw,3rem)}
+  .display-content{grid-template-columns:1fr;padding:16px}.route-map-panel{display:none}.main-information-column{gap:12px}.stop-state-panel{padding:25px 26px 24px 38px}.current-stop-name{font-size:clamp(3rem,11vw,5.8rem)}
+  .passenger-extras{grid-template-columns:1fr}.passenger-card:nth-child(n+2){display:none}.following-copy strong{font-size:1.4rem}
+  .information-footer{grid-template-columns:1fr auto}.lynx-wordmark{display:none}.passenger-safety-message{font-size:.82rem}.gps-status{font-size:.8rem}.bus-stopping-display,.special-display{inset:92px 0 60px}
+}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
+
+/* Larger alight/connection information panel for passenger readability */
+.connection-card .extra-label{font-size:.82rem;color:#8b6500}
+.connection-card strong{font-size:1.28rem;margin:.18rem 0 .35rem}
+.connection-card .extra-detail{font-size:1.08rem;line-height:1.38;color:#354a48}
+.connection-card .card-icon{background:#fff1bf;color:#8b6500}
+@media (min-width:1200px){
+  .connection-card{padding:23px 24px;min-height:138px}
+  .connection-card strong{font-size:1.38rem}
+  .connection-card .extra-detail{font-size:1.16rem}
+}

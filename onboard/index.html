@@ -19,7 +19,7 @@
 
   <title>Onboard Passenger Information</title>
 
-  <link rel="stylesheet" href="style.css?v=network-v6">
+  <link rel="stylesheet" href="style.css?v=lynx-pis-v7">
 </head>
 
 <body>
@@ -231,6 +231,13 @@
       <footer class="information-footer">
         <button id="fullscreenButton" class="footer-button is-hidden" type="button">Full screen</button>
 
+        <div class="passenger-safety-message" aria-label="Passenger safety message">
+          <span class="speaker-symbol" aria-hidden="true">◖))</span>
+          <span>Please remain seated until the bus stops</span>
+        </div>
+
+        <div class="lynx-wordmark" aria-label="Lynx">LYNX</div>
+
         <div id="gpsStatus" class="gps-status gps-waiting">
           <span class="gps-dot" aria-hidden="true"></span>
           <span id="gpsStatusText">Waiting for GPS</span>
@@ -355,9 +362,9 @@
     window.LYNX_ROUTES = window.LYNX_ROUTES || {};
   </script>
 
-  <script src="routes/route-network.js?v=network-v6"></script>
+  <script src="routes/route-network.js?v=lynx-pis-v7"></script>
   <script src="routes/route-34.js"></script>
   <script src="routes/route-36.js"></script>
-  <script src="app.js?v=real-pis-v4"></script>
+  <script src="app.js?v=lynx-pis-v7"></script>
 </body>
 </html>
