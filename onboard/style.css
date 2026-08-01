@@ -1,74 +1,479 @@
 /* BusBase Onboard Passenger Display */
 :root{
- --lynx-red:#b40018;
- --bg:#ffffff;
- --text:#111;
- --muted:#666;
- --border:#ddd;
+  --lynx-red:#b40018;
+  --lynx-red-dark:#830012;
+  --bg:#ffffff;
+  --page:#ededed;
+  --text:#111111;
+  --muted:#666666;
+  --border:#dddddd;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-right:env(safe-area-inset-right,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --safe-left:env(safe-area-inset-left,0px);
 }
+
 *{box-sizing:border-box}
-html,body{margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background:#f2f2f2;color:var(--text)}
-.app-shell,.screen{width:100%;height:100vh}
+html{
+  width:100%;
+  min-height:100%;
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%;
+  touch-action:manipulation;
+}
+body{
+  margin:0;
+  width:100%;
+  min-height:100%;
+  overflow-x:hidden;
+  font-family:Arial,Helvetica,sans-serif;
+  background:var(--page);
+  color:var(--text);
+}
+button,input,select{font:inherit}
+button{-webkit-tap-highlight-color:transparent}
+.app-shell,.screen{width:100%;min-height:100dvh}
 .is-hidden{display:none!important}
-.passenger-screen{display:flex;flex-direction:column;background:#fff}
+
+/* Passenger display */
+.passenger-screen{
+  display:flex;
+  flex-direction:column;
+  height:100dvh;
+  min-height:100dvh;
+  overflow:hidden;
+  background:var(--bg);
+  padding-top:var(--safe-top);
+  padding-left:var(--safe-left);
+  padding-right:var(--safe-right);
+}
 .service-header{
- display:flex;justify-content:space-between;align-items:center;
- padding:20px;border-bottom:6px solid var(--lynx-red)
+  flex:0 0 auto;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:18px;
+  padding:clamp(12px,2.2vw,20px);
+  border-bottom:clamp(4px,.7vw,7px) solid var(--lynx-red);
 }
 .route-number{
- font-size:82px;font-weight:700;color:var(--lynx-red);line-height:1
+  flex:0 0 auto;
+  font-size:clamp(54px,9vw,92px);
+  font-weight:800;
+  color:var(--lynx-red);
+  line-height:.9;
 }
-.destination-block{text-align:right}
-.destination-label{display:block;color:var(--muted);font-size:18px}
-.destination-name{font-size:42px}
+.destination-block{
+  min-width:0;
+  text-align:right;
+}
+.destination-label{
+  display:block;
+  color:var(--muted);
+  font-size:clamp(14px,2.2vw,20px);
+}
+.destination-name{
+  display:block;
+  max-width:100%;
+  overflow-wrap:anywhere;
+  font-size:clamp(25px,5vw,48px);
+  line-height:1.05;
+}
 .display-content{
- flex:1;display:flex;flex-direction:column;
- justify-content:center;align-items:center;padding:30px;text-align:center
+  flex:1 1 auto;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:clamp(14px,2.5vh,26px);
+  padding:clamp(16px,4vw,34px);
+  text-align:center;
+  overflow:hidden;
+}
+.stop-state-panel{
+  width:100%;
+  min-height:0;
 }
 .stop-state-label{
- font-size:34px;text-transform:uppercase;color:var(--lynx-red);font-weight:700
+  margin:0;
+  font-size:clamp(21px,4vw,38px);
+  line-height:1;
+  text-transform:uppercase;
+  letter-spacing:.02em;
+  color:var(--lynx-red);
+  font-weight:800;
 }
 .current-stop-name{
- font-size:68px;line-height:1.1;margin:20px 0
+  margin:clamp(12px,2.8vh,24px) 0 0;
+  max-width:100%;
+  overflow-wrap:anywhere;
+  font-size:clamp(36px,8.4vw,76px);
+  line-height:1.02;
 }
 .following-panel{
- border-top:2px solid var(--border);
- width:100%;padding:18px;text-align:center
+  flex:0 0 auto;
+  width:min(100%,1100px);
+  padding:clamp(12px,2.2vh,20px);
+  border-top:2px solid var(--border);
+  text-align:center;
 }
-.following-label{font-size:20px;color:var(--muted)}
-.following-stops strong{font-size:34px}
+.following-label{
+  display:block;
+  margin-bottom:4px;
+  font-size:clamp(15px,2.4vw,21px);
+  color:var(--muted);
+}
+.following-stops strong{
+  display:block;
+  overflow-wrap:anywhere;
+  font-size:clamp(24px,4.2vw,38px);
+  line-height:1.12;
+}
+.second-following-stop{
+  display:block;
+  margin-top:7px;
+  overflow-wrap:anywhere;
+  font-size:clamp(17px,3vw,26px);
+  color:var(--muted);
+}
+.connection-message{
+  margin:clamp(12px,2vh,18px) auto 0;
+  width:min(100%,900px);
+  padding:clamp(10px,2vw,16px);
+  border-radius:10px;
+  background:#fff2c7;
+  font-size:clamp(17px,3vw,26px);
+  font-weight:700;
+}
 .information-footer{
- display:flex;justify-content:space-between;align-items:center;
- background:var(--lynx-red);color:#fff;padding:14px 18px
+  flex:0 0 auto;
+  display:grid;
+  grid-template-columns:auto 1fr auto auto;
+  align-items:center;
+  gap:clamp(8px,2vw,20px);
+  min-height:58px;
+  padding:10px max(14px,var(--safe-right)) calc(10px + var(--safe-bottom)) max(14px,var(--safe-left));
+  background:var(--lynx-red);
+  color:#fff;
 }
-.running-status,.gps-status,.clock{font-size:20px;font-weight:700}
+.clock,.running-status,.gps-status{
+  font-size:clamp(14px,2.1vw,21px);
+  font-weight:800;
+  white-space:nowrap;
+}
+.running-status{text-align:center}
+.gps-status{text-align:right}
+.vehicle-display{
+  font-size:clamp(12px,1.8vw,17px);
+  font-weight:700;
+  white-space:nowrap;
+}
+.gps-dot{
+  display:inline-block;
+  width:10px;
+  height:10px;
+  margin-right:6px;
+  border-radius:50%;
+  background:currentColor;
+}
+.gps-error{color:#ffe08a}
+.gps-active,.gps-waiting{color:#fff}
+
+/* Special displays */
 .special-display{
- flex:1;display:flex;flex-direction:column;
- justify-content:center;align-items:center;text-align:center;padding:40px
+  flex:1 1 auto;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  padding:clamp(24px,6vw,48px);
+  overflow:auto;
+  text-align:center;
 }
 .continuation-route-number{
- font-size:120px;color:var(--lynx-red);font-weight:700
+  font-size:clamp(92px,20vw,150px);
+  color:var(--lynx-red);
+  font-weight:800;
+  line-height:.9;
 }
-.special-kicker{font-size:32px;text-transform:uppercase}
-.special-message{font-size:28px;max-width:800px}
+.special-kicker{
+  margin:0 0 18px;
+  font-size:clamp(23px,4.5vw,36px);
+  text-transform:uppercase;
+  font-weight:800;
+}
+.special-destination{
+  margin:18px 0;
+  font-size:clamp(28px,5vw,46px);
+}
+.special-message{
+  margin:10px 0 0;
+  max-width:800px;
+  font-size:clamp(20px,3.6vw,31px);
+  line-height:1.25;
+}
 .disruption-display{background:#fff3f3}
-.disruption-title{font-size:52px;color:var(--lynx-red);font-weight:700}
-.terminus-display{background:#fafafa}
-.setup-screen{display:flex;justify-content:center;align-items:center}
-.setup-card{
- background:#fff;padding:30px;border-radius:12px;
- width:min(600px,95vw);box-shadow:0 6px 20px rgba(0,0,0,.15)
+.disruption-title{
+  margin:0;
+  font-size:clamp(38px,8vw,64px);
+  color:var(--lynx-red);
+  font-weight:800;
+  text-transform:uppercase;
 }
-.field{display:block;margin:18px 0}
-.field-label{display:block;margin-bottom:6px;font-weight:700}
+.disruption-message{
+  margin:clamp(18px,4vh,34px) 0;
+  font-size:clamp(30px,6.5vw,52px);
+  font-weight:800;
+  line-height:1.08;
+}
+.disruption-help{
+  margin:0;
+  font-size:clamp(21px,4vw,32px);
+  line-height:1.25;
+}
+.terminus-display{background:#fafafa}
+.terminus-name{
+  margin:14px 0;
+  overflow-wrap:anywhere;
+  font-size:clamp(44px,9vw,76px);
+  line-height:1.02;
+}
+
+/* Setup screen */
+.setup-screen{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:calc(18px + var(--safe-top)) max(14px,var(--safe-right)) calc(18px + var(--safe-bottom)) max(14px,var(--safe-left));
+  background:linear-gradient(180deg,#f6f6f6,#e8e8e8);
+}
+.setup-card{
+  width:min(620px,100%);
+  max-height:calc(100dvh - 36px - var(--safe-top) - var(--safe-bottom));
+  overflow:auto;
+  padding:clamp(20px,5vw,34px);
+  border-radius:16px;
+  background:#fff;
+  box-shadow:0 8px 28px rgba(0,0,0,.15);
+}
+.setup-header h1{margin:4px 0 8px;font-size:clamp(30px,7vw,46px)}
+.eyebrow{
+  margin:0;
+  color:var(--lynx-red);
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.setup-description{margin:0;color:var(--muted);line-height:1.45}
+.field{display:block;margin:17px 0}
+.field-label{display:block;margin-bottom:7px;font-weight:800}
 input,select,button{
- width:100%;padding:12px;font-size:18px;border-radius:8px
+  width:100%;
+  min-height:50px;
+  padding:12px 14px;
+  border-radius:10px;
+  font-size:18px;
+}
+input,select{
+  border:1px solid #bcbcbc;
+  background:#fff;
+  color:var(--text);
+}
+input:focus,select:focus,button:focus-visible{
+  outline:3px solid rgba(180,0,24,.25);
+  outline-offset:2px;
 }
 button{
- background:var(--lynx-red);color:#fff;border:none;cursor:pointer
+  border:0;
+  background:var(--lynx-red);
+  color:#fff;
+  font-weight:800;
+  cursor:pointer;
 }
+button:active{transform:translateY(1px)}
+button:hover{background:var(--lynx-red-dark)}
+.primary-button{margin-top:4px}
+.primary-button:disabled,button:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.setup-message{min-height:1.4em;color:#8a0012;font-weight:700;line-height:1.35}
+
+/* Driver controls */
 .driver-panel{
- position:fixed;top:0;right:0;width:360px;height:100%;
- background:#fff;border-left:2px solid #ccc;overflow:auto;padding:20px
+  position:fixed;
+  z-index:50;
+  top:0;
+  right:0;
+  width:min(420px,100%);
+  height:100dvh;
+  overflow:auto;
+  overscroll-behavior:contain;
+  padding:calc(18px + var(--safe-top)) calc(18px + var(--safe-right)) calc(24px + var(--safe-bottom)) 18px;
+  border-left:2px solid #ccc;
+  background:#fff;
+  box-shadow:-8px 0 24px rgba(0,0,0,.2);
 }
+.driver-panel-header{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.driver-panel-header h2{margin:3px 0 0}
+.icon-button{width:50px;min-width:50px;min-height:50px;padding:0;font-size:30px}
+.driver-status-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}
+.driver-status-card{min-width:0;padding:12px;border:1px solid var(--border);border-radius:10px}
+.driver-status-card span{display:block;color:var(--muted);font-size:13px}
+.driver-status-card strong{display:block;margin-top:5px;overflow-wrap:anywhere;font-size:16px}
 .driver-button-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.driver-button-grid button{min-height:58px;padding:10px;font-size:16px}
+.danger-button{background:#7f0010}
+.driver-gps-log{margin-top:18px}
+.driver-gps-log pre{max-height:220px;overflow:auto;white-space:pre-wrap;background:#f3f3f3;padding:12px;border-radius:9px;font-size:12px}
+.driver-panel-trigger,.fullscreen-button{
+  position:fixed;
+  z-index:20;
+  bottom:calc(12px + var(--safe-bottom));
+  width:auto;
+  min-height:44px;
+  padding:9px 13px;
+  border:1px solid rgba(255,255,255,.6);
+  font-size:14px;
+  opacity:.88;
+  box-shadow:0 3px 12px rgba(0,0,0,.25);
+}
+.driver-panel-trigger{right:calc(12px + var(--safe-right))}
+.fullscreen-button{left:calc(12px + var(--safe-left))}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.noscript-warning{padding:20px;background:#fff0b3;font-weight:700}
+
+/* Phones and narrow tablets */
+@media (max-width:700px){
+  .service-header{gap:10px;padding:10px 12px}
+  .route-number{font-size:clamp(50px,17vw,68px)}
+  .destination-name{font-size:clamp(23px,8vw,34px)}
+  .display-content{justify-content:space-evenly;padding:14px 14px 10px}
+  .current-stop-name{font-size:clamp(35px,12vw,56px)}
+  .following-panel{padding:11px 8px}
+  .information-footer{
+    grid-template-columns:auto 1fr;
+    grid-template-areas:"clock running" "gps gps" "vehicle vehicle";
+    gap:5px 10px;
+    min-height:70px;
+    padding-top:8px;
+  }
+  .clock{grid-area:clock}
+  .running-status{grid-area:running;text-align:right}
+  .gps-status{grid-area:gps;text-align:left;font-size:13px}
+  .vehicle-display{grid-area:vehicle;font-size:12px}
+  .driver-panel{width:100%;padding-left:16px}
+  .driver-button-grid{grid-template-columns:1fr}
+  .driver-status-grid{grid-template-columns:1fr 1fr}
+  .driver-panel-trigger,.fullscreen-button{font-size:13px;padding:8px 11px}
+}
+
+/* Very small phones */
+@media (max-width:390px){
+  .setup-screen{align-items:flex-start;padding-top:calc(10px + var(--safe-top))}
+  .setup-card{max-height:none;padding:18px;border-radius:12px}
+  input,select,button{font-size:16px}
+  .destination-label{display:none}
+  .current-stop-name{font-size:clamp(32px,11.5vw,44px)}
+  .second-following-stop{font-size:16px}
+  .driver-status-grid{grid-template-columns:1fr}
+}
+
+/* Landscape phones: maximise passenger information */
+@media (max-height:500px) and (orientation:landscape){
+  .service-header{padding:7px 14px;border-bottom-width:4px}
+  .route-number{font-size:48px}
+  .destination-label{display:none}
+  .destination-name{font-size:28px}
+  .display-content{display:grid;grid-template-columns:minmax(0,2fr) minmax(220px,1fr);gap:12px;padding:10px 16px}
+  .stop-state-label{font-size:20px}
+  .current-stop-name{margin-top:8px;font-size:clamp(34px,7vw,55px)}
+  .following-panel{align-self:stretch;display:flex;flex-direction:column;justify-content:center;border-top:0;border-left:2px solid var(--border);padding:8px 14px}
+  .following-stops strong{font-size:25px}
+  .second-following-stop{font-size:18px}
+  .information-footer{grid-template-columns:auto 1fr auto auto;grid-template-areas:none;min-height:48px;padding-top:6px;padding-bottom:calc(6px + var(--safe-bottom))}
+  .clock,.running-status,.gps-status{font-size:14px}
+  .clock{grid-area:auto}.running-status{grid-area:auto;text-align:center}.gps-status{grid-area:auto;text-align:right}.vehicle-display{grid-area:auto}
+  .special-display{padding:14px 28px}
+  .special-kicker{font-size:23px;margin-bottom:8px}
+  .continuation-route-number{font-size:78px}
+  .special-destination{margin:7px 0;font-size:31px}
+  .special-message{font-size:20px}
+  .disruption-title{font-size:36px}
+  .disruption-message{margin:13px 0;font-size:33px}
+  .disruption-help{font-size:21px}
+}
+
+
+/* Passenger extras and real-use desktop sizing */
+.passenger-extras{
+  width:min(100%,1500px);
+  display:grid;
+  grid-template-columns:minmax(220px,.8fr) minmax(320px,1.25fr) minmax(300px,1fr);
+  gap:18px;
+  align-items:stretch;
+}
+.eta-card,.information-card,.mini-route-map{
+  min-width:0;
+  padding:18px 22px;
+  border:2px solid #e2e2e2;
+  border-radius:14px;
+  background:#f8f8f8;
+  text-align:left;
+}
+.extra-label{display:block;color:var(--muted);font-size:19px;font-weight:800;text-transform:uppercase;letter-spacing:.03em}
+.eta-card strong,.information-card strong{display:block;margin-top:6px;font-size:31px;line-height:1.08}
+.extra-detail{display:block;margin-top:6px;font-size:21px;line-height:1.25;color:#444}
+.route-map-stops{display:flex;flex-direction:column;gap:7px}
+.route-map-stop{display:grid;grid-template-columns:18px 1fr;gap:10px;align-items:center;font-size:19px;color:#555}
+.route-map-dot{width:12px;height:12px;border:3px solid var(--lynx-red);border-radius:50%;background:#fff}
+.route-map-current{font-size:22px;font-weight:800;color:#111}
+.route-map-current .route-map-dot{background:var(--lynx-red)}
+.bus-stopping-display{
+  position:absolute;
+  z-index:25;
+  top:calc(var(--safe-top) + 18px);
+  left:50%;
+  transform:translateX(-50%);
+  display:flex;
+  align-items:center;
+  gap:18px;
+  padding:18px 32px;
+  border-radius:14px;
+  background:#ffd500;
+  color:#111;
+  box-shadow:0 8px 28px rgba(0,0,0,.28);
+  font-size:clamp(28px,4vw,54px);
+  font-weight:900;
+  letter-spacing:.03em;
+}
+.stop-request-icon{display:grid;place-items:center;width:74px;height:74px;border:6px solid #111;border-radius:50%;font-size:20px}
+
+@media (min-width:1100px){
+  .route-number{font-size:126px}
+  .destination-label{font-size:25px}
+  .destination-name{font-size:62px}
+  .stop-state-label{font-size:50px}
+  .current-stop-name{font-size:clamp(76px,6vw,112px)}
+  .following-label{font-size:27px}
+  .following-stops strong{font-size:48px}
+  .second-following-stop{font-size:32px}
+  .connection-message{font-size:34px}
+  .clock,.running-status,.gps-status{font-size:28px}
+  .information-footer{min-height:78px;padding-top:16px;padding-bottom:16px}
+}
+
+@media (max-width:900px){
+  .passenger-extras{grid-template-columns:1fr 1fr}
+  .mini-route-map{grid-column:1/-1}
+}
+@media (max-width:620px){
+  .passenger-extras{grid-template-columns:1fr;gap:8px}
+  .eta-card,.information-card,.mini-route-map{padding:10px 12px;border-radius:9px}
+  .mini-route-map{display:none}
+  .extra-label{font-size:12px}
+  .eta-card strong,.information-card strong{font-size:19px}
+  .extra-detail{font-size:14px}
+  .bus-stopping-display{width:calc(100% - 24px);justify-content:center;padding:12px;font-size:27px}
+  .stop-request-icon{width:48px;height:48px;border-width:4px;font-size:13px}
+}

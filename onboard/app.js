@@ -8,7 +8,10 @@ const CONFIG = Object.freeze({
   departureDistance: 200,
   offRouteDistance: 150,
   offRouteDelayMs: 30000,
-  continuationDurationMs: 10000,
+  continuationDurationMs: 30000,
+  busStoppingDurationMs: 12000,
+  informationCardIntervalMs: 9000,
+  weatherRefreshMs: 900000,
   gpsOptions: {
     enableHighAccuracy: true,
     maximumAge: 1000,
@@ -42,7 +45,13 @@ const state = {
   displayedService: null,
   displayedDestination: null,
   lastGpsFixAt: null,
-  clockTimer: null
+  clockTimer: null,
+  busStopping: false,
+  busStoppingTimer: null,
+  informationCardTimer: null,
+  informationCardIndex: 0,
+  weather: null,
+  weatherUpdatedAt: 0
 };
 
 const el = {};
@@ -75,7 +84,10 @@ function cacheElements() {
     "driverCurrentStop", "driverDistance", "driverAccuracy", "driverSpeed",
     "previousStopButton", "nextStopButton", "repeatAnnouncementButton",
     "toggleDiversionButton", "restartJourneyButton", "endJourneyButton",
-    "gpsDebugOutput", "fullscreenButton", "announcementStatus"
+    "gpsDebugOutput", "fullscreenButton", "announcementStatus",
+    "nextStopEta", "nextStopDistance", "informationCard",
+    "informationCardLabel", "informationCardTitle", "informationCardText",
+    "routeMapStops", "busStoppingDisplay", "busStoppingButton"
   ].forEach(id => {
     el[id] = document.getElementById(id);
   });
@@ -98,6 +110,7 @@ function bindEvents() {
   el.nextStopButton.addEventListener("click", nextStop);
   el.repeatAnnouncementButton.addEventListener("click", repeatAnnouncement);
   el.toggleDiversionButton.addEventListener("click", toggleManualDiversion);
+  el.busStoppingButton.addEventListener("click", triggerBusStopping);
   el.restartJourneyButton.addEventListener("click", restartJourney);
   el.endJourneyButton.addEventListener("click", endJourney);
   el.fullscreenButton.addEventListener("click", enterFullscreen);
@@ -107,6 +120,7 @@ function bindEvents() {
     if (event.key === "ArrowLeft") previousStop();
     if (event.key === "ArrowRight") nextStop();
     if (event.key.toLowerCase() === "d") toggleManualDiversion();
+    if (event.key.toLowerCase() === "b") triggerBusStopping();
   });
 }
 
@@ -126,6 +140,8 @@ function resetSetup() {
   state.manualDiversion = false;
   state.automaticDiversion = false;
   state.offRouteSince = null;
+  clearBusStopping();
+  stopInformationCards();
 
   el.setupScreen.classList.remove("is-hidden");
   el.passengerScreen.classList.add("is-hidden");
@@ -267,6 +283,8 @@ function startJourney(event) {
   updateDisplay();
   setGpsStatus("waiting", "Waiting for GPS");
   startGps();
+  startInformationCards();
+  refreshDestinationWeather();
 
   speak(
     `Welcome on board Lynx. This is service ${state.displayedService} to ${cleanForSpeech(state.displayedDestination)}.`
@@ -375,6 +393,7 @@ function processLocation() {
 
   if (distance <= arrivalRadius) {
     state.atStop = true;
+    clearBusStopping();
     if (!state.arrivalAnnounced.has(stopKey(stop))) {
       state.arrivalAnnounced.add(stopKey(stop));
       speakArrival(stop);
@@ -556,6 +575,12 @@ function updateDisplay(distanceOverride) {
     showNormalDisplay();
   }
 
+  updateEta(distance, stop);
+  updateConnectionMessage(stop);
+  updateMiniRouteMap();
+  updateInformationCard();
+  el.busStoppingDisplay.classList.toggle("is-hidden", !state.busStopping);
+
   updateRunningStatus(stop);
   updateGpsDebug(buildGpsDebug(distance));
   updateDriverButtons();
@@ -602,10 +627,223 @@ function updateRunningStatus(stop) {
   }
 }
 
+
+function triggerBusStopping() {
+  if (!state.active) return;
+  clearTimeout(state.busStoppingTimer);
+  state.busStopping = true;
+  el.busStoppingDisplay.classList.remove("is-hidden");
+  el.busStoppingButton.textContent = "Stop requested";
+  state.busStoppingTimer = setTimeout(clearBusStopping, CONFIG.busStoppingDurationMs);
+}
+
+function clearBusStopping() {
+  clearTimeout(state.busStoppingTimer);
+  state.busStoppingTimer = null;
+  state.busStopping = false;
+  if (el.busStoppingDisplay) el.busStoppingDisplay.classList.add("is-hidden");
+  if (el.busStoppingButton) el.busStoppingButton.textContent = "Bus stopping";
+}
+
+/* A physical bell cannot be read by a normal web page on its own. A future
+   bell/controller bridge can call window.triggerBusStopping(). */
+window.triggerBusStopping = triggerBusStopping;
+
+function updateEta(distance, stop) {
+  if (!el.nextStopEta || !stop) return;
+  el.nextStopDistance.textContent = Number.isFinite(distance) ? formatDistance(distance) : "";
+
+  let seconds = null;
+  if (Number.isFinite(distance) && state.speedMph >= 3) {
+    const metresPerSecond = state.speedMph / 2.236936;
+    seconds = Math.max(5, Math.round(distance / metresPerSecond));
+  } else if (stop.time) {
+    const scheduled = timeToday(stop.time);
+    if (scheduled) seconds = Math.max(0, Math.round((scheduled - Date.now()) / 1000));
+  }
+
+  if (state.atStop) {
+    el.nextStopEta.textContent = "Arriving now";
+  } else if (seconds === null) {
+    el.nextStopEta.textContent = "Calculating…";
+  } else if (seconds < 60) {
+    el.nextStopEta.textContent = `Approx. ${seconds} sec`;
+  } else {
+    el.nextStopEta.textContent = `Approx. ${Math.max(1, Math.round(seconds / 60))} min`;
+  }
+}
+
+function updateConnectionMessage(stop) {
+  const message = getAlightMessage(stop);
+  el.connectionMessage.textContent = message;
+  el.connectionMessage.classList.toggle("is-hidden", !message);
+}
+
+function updateMiniRouteMap() {
+  if (!el.routeMapStops) return;
+  const start = Math.max(0, state.stopIndex - (state.atStop ? 0 : 0));
+  const stops = state.stops.slice(start, start + 5);
+  el.routeMapStops.innerHTML = "";
+  stops.forEach((stop, index) => {
+    const row = document.createElement("div");
+    row.className = `route-map-stop ${index === 0 ? "route-map-current" : ""}`;
+    row.innerHTML = `<span class="route-map-dot"></span><span>${escapeHtml(stop.name)}</span>`;
+    el.routeMapStops.appendChild(row);
+  });
+}
+
+function startInformationCards() {
+  stopInformationCards();
+  updateInformationCard();
+  state.informationCardTimer = setInterval(() => {
+    state.informationCardIndex += 1;
+    updateInformationCard();
+  }, CONFIG.informationCardIntervalMs);
+}
+
+function stopInformationCards() {
+  clearInterval(state.informationCardTimer);
+  state.informationCardTimer = null;
+}
+
+function updateInformationCard() {
+  if (!state.active || !el.informationCardTitle) return;
+  const cards = buildInformationCards();
+  if (!cards.length) return;
+  const card = cards[state.informationCardIndex % cards.length];
+  el.informationCardLabel.textContent = card.label;
+  el.informationCardTitle.textContent = card.title;
+  el.informationCardText.textContent = card.text;
+}
+
+function buildInformationCards() {
+  const stop = getStop();
+  const destinationStop = state.stops[state.stops.length - 1];
+  const cards = [];
+  const town = townFromStop(stop?.name);
+
+  if (town) {
+    cards.push({
+      label: "Welcome to",
+      title: town.toUpperCase(),
+      text: landmarkMessage(town)
+    });
+  }
+
+  cards.push({
+    label: "Passenger information",
+    title: "Please ring the bell once",
+    text: "Please remain seated until the bus has stopped."
+  });
+
+  if (destinationStop?.time) {
+    cards.push({
+      label: "Expected arrival",
+      title: getDestination(),
+      text: destinationStop.time
+    });
+  }
+
+  const connections = connectionInformation(stop);
+  if (connections) {
+    cards.push({ label: "Onward connections", title: stop.name, text: connections });
+  }
+
+  if (state.weather) {
+    cards.push({
+      label: `Weather at ${getDestination()}`,
+      title: `${Math.round(state.weather.temperature)}°C`,
+      text: state.weather.description
+    });
+  }
+
+  const seasonal = seasonalMessage();
+  if (seasonal) cards.push({ label: "Seasonal message", title: seasonal.title, text: seasonal.text });
+  return cards;
+}
+
+function townFromStop(name) {
+  if (!name) return "";
+  return String(name).split(",")[0].replace(/ Transport Interchange| Travel Hub| Oak Street/i, "").trim();
+}
+
+function landmarkMessage(town) {
+  const messages = {
+    "Hunstanton": "Home of the seafront, beach and Sea Life Centre.",
+    "Wells-next-the-Sea": "Home of the historic quay and beach.",
+    "Fakenham": "A historic market town in North Norfolk.",
+    "King's Lynn": "A historic maritime town on the Great Ouse.",
+    "Holkham": "Alight nearby for Holkham Hall and the coast.",
+    "Burnham Market": "Welcome to Burnham Market."
+  };
+  return messages[town] || "Please ring the bell well in advance of your stop.";
+}
+
+function connectionInformation(stop) {
+  const name = String(stop?.name || "").toLowerCase();
+  if (name.includes("wells") && name.includes("grove road")) return "CH1 towards Cromer.";
+  if (name.includes("hunstanton")) return "Services 34 and 36 towards King's Lynn and Fakenham.";
+  if (name.includes("king's lynn") || name.includes("kings lynn")) return "Local and regional buses from the Transport Interchange.";
+  if (name.includes("fakenham")) return "Local services from Oak Street and the town centre.";
+  return stop?.connections || "";
+}
+
+function seasonalMessage() {
+  const now = new Date();
+  const month = now.getMonth();
+  const date = now.getDate();
+  if (month === 11 && date >= 15) return { title: "Merry Christmas", text: "Thank you for travelling with us." };
+  if (month === 0 && date <= 7) return { title: "Happy New Year", text: "We wish you a safe and enjoyable journey." };
+  return null;
+}
+
+async function refreshDestinationWeather() {
+  const destination = state.stops[state.stops.length - 1];
+  if (!hasCoordinates(destination)) return;
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${destination.lat}&longitude=${destination.lng}&current=temperature_2m,weather_code&timezone=auto`;
+    const response = await fetch(url, { cache: "no-store" });
+    if (!response.ok) return;
+    const data = await response.json();
+    state.weather = {
+      temperature: Number(data.current?.temperature_2m),
+      description: weatherDescription(data.current?.weather_code)
+    };
+    state.weatherUpdatedAt = Date.now();
+    updateInformationCard();
+  } catch (error) {
+    /* Weather is optional. Passenger display remains usable offline. */
+  }
+}
+
+function weatherDescription(code) {
+  const value = Number(code);
+  if (value === 0) return "Clear";
+  if ([1,2].includes(value)) return "Partly cloudy";
+  if (value === 3) return "Overcast";
+  if ([45,48].includes(value)) return "Foggy";
+  if (value >= 51 && value <= 67) return "Rain or drizzle";
+  if (value >= 71 && value <= 77) return "Snow";
+  if (value >= 80 && value <= 82) return "Rain showers";
+  if (value >= 95) return "Thunderstorms";
+  return "Current conditions available";
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 function previousStop() {
   if (!state.active || state.stopIndex <= 0) return;
   state.stopIndex -= 1;
   state.atStop = false;
+  clearBusStopping();
+  state.informationCardIndex = 0;
   updateDisplay();
 }
 
@@ -613,6 +851,8 @@ function nextStop() {
   if (!state.active || state.stopIndex >= state.stops.length - 1) return;
   state.stopIndex += 1;
   state.atStop = false;
+  clearBusStopping();
+  state.informationCardIndex = 0;
   updateDisplay();
 }
 

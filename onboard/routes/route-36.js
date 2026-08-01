@@ -492,27 +492,27 @@ window.LYNX_ROUTES = window.LYNX_ROUTES || {};
     }),
 
     makeStop({
+      id: "wells-polka-road-coop",
+      name: "Wells-next-the-Sea, Polka Road Co-op",
+      announcementName: "Wells next the Sea Polka Road Co-op",
+      lat: 52.95112,
+      lng: 0.85505,
+      offset: 112,
+      timingPoint: true,
+      arrivalRadius: 100,
+      nextRadius: 300
+    }),
+
+    makeStop({
       id: "wells-grove-road",
       name: "Wells-next-the-Sea, Grove Road",
       announcementName: "Wells next the Sea Grove Road",
       lat: 52.95093,
       lng: 0.85864,
-      offset: 114,
+      offset: 116,
       timingPoint: false,
       arrivalRadius: 90,
       nextRadius: 280
-    }),
-
-    makeStop({
-      id: "wells-buttlands",
-      name: "Wells-next-the-Sea, The Buttlands",
-      announcementName: "Wells next the Sea Buttlands",
-      lat: 52.95136,
-      lng: 0.85010,
-      offset: 116,
-      timingPoint: true,
-      arrivalRadius: 100,
-      nextRadius: 300
     }),
 
     makeStop({
@@ -707,30 +707,30 @@ window.LYNX_ROUTES = window.LYNX_ROUTES || {};
       timingPoint: false,
       arrivalRadius: 90,
       nextRadius: 280
-    }),
-
-    makeStop({
-      id: "wells-buttlands-in",
-      name: "Wells-next-the-Sea, The Buttlands",
-      announcementName: "Wells next the Sea Buttlands",
-      lat: 52.95136,
-      lng: 0.85010,
-      offset: 24,
-      timingPoint: true,
-      arrivalRadius: 100,
-      nextRadius: 300
-    }),
-
-    makeStop({
+    }),    makeStop({
       id: "wells-grove-road-in",
       name: "Wells-next-the-Sea, Grove Road",
       announcementName: "Wells next the Sea Grove Road",
       lat: 52.95093,
       lng: 0.85864,
-      offset: 26,
+      offset: 24,
       timingPoint: false,
       arrivalRadius: 90,
       nextRadius: 280
+    }),
+
+
+
+    makeStop({
+      id: "wells-polka-road-coop-in",
+      name: "Wells-next-the-Sea, Polka Road Co-op",
+      announcementName: "Wells next the Sea Polka Road Co-op",
+      lat: 52.95112,
+      lng: 0.85505,
+      offset: 28,
+      timingPoint: true,
+      arrivalRadius: 100,
+      nextRadius: 300
     }),
 
     makeStop({
@@ -1239,6 +1239,21 @@ window.LYNX_ROUTES = window.LYNX_ROUTES || {};
     direction: "inbound",
     destination: "King's Lynn Transport Interchange"
   });
+
+  const special1800 = inbound.find(departure => departure.time === "18:00");
+  if (special1800) {
+    const hunstantonIndex = special1800.stops.findIndex(stop => /hunstanton.*travel hub/i.test(stop.name));
+    if (hunstantonIndex >= 0) {
+      special1800.stops = special1800.stops.slice(0, hunstantonIndex + 1);
+      special1800.destination = "Hunstanton Travel Hub";
+      special1800.label = "18:00 to Hunstanton — continues as 34";
+      special1800.linkedJourney = {
+        service: "34",
+        destination: "King's Lynn",
+        announcement: "This bus continues as service 34 to Kings Lynn. Please remain seated if you are continuing your journey."
+      };
+    }
+  }
 
   window.LYNX_ROUTES[SERVICE] = {
     service: SERVICE,

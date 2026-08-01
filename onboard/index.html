@@ -13,9 +13,13 @@
     content="#b40018"
   >
 
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
   <title>Onboard Passenger Information</title>
 
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=passenger-3">
 </head>
 
 <body>
@@ -138,6 +142,31 @@
           </div>
         </div>
 
+        <section class="passenger-extras" aria-label="Journey information">
+          <div class="eta-card">
+            <span class="extra-label">Estimated arrival</span>
+            <strong id="nextStopEta">Calculating…</strong>
+            <span id="nextStopDistance" class="extra-detail"></span>
+          </div>
+
+          <div id="informationCard" class="information-card">
+            <span id="informationCardLabel" class="extra-label">Journey information</span>
+            <strong id="informationCardTitle">Welcome aboard</strong>
+            <span id="informationCardText" class="extra-detail">Please remain seated while the bus is moving.</span>
+          </div>
+
+          <div class="mini-route-map" aria-label="Upcoming stops">
+            <div id="routeMapStops" class="route-map-stops"></div>
+          </div>
+        </section>
+
+      </section>
+
+
+      <!-- BUS STOPPING SIGN -->
+      <section id="busStoppingDisplay" class="bus-stopping-display is-hidden" aria-live="assertive">
+        <div class="stop-request-icon" aria-hidden="true">STOP</div>
+        <div>BUS STOPPING</div>
       </section>
 
 
@@ -282,6 +311,10 @@
           Toggle diversion
         </button>
 
+        <button id="busStoppingButton" type="button">
+          Bus stopping
+        </button>
+
         <button id="restartJourneyButton" type="button">
           Restart journey
         </button>
@@ -339,8 +372,7 @@
   </script>
 
   <script src="routes/route-34.js"></script>
-  <script src="routes/route-35.js"></script>
   <script src="routes/route-36.js"></script>
-  <script src="app.js"></script>
+  <script src="app.js?v=mobile-2"></script>
 </body>
 </html>
