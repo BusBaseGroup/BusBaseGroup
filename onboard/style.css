@@ -477,3 +477,32 @@ button:hover{background:var(--lynx-red-dark)}
   .bus-stopping-display{width:calc(100% - 24px);justify-content:center;padding:12px;font-size:27px}
   .stop-request-icon{width:48px;height:48px;border-width:4px;font-size:13px}
 }
+
+/* Passenger-use readability and calmer presentation */
+@media (min-width: 1100px) {
+  .route-number{font-size:clamp(100px,8vw,138px)}
+  .destination-name{font-size:clamp(52px,4.6vw,76px)}
+  .stop-state-label{font-size:clamp(44px,3.6vw,60px);letter-spacing:.045em}
+  .current-stop-name{font-size:clamp(78px,7.1vw,116px);line-height:.98}
+  .connection-message{font-size:clamp(30px,2.6vw,42px);padding:18px 24px}
+  .following-label{font-size:30px}
+  .following-stops strong{font-size:50px}
+  .second-following-stop{font-size:34px}
+  .clock,.running-status,.gps-status{font-size:27px}
+}
+
+.stop-state-panel{animation:passengerFade .45s ease-out}
+@keyframes passengerFade{
+  from{opacity:.35;transform:translateY(5px)}
+  to{opacity:1;transform:none}
+}
+
+.information-card{
+  border-left:8px solid var(--lynx-red);
+  background:#f7f7f7;
+}
+
+.bus-stopping-display{
+  letter-spacing:.035em;
+  text-shadow:0 2px 0 rgba(255,255,255,.45);
+}

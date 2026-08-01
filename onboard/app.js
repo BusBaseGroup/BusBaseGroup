@@ -12,6 +12,7 @@ const CONFIG = Object.freeze({
   busStoppingDurationMs: 12000,
   informationCardIntervalMs: 9000,
   weatherRefreshMs: 900000,
+  announcementGapMs: 180,
   gpsOptions: {
     enableHighAccuracy: true,
     maximumAge: 1000,
@@ -51,7 +52,8 @@ const state = {
   informationCardTimer: null,
   informationCardIndex: 0,
   weather: null,
-  weatherUpdatedAt: 0
+  weatherUpdatedAt: 0,
+  speechGeneration: 0
 };
 
 const el = {};
@@ -286,9 +288,10 @@ function startJourney(event) {
   startInformationCards();
   refreshDestinationWeather();
 
-  speak(
-    `Welcome on board Lynx. This is service ${state.displayedService} to ${cleanForSpeech(state.displayedDestination)}.`
-  );
+  speak([
+    "Welcome aboard.",
+    `This is the ${serviceForSpeech(state.displayedService)} to ${cleanForSpeech(state.displayedDestination)}.`
+  ]);
 }
 
 function getDestination() {
@@ -388,7 +391,7 @@ function processLocation() {
 
   if (distance <= nextRadius && distance > arrivalRadius && !state.nextAnnounced.has(stopKey(stop))) {
     state.nextAnnounced.add(stopKey(stop));
-    speak(`Next stop, ${cleanForSpeech(stop.announcementName)}.`);
+    speak(["Next stop.", `${cleanForSpeech(stop.announcementName)}.`]);
   }
 
   if (distance <= arrivalRadius) {
@@ -448,9 +451,10 @@ function handleContinuationAtHunstanton(stop) {
   el.continuationDestination.textContent = "King's Lynn";
   showOnlySpecial(el.continuationDisplay);
 
-  speak(
-    "This bus continues as service 34 to Kings Lynn. Passengers travelling onwards may remain on board."
-  );
+  speak([
+    "This bus continues as the 34 to Kings Lynn.",
+    "You may remain on board if you are travelling onwards."
+  ]);
 
   setTimeout(() => {
     if (!state.active) return;
@@ -472,7 +476,7 @@ function checkDiversion() {
     if (Date.now() - state.offRouteSince >= CONFIG.offRouteDelayMs) {
       if (!state.automaticDiversion) {
         state.automaticDiversion = true;
-        speak("This bus is currently on diversion. Please listen for driver announcements.");
+        speak(["We are currently on diversion.", "Please listen for further announcements."]);
       }
     }
   } else {
@@ -509,7 +513,9 @@ function nearestRouteSegment() {
 
 function speakArrival(stop) {
   const extra = getAlightMessage(stop);
-  speak(`This stop, ${cleanForSpeech(stop.announcementName)}.${extra ? ` ${extra}` : ""}`);
+  const parts = ["This stop.", `${cleanForSpeech(stop.announcementName)}.`];
+  if (extra) parts.push(cleanForSpeech(extra));
+  speak(parts);
 }
 
 function getAlightMessage(stop) {
@@ -732,8 +738,8 @@ function buildInformationCards() {
 
   cards.push({
     label: "Passenger information",
-    title: "Please ring the bell once",
-    text: "Please remain seated until the bus has stopped."
+    title: "Need the next stop?",
+    text: "Press the bell once, then remain seated until the bus has stopped."
   });
 
   if (destinationStop?.time) {
@@ -876,7 +882,7 @@ function toggleManualDiversion() {
     ? "Clear diversion"
     : "Toggle diversion";
   if (state.manualDiversion) {
-    speak("This bus is currently on diversion. Please listen for driver announcements.");
+    speak(["We are currently on diversion.", "Please listen for further announcements."]);
   }
   updateDisplay();
 }
@@ -974,40 +980,112 @@ function formatDistance(distance) {
 }
 
 function cleanForSpeech(value) {
-  return String(value || "")
-    .replace(/King's Lynn/gi, "Kings Lynn")
-    .replace(/Wells-next-the-Sea/gi, "Wells next the Sea")
-    .replace(/\bCH1\b/gi, "C H one")
+  let text = String(value || "").trim();
+
+  const pronunciations = [
+    [/King['’]s Lynn/gi, "Kings Lynn"],
+    [/Wells-next-the-Sea/gi, "Wells next the Sea"],
+    [/Hunstanton/gi, "Hun-stun"],
+    [/Old Hunstanton/gi, "Old Hun-stun"],
+    [/Fakenham/gi, "Fay-kuh-nuhm"],
+    [/Heacham/gi, "Hee-chum"],
+    [/Sedgeford/gi, "Sej-ford"],
+    [/Dersingham/gi, "Der-sing-um"],
+    [/Brancaster/gi, "Bran-caster"],
+    [/Holkham/gi, "Hole-kum"],
+    [/Bircham/gi, "Bir-chum"],
+    [/Hillington/gi, "Hill-ing-ton"],
+    [/Burnham Market/gi, "Burn-um Market"],
+    [/Co-?op/gi, "Co-op"],
+    [/Polka Road/gi, "Polka Road"],
+    [/\bCH1\b/gi, "C H one"],
+    [/\bA149\b/gi, "A one four nine"],
+    [/\bB1105\b/gi, "B one one zero five"]
+  ];
+
+  pronunciations.forEach(([pattern, spoken]) => {
+    text = text.replace(pattern, spoken);
+  });
+
+  return text
+    .replace(/\s*\([^)]*\)\s*/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function serviceForSpeech(service) {
+  const value = String(service || "").trim();
+  return value ? `number ${value}` : "service";
 }
 
 function loadVoices() {
   if (!("speechSynthesis" in window)) return;
   const voices = speechSynthesis.getVoices();
-  state.voice =
+  const preferred = [
+    "Microsoft Sonia Online",
+    "Microsoft Libby Online",
+    "Microsoft Ryan Online",
+    "Google UK English Female",
+    "Google UK English Male",
+    "Serena",
+    "Daniel",
+    "Kate",
+    "Martha",
+    "Arthur"
+  ];
+
+  state.voice = preferred
+    .map(name => voices.find(voice => voice.name.includes(name)))
+    .find(Boolean) ||
     voices.find(voice => voice.lang === "en-GB" && /natural|enhanced|premium/i.test(voice.name)) ||
     voices.find(voice => voice.lang === "en-GB") ||
     voices.find(voice => voice.lang.startsWith("en")) ||
     null;
 }
 
-function speak(text) {
-  state.lastAnnouncement = text;
-  el.announcementStatus.textContent = text;
+function speechSettings(text) {
+  if (/welcome aboard/i.test(text)) return { rate: 0.92, pitch: 0.98 };
+  if (/next stop|this stop/i.test(text)) return { rate: 0.9, pitch: 0.98 };
+  if (/diversion|continues as/i.test(text)) return { rate: 0.88, pitch: 0.97 };
+  if (/alight here|connections/i.test(text)) return { rate: 0.89, pitch: 0.98 };
+  return { rate: 0.91, pitch: 0.98 };
+}
+
+function speak(message) {
+  const parts = (Array.isArray(message) ? message : [message])
+    .map(part => cleanForSpeech(part))
+    .filter(Boolean);
+
+  if (!parts.length) return;
+
+  state.lastAnnouncement = parts.join(" ");
+  el.announcementStatus.textContent = state.lastAnnouncement;
   if (!state.audioEnabled || !("speechSynthesis" in window)) return;
 
+  state.speechGeneration += 1;
+  const generation = state.speechGeneration;
   speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = "en-GB";
-  utterance.voice = state.voice;
-  utterance.rate = 0.84;
-  utterance.pitch = 0.98;
-  utterance.volume = 1;
-  speechSynthesis.speak(utterance);
+
+  parts.forEach((part, index) => {
+    const utterance = new SpeechSynthesisUtterance(part);
+    const settings = speechSettings(part);
+    utterance.lang = "en-GB";
+    utterance.voice = state.voice;
+    utterance.rate = settings.rate;
+    utterance.pitch = settings.pitch;
+    utterance.volume = 1;
+
+    if (index < parts.length - 1) {
+      utterance.onend = () => {
+        if (generation !== state.speechGeneration) return;
+      };
+    }
+    speechSynthesis.speak(utterance);
+  });
 }
 
 function stopSpeech() {
+  state.speechGeneration += 1;
   if ("speechSynthesis" in window) speechSynthesis.cancel();
 }
 
