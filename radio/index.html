@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>BusBase Radio</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-main">BUSBASE</div>
+    <div class="brand-sub">RADIO</div>
+  </div>
+
+  <div class="status-badge" id="statusBadge">
+    <span class="status-dot"></span>
+    <span id="broadcastStatus">AUTODJ</span>
+  </div>
+</header>
+
+<main>
+
+  <section class="hero">
+
+    <div class="artwork-wrap">
+      <div class="artwork">
+        <img
+          id="coverArt"
+          src="https://placehold.co/700x700/111827/ffffff?text=BusBase+Radio"
+          alt="Now playing artwork"
+        >
+
+        <div class="live-overlay" id="liveOverlay">
+          ON AIR
+        </div>
+      </div>
+    </div>
+
+    <div class="now-playing">
+
+      <p class="eyebrow">
+        NOW PLAYING
+      </p>
+
+      <h1 id="songTitle">
+        BusBase Radio
+      </h1>
+
+      <p class="artist" id="artistName">
+        Non-Stop Music
+      </p>
+
+      <div class="show-info">
+        <span id="showName">AutoDJ</span>
+        <span class="separator">•</span>
+        <span id="djName">BusBase Radio</span>
+      </div>
+
+      <div class="player">
+
+        <button id="playBtn" class="play-btn">
+          ▶
+        </button>
+
+        <div class="player-right">
+
+          <div class="connection-row">
+            <span id="playerStatus">
+              Press play to listen
+            </span>
+
+            <span class="listener-text">
+              🎧 <span id="listenerCount">--</span>
+            </span>
+          </div>
+
+          <input
+            type="range"
+            id="volume"
+            min="0"
+            max="1"
+            step="0.01"
+            value="0.8"
+          >
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <section class="cards">
+
+    <div class="card">
+
+      <p class="card-label">
+        CURRENT SHOW
+      </p>
+
+      <h2 id="currentShow">
+        Non-Stop Music
+      </h2>
+
+      <p id="currentPresenter">
+        Powered by AutoDJ
+      </p>
+
+    </div>
+
+
+    <div class="card">
+
+      <p class="card-label">
+        UP NEXT
+      </p>
+
+      <h2 id="nextShow">
+        Evening Mix
+      </h2>
+
+      <p id="nextShowTime">
+        19:00
+      </p>
+
+    </div>
+
+  </section>
+
+
+  <section class="section">
+
+    <div class="section-header">
+      <div>
+        <p class="eyebrow">
+          ON AIR
+        </p>
+
+        <h2>
+          Today's Schedule
+        </h2>
+      </div>
+    </div>
+
+    <div class="schedule-grid">
+
+      <div class="schedule-item">
+        <div class="schedule-time">
+          07:00
+        </div>
+
+        <div>
+          <strong>Breakfast</strong>
+          <p>Music to start your day</p>
+        </div>
+      </div>
+
+
+      <div class="schedule-item">
+        <div class="schedule-time">
+          12:00
+        </div>
+
+        <div>
+          <strong>Non-Stop Music</strong>
+          <p>BusBase AutoDJ</p>
+        </div>
+      </div>
+
+
+      <div class="schedule-item">
+        <div class="schedule-time">
+          19:00
+        </div>
+
+        <div>
+          <strong>Evening Mix</strong>
+          <p>Live music and requests</p>
+        </div>
+      </div>
+
+
+      <div class="schedule-item">
+        <div class="schedule-time">
+          23:00
+        </div>
+
+        <div>
+          <strong>Late Night</strong>
+          <p>Non-stop overnight music</p>
+        </div>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <section class="section">
+
+    <p class="eyebrow">
+      RECENTLY PLAYED
+    </p>
+
+    <h2>
+      Last Played
+    </h2>
+
+    <div class="recent-list" id="recentList">
+
+      <div class="recent-track">
+        <span>Waiting for stream data...</span>
+        <span>--</span>
+      </div>
+
+    </div>
+
+  </section>
+
+</main>
+
+
+<footer>
+  <div>
+    <strong>BusBase Radio</strong>
+    <p>Live radio and non-stop music.</p>
+  </div>
+
+  <div>
+    busbase.co.uk/radio
+  </div>
+</footer>
+
+
+<audio
+  id="radioStream"
+  preload="none"
+></audio>
+
+<script src="app.js"></script>
+
+</body>
+</html>
