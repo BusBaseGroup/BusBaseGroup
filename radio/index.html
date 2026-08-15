@@ -1,655 +1,622 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
+  <meta charset="UTF-8">
 
-<meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1.0"
->
+  <title>BusBase Radio</title>
 
-<title>BusBase Radio</title>
+  <style>
 
-<style>
+    * {
+      box-sizing: border-box;
+    }
 
-* {
-  box-sizing: border-box;
-}
+    :root {
+      --background: #06080c;
+      --panel: #10141c;
+      --panel-light: #151a24;
+      --border: #282e3a;
+      --text: #ffffff;
+      --muted: #969eae;
+      --accent: #ff365e;
+    }
 
-:root {
-  --background: #06080c;
-  --panel: #10141c;
-  --panel-light: #151a24;
-  --border: #282e3a;
-  --text: #ffffff;
-  --muted: #969eae;
-  --accent: #ff365e;
-}
+    html {
+      scroll-behavior: smooth;
+    }
 
-html {
-  scroll-behavior: smooth;
-}
+    body {
+      margin: 0;
+      min-height: 100vh;
 
-body {
-  margin: 0;
-  min-height: 100vh;
+      font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
 
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
+      color: var(--text);
 
-  color: var(--text);
+      background:
+        radial-gradient(
+          circle at 25% 20%,
+          rgba(255,54,94,0.08),
+          transparent 30%
+        ),
+        var(--background);
+    }
 
-  background:
-    radial-gradient(
-      circle at 25% 20%,
-      rgba(255,54,94,0.08),
-      transparent 30%
-    ),
-    var(--background);
-}
 
+    /* HEADER */
 
-/* HEADER */
+    header {
+      height: 74px;
 
-header {
-  height: 74px;
+      padding:
+        0 5%;
 
-  padding:
-    0 5%;
+      display: flex;
 
-  display: flex;
+      align-items: center;
 
-  align-items: center;
+      justify-content: space-between;
 
-  justify-content: space-between;
+      border-bottom:
+        1px solid var(--border);
 
-  border-bottom:
-    1px solid var(--border);
+      background:
+        rgba(6,8,12,0.94);
+    }
 
-  background:
-    rgba(6,8,12,0.94);
-}
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
 
-.brand {
-  display: flex;
+    .brand-name {
+      font-size: 21px;
+      font-weight: 900;
+      letter-spacing: -1px;
+    }
 
-  align-items: center;
+    .brand-radio {
+      padding:
+        5px 9px;
 
-  gap: 9px;
-}
+      border-radius: 7px;
 
-.brand-name {
-  font-size: 21px;
+      background:
+        var(--accent);
 
-  font-weight: 900;
+      font-size: 11px;
+      font-weight: 900;
+    }
 
-  letter-spacing: -1px;
-}
+    .header-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
 
-.brand-radio {
-  padding:
-    5px 9px;
+      padding:
+        8px 13px;
 
-  border-radius: 7px;
+      border:
+        1px solid var(--border);
 
-  background:
-    var(--accent);
+      border-radius: 100px;
 
-  font-size: 11px;
+      background:
+        var(--panel);
 
-  font-weight: 900;
-}
+      font-size: 11px;
+      font-weight: 900;
+    }
 
-.header-status {
-  display: flex;
+    .status-dot {
+      width: 8px;
+      height: 8px;
 
-  align-items: center;
+      border-radius: 50%;
 
-  gap: 8px;
+      background:
+        var(--accent);
 
-  padding:
-    8px 13px;
+      box-shadow:
+        0 0 10px
+        var(--accent);
+    }
 
-  border:
-    1px solid var(--border);
 
-  border-radius: 100px;
+    /* MAIN */
 
-  background:
-    var(--panel);
+    main {
+      width:
+        min(1120px, 92%);
 
-  font-size: 11px;
+      margin:
+        auto;
 
-  font-weight: 900;
-}
+      padding:
+        60px 0 80px;
+    }
 
-.status-dot {
-  width: 8px;
 
-  height: 8px;
+    /* HERO */
 
-  border-radius: 50%;
+    .hero {
+      display: grid;
 
-  background:
-    var(--accent);
+      grid-template-columns:
+        minmax(270px, 390px)
+        1fr;
 
-  box-shadow:
-    0 0 10px
-    var(--accent);
-}
+      gap: 60px;
 
+      align-items: center;
+    }
 
-/* MAIN */
 
-main {
-  width:
-    min(1120px, 92%);
+    /* ARTWORK */
 
-  margin:
-    auto;
+    .artwork {
+      width: 100%;
+      aspect-ratio: 1;
 
-  padding:
-    60px 0 80px;
-}
+      position: relative;
 
+      display: flex;
+      align-items: center;
+      justify-content: center;
 
-/* HERO */
+      border:
+        1px solid var(--border);
 
-.hero {
-  display: grid;
+      border-radius: 28px;
 
-  grid-template-columns:
-    minmax(270px, 390px)
-    1fr;
+      overflow: hidden;
 
-  gap: 60px;
+      background:
+        radial-gradient(
+          circle at center,
+          rgba(255,54,94,0.13),
+          transparent 48%
+        ),
+        linear-gradient(
+          145deg,
+          #171c26,
+          #0b0e14
+        );
 
-  align-items: center;
-}
+      box-shadow:
+        0 30px 80px
+        rgba(0,0,0,0.45);
+    }
 
+    .artwork-badge {
+      position: absolute;
 
-/* ARTWORK */
+      top: 18px;
+      left: 18px;
 
-.artwork {
-  width: 100%;
+      padding:
+        8px 12px;
 
-  aspect-ratio: 1;
+      border-radius: 100px;
 
-  position: relative;
+      background:
+        var(--accent);
 
-  display: flex;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
 
-  align-items: center;
+    .artwork-logo {
+      text-align: center;
+    }
 
-  justify-content: center;
+    .artwork-main {
+      font-size:
+        clamp(
+          38px,
+          6vw,
+          62px
+        );
 
-  border:
-    1px solid var(--border);
+      font-weight: 900;
 
-  border-radius: 28px;
+      letter-spacing: -3px;
+    }
 
-  overflow: hidden;
+    .artwork-radio {
+      margin-top: 10px;
 
-  background:
-    radial-gradient(
-      circle at center,
-      rgba(255,54,94,0.13),
-      transparent 48%
-    ),
-    linear-gradient(
-      145deg,
-      #171c26,
-      #0b0e14
-    );
+      color:
+        var(--accent);
 
-  box-shadow:
-    0 30px 80px
-    rgba(0,0,0,0.45);
-}
+      font-size: 18px;
+      font-weight: 900;
+      letter-spacing: 8px;
+    }
 
-.artwork-badge {
-  position: absolute;
 
-  top: 18px;
+    /* HERO TEXT */
 
-  left: 18px;
+    .eyebrow {
+      margin:
+        0 0 10px;
 
-  padding:
-    8px 12px;
+      color:
+        var(--accent);
 
-  border-radius: 100px;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 2px;
+    }
 
-  background:
-    var(--accent);
+    .hero-content h1 {
+      margin: 0;
 
-  font-size: 11px;
+      font-size:
+        clamp(
+          44px,
+          7vw,
+          72px
+        );
 
-  font-weight: 900;
+      line-height: 0.98;
 
-  letter-spacing: 1px;
-}
+      letter-spacing: -3px;
+    }
 
-.artwork-logo {
-  text-align: center;
-}
+    .subtitle {
+      margin:
+        18px 0 0;
 
-.artwork-main {
-  font-size:
-    clamp(
-      38px,
-      6vw,
-      62px
-    );
+      color:
+        #a4abbb;
 
-  font-weight: 900;
+      font-size: 22px;
+    }
 
-  letter-spacing: -3px;
-}
+    .description {
+      max-width: 620px;
 
-.artwork-radio {
-  margin-top: 10px;
+      margin-top: 17px;
 
-  color:
-    var(--accent);
+      color:
+        #7f8797;
 
-  font-size: 18px;
+      line-height: 1.6;
+    }
 
-  font-weight: 900;
 
-  letter-spacing: 8px;
-}
+    /* PLAYER */
 
+    .player-box {
+      margin-top: 32px;
 
-/* HERO TEXT */
+      padding: 22px;
 
-.eyebrow {
-  margin:
-    0 0 10px;
+      border:
+        1px solid var(--border);
 
-  color:
-    var(--accent);
+      border-radius: 22px;
 
-  font-size: 12px;
+      background:
+        var(--panel);
 
-  font-weight: 900;
+      overflow: hidden;
+    }
 
-  letter-spacing: 2px;
-}
+    .player-top {
+      margin-bottom: 18px;
 
-.hero-content h1 {
-  margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
 
-  font-size:
-    clamp(
-      44px,
-      7vw,
-      72px
-    );
+      gap: 15px;
+    }
 
-  line-height: 0.98;
+    .player-title {
+      font-size: 16px;
+      font-weight: 900;
+    }
 
-  letter-spacing: -3px;
-}
+    .live-badge {
+      padding:
+        6px 10px;
 
-.subtitle {
-  margin:
-    18px 0 0;
+      border-radius: 100px;
 
-  color:
-    #a4abbb;
+      background:
+        rgba(255,54,94,0.12);
 
-  font-size: 22px;
-}
+      color:
+        var(--accent);
 
-.description {
-  max-width: 620px;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
 
-  margin-top: 17px;
+    .caster-holder {
+      width: 100%;
 
-  color:
-    #7f8797;
+      min-height: 80px;
+    }
 
-  line-height: 1.6;
-}
+    .cstrEmbed {
+      width: 100%;
+    }
 
 
-/* PLAYER */
+    /* CARDS */
 
-.player-box {
-  margin-top: 32px;
+    .cards {
+      margin-top: 70px;
 
-  padding: 22px;
+      display: grid;
 
-  border:
-    1px solid var(--border);
+      grid-template-columns:
+        repeat(3, 1fr);
 
-  border-radius: 22px;
+      gap: 16px;
+    }
 
-  background:
-    var(--panel);
+    .card {
+      padding: 25px;
 
-  overflow: hidden;
-}
+      border:
+        1px solid var(--border);
 
-.player-top {
-  margin-bottom: 18px;
+      border-radius: 20px;
 
-  display: flex;
+      background:
+        var(--panel);
+    }
 
-  align-items: center;
+    .card-label {
+      margin:
+        0 0 9px;
 
-  justify-content: space-between;
+      color:
+        #a8b0bf;
 
-  gap: 15px;
-}
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+    }
 
-.player-title {
-  font-size: 16px;
+    .card h2 {
+      margin: 0;
+      font-size: 22px;
+    }
 
-  font-weight: 900;
-}
+    .card p {
+      margin:
+        8px 0 0;
 
-.live-badge {
-  padding:
-    6px 10px;
+      color:
+        var(--muted);
 
-  border-radius: 100px;
+      font-size: 14px;
+    }
 
-  background:
-    rgba(255,54,94,0.12);
 
-  color:
-    var(--accent);
+    /* SECTIONS */
 
-  font-size: 10px;
+    .section {
+      margin-top: 70px;
+    }
 
-  font-weight: 900;
+    .section h2 {
+      margin:
+        0 0 22px;
 
-  letter-spacing: 1px;
-}
+      font-size: 30px;
+    }
 
-.caster-holder {
-  width: 100%;
 
-  min-height: 70px;
-}
+    /* NOW PLAYING */
 
-.cstrEmbed {
-  width: 100%;
-}
+    .now-playing {
+      display: grid;
 
+      grid-template-columns:
+        1fr auto;
 
-/* CARDS */
+      align-items: center;
 
-.cards {
-  margin-top: 70px;
+      gap: 20px;
 
-  display: grid;
+      padding: 24px;
 
-  grid-template-columns:
-    repeat(3, 1fr);
+      border:
+        1px solid var(--border);
 
-  gap: 16px;
-}
+      border-radius: 20px;
 
-.card {
-  padding: 25px;
+      background:
+        var(--panel);
+    }
 
-  border:
-    1px solid var(--border);
+    .now-playing-label {
+      margin-bottom: 8px;
 
-  border-radius: 20px;
+      color:
+        var(--accent);
 
-  background:
-    var(--panel);
-}
+      font-size: 11px;
 
-.card-label {
-  margin:
-    0 0 9px;
+      font-weight: 900;
 
-  color:
-    #a8b0bf;
+      letter-spacing: 1.5px;
+    }
 
-  font-size: 10px;
+    .now-playing h3 {
+      margin: 0;
 
-  font-weight: 900;
+      font-size: 26px;
+    }
 
-  letter-spacing: 1.5px;
-}
+    .now-playing p {
+      margin:
+        7px 0 0;
 
-.card h2 {
-  margin: 0;
+      color:
+        var(--muted);
+    }
 
-  font-size: 22px;
-}
+    .listener-count {
+      padding:
+        10px 14px;
 
-.card p {
-  margin:
-    8px 0 0;
+      border-radius: 100px;
 
-  color:
-    var(--muted);
+      background:
+        var(--panel-light);
 
-  font-size: 14px;
-}
+      color:
+        var(--muted);
 
+      white-space: nowrap;
+    }
 
-/* SECTIONS */
 
-.section {
-  margin-top: 70px;
-}
+    /* SCHEDULE */
 
-.section h2 {
-  margin:
-    0 0 22px;
+    .schedule {
+      display: grid;
 
-  font-size: 30px;
-}
+      grid-template-columns:
+        repeat(2, 1fr);
 
+      gap: 14px;
+    }
 
-/* SCHEDULE */
+    .schedule-item {
+      padding: 20px;
 
-.schedule {
-  display: grid;
+      display: flex;
 
-  grid-template-columns:
-    repeat(2, 1fr);
+      gap: 20px;
 
-  gap: 14px;
-}
+      border:
+        1px solid var(--border);
 
-.schedule-item {
-  padding: 20px;
+      border-radius: 18px;
 
-  display: flex;
+      background:
+        var(--panel);
+    }
 
-  gap: 20px;
+    .time {
+      min-width: 58px;
 
-  border:
-    1px solid var(--border);
+      color:
+        var(--accent);
 
-  border-radius: 18px;
+      font-weight: 900;
+    }
 
-  background:
-    var(--panel);
-}
+    .schedule-item strong {
+      display: block;
+    }
 
-.time {
-  min-width: 58px;
+    .schedule-item p {
+      margin:
+        5px 0 0;
 
-  color:
-    var(--accent);
+      color:
+        var(--muted);
 
-  font-weight: 900;
-}
+      font-size: 13px;
+    }
 
-.schedule-item strong {
-  display: block;
-}
 
-.schedule-item p {
-  margin:
-    5px 0 0;
+    /* FOOTER */
 
-  color:
-    var(--muted);
+    footer {
+      width:
+        min(1120px, 92%);
 
-  font-size: 13px;
-}
+      margin: auto;
 
+      padding:
+        35px 0 50px;
 
-/* AUTODJ */
+      display: flex;
 
-.autodj {
-  padding: 25px;
+      justify-content: space-between;
 
-  border:
-    1px solid var(--border);
+      gap: 20px;
 
-  border-radius: 20px;
+      border-top:
+        1px solid var(--border);
 
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255,54,94,0.08),
-      transparent
-    ),
-    var(--panel);
-}
+      color:
+        var(--muted);
 
-.autodj-icon {
-  font-size: 27px;
+      font-size: 13px;
+    }
 
-  margin-bottom: 12px;
-}
+    footer strong {
+      color: white;
+    }
 
-.autodj h3 {
-  margin:
-    0 0 8px;
 
-  font-size: 21px;
-}
+    /* MOBILE */
 
-.autodj p {
-  margin: 0;
+    @media (
+      max-width: 850px
+    ) {
 
-  max-width: 700px;
+      main {
+        padding-top: 35px;
+      }
 
-  color:
-    var(--muted);
+      .hero {
+        grid-template-columns: 1fr;
 
-  line-height: 1.6;
-}
+        gap: 35px;
+      }
 
+      .artwork {
+        max-width: 420px;
 
-/* FOOTER */
+        margin: auto;
+      }
 
-footer {
-  width:
-    min(1120px, 92%);
+      .cards {
+        grid-template-columns: 1fr;
+      }
 
-  margin: auto;
+      .schedule {
+        grid-template-columns: 1fr;
+      }
 
-  padding:
-    35px 0 50px;
+      .now-playing {
+        grid-template-columns: 1fr;
+      }
 
-  display: flex;
+      .hero-content h1 {
+        letter-spacing: -2px;
+      }
 
-  justify-content: space-between;
+      footer {
+        flex-direction: column;
+      }
 
-  gap: 20px;
+    }
 
-  border-top:
-    1px solid var(--border);
-
-  color:
-    var(--muted);
-
-  font-size: 13px;
-}
-
-footer strong {
-  color: white;
-}
-
-
-/* MOBILE */
-
-@media (
-  max-width: 850px
-) {
-
-  main {
-    padding-top: 35px;
-  }
-
-  .hero {
-    grid-template-columns: 1fr;
-
-    gap: 35px;
-  }
-
-  .artwork {
-    max-width: 420px;
-
-    margin: auto;
-  }
-
-  .cards {
-    grid-template-columns: 1fr;
-  }
-
-  .schedule {
-    grid-template-columns: 1fr;
-  }
-
-  .hero-content h1 {
-    letter-spacing: -2px;
-  }
-
-  footer {
-    flex-direction: column;
-  }
-
-}
-
-@media (
-  max-width: 500px
-) {
-
-  header {
-    padding:
-      0 18px;
-  }
-
-  .brand-name {
-    font-size: 18px;
-  }
-
-  .header-status {
-    padding:
-      7px 10px;
-  }
-
-  main {
-    width:
-      calc(100% - 30px);
-  }
-
-  .player-box {
-    padding: 15px;
-  }
-
-}
-
-</style>
-
+  </style>
 </head>
 
 
@@ -757,45 +724,24 @@ footer strong {
 
       <div class="caster-holder">
 
-
         <!--
-        CASTER.FM PLAYER
-
-        NOTICE:
-        channelId has deliberately been removed.
-
-        This will test Caster's multi-channel player.
+          THIS IS THE EXACT CASTER.FM CODE
+          GENERATED BY YOUR DASHBOARD.
         -->
 
-
         <div
-          data-type="streamPlayer"
-
+          data-type="newStreamPlayer"
           data-publicToken="d452eb4b-19d8-44f5-99f0-df6419736b25"
-
-          data-theme="dark"
-
-          data-color="ff365e"
-
+          data-theme="light"
+          data-color="e81e4d"
+          data-channelId=""
           data-rendered="false"
-
           class="cstrEmbed"
         >
-
-          <a href="https://www.caster.fm">
-            Shoutcast Hosting
-          </a>
-
-          <a href="https://www.caster.fm">
-            Stream Hosting
-          </a>
-
-          <a href="https://www.caster.fm">
-            Radio Server Hosting
-          </a>
-
+          <a href="https://www.caster.fm">Shoutcast Hosting</a>
+          <a href="https://www.caster.fm">Stream Hosting</a>
+          <a href="https://www.caster.fm">Radio Server Hosting</a>
         </div>
-
 
       </div>
 
@@ -865,6 +811,49 @@ footer strong {
 
   </div>
 
+
+</section>
+
+
+
+<section class="section">
+
+  <p class="eyebrow">
+    LIVE METADATA
+  </p>
+
+  <h2>
+    Now Playing
+  </h2>
+
+
+  <div class="now-playing">
+
+    <div>
+
+      <div class="now-playing-label">
+        NOW PLAYING
+      </div>
+
+      <h3 id="songTitle">
+        Waiting for track information...
+      </h3>
+
+      <p id="artistName">
+        BusBase Radio
+      </p>
+
+    </div>
+
+
+    <div
+      class="listener-count"
+      id="listenerCount"
+    >
+      🎧 -- listening
+    </div>
+
+  </div>
 
 </section>
 
@@ -975,44 +964,6 @@ footer strong {
 
   </div>
 
-
-</section>
-
-
-
-<section class="section">
-
-  <p class="eyebrow">
-    WHEN WE'RE NOT LIVE
-  </p>
-
-
-  <h2>
-    Non-Stop Music
-  </h2>
-
-
-  <div class="autodj">
-
-    <div class="autodj-icon">
-      🎵
-    </div>
-
-
-    <h3>
-      BusBase Radio Auto Music
-    </h3>
-
-
-    <p>
-      When there isn't a live DJ, BusBase Radio
-      will play music automatically. Your music
-      library will be connected here next.
-    </p>
-
-  </div>
-
-
 </section>
 
 
@@ -1043,11 +994,90 @@ footer strong {
 
 
 
-<script
-  src="https://cdn.cloud.caster.fm/widgets/embed.js">
+<script src="//cdn.cloud.caster.fm//widgets/embed.js"></script>
+
+
+<script>
+
+  /*
+    -------------------------------------
+    CASTER METADATA
+    -------------------------------------
+
+    Once we have your Caster public
+    stats URL, put it below.
+
+    Example:
+
+    https://server.example.com:1234/admin/publicstats.json
+  */
+
+  const STATUS_URL =
+    "";
+
+
+  async function updateMetadata() {
+
+    if (!STATUS_URL) {
+      return;
+    }
+
+
+    try {
+
+      const response =
+        await fetch(
+          STATUS_URL +
+          "?t=" +
+          Date.now()
+        );
+
+
+      const data =
+        await response.json();
+
+
+      /*
+        This searches through the returned
+        object for a source/mount containing
+        metadata.
+
+        Exact field names can vary slightly
+        between Caster server configurations.
+      */
+
+      const text =
+        JSON.stringify(data);
+
+
+      console.log(
+        "Caster metadata:",
+        data
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "Unable to load Caster metadata:",
+        error
+      );
+
+    }
+
+  }
+
+
+  updateMetadata();
+
+
+  setInterval(
+    updateMetadata,
+    10000
+  );
+
 </script>
 
 
 </body>
-
 </html>
