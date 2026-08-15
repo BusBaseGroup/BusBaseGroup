@@ -19,33 +19,21 @@
 }
 
 :root {
-
   --background: #06080c;
-
   --panel: #10141c;
-
   --panel-light: #151a24;
-
   --border: #282e3a;
-
   --text: #ffffff;
-
   --muted: #969eae;
-
   --accent: #ff365e;
-
 }
-
 
 html {
   scroll-behavior: smooth;
 }
 
-
 body {
-
   margin: 0;
-
   min-height: 100vh;
 
   font-family:
@@ -56,24 +44,18 @@ body {
   color: var(--text);
 
   background:
-
     radial-gradient(
       circle at 25% 20%,
       rgba(255,54,94,0.08),
       transparent 30%
     ),
-
     var(--background);
-
 }
 
 
-/* =====================================
-   HEADER
-===================================== */
+/* HEADER */
 
 header {
-
   height: 74px;
 
   padding:
@@ -90,34 +72,25 @@ header {
 
   background:
     rgba(6,8,12,0.94);
-
 }
 
-
 .brand {
-
   display: flex;
 
   align-items: center;
 
   gap: 9px;
-
 }
 
-
 .brand-name {
-
   font-size: 21px;
 
   font-weight: 900;
 
   letter-spacing: -1px;
-
 }
 
-
 .brand-radio {
-
   padding:
     5px 9px;
 
@@ -129,12 +102,9 @@ header {
   font-size: 11px;
 
   font-weight: 900;
-
 }
 
-
 .header-status {
-
   display: flex;
 
   align-items: center;
@@ -145,7 +115,6 @@ header {
     8px 13px;
 
   border:
-
     1px solid var(--border);
 
   border-radius: 100px;
@@ -156,12 +125,9 @@ header {
   font-size: 11px;
 
   font-weight: 900;
-
 }
 
-
 .status-dot {
-
   width: 8px;
 
   height: 8px;
@@ -174,16 +140,12 @@ header {
   box-shadow:
     0 0 10px
     var(--accent);
-
 }
 
 
-/* =====================================
-   MAIN
-===================================== */
+/* MAIN */
 
 main {
-
   width:
     min(1120px, 92%);
 
@@ -192,16 +154,12 @@ main {
 
   padding:
     60px 0 80px;
-
 }
 
 
-/* =====================================
-   HERO
-===================================== */
+/* HERO */
 
 .hero {
-
   display: grid;
 
   grid-template-columns:
@@ -211,16 +169,12 @@ main {
   gap: 60px;
 
   align-items: center;
-
 }
 
 
-/* =====================================
-   ARTWORK
-===================================== */
+/* ARTWORK */
 
 .artwork {
-
   width: 100%;
 
   aspect-ratio: 1;
@@ -241,13 +195,11 @@ main {
   overflow: hidden;
 
   background:
-
     radial-gradient(
       circle at center,
       rgba(255,54,94,0.13),
       transparent 48%
     ),
-
     linear-gradient(
       145deg,
       #171c26,
@@ -255,15 +207,11 @@ main {
     );
 
   box-shadow:
-
     0 30px 80px
     rgba(0,0,0,0.45);
-
 }
 
-
 .artwork-badge {
-
   position: absolute;
 
   top: 18px;
@@ -283,19 +231,13 @@ main {
   font-weight: 900;
 
   letter-spacing: 1px;
-
 }
-
 
 .artwork-logo {
-
   text-align: center;
-
 }
 
-
 .artwork-main {
-
   font-size:
     clamp(
       38px,
@@ -306,12 +248,9 @@ main {
   font-weight: 900;
 
   letter-spacing: -3px;
-
 }
 
-
 .artwork-radio {
-
   margin-top: 10px;
 
   color:
@@ -322,16 +261,12 @@ main {
   font-weight: 900;
 
   letter-spacing: 8px;
-
 }
 
 
-/* =====================================
-   HERO TEXT
-===================================== */
+/* HERO TEXT */
 
 .eyebrow {
-
   margin:
     0 0 10px;
 
@@ -343,12 +278,9 @@ main {
   font-weight: 900;
 
   letter-spacing: 2px;
-
 }
 
-
 .hero-content h1 {
-
   margin: 0;
 
   font-size:
@@ -361,12 +293,9 @@ main {
   line-height: 0.98;
 
   letter-spacing: -3px;
-
 }
 
-
 .subtitle {
-
   margin:
     18px 0 0;
 
@@ -374,12 +303,9 @@ main {
     #a4abbb;
 
   font-size: 22px;
-
 }
 
-
 .description {
-
   max-width: 620px;
 
   margin-top: 17px;
@@ -388,16 +314,12 @@ main {
     #7f8797;
 
   line-height: 1.6;
-
 }
 
 
-/* =====================================
-   PLAYER
-===================================== */
+/* PLAYER */
 
 .player-box {
-
   margin-top: 32px;
 
   padding: 22px;
@@ -411,12 +333,9 @@ main {
     var(--panel);
 
   overflow: hidden;
-
 }
 
-
 .player-top {
-
   margin-bottom: 18px;
 
   display: flex;
@@ -426,21 +345,15 @@ main {
   justify-content: space-between;
 
   gap: 15px;
-
 }
 
-
 .player-title {
-
   font-size: 16px;
 
   font-weight: 900;
-
 }
 
-
 .live-badge {
-
   padding:
     6px 10px;
 
@@ -457,32 +370,22 @@ main {
   font-weight: 900;
 
   letter-spacing: 1px;
-
 }
 
-
 .caster-holder {
-
   width: 100%;
 
   min-height: 70px;
-
 }
-
 
 .cstrEmbed {
-
   width: 100%;
-
 }
 
 
-/* =====================================
-   CARDS
-===================================== */
+/* CARDS */
 
 .cards {
-
   margin-top: 70px;
 
   display: grid;
@@ -491,12 +394,9 @@ main {
     repeat(3, 1fr);
 
   gap: 16px;
-
 }
 
-
 .card {
-
   padding: 25px;
 
   border:
@@ -506,12 +406,9 @@ main {
 
   background:
     var(--panel);
-
 }
 
-
 .card-label {
-
   margin:
     0 0 9px;
 
@@ -523,21 +420,15 @@ main {
   font-weight: 900;
 
   letter-spacing: 1.5px;
-
 }
 
-
 .card h2 {
-
   margin: 0;
 
   font-size: 22px;
-
 }
 
-
 .card p {
-
   margin:
     8px 0 0;
 
@@ -545,49 +436,35 @@ main {
     var(--muted);
 
   font-size: 14px;
-
 }
 
 
-/* =====================================
-   SECTIONS
-===================================== */
+/* SECTIONS */
 
 .section {
-
   margin-top: 70px;
-
 }
 
-
 .section h2 {
-
   margin:
     0 0 22px;
 
   font-size: 30px;
-
 }
 
 
-/* =====================================
-   SCHEDULE
-===================================== */
+/* SCHEDULE */
 
 .schedule {
-
   display: grid;
 
   grid-template-columns:
     repeat(2, 1fr);
 
   gap: 14px;
-
 }
 
-
 .schedule-item {
-
   padding: 20px;
 
   display: flex;
@@ -601,31 +478,22 @@ main {
 
   background:
     var(--panel);
-
 }
 
-
 .time {
-
   min-width: 58px;
 
   color:
     var(--accent);
 
   font-weight: 900;
-
 }
-
 
 .schedule-item strong {
-
   display: block;
-
 }
 
-
 .schedule-item p {
-
   margin:
     5px 0 0;
 
@@ -633,16 +501,12 @@ main {
     var(--muted);
 
   font-size: 13px;
-
 }
 
 
-/* =====================================
-   AUTODJ
-===================================== */
+/* AUTODJ */
 
 .autodj {
-
   padding: 25px;
 
   border:
@@ -651,39 +515,28 @@ main {
   border-radius: 20px;
 
   background:
-
     linear-gradient(
       135deg,
       rgba(255,54,94,0.08),
       transparent
     ),
-
     var(--panel);
-
 }
 
-
 .autodj-icon {
-
   font-size: 27px;
 
   margin-bottom: 12px;
-
 }
 
-
 .autodj h3 {
-
   margin:
     0 0 8px;
 
   font-size: 21px;
-
 }
 
-
 .autodj p {
-
   margin: 0;
 
   max-width: 700px;
@@ -692,16 +545,12 @@ main {
     var(--muted);
 
   line-height: 1.6;
-
 }
 
 
-/* =====================================
-   FOOTER
-===================================== */
+/* FOOTER */
 
 footer {
-
   width:
     min(1120px, 92%);
 
@@ -723,119 +572,78 @@ footer {
     var(--muted);
 
   font-size: 13px;
-
 }
-
 
 footer strong {
-
   color: white;
-
 }
 
 
-/* =====================================
-   MOBILE
-===================================== */
+/* MOBILE */
 
 @media (
   max-width: 850px
 ) {
 
   main {
-
     padding-top: 35px;
-
   }
 
-
   .hero {
-
     grid-template-columns: 1fr;
 
     gap: 35px;
-
   }
 
-
   .artwork {
-
     max-width: 420px;
 
     margin: auto;
-
   }
-
 
   .cards {
-
     grid-template-columns: 1fr;
-
   }
-
 
   .schedule {
-
     grid-template-columns: 1fr;
-
   }
-
 
   .hero-content h1 {
-
     letter-spacing: -2px;
-
   }
 
-
   footer {
-
     flex-direction: column;
-
   }
 
 }
-
 
 @media (
   max-width: 500px
 ) {
 
   header {
-
     padding:
       0 18px;
-
   }
-
 
   .brand-name {
-
     font-size: 18px;
-
   }
-
 
   .header-status {
-
     padding:
       7px 10px;
-
   }
-
 
   main {
-
     width:
       calc(100% - 30px);
-
   }
 
-
   .player-box {
-
     padding: 15px;
-
   }
 
 }
@@ -848,99 +656,59 @@ footer strong {
 <body>
 
 
-<!-- =====================================
-     HEADER
-===================================== -->
-
 <header>
-
 
   <div class="brand">
 
-
     <div class="brand-name">
-
       BUSBASE
-
     </div>
-
 
     <div class="brand-radio">
-
       RADIO
-
     </div>
 
-
   </div>
-
 
 
   <div class="header-status">
 
-
     <span class="status-dot"></span>
 
-
     <span>
-
       ON AIR
-
     </span>
 
-
   </div>
-
 
 </header>
 
 
 
-<!-- =====================================
-     MAIN
-===================================== -->
-
 <main>
 
-
-
-<!-- =====================================
-     HERO
-===================================== -->
 
 <section class="hero">
 
 
-
   <div class="artwork">
 
-
     <div class="artwork-badge">
-
       BUSBASE RADIO
-
     </div>
 
 
     <div class="artwork-logo">
 
-
       <div class="artwork-main">
-
         BUSBASE
-
       </div>
-
 
       <div class="artwork-radio">
-
         RADIO
-
       </div>
 
-
     </div>
-
 
   </div>
 
@@ -948,61 +716,40 @@ footer strong {
 
   <div class="hero-content">
 
-
     <p class="eyebrow">
-
       LISTEN LIVE
-
     </p>
 
 
     <h1>
-
       BusBase Radio
-
     </h1>
 
 
     <p class="subtitle">
-
       Live music, DJs and non-stop tunes.
-
     </p>
 
 
     <p class="description">
-
       Listen to BusBase Radio live from your browser.
       When one of our DJs is broadcasting, press play
       below to tune in.
-
     </p>
 
 
 
-    <!-- =================================
-         LIVE PLAYER
-    ================================== -->
-
     <div class="player-box">
-
 
       <div class="player-top">
 
-
         <div class="player-title">
-
           Live Radio
-
         </div>
-
 
         <div class="live-badge">
-
           LIVE STREAM
-
         </div>
-
 
       </div>
 
@@ -1012,19 +759,16 @@ footer strong {
 
 
         <!--
-        ====================================
+        CASTER.FM PLAYER
 
-        CASTER.FM OFFICIAL PLAYER
+        NOTICE:
+        channelId has deliberately been removed.
 
-        IMPORTANT:
-        DO NOT REMOVE THE THREE LINKS BELOW.
-
-        ====================================
+        This will test Caster's multi-channel player.
         -->
 
 
         <div
-
           data-type="streamPlayer"
 
           data-publicToken="d452eb4b-19d8-44f5-99f0-df6419736b25"
@@ -1033,17 +777,22 @@ footer strong {
 
           data-color="ff365e"
 
-          data-channelId="a2812abf-772c-44e9-a313-e41b2dd30dd6"
-
           data-rendered="false"
 
           class="cstrEmbed"
-
         >
 
-          <a href="https://www.caster.fm">Shoutcast Hosting</a>
-          <a href="https://www.caster.fm">Stream Hosting</a>
-          <a href="https://www.caster.fm">Radio Server Hosting</a>
+          <a href="https://www.caster.fm">
+            Shoutcast Hosting
+          </a>
+
+          <a href="https://www.caster.fm">
+            Stream Hosting
+          </a>
+
+          <a href="https://www.caster.fm">
+            Radio Server Hosting
+          </a>
 
         </div>
 
@@ -1061,37 +810,22 @@ footer strong {
 
 
 
-<!-- =====================================
-     INFORMATION CARDS
-===================================== -->
-
 <section class="cards">
 
 
-
   <div class="card">
 
-
     <p class="card-label">
-
       CURRENTLY
-
     </p>
 
-
     <h2>
-
       BusBase Radio
-
     </h2>
 
-
     <p>
-
       Live from our studio
-
     </p>
-
 
   </div>
 
@@ -1099,27 +833,17 @@ footer strong {
 
   <div class="card">
 
-
     <p class="card-label">
-
       WHEN DJs ARE OFFLINE
-
     </p>
-
 
     <h2>
-
       Non-Stop Music
-
     </h2>
 
-
     <p>
-
       Automatic music between live shows
-
     </p>
-
 
   </div>
 
@@ -1127,27 +851,17 @@ footer strong {
 
   <div class="card">
 
-
     <p class="card-label">
-
       LISTEN ANYWHERE
-
     </p>
-
 
     <h2>
-
       Online Radio
-
     </h2>
 
-
     <p>
-
       Desktop, tablet or mobile
-
     </p>
-
 
   </div>
 
@@ -1156,24 +870,15 @@ footer strong {
 
 
 
-<!-- =====================================
-     SCHEDULE
-===================================== -->
-
 <section class="section">
 
-
   <p class="eyebrow">
-
     BUSBASE RADIO
-
   </p>
 
 
   <h2>
-
     Today's Schedule
-
   </h2>
 
 
@@ -1181,36 +886,23 @@ footer strong {
   <div class="schedule">
 
 
-
     <div class="schedule-item">
 
-
       <div class="time">
-
         07:00
-
       </div>
-
 
       <div>
 
-
         <strong>
-
           Breakfast
-
         </strong>
 
-
         <p>
-
           Music to start your day.
-
         </p>
 
-
       </div>
-
 
     </div>
 
@@ -1218,33 +910,21 @@ footer strong {
 
     <div class="schedule-item">
 
-
       <div class="time">
-
         12:00
-
       </div>
-
 
       <div>
 
-
         <strong>
-
           Non-Stop Music
-
         </strong>
 
-
         <p>
-
           BusBase Radio favourites.
-
         </p>
 
-
       </div>
-
 
     </div>
 
@@ -1252,33 +932,21 @@ footer strong {
 
     <div class="schedule-item">
 
-
       <div class="time">
-
         19:00
-
       </div>
-
 
       <div>
 
-
         <strong>
-
           Evening Live
-
         </strong>
 
-
         <p>
-
           DJs, requests and music.
-
         </p>
 
-
       </div>
-
 
     </div>
 
@@ -1286,33 +954,21 @@ footer strong {
 
     <div class="schedule-item">
 
-
       <div class="time">
-
         23:00
-
       </div>
-
 
       <div>
 
-
         <strong>
-
           Late Night
-
         </strong>
 
-
         <p>
-
           Music through the night.
-
         </p>
 
-
       </div>
-
 
     </div>
 
@@ -1324,53 +980,35 @@ footer strong {
 
 
 
-<!-- =====================================
-     AUTODJ
-===================================== -->
-
 <section class="section">
 
-
   <p class="eyebrow">
-
     WHEN WE'RE NOT LIVE
-
   </p>
 
 
   <h2>
-
     Non-Stop Music
-
   </h2>
-
 
 
   <div class="autodj">
 
-
     <div class="autodj-icon">
-
       🎵
-
     </div>
 
 
     <h3>
-
       BusBase Radio Auto Music
-
     </h3>
 
 
     <p>
-
       When there isn't a live DJ, BusBase Radio
       will play music automatically. Your music
       library will be connected here next.
-
     </p>
-
 
   </div>
 
@@ -1382,50 +1020,28 @@ footer strong {
 
 
 
-<!-- =====================================
-     FOOTER
-===================================== -->
-
 <footer>
-
 
   <div>
 
-
     <strong>
-
       BusBase Radio
-
     </strong>
-
 
     <br>
 
-
     busbase.co.uk/radio
 
-
   </div>
-
 
 
   <div>
-
     © 2026 BusBase
-
   </div>
-
 
 </footer>
 
 
-
-<!-- =====================================
-     CASTER.FM SCRIPT
-
-     IMPORTANT:
-     ONLY ONE COPY OF THIS SCRIPT.
-===================================== -->
 
 <script
   src="https://cdn.cloud.caster.fm/widgets/embed.js">
