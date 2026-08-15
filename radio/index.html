@@ -6,86 +6,580 @@
 
   <title>BusBase Radio</title>
 
-  <link rel="stylesheet" href="style.css">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #07090d;
+      --panel: #10141c;
+      --panel2: #151a24;
+      --border: #262c38;
+      --text: #ffffff;
+      --muted: #969dab;
+      --red: #ff365e;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top left, #21152c 0, #07090d 480px);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .topbar {
+      height: 74px;
+      padding: 0 5%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      border-bottom: 1px solid var(--border);
+
+      background: rgba(7, 9, 13, 0.9);
+      backdrop-filter: blur(14px);
+
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-main {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -1px;
+    }
+
+    .brand-radio {
+      padding: 5px 8px;
+      border-radius: 7px;
+
+      background: var(--red);
+
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+
+    .live-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      padding: 8px 13px;
+
+      background: var(--panel2);
+
+      border: 1px solid var(--border);
+      border-radius: 999px;
+
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+
+      background: var(--red);
+
+      box-shadow: 0 0 10px var(--red);
+    }
+
+    main {
+      width: min(1120px, 92%);
+      margin: auto;
+
+      padding: 60px 0 80px;
+    }
+
+    .hero {
+      display: grid;
+
+      grid-template-columns:
+        minmax(260px, 390px)
+        1fr;
+
+      gap: 60px;
+      align-items: center;
+    }
+
+    .artwork {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1;
+
+      border-radius: 28px;
+      overflow: hidden;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      background:
+        radial-gradient(circle at center, #ff365e30, transparent 55%),
+        linear-gradient(135deg, #181d28, #0c0f15);
+
+      border: 1px solid var(--border);
+
+      box-shadow:
+        0 30px 80px rgba(0, 0, 0, 0.45);
+    }
+
+    .art-logo {
+      text-align: center;
+    }
+
+    .art-logo-main {
+      font-size: clamp(36px, 6vw, 64px);
+      font-weight: 900;
+      letter-spacing: -3px;
+    }
+
+    .art-logo-radio {
+      margin-top: 6px;
+
+      color: var(--red);
+
+      font-size: 18px;
+      font-weight: bold;
+      letter-spacing: 8px;
+    }
+
+    .on-air {
+      position: absolute;
+
+      top: 18px;
+      left: 18px;
+
+      background: var(--red);
+
+      padding: 8px 12px;
+
+      border-radius: 999px;
+
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+
+      font-size: 12px;
+      font-weight: 900;
+
+      color: var(--red);
+
+      letter-spacing: 2px;
+    }
+
+    .hero-info h1 {
+      margin: 0;
+
+      font-size: clamp(44px, 7vw, 72px);
+      line-height: 0.98;
+
+      letter-spacing: -3px;
+    }
+
+    .subtitle {
+      margin: 18px 0 0;
+
+      font-size: 22px;
+
+      color: var(--muted);
+    }
+
+    .description {
+      max-width: 600px;
+
+      margin-top: 16px;
+
+      color: #747c8a;
+
+      line-height: 1.6;
+    }
+
+    .player-box {
+      margin-top: 32px;
+
+      padding: 22px;
+
+      background: var(--panel);
+
+      border: 1px solid var(--border);
+      border-radius: 22px;
+    }
+
+    .player-title {
+      margin-bottom: 14px;
+
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      gap: 10px;
+    }
+
+    .player-title strong {
+      font-size: 16px;
+    }
+
+    .live-pill {
+      background: rgba(255, 54, 94, 0.12);
+
+      color: var(--red);
+
+      padding: 6px 9px;
+
+      border-radius: 999px;
+
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 1px;
+    }
+
+    .caster-container {
+      width: 100%;
+
+      overflow: hidden;
+
+      border-radius: 14px;
+    }
+
+    .cstrEmbed {
+      width: 100%;
+    }
+
+    .cards {
+      margin-top: 70px;
+
+      display: grid;
+
+      grid-template-columns: repeat(3, 1fr);
+
+      gap: 16px;
+    }
+
+    .card {
+      padding: 25px;
+
+      background: var(--panel);
+
+      border: 1px solid var(--border);
+      border-radius: 20px;
+    }
+
+    .card-label {
+      margin: 0 0 9px;
+
+      color: var(--red);
+
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+    }
+
+    .card h2 {
+      margin: 0;
+
+      font-size: 22px;
+    }
+
+    .card p {
+      margin: 8px 0 0;
+
+      color: var(--muted);
+
+      font-size: 14px;
+    }
+
+    .section {
+      margin-top: 70px;
+    }
+
+    .section h2 {
+      margin: 0 0 22px;
+
+      font-size: 30px;
+    }
+
+    .schedule {
+      display: grid;
+
+      grid-template-columns: repeat(2, 1fr);
+
+      gap: 14px;
+    }
+
+    .schedule-item {
+      padding: 20px;
+
+      display: flex;
+      align-items: flex-start;
+
+      gap: 20px;
+
+      background: var(--panel);
+
+      border: 1px solid var(--border);
+      border-radius: 18px;
+    }
+
+    .time {
+      min-width: 58px;
+
+      color: var(--red);
+
+      font-weight: 900;
+    }
+
+    .schedule-item strong {
+      display: block;
+    }
+
+    .schedule-item p {
+      margin: 5px 0 0;
+
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .offline-box {
+      margin-top: 25px;
+
+      padding: 24px;
+
+      border-radius: 20px;
+
+      background: linear-gradient(
+        135deg,
+        rgba(255, 54, 94, 0.08),
+        var(--panel)
+      );
+
+      border: 1px solid var(--border);
+    }
+
+    .offline-box h3 {
+      margin: 0 0 8px;
+    }
+
+    .offline-box p {
+      margin: 0;
+
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    footer {
+      width: min(1120px, 92%);
+
+      margin: auto;
+
+      padding: 35px 0 50px;
+
+      display: flex;
+      justify-content: space-between;
+
+      gap: 20px;
+
+      border-top: 1px solid var(--border);
+
+      color: var(--muted);
+
+      font-size: 13px;
+    }
+
+    footer strong {
+      color: white;
+    }
+
+    @media (max-width: 850px) {
+
+      main {
+        padding-top: 35px;
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+        gap: 35px;
+      }
+
+      .artwork {
+        max-width: 420px;
+        margin: auto;
+      }
+
+      .cards {
+        grid-template-columns: 1fr;
+      }
+
+      .schedule {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-info h1 {
+        letter-spacing: -2px;
+      }
+
+      footer {
+        flex-direction: column;
+      }
+    }
+
+    @media (max-width: 500px) {
+
+      .topbar {
+        padding: 0 18px;
+      }
+
+      .brand-main {
+        font-size: 18px;
+      }
+
+      .live-status {
+        padding: 7px 10px;
+      }
+
+      main {
+        width: calc(100% - 30px);
+      }
+
+      .player-box {
+        padding: 15px;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
 <header class="topbar">
+
   <div class="brand">
-    <div class="brand-main">BUSBASE</div>
-    <div class="brand-sub">RADIO</div>
+
+    <div class="brand-main">
+      BUSBASE
+    </div>
+
+    <div class="brand-radio">
+      RADIO
+    </div>
+
   </div>
 
-  <div class="status-badge" id="statusBadge">
-    <span class="status-dot"></span>
-    <span id="broadcastStatus">AUTODJ</span>
+
+  <div class="live-status">
+
+    <span class="dot"></span>
+
+    <span>
+      ON AIR
+    </span>
+
   </div>
+
 </header>
+
 
 <main>
 
   <section class="hero">
 
-    <div class="artwork-wrap">
-      <div class="artwork">
-        <img
-          id="coverArt"
-          src="https://placehold.co/700x700/111827/ffffff?text=BusBase+Radio"
-          alt="Now playing artwork"
-        >
+    <div class="artwork">
 
-        <div class="live-overlay" id="liveOverlay">
-          ON AIR
-        </div>
+      <div class="on-air">
+        BUSBASE RADIO
       </div>
+
+      <div class="art-logo">
+
+        <div class="art-logo-main">
+          BUSBASE
+        </div>
+
+        <div class="art-logo-radio">
+          RADIO
+        </div>
+
+      </div>
+
     </div>
 
-    <div class="now-playing">
+
+    <div class="hero-info">
 
       <p class="eyebrow">
-        NOW PLAYING
+        LISTEN LIVE
       </p>
 
-      <h1 id="songTitle">
+      <h1>
         BusBase Radio
       </h1>
 
-      <p class="artist" id="artistName">
-        Non-Stop Music
+      <p class="subtitle">
+        Live music, DJs and non-stop tunes.
       </p>
 
-      <div class="show-info">
-        <span id="showName">AutoDJ</span>
-        <span class="separator">•</span>
-        <span id="djName">BusBase Radio</span>
-      </div>
+      <p class="description">
+        Listen to BusBase Radio live from your browser.
+        When one of our DJs is broadcasting, press play
+        below to tune in.
+      </p>
 
-      <div class="player">
 
-        <button id="playBtn" class="play-btn">
-          ▶
-        </button>
+      <div class="player-box">
 
-        <div class="player-right">
+        <div class="player-title">
 
-          <div class="connection-row">
-            <span id="playerStatus">
-              Press play to listen
-            </span>
+          <strong>
+            Live Radio
+          </strong>
 
-            <span class="listener-text">
-              🎧 <span id="listenerCount">--</span>
-            </span>
+          <span class="live-pill">
+            LIVE STREAM
+          </span>
+
+        </div>
+
+
+        <div class="caster-container">
+
+          <div
+            data-type="streamPlayer"
+            data-publicToken="d452eb4b-19d8-44f5-99f0-df6419736b25"
+            data-theme="dark"
+            data-color="ff365e"
+            data-channelId="a2812abf-772c-44e9-a313-e41b2dd30dd6"
+            data-rendered="false"
+            class="cstrEmbed">
+
+            <a href="https://www.caster.fm">
+              Shoutcast Hosting
+            </a>
+
+            <a href="https://www.caster.fm">
+              Stream Hosting
+            </a>
+
+            <a href="https://www.caster.fm">
+              Radio Server Hosting
+            </a>
+
           </div>
-
-          <input
-            type="range"
-            id="volume"
-            min="0"
-            max="1"
-            step="0.01"
-            value="0.8"
-          >
 
         </div>
 
@@ -94,6 +588,7 @@
     </div>
 
   </section>
+
 
 
   <section class="cards">
@@ -101,15 +596,15 @@
     <div class="card">
 
       <p class="card-label">
-        CURRENT SHOW
+        CURRENTLY
       </p>
 
-      <h2 id="currentShow">
-        Non-Stop Music
+      <h2>
+        BusBase Radio
       </h2>
 
-      <p id="currentPresenter">
-        Powered by AutoDJ
+      <p>
+        Live from our studio
       </p>
 
     </div>
@@ -118,106 +613,165 @@
     <div class="card">
 
       <p class="card-label">
-        UP NEXT
+        WHEN DJs ARE OFFLINE
       </p>
 
-      <h2 id="nextShow">
-        Evening Mix
+      <h2>
+        Non-Stop Music
       </h2>
 
-      <p id="nextShowTime">
-        19:00
+      <p>
+        Auto music is coming next
+      </p>
+
+    </div>
+
+
+    <div class="card">
+
+      <p class="card-label">
+        LISTEN ANYWHERE
+      </p>
+
+      <h2>
+        Online 24/7
+      </h2>
+
+      <p>
+        Desktop, tablet or mobile
       </p>
 
     </div>
 
   </section>
 
-
-  <section class="section">
-
-    <div class="section-header">
-      <div>
-        <p class="eyebrow">
-          ON AIR
-        </p>
-
-        <h2>
-          Today's Schedule
-        </h2>
-      </div>
-    </div>
-
-    <div class="schedule-grid">
-
-      <div class="schedule-item">
-        <div class="schedule-time">
-          07:00
-        </div>
-
-        <div>
-          <strong>Breakfast</strong>
-          <p>Music to start your day</p>
-        </div>
-      </div>
-
-
-      <div class="schedule-item">
-        <div class="schedule-time">
-          12:00
-        </div>
-
-        <div>
-          <strong>Non-Stop Music</strong>
-          <p>BusBase AutoDJ</p>
-        </div>
-      </div>
-
-
-      <div class="schedule-item">
-        <div class="schedule-time">
-          19:00
-        </div>
-
-        <div>
-          <strong>Evening Mix</strong>
-          <p>Live music and requests</p>
-        </div>
-      </div>
-
-
-      <div class="schedule-item">
-        <div class="schedule-time">
-          23:00
-        </div>
-
-        <div>
-          <strong>Late Night</strong>
-          <p>Non-stop overnight music</p>
-        </div>
-      </div>
-
-    </div>
-
-  </section>
 
 
   <section class="section">
 
     <p class="eyebrow">
-      RECENTLY PLAYED
+      BUSBASE RADIO
     </p>
 
     <h2>
-      Last Played
+      Today's Schedule
     </h2>
 
-    <div class="recent-list" id="recentList">
 
-      <div class="recent-track">
-        <span>Waiting for stream data...</span>
-        <span>--</span>
+    <div class="schedule">
+
+      <div class="schedule-item">
+
+        <div class="time">
+          07:00
+        </div>
+
+        <div>
+
+          <strong>
+            Breakfast
+          </strong>
+
+          <p>
+            Music to start your day.
+          </p>
+
+        </div>
+
       </div>
+
+
+      <div class="schedule-item">
+
+        <div class="time">
+          12:00
+        </div>
+
+        <div>
+
+          <strong>
+            Non-Stop Music
+          </strong>
+
+          <p>
+            BusBase Radio favourites.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="schedule-item">
+
+        <div class="time">
+          19:00
+        </div>
+
+        <div>
+
+          <strong>
+            Evening Live
+          </strong>
+
+          <p>
+            DJs, requests and music.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="schedule-item">
+
+        <div class="time">
+          23:00
+        </div>
+
+        <div>
+
+          <strong>
+            Late Night
+          </strong>
+
+          <p>
+            Music through the night.
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+
+  <section class="section">
+
+    <p class="eyebrow">
+      COMING NEXT
+    </p>
+
+    <h2>
+      AutoDJ
+    </h2>
+
+
+    <div class="offline-box">
+
+      <h3>
+        🎵 Non-Stop Music
+      </h3>
+
+      <p>
+        The next update will add your music files from
+        GitHub here. When nobody is broadcasting live,
+        visitors will be able to press play and hear the
+        BusBase Radio music playlist.
+      </p>
 
     </div>
 
@@ -227,23 +781,29 @@
 
 
 <footer>
-  <div>
-    <strong>BusBase Radio</strong>
-    <p>Live radio and non-stop music.</p>
-  </div>
 
   <div>
-    busbase.co.uk/radio
+
+    <strong>
+      BusBase Radio
+    </strong>
+
+    <div>
+      busbase.co.uk/radio
+    </div>
+
   </div>
+
+
+  <div>
+    © 2026 BusBase
+  </div>
+
 </footer>
 
 
-<audio
-  id="radioStream"
-  preload="none"
-></audio>
-
-<script src="app.js"></script>
+<!-- Caster.fm player -->
+<script src="https://cdn.cloud.caster.fm/widgets/embed.js"></script>
 
 </body>
 </html>
