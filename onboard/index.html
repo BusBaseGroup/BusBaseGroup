@@ -2,21 +2,24 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BusBase Onboard</title>
+<meta name="viewport"
+content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111517">
+
+<title>BusBase Onboard - Coastliner 36</title>
 
 <style>
+
 *{
   box-sizing:border-box;
 }
 
-html,body{
+html,
+body{
   margin:0;
-  width:100%;
   min-height:100%;
   font-family:Arial,Helvetica,sans-serif;
-  background:#101214;
-  color:#111;
+  background:#111517;
 }
 
 button,
@@ -29,1762 +32,3392 @@ button{
   cursor:pointer;
 }
 
-body{
-  overflow-x:hidden;
+:root{
+  --red:#e51b36;
+  --dark:#111517;
+  --green:#35b76d;
+  --amber:#eeb62f;
 }
 
-/* =========================
-   SETUP SCREEN
-========================= */
+/* ======================================================
+   SETUP
+====================================================== */
 
-#setupScreen{
+#setup{
   min-height:100vh;
-  background:#eceeed;
+  background:#edf0ef;
   display:flex;
   align-items:center;
   justify-content:center;
-  padding:24px;
+  padding:20px;
 }
 
-.setup-shell{
+.setupBox{
   width:min(760px,100%);
   background:#fff;
-  border:1px solid #d5d8d7;
+  border:1px solid #c9cfcd;
 }
 
-.setup-header{
-  background:#15191b;
+.setupHead{
+  background:#111517;
   color:#fff;
-  padding:24px 28px;
+  padding:22px 26px;
   display:flex;
   align-items:center;
-  justify-content:space-between;
-  gap:20px;
-}
-
-.setup-brand{
-  display:flex;
-  align-items:center;
-  gap:16px;
-}
-
-.logo-block{
-  background:#d72335;
-  color:#fff;
-  font-weight:900;
-  font-size:25px;
-  padding:12px 16px;
-  letter-spacing:-1px;
-}
-
-.setup-header small{
-  display:block;
-  color:#c7cdcf;
-  margin-top:4px;
-}
-
-.setup-body{
-  padding:30px 28px 32px;
-}
-
-.setup-body h1{
-  margin:0 0 6px;
-  font-size:30px;
-  letter-spacing:-1px;
-}
-
-.setup-body .lead{
-  margin:0 0 28px;
-  color:#646b6e;
-  line-height:1.5;
-}
-
-.form-grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
   gap:18px;
 }
 
-.field{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
+.logo{
+  background:var(--red);
+  font-size:24px;
+  font-weight:900;
+  padding:12px 16px;
 }
 
-.field.full{
-  grid-column:1/-1;
+.setupHead strong{
+  display:block;
+  font-size:18px;
+}
+
+.setupHead small{
+  display:block;
+  color:#adb5b7;
+  margin-top:3px;
+}
+
+.setupBody{
+  padding:28px;
+}
+
+.setupBody h1{
+  margin:0 0 6px;
+}
+
+.setupBody p{
+  color:#636c6f;
+  margin:0 0 25px;
+}
+
+.field{
+  margin-bottom:18px;
 }
 
 .field label{
-  text-transform:uppercase;
-  letter-spacing:.7px;
-  font-weight:800;
-  font-size:12px;
-  color:#444b4e;
+  display:block;
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:1px;
+  margin-bottom:7px;
 }
 
 .field select,
 .field input{
   width:100%;
-  min-height:50px;
+  height:52px;
+  border:1px solid #abb2b3;
   background:#fff;
-  border:1px solid #aeb4b6;
+  padding:0 13px;
   border-radius:0;
-  padding:0 14px;
-  outline:none;
 }
 
-.field select:focus,
-.field input:focus{
-  border-color:#111;
-  box-shadow:0 0 0 1px #111;
-}
-
-.start-btn{
-  margin-top:26px;
-  width:100%;
-  min-height:56px;
+.start{
   border:0;
-  background:#d72335;
+  width:100%;
+  height:58px;
+  background:var(--red);
   color:#fff;
   font-weight:900;
   font-size:17px;
-  text-transform:uppercase;
-  letter-spacing:.5px;
 }
 
-.start-btn:hover{
-  background:#bd1728;
+.setupInfo{
+  margin-top:17px;
+  padding:13px;
+  background:#f0f2f1;
+  font-size:13px;
+  color:#515a5d;
+  line-height:1.45;
 }
 
-/* =========================
-   PASSENGER DISPLAY
-========================= */
+/* ======================================================
+   DISPLAY
+====================================================== */
 
-#passengerScreen{
-  min-height:100vh;
+#display{
   display:none;
-  background:#f7f7f4;
+  min-height:100vh;
+  background:#f8f8f5;
   position:relative;
   overflow:hidden;
 }
 
-.display-header{
-  min-height:108px;
-  background:#171a1c;
-  color:#fff;
+header{
+  height:108px;
   display:grid;
-  grid-template-columns:132px 1fr auto;
-  align-items:stretch;
+  grid-template-columns:140px 1fr 190px;
+  background:#111517;
+  color:#fff;
 }
 
-.route-box{
-  background:#d72335;
+.route{
+  background:var(--red);
   display:flex;
   align-items:center;
   justify-content:center;
   font-size:58px;
   font-weight:900;
-  letter-spacing:-3px;
 }
 
-.destination-box{
-  padding:16px 28px;
+.dest{
+  padding:16px 27px;
   display:flex;
   flex-direction:column;
   justify-content:center;
-  min-width:0;
+  overflow:hidden;
 }
 
-.destination-label{
-  font-size:12px;
-  color:#aeb5b7;
-  text-transform:uppercase;
-  letter-spacing:1.6px;
-  font-weight:700;
-  margin-bottom:4px;
+.label{
+  font-size:11px;
+  font-weight:900;
+  letter-spacing:1.5px;
+  color:#abb4b6;
 }
 
-.destination{
-  font-size:37px;
-  font-weight:800;
+#destination{
+  font-size:38px;
+  font-weight:900;
+  margin-top:3px;
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
-  letter-spacing:-1px;
 }
 
-.clock-box{
-  min-width:190px;
-  padding:18px 24px;
+.clockBox{
+  border-left:1px solid #394043;
   display:flex;
   flex-direction:column;
-  justify-content:center;
   align-items:flex-end;
-  border-left:1px solid #363a3d;
+  justify-content:center;
+  padding:15px 22px;
 }
 
-.clock{
-  font-size:32px;
-  font-weight:800;
-  font-variant-numeric:tabular-nums;
+#clock{
+  font-size:33px;
+  font-weight:900;
 }
 
-.running-status{
+#lateness{
   margin-top:4px;
-  font-size:12px;
-  text-transform:uppercase;
-  letter-spacing:.8px;
-  color:#9ed4a8;
-  font-weight:800;
+  color:#80dda0;
+  font-size:11px;
+  font-weight:900;
 }
 
-.display-main{
-  min-height:calc(100vh - 108px);
+/* ======================================================
+   MAIN
+====================================================== */
+
+main{
   display:grid;
-  grid-template-columns:minmax(0,1fr) 360px;
+  grid-template-columns:1fr 390px;
+  height:calc(100vh - 180px);
 }
 
-.next-area{
-  padding:50px 52px 110px;
+.mainStop{
+  padding:40px 50px;
   display:flex;
   flex-direction:column;
   justify-content:center;
-  min-width:0;
 }
 
-.eyebrow{
-  font-size:20px;
-  text-transform:uppercase;
+.nextTitle{
+  color:var(--red);
+  font-size:19px;
+  font-weight:900;
   letter-spacing:2px;
-  font-weight:900;
-  color:#d72335;
-  margin-bottom:10px;
 }
 
-.next-stop{
-  font-size:clamp(58px,8vw,116px);
-  line-height:.93;
-  letter-spacing:-4px;
+#nextStop{
+  font-size:clamp(50px,7vw,105px);
   font-weight:900;
-  overflow-wrap:anywhere;
-  max-width:1000px;
+  line-height:.95;
+  letter-spacing:-3px;
+  margin-top:12px;
 }
 
-.next-meta{
+.times{
+  border-top:2px solid #191d1f;
   margin-top:34px;
-  border-top:2px solid #222;
-  padding-top:22px;
-  display:flex;
-  align-items:flex-start;
-  gap:42px;
-  flex-wrap:wrap;
+  padding-top:19px;
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:22px;
 }
 
-.meta-group{
-  min-width:180px;
-}
-
-.meta-label{
-  text-transform:uppercase;
-  font-size:11px;
-  letter-spacing:1.3px;
+.small{
+  color:#747c7e;
+  font-size:10px;
   font-weight:900;
-  color:#757b7c;
-  margin-bottom:4px;
+  letter-spacing:1px;
 }
 
-.meta-value{
+.big{
   font-size:21px;
-  font-weight:800;
+  font-weight:900;
+  margin-top:5px;
 }
 
-.stops-panel{
-  border-left:1px solid #d4d6d3;
+/* ======================================================
+   UPCOMING
+====================================================== */
+
+.upcoming{
   background:#fff;
-  padding:34px 26px;
+  border-left:1px solid #d4d8d7;
+  padding:27px 24px;
+  overflow-y:auto;
 }
 
-.stops-panel-title{
-  text-transform:uppercase;
+.upcoming h3{
+  margin:0 0 22px;
+  font-size:12px;
   letter-spacing:1.3px;
-  font-size:13px;
-  font-weight:900;
-  color:#686e70;
-  margin-bottom:26px;
+  color:#6a7274;
 }
 
-.stop-list{
-  position:relative;
+.stopRow{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:10px;
+  padding:11px 0;
+  border-bottom:1px solid #e3e6e5;
 }
 
-.stop-list:before{
-  content:"";
-  position:absolute;
-  left:10px;
-  top:14px;
-  bottom:18px;
-  width:2px;
-  background:#c6c9c7;
-}
-
-.stop-item{
-  position:relative;
-  padding:0 0 26px 38px;
-  font-size:18px;
-  line-height:1.2;
-  font-weight:700;
-}
-
-.stop-item:before{
-  content:"";
-  position:absolute;
-  left:4px;
-  top:4px;
-  width:14px;
-  height:14px;
-  background:#fff;
-  border:3px solid #8a9092;
-  border-radius:50%;
-  z-index:1;
-}
-
-.stop-item.active{
-  font-size:22px;
+.stopRow.next{
+  font-size:19px;
   font-weight:900;
 }
 
-.stop-item.active:before{
-  background:#d72335;
-  border-color:#d72335;
+.stopTime{
+  font-weight:900;
 }
 
-.stop-item.destination-stop{
-  color:#d72335;
-}
+/* ======================================================
+   FOOTER
+====================================================== */
 
-/* =========================
-   INFORMATION BAR
-========================= */
-
-.info-bar{
+footer{
+  height:72px;
+  background:#111517;
+  color:#fff;
   position:absolute;
   bottom:0;
   left:0;
   right:0;
-  min-height:72px;
-  background:#171a1c;
-  color:#fff;
-  display:grid;
-  grid-template-columns:auto 1fr auto;
+  display:flex;
   align-items:center;
-  z-index:20;
 }
 
-.stop-request{
+#stopping{
   display:none;
   align-self:stretch;
-  padding:0 28px;
-  background:#f1c40f;
-  color:#151515;
   align-items:center;
-  font-size:21px;
+  padding:0 24px;
+  background:#f1c511;
+  color:#111;
   font-weight:900;
-  letter-spacing:.3px;
 }
 
-.stop-request.active{
+#stopping.show{
   display:flex;
 }
 
-.info-message{
-  padding:14px 28px;
-  font-size:18px;
+#message{
+  flex:1;
+  padding:0 24px;
+  font-size:16px;
   font-weight:700;
   overflow:hidden;
   white-space:nowrap;
   text-overflow:ellipsis;
 }
 
-.vehicle-info{
-  padding:0 24px;
-  font-size:12px;
-  color:#aeb4b6;
-  text-align:right;
+#vehicle{
+  padding:0 22px;
+  color:#aeb6b8;
 }
 
-/* =========================
-   TAKEOVER SCREENS
-========================= */
+/* ======================================================
+   GPS BADGE
+====================================================== */
 
-.takeover{
-  position:absolute;
-  inset:108px 0 72px;
-  background:#f7f7f4;
-  z-index:15;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-  padding:60px;
-}
-
-.takeover.active{
-  display:flex;
-}
-
-.takeover-inner{
-  max-width:1000px;
-}
-
-.takeover-kicker{
-  font-size:20px;
-  text-transform:uppercase;
-  letter-spacing:2px;
-  font-weight:900;
-  margin-bottom:14px;
-}
-
-.takeover-title{
-  font-size:clamp(52px,8vw,112px);
-  line-height:.95;
-  letter-spacing:-4px;
-  font-weight:900;
-}
-
-.takeover-text{
-  margin-top:26px;
-  font-size:25px;
-  color:#565d60;
-}
-
-#diversionTakeover{
-  background:#b71d2a;
-  color:#fff;
-}
-
-#diversionTakeover .takeover-text{
-  color:#fff;
-}
-
-#continuationTakeover{
-  background:#15191b;
-  color:#fff;
-}
-
-.continue-route{
-  display:inline-block;
-  margin-top:28px;
-  background:#d72335;
-  color:#fff;
-  padding:14px 24px;
-  font-size:54px;
-  font-weight:900;
-}
-
-#terminusTakeover{
-  background:#f5d028;
-}
-
-/* =========================
-   GPS / DRIVER BUTTON
-========================= */
-
-.system-controls{
+#gpsStatus{
   position:fixed;
   top:122px;
-  right:16px;
-  z-index:40;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
+  left:15px;
+  background:#fff;
+  padding:10px 14px;
+  border-left:5px solid var(--amber);
+  font-size:11px;
+  font-weight:900;
+  z-index:50;
+  display:none;
+  box-shadow:0 3px 15px rgba(0,0,0,.15);
 }
 
-.icon-btn{
-  border:1px solid #c8ccca;
-  background:rgba(255,255,255,.94);
+#gpsStatus.good{
+  border-color:var(--green);
+}
+
+#gpsStatus.bad{
+  border-color:var(--red);
+}
+
+/* ======================================================
+   BUTTONS
+====================================================== */
+
+#gear{
+  position:fixed;
+  right:15px;
+  top:123px;
+  z-index:20;
+  display:none;
+  gap:6px;
+}
+
+.float{
   width:48px;
   height:48px;
+  border:1px solid #ccd1d0;
+  background:#fff;
   font-size:21px;
 }
 
-.gps-state{
-  position:fixed;
-  left:16px;
-  top:122px;
-  z-index:40;
-  background:#fff;
-  border-left:5px solid #d72335;
-  padding:10px 14px;
-  font-size:12px;
-  font-weight:800;
-}
-
-.gps-state.ok{
-  border-left-color:#2c9a48;
-}
-
-/* =========================
+/* ======================================================
    DRIVER PANEL
-========================= */
+====================================================== */
 
-#driverPanel{
+#panel{
   position:fixed;
-  top:0;
   right:0;
+  top:0;
   bottom:0;
-  width:min(440px,100%);
-  background:#161a1c;
+  width:min(470px,100%);
+  background:#151a1c;
   color:#fff;
   z-index:100;
   transform:translateX(100%);
-  transition:transform .2s ease;
-  overflow-y:auto;
-  box-shadow:-10px 0 30px rgba(0,0,0,.2);
+  transition:.2s;
+  overflow:auto;
 }
 
-#driverPanel.open{
+#panel.open{
   transform:translateX(0);
 }
 
-.driver-head{
-  min-height:74px;
-  padding:0 20px;
+.panelHead{
+  height:70px;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  border-bottom:1px solid #353a3c;
+  padding:0 20px;
+  border-bottom:1px solid #3a4245;
 }
 
-.driver-head h2{
-  margin:0;
-  font-size:20px;
-}
-
-.close-btn{
+.panelHead button{
   width:40px;
   height:40px;
-  border:1px solid #4d5457;
   background:transparent;
+  border:1px solid #566063;
   color:#fff;
-  font-size:22px;
 }
 
-.driver-content{
+.panelBody{
   padding:20px;
 }
 
-.driver-section{
-  border-bottom:1px solid #343a3c;
-  padding-bottom:20px;
-  margin-bottom:20px;
+.panelBody h3{
+  font-size:11px;
+  color:#9aa4a7;
+  letter-spacing:1px;
+  margin:20px 0 10px;
 }
 
-.driver-section h3{
-  margin:0 0 14px;
-  text-transform:uppercase;
-  color:#9ea6a9;
-  font-size:12px;
-  letter-spacing:1.3px;
+.driverSelect{
+  width:100%;
+  height:48px;
+  background:#23292b;
+  color:#fff;
+  border:1px solid #4c5558;
+  padding:0 10px;
 }
 
-.driver-stats{
+.stats{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:8px;
 }
 
 .stat{
-  background:#202527;
-  padding:14px;
+  padding:12px;
+  background:#212729;
 }
 
-.stat-label{
-  font-size:10px;
-  text-transform:uppercase;
-  letter-spacing:.9px;
-  color:#949c9f;
-  margin-bottom:4px;
+.statLabel{
+  color:#969fa2;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:1px;
 }
 
-.stat-value{
-  font-weight:800;
-  font-size:16px;
+.statValue{
+  font-weight:900;
+  margin-top:5px;
 }
 
-.driver-buttons{
+.btnGrid{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:8px;
+  margin-top:8px;
 }
 
-.driver-btn{
-  min-height:50px;
-  border:1px solid #485053;
-  background:#22282a;
+.driverBtn{
+  min-height:49px;
   color:#fff;
+  background:#242b2d;
+  border:1px solid #4a5457;
   font-weight:800;
-  padding:10px;
 }
 
-.driver-btn:hover{
-  background:#303739;
+.driverBtn.red{
+  background:#a91b2d;
 }
 
-.driver-btn.red{
-  background:#a51b28;
-  border-color:#a51b28;
+.driverBtn.amber{
+  background:#a97900;
 }
 
-.driver-btn.amber{
-  background:#b88100;
-  border-color:#b88100;
+.driverBtn.green{
+  background:#177844;
 }
 
-.style-selector{
-  display:flex;
-  gap:8px;
-}
-
-.style-selector button{
-  flex:1;
-  min-height:44px;
-  background:#23282a;
-  color:#fff;
-  border:1px solid #4a5154;
-}
-
-.style-selector button.active{
-  background:#d72335;
-  border-color:#d72335;
-}
-
-/* =========================
-   COMPACT MODE
-========================= */
-
-body.compact #passengerScreen{
-  min-height:300px;
-}
-
-body.compact .display-main{
-  min-height:192px;
-  grid-template-columns:1fr;
-}
-
-body.compact .display-header{
-  min-height:82px;
-  grid-template-columns:100px 1fr auto;
-}
-
-body.compact .route-box{
-  font-size:44px;
-}
-
-body.compact .destination{
-  font-size:27px;
-}
-
-body.compact .clock{
-  font-size:25px;
-}
-
-body.compact .next-area{
-  padding:28px 36px 80px;
-}
-
-body.compact .next-stop{
-  font-size:52px;
-}
-
-body.compact .next-meta{
-  margin-top:18px;
-  padding-top:12px;
-}
-
-body.compact .stops-panel{
-  display:none;
-}
-
-body.compact .takeover{
-  inset:82px 0 72px;
-}
-
-/* =========================
+/* ======================================================
    MOBILE
-========================= */
+====================================================== */
 
 @media(max-width:800px){
-  .form-grid{
-    grid-template-columns:1fr;
+
+  header{
+    height:84px;
+    grid-template-columns:82px 1fr 95px;
   }
 
-  .field.full{
-    grid-column:auto;
+  .route{
+    font-size:38px;
   }
 
-  .display-header{
-    min-height:82px;
-    grid-template-columns:86px 1fr auto;
+  #destination{
+    font-size:23px;
   }
 
-  .route-box{
-    font-size:39px;
+  .clockBox{
+    padding:8px;
   }
 
-  .destination-box{
-    padding:12px 14px;
-  }
-
-  .destination-label{
-    font-size:9px;
-  }
-
-  .destination{
-    font-size:22px;
-  }
-
-  .clock-box{
-    min-width:104px;
-    padding:12px;
-  }
-
-  .clock{
+  #clock{
     font-size:21px;
   }
 
-  .running-status{
-    font-size:9px;
-  }
-
-  .display-main{
+  main{
     display:block;
+    height:calc(100vh - 156px);
   }
 
-  .next-area{
-    min-height:calc(100vh - 82px);
-    padding:50px 24px 110px;
+  .mainStop{
+    height:100%;
     justify-content:flex-start;
+    padding:50px 23px 100px;
   }
 
-  .eyebrow{
-    font-size:15px;
-    margin-top:25px;
+  #nextStop{
+    font-size:clamp(45px,14vw,72px);
   }
 
-  .next-stop{
-    font-size:clamp(48px,14vw,76px);
-    letter-spacing:-2px;
+  .times{
+    grid-template-columns:1fr 1fr;
   }
 
-  .next-meta{
-    margin-top:28px;
-    gap:22px;
-  }
-
-  .stops-panel{
+  .upcoming{
     display:none;
   }
 
-  .info-bar{
-    min-height:74px;
-    grid-template-columns:1fr;
-  }
-
-  .stop-request{
-    min-height:50px;
-    justify-content:center;
-  }
-
-  .info-message{
-    font-size:14px;
-    padding:14px 18px;
-  }
-
-  .vehicle-info{
-    display:none;
-  }
-
-  .takeover{
-    inset:82px 0 74px;
-    padding:32px 20px;
-  }
-
-  .takeover-title{
-    font-size:56px;
-    letter-spacing:-2px;
-  }
-
-  .takeover-text{
-    font-size:20px;
-  }
-
-  .system-controls{
+  #gear{
     top:auto;
-    bottom:88px;
+    bottom:85px;
   }
 
-  .gps-state{
-    display:none;
+  #gpsStatus{
+    top:auto;
+    bottom:140px;
   }
+
 }
 
-@media(max-width:500px){
-  .setup-header{
-    padding:20px;
-  }
-
-  .setup-body{
-    padding:24px 20px;
-  }
-
-  .logo-block{
-    font-size:19px;
-  }
-
-  .setup-body h1{
-    font-size:25px;
-  }
-
-  .clock-box{
-    display:none;
-  }
-
-  .display-header{
-    grid-template-columns:78px 1fr;
-  }
-}
 </style>
 </head>
 
 <body>
 
-<!-- =========================
-     JOURNEY SETUP
-========================= -->
+<!-- =====================================================
+     SETUP
+===================================================== -->
 
-<section id="setupScreen">
+<section id="setup">
 
-  <div class="setup-shell">
+<div class="setupBox">
 
-    <div class="setup-header">
-      <div class="setup-brand">
-        <div class="logo-block">BUSBASE</div>
+<div class="setupHead">
 
-        <div>
-          <strong>Onboard passenger information</strong>
-          <small>Journey setup</small>
-        </div>
-      </div>
-    </div>
-
-    <div class="setup-body">
-
-      <h1>Start a journey</h1>
-
-      <p class="lead">
-        Select the service and direction before starting the passenger display.
-      </p>
-
-      <div class="form-grid">
-
-        <div class="field">
-          <label for="routeSelect">Route</label>
-
-          <select id="routeSelect">
-            <option value="">Select route</option>
-            <option value="34">34</option>
-            <option value="35">35</option>
-            <option value="36">36</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="directionSelect">Direction</label>
-
-          <select id="directionSelect">
-            <option value="">Select direction</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="journeySelect">Journey</label>
-
-          <select id="journeySelect">
-            <option value="">Select journey</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="vehicleInput">Vehicle</label>
-
-          <input
-            id="vehicleInput"
-            placeholder="Fleet number or registration"
-          >
-        </div>
-
-      </div>
-
-      <button class="start-btn" id="startJourneyBtn">
-        Start journey
-      </button>
-
-    </div>
-
-  </div>
-
-</section>
-
-<!-- =========================
-     PASSENGER DISPLAY
-========================= -->
-
-<section id="passengerScreen">
-
-  <header class="display-header">
-
-    <div class="route-box" id="routeNumber">
-      36
-    </div>
-
-    <div class="destination-box">
-
-      <div class="destination-label">
-        Destination
-      </div>
-
-      <div class="destination" id="destination">
-        Hunstanton
-      </div>
-
-    </div>
-
-    <div class="clock-box">
-
-      <div class="clock" id="clock">
-        --:--
-      </div>
-
-      <div class="running-status" id="runningStatus">
-        ON TIME
-      </div>
-
-    </div>
-
-  </header>
-
-  <main class="display-main">
-
-    <div class="next-area">
-
-      <div class="eyebrow">
-        Next stop
-      </div>
-
-      <div class="next-stop" id="nextStop">
-        Waiting for location
-      </div>
-
-      <div class="next-meta">
-
-        <div class="meta-group">
-          <div class="meta-label">
-            Then
-          </div>
-
-          <div class="meta-value" id="thenStop">
-            —
-          </div>
-        </div>
-
-        <div class="meta-group">
-          <div class="meta-label">
-            Following
-          </div>
-
-          <div class="meta-value" id="followingStop">
-            —
-          </div>
-        </div>
-
-        <div class="meta-group">
-          <div class="meta-label">
-            Estimated arrival
-          </div>
-
-          <div class="meta-value" id="arrivalTime">
-            Calculating…
-          </div>
-        </div>
-
-      </div>
-
-    </div>
-
-    <aside class="stops-panel">
-
-      <div class="stops-panel-title">
-        Upcoming stops
-      </div>
-
-      <div class="stop-list" id="stopList">
-      </div>
-
-    </aside>
-
-  </main>
-
-  <!-- BOTTOM INFORMATION BAR -->
-
-  <div class="info-bar">
-
-    <div class="stop-request" id="stopRequest">
-      ● BUS STOPPING
-    </div>
-
-    <div class="info-message" id="infoMessage">
-      Welcome aboard.
-    </div>
-
-    <div class="vehicle-info" id="vehicleDisplay">
-      BUSBASE
-    </div>
-
-  </div>
-
-  <!-- TAKEOVER: DIVERSION -->
-
-  <section class="takeover" id="diversionTakeover">
-
-    <div class="takeover-inner">
-
-      <div class="takeover-kicker">
-        Service disruption
-      </div>
-
-      <div class="takeover-title">
-        On diversion
-      </div>
-
-      <div class="takeover-text">
-        This bus is currently operating away from its normal route.
-        Please listen for driver announcements.
-      </div>
-
-    </div>
-
-  </section>
-
-  <!-- TAKEOVER: CONTINUATION -->
-
-  <section class="takeover" id="continuationTakeover">
-
-    <div class="takeover-inner">
-
-      <div class="takeover-kicker">
-        This bus continues as
-      </div>
-
-      <div class="continue-route" id="continuationRoute">
-        34
-      </div>
-
-      <div class="takeover-title" id="continuationDestination">
-        King's Lynn
-      </div>
-
-      <div class="takeover-text">
-        Please remain seated if you are continuing your journey.
-      </div>
-
-    </div>
-
-  </section>
-
-  <!-- TAKEOVER: TERMINUS -->
-
-  <section class="takeover" id="terminusTakeover">
-
-    <div class="takeover-inner">
-
-      <div class="takeover-kicker">
-        End of route
-      </div>
-
-      <div class="takeover-title" id="terminusName">
-        Hunstanton
-      </div>
-
-      <div class="takeover-text">
-        This bus terminates here.<br>
-        Please take all belongings with you.
-      </div>
-
-    </div>
-
-  </section>
-
-</section>
-
-<!-- =========================
-     SYSTEM BUTTONS
-========================= -->
-
-<div class="gps-state" id="gpsState">
-  GPS: WAITING
+<div class="logo">
+BUSBASE
 </div>
 
-<div class="system-controls">
-
-  <button
-    class="icon-btn"
-    id="fullscreenBtn"
-    title="Full screen"
-  >
-    ⛶
-  </button>
-
-  <button
-    class="icon-btn"
-    id="driverBtn"
-    title="Driver controls"
-  >
-    ⚙
-  </button>
+<div>
+<strong>Coastliner 36</strong>
+<small>Onboard passenger information</small>
+</div>
 
 </div>
 
-<!-- =========================
+<div class="setupBody">
+
+<h1>Start journey</h1>
+
+<p>
+King's Lynn · Hunstanton · Wells-next-the-Sea · Fakenham
+</p>
+
+<div class="field">
+
+<label>DIRECTION</label>
+
+<select id="direction">
+
+<option value="">
+Select direction
+</option>
+
+<option value="out">
+King's Lynn → Fakenham
+</option>
+
+<option value="in">
+Fakenham → King's Lynn
+</option>
+
+</select>
+
+</div>
+
+<div class="field">
+
+<label>JOURNEY</label>
+
+<select id="journey">
+<option value="">Select journey</option>
+</select>
+
+</div>
+
+<div class="field">
+
+<label>VEHICLE</label>
+
+<input
+id="vehicleInput"
+placeholder="Fleet number / registration">
+
+</div>
+
+<button
+class="start"
+onclick="startJourney()">
+START JOURNEY
+</button>
+
+<div class="setupInfo">
+GPS will automatically use the official DfT NaPTAN
+bus-stop database to locate the 36 stops.
+You can override the stop manually from Journey Control.
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- =====================================================
+     DISPLAY
+===================================================== -->
+
+<section id="display">
+
+<header>
+
+<div class="route">
+36
+</div>
+
+<div class="dest">
+
+<div class="label">
+DESTINATION
+</div>
+
+<div id="destination">
+—
+</div>
+
+</div>
+
+<div class="clockBox">
+
+<div id="clock">
+--:--
+</div>
+
+<div id="lateness">
+ON TIME
+</div>
+
+</div>
+
+</header>
+
+<main>
+
+<div class="mainStop">
+
+<div class="nextTitle">
+NEXT STOP
+</div>
+
+<div id="nextStop">
+—
+</div>
+
+<div class="times">
+
+<div>
+<div class="small">SCHEDULED</div>
+<div class="big" id="scheduled">—</div>
+</div>
+
+<div>
+<div class="small">THEN</div>
+<div class="big" id="then">—</div>
+</div>
+
+<div>
+<div class="small">DISTANCE</div>
+<div class="big" id="distance">—</div>
+</div>
+
+</div>
+
+</div>
+
+<div class="upcoming">
+
+<h3>UPCOMING STOPS</h3>
+
+<div id="upcoming"></div>
+
+</div>
+
+</main>
+
+<footer>
+
+<div id="stopping">
+● BUS STOPPING
+</div>
+
+<div id="message">
+Welcome aboard Coastliner 36.
+</div>
+
+<div id="vehicle">
+BUSBASE
+</div>
+
+</footer>
+
+</section>
+
+<!-- =====================================================
+     GPS BADGE
+===================================================== -->
+
+<div id="gpsStatus">
+GPS WAITING
+</div>
+
+<!-- =====================================================
+     FLOAT CONTROLS
+===================================================== -->
+
+<div id="gear">
+
+<button
+class="float"
+onclick="togglePanel()">
+⚙
+</button>
+
+<button
+class="float"
+onclick="fullScreen()">
+⛶
+</button>
+
+</div>
+
+<!-- =====================================================
      DRIVER PANEL
-========================= -->
+===================================================== -->
 
-<aside id="driverPanel">
+<aside id="panel">
 
-  <div class="driver-head">
+<div class="panelHead">
 
-    <h2>Journey control</h2>
+<strong>Journey Control</strong>
 
-    <button class="close-btn" id="closeDriverBtn">
-      ×
-    </button>
+<button onclick="togglePanel()">
+×
+</button>
 
-  </div>
+</div>
 
-  <div class="driver-content">
+<div class="panelBody">
 
-    <section class="driver-section">
+<h3>GPS</h3>
 
-      <h3>Live information</h3>
+<div class="stats">
 
-      <div class="driver-stats">
+<div class="stat">
 
-        <div class="stat">
-          <div class="stat-label">Current stop</div>
-          <div class="stat-value" id="driverCurrentStop">—</div>
-        </div>
+<div class="statLabel">
+STATUS
+</div>
 
-        <div class="stat">
-          <div class="stat-label">Distance</div>
-          <div class="stat-value" id="driverDistance">—</div>
-        </div>
+<div
+class="statValue"
+id="driverGps">
+Waiting
+</div>
 
-        <div class="stat">
-          <div class="stat-label">GPS accuracy</div>
-          <div class="stat-value" id="driverAccuracy">—</div>
-        </div>
+</div>
 
-        <div class="stat">
-          <div class="stat-label">Speed</div>
-          <div class="stat-value" id="driverSpeed">—</div>
-        </div>
+<div class="stat">
 
-      </div>
+<div class="statLabel">
+ACCURACY
+</div>
 
-    </section>
+<div
+class="statValue"
+id="driverAccuracy">
+—
+</div>
 
-    <section class="driver-section">
+</div>
 
-      <h3>Passenger screen style</h3>
+<div class="stat">
 
-      <div class="style-selector">
+<div class="statLabel">
+SPEED
+</div>
 
-        <button
-          id="fullStyleBtn"
-          class="active"
-        >
-          Full screen
-        </button>
+<div
+class="statValue"
+id="driverSpeed">
+—
+</div>
 
-        <button id="compactStyleBtn">
-          Compact
-        </button>
+</div>
 
-      </div>
+<div class="stat">
 
-    </section>
+<div class="statLabel">
+NEXT STOP
+</div>
 
-    <section class="driver-section">
+<div
+class="statValue"
+id="driverDistance">
+—
+</div>
 
-      <h3>Stop control</h3>
+</div>
 
-      <div class="driver-buttons">
+</div>
 
-        <button class="driver-btn" id="previousStopBtn">
-          Previous stop
-        </button>
+<h3>CURRENT STOP</h3>
 
-        <button class="driver-btn" id="nextStopBtn">
-          Next stop
-        </button>
+<select
+id="manualStop"
+class="driverSelect"
+onchange="manualChange()">
+</select>
 
-        <button class="driver-btn" id="repeatBtn">
-          Repeat announcement
-        </button>
+<div class="btnGrid">
 
-        <button class="driver-btn amber" id="stopRequestBtn">
-          Bus stopping
-        </button>
+<button
+class="driverBtn"
+onclick="previousStop()">
+Previous
+</button>
 
-      </div>
+<button
+class="driverBtn green"
+onclick="nextStopManual()">
+Next
+</button>
 
-    </section>
+</div>
 
-    <section class="driver-section">
+<h3>ANNOUNCEMENTS</h3>
 
-      <h3>Journey messages</h3>
+<div class="btnGrid">
 
-      <div class="driver-buttons">
+<button
+class="driverBtn"
+onclick="announceNext(true)">
+Next stop
+</button>
 
-        <button class="driver-btn" id="diversionBtn">
-          Toggle diversion
-        </button>
+<button
+class="driverBtn"
+onclick="welcome()">
+Welcome
+</button>
 
-        <button class="driver-btn" id="continuationBtn">
-          Continuation
-        </button>
+<button
+class="driverBtn amber"
+onclick="toggleStopping()">
+Bus stopping
+</button>
 
-        <button class="driver-btn" id="terminusBtn">
-          Terminus
-        </button>
+<button
+class="driverBtn"
+onclick="announceTerminus()">
+Terminus
+</button>
 
-        <button class="driver-btn" id="clearMessageBtn">
-          Clear message
-        </button>
+</div>
 
-      </div>
+<h3>GPS CONTROL</h3>
 
-    </section>
+<div class="btnGrid">
 
-    <section>
+<button
+class="driverBtn"
+onclick="relocateGPS()">
+Re-locate
+</button>
 
-      <div class="driver-buttons">
+<button
+class="driverBtn"
+onclick="loadNaPTAN(true)">
+Reload stop data
+</button>
 
-        <button class="driver-btn" id="restartBtn">
-          Restart journey
-        </button>
+</div>
 
-        <button class="driver-btn red" id="endJourneyBtn">
-          End journey
-        </button>
+<h3>JOURNEY</h3>
 
-      </div>
+<div class="btnGrid">
 
-    </section>
+<button
+class="driverBtn"
+onclick="restartJourney()">
+Restart
+</button>
 
-  </div>
+<button
+class="driverBtn red"
+onclick="endJourney()">
+End journey
+</button>
+
+</div>
+
+</div>
 
 </aside>
 
 <script>
 
-/* ======================================================
-   ROUTE DATA
+/* =========================================================
+   BASIC HELPERS
+========================================================= */
 
-   Replace these example arrays with your complete route
-   data if you already have it.
-====================================================== */
+const $ = id =>
+document.getElementById(id);
 
-const ROUTES = {
+function minutes(time){
 
-  "34": {
+  const [h,m] =
+  time
+  .split(":")
+  .map(Number);
 
-    directions: {
+  return h*60+m;
 
-      outbound: {
-        label: "King's Lynn → Hunstanton",
-        destination: "Hunstanton",
-        stops: [
-          "King's Lynn Transport Interchange",
-          "South Wootton",
-          "Castle Rising",
-          "Dersingham",
-          "Snettisham",
-          "Heacham",
-          "Hunstanton"
-        ]
-      },
+}
 
-      inbound: {
-        label: "Hunstanton → King's Lynn",
-        destination: "King's Lynn",
-        stops: [
-          "Hunstanton",
-          "Heacham",
-          "Snettisham",
-          "Dersingham",
-          "Castle Rising",
-          "South Wootton",
-          "King's Lynn Transport Interchange"
-        ]
-      }
+function makeTime(total){
 
-    }
+  total =
+  ((total % 1440)+1440)%1440;
 
-  },
+  return (
+    String(
+      Math.floor(total/60)
+    ).padStart(2,"0")
+    +
+    ":"
+    +
+    String(
+      total%60
+    ).padStart(2,"0")
+  );
 
+}
 
-  "35": {
+function addHours(base,hours){
 
-    directions: {
+  return base.map(stop=>({
 
-      outbound: {
-        label: "King's Lynn → Hunstanton",
-        destination: "Hunstanton",
-        stops: [
-          "King's Lynn Transport Interchange",
-          "Gaywood",
-          "Grimston",
-          "Dersingham",
-          "Snettisham",
-          "Heacham",
-          "Hunstanton"
-        ]
-      },
+    ...stop,
 
-      inbound: {
-        label: "Hunstanton → King's Lynn",
-        destination: "King's Lynn",
-        stops: [
-          "Hunstanton",
-          "Heacham",
-          "Snettisham",
-          "Dersingham",
-          "Grimston",
-          "Gaywood",
-          "King's Lynn Transport Interchange"
-        ]
-      }
+    time:
+    makeTime(
+      minutes(stop.time)
+      +
+      hours*60
+    )
 
-    }
+  }));
 
-  },
+}
 
+/* =========================================================
+   NORMALISE NAMES FOR NAPTAN MATCHING
+========================================================= */
 
-  "36": {
+function normalise(value){
 
-    directions: {
+  return String(value || "")
+  .toLowerCase()
 
-      outbound: {
-        label: "King's Lynn → Hunstanton",
-        destination: "Hunstanton",
-        stops: [
-          "King's Lynn Transport Interchange",
-          "Gaywood",
-          "Castle Rising",
-          "Dersingham",
-          "Snettisham",
-          "Heacham",
-          "Hunstanton"
-        ]
-      },
+  .replace(/&/g,"and")
 
-      inbound: {
-        label: "Hunstanton → King's Lynn",
-        destination: "King's Lynn",
-        stops: [
-          "Hunstanton",
-          "Heacham",
-          "Snettisham",
-          "Dersingham",
-          "Castle Rising",
-          "Gaywood",
-          "King's Lynn Transport Interchange"
-        ]
-      }
+  .replace(/king['’]s/g,"kings")
 
-    }
+  .replace(/next[- ]the[- ]sea/g,"next the sea")
 
-  }
+  .replace(/fox\s*&?\s*hound[s]?/g,"fox hound")
 
-};
+  .replace(/\bopp\b/g,"opposite")
 
+  .replace(/\badj\b/g,"")
 
-/* ======================================================
-   STATE
-====================================================== */
+  .replace(/\bn-bound\b/g,"northbound")
 
-let activeRoute = null;
-let activeDirection = null;
-let activeStops = [];
+  .replace(/\bs-bound\b/g,"southbound")
 
-let currentStopIndex = 0;
+  .replace(/\bstand\s+[a-z]\b/g,"")
 
-let watchId = null;
+  .replace(/[^a-z0-9 ]/g," ")
 
-let diversionActive = false;
-let stopRequested = false;
+  .replace(/\s+/g," ")
 
+  .trim();
 
-/* ======================================================
-   ELEMENTS
-====================================================== */
+}
 
-const setupScreen =
-document.getElementById("setupScreen");
+function words(value){
 
-const passengerScreen =
-document.getElementById("passengerScreen");
+  return new Set(
+    normalise(value)
+    .split(" ")
+    .filter(word =>
+      word.length > 1
+    )
+  );
 
-const routeSelect =
-document.getElementById("routeSelect");
+}
 
-const directionSelect =
-document.getElementById("directionSelect");
+/* =========================================================
+   ROUTE STOP RECORD BUILDER
+========================================================= */
 
-const journeySelect =
-document.getElementById("journeySelect");
+function makeStops(data){
 
-const vehicleInput =
-document.getElementById("vehicleInput");
+  return data.map(item=>{
 
-const routeNumber =
-document.getElementById("routeNumber");
+    const [name,time] =
+    item;
 
-const destination =
-document.getElementById("destination");
+    return {
 
-const nextStop =
-document.getElementById("nextStop");
+      name,
+      time,
 
-const thenStop =
-document.getElementById("thenStop");
+      lat:null,
+      lon:null,
 
-const followingStop =
-document.getElementById("followingStop");
+      atco:null,
+      naptan:null,
 
-const arrivalTime =
-document.getElementById("arrivalTime");
+      matched:false
 
-const stopList =
-document.getElementById("stopList");
+    };
 
-const clock =
-document.getElementById("clock");
-
-const infoMessage =
-document.getElementById("infoMessage");
-
-const vehicleDisplay =
-document.getElementById("vehicleDisplay");
-
-const stopRequest =
-document.getElementById("stopRequest");
-
-const gpsState =
-document.getElementById("gpsState");
-
-const driverPanel =
-document.getElementById("driverPanel");
-
-const diversionTakeover =
-document.getElementById("diversionTakeover");
-
-const continuationTakeover =
-document.getElementById("continuationTakeover");
-
-const terminusTakeover =
-document.getElementById("terminusTakeover");
-
-
-/* ======================================================
-   CLOCK
-====================================================== */
-
-function updateClock(){
-
-  const now = new Date();
-
-  clock.textContent =
-  now.toLocaleTimeString("en-GB",{
-    hour:"2-digit",
-    minute:"2-digit"
   });
 
 }
 
-setInterval(updateClock,1000);
-updateClock();
+/* =========================================================
+   KING'S LYNN → FAKENHAM
+========================================================= */
 
+const OUT_STANDARD =
+makeStops([
 
-/* ======================================================
-   ROUTE SELECT
-====================================================== */
+["King's Lynn Transport Interchange (Stand E)","08:30"],
+["King's Lynn, opp Austin Fields","08:31"],
+["King's Lynn, opp Retail Park","08:32"],
+["King's Lynn, opp Bergen Way","08:33"],
+["King's Lynn, opp Hamburg Way","08:34"],
+["King's Lynn, adj St James Medical Practice","08:35"],
 
-routeSelect.addEventListener("change",()=>{
+["South Wootton, adj Nursery Lane","08:36"],
+["South Wootton, adj Castle Rising Road","08:37"],
+["South Wootton, adj Deas Road","08:39"],
+["South Wootton, opp Langley Road","08:39"],
+["South Wootton, opp Sandy Lane","08:40"],
+["South Wootton, opp Castle Reach","08:40"],
+["South Wootton, opp Knight's Hill","08:41"],
 
-  directionSelect.innerHTML =
-  '<option value="">Select direction</option>';
+["Castle Rising, opp Mill House Turn","08:43"],
 
-  journeySelect.innerHTML =
+["Sandringham, opp Post Box","08:44"],
+["Sandringham - A149 only, opp Cats Bottom Cottages","08:45"],
+["Sandringham, adj Edinburgh Plantation","08:46"],
+
+["Dersingham, opp Manor Road","08:49"],
+["Dersingham, adj Bank Road","08:50"],
+["Dersingham, adj Thaxters","08:52"],
+
+["Ingoldisthorpe, adj Ingoldsby Avenue","08:53"],
+["Ingoldisthorpe, opp Pond","08:55"],
+["Ingoldisthorpe, adj Coaly Lane","08:55"],
+
+["Snettisham, adj Station Road","08:56"],
+["Snettisham, adj Strickland Avenue","08:56"],
+["Snettisham, adj Grapes","08:59"],
+
+["Heacham, adj Bottom Farm","09:02"],
+["Heacham, opp Collingwood Close","09:03"],
+["Heacham, opp Fenside","09:04"],
+["Heacham, opp Fengate","09:04"],
+["Heacham, adj Jennings Close","09:05"],
+["Heacham, opp College Drive","09:06"],
+["Heacham Poplar Avenue (N-bound)","09:07"],
+["Heacham, opp Fox & Hound","09:08"],
+["Heacham, opp High Street","09:09"],
+["Heacham, opp Church Lane","09:09"],
+["Heacham, opp Manor Road","09:10"],
+
+["Hunstanton, adj Redgate Hill","09:12"],
+["Hunstanton, opp Tesco","09:15"],
+
+["Hunstanton Travel Hub (Stand B)","09:28"],
+
+["Hunstanton, opp Lincoln Square","09:30"],
+["Hunstanton, adj Lighthouse Close","09:31"],
+
+["Old Hunstanton, opp Post Office","09:34"],
+["Old Hunstanton, adj Waterworks Road","09:35"],
+
+["Holme next the Sea, adj Beach Road","09:36"],
+
+["Thornham, adj Castle Cottages","09:40"],
+["Thornham, adj Church","09:41"],
+
+["Titchwell, adj Lark Cottage","09:43"],
+["RSPB Titchwell Marsh","09:44"],
+
+["Brancaster, opp The Ship","09:46"],
+["Brancaster, opp Saxon Field","09:47"],
+
+["Brancaster Staithe, opp Jolly Sailors","09:50"],
+["Brancaster Staithe, adj The White Horse","09:53"],
+
+["Burnham Deepdale, opp Dalegate Market","09:54"],
+
+["Burnham Market, adj Church Walk","09:59"],
+["Burnham Market, opp green","10:01"],
+["Burnham Market, adj Bellamys Lane","10:02"],
+["Burnham Market, adj Friars Lane","10:03"],
+
+["Burnham Overy Staithe, opp Ostrich House","10:03"],
+["Burnham Overy Staithe, opp Hero","10:06"],
+
+["Holkham, opp The Victoria","10:14"],
+
+["Wells-next-the-Sea, adj Mainsail Yard","10:17"],
+["Wells-next-the-Sea, adj Quay","10:18"],
+["Wells-next-the-Sea, adj Northfield Lane","10:19"],
+["Wells-next-the-Sea, adj Co-op","10:30"],
+["Wells-next-the-Sea, opp Grove Road","10:30"],
+
+["Warham Road (adj)","10:32"],
+
+["Wighton, adj High Street","10:35"],
+["Wighton, adj Buddell's Lane","10:36"],
+
+["Little Walsingham, adj school","10:40"],
+["Little Walsingham, adj The Bull","10:42"],
+
+["Houghton St Giles, opp Fakenham Road","10:43"],
+
+["East Barsham, adj Water Lane","10:46"],
+
+["Fakenham, adj Toll Bar","10:50"],
+["Fakenham, adj Howland Close","10:51"],
+
+["Fakenham Oak Street (Stand A)","10:55"]
+
+]);
+
+/* =========================================================
+   06:30
+========================================================= */
+
+const OUT_0630_SHORT =
+makeStops([
+
+["King's Lynn Transport Interchange (Stand E)","06:30"],
+["King's Lynn, opp Austin Fields","06:31"],
+["King's Lynn, opp Retail Park","06:31"],
+["King's Lynn, opp Bergen Way","06:32"],
+["King's Lynn, opp Hamburg Way","06:33"],
+["King's Lynn, adj St James Medical Practice","06:34"],
+
+["South Wootton, adj Nursery Lane","06:35"],
+["South Wootton, adj Castle Rising Road","06:36"],
+["South Wootton, adj Deas Road","06:37"],
+["South Wootton, opp Langley Road","06:37"],
+["South Wootton, opp Sandy Lane","06:38"],
+["South Wootton, opp Castle Reach","06:38"],
+["South Wootton, opp Knight's Hill","06:39"],
+
+["Castle Rising, opp Mill House Turn","06:41"],
+
+["Sandringham, opp Post Box","06:42"],
+["Sandringham - A149 only, opp Cats Bottom Cottages","06:43"],
+["Sandringham, adj Edinburgh Plantation","06:44"],
+
+["Dersingham, opp Manor Road","06:46"],
+["Dersingham, adj Bank Road","06:47"],
+["Dersingham, adj Thaxters","06:49"],
+
+["Ingoldisthorpe, adj Ingoldsby Avenue","06:51"],
+["Ingoldisthorpe, opp Pond","06:52"],
+["Ingoldisthorpe, adj Coaly Lane","06:52"],
+
+["Snettisham, adj Station Road","06:53"],
+["Snettisham, adj Strickland Avenue","06:53"],
+["Snettisham, adj Grapes","06:55"],
+
+["Heacham, adj Bottom Farm","06:57"],
+["Heacham, opp Collingwood Close","06:58"],
+["Heacham, opp Fenside","06:59"],
+["Heacham, opp Fengate","07:00"],
+["Heacham, adj Jennings Close","07:01"],
+["Heacham, opp College Drive","07:02"],
+["Heacham Poplar Avenue (N-bound)","07:03"],
+["Heacham, opp Fox & Hound","07:04"],
+["Heacham, opp High Street","07:05"],
+["Heacham, opp Church Lane","07:05"],
+["Heacham, opp Manor Road","07:06"],
+
+["Hunstanton, adj Redgate Hill","07:08"],
+["Hunstanton, opp Tesco","07:10"],
+
+["Hunstanton Travel Hub (Stand B)","07:28"]
+
+]);
+
+const OUT_0630 =
+OUT_0630_SHORT.concat(
+
+  OUT_STANDARD
+
+  .filter(stop =>
+    minutes(stop.time) >
+    minutes("09:28")
+  )
+
+  .map(stop=>({
+
+    ...stop,
+
+    time:
+    makeTime(
+      minutes(stop.time)-120
+    ),
+
+    lat:null,
+    lon:null,
+    matched:false
+
+  }))
+
+);
+
+/* =========================================================
+   07:30
+========================================================= */
+
+const OUT_0730 =
+OUT_STANDARD.map(stop=>({
+
+  ...stop,
+
+  time:
+  makeTime(
+    minutes(stop.time)-60
+  ),
+
+  lat:null,
+  lon:null,
+  matched:false
+
+}));
+
+/* =========================================================
+   FAKENHAM → KING'S LYNN
+========================================================= */
+
+const IN_STANDARD =
+makeStops([
+
+["Fakenham Oak Street (Stand A)","08:00"],
+["Fakenham, opp Howland Close","08:01"],
+["Fakenham, opp Toll Bar","08:02"],
+
+["East Barsham, opp Water Lane","08:07"],
+
+["Houghton St Giles, adj Fakenham Road","08:10"],
+
+["Little Walsingham, opp The Bull","08:12"],
+["Little Walsingham, opp school","08:15"],
+
+["Wighton, opp Buddell's Lane","08:18"],
+["Wighton, opp High Street","08:18"],
+
+["Warham Road (opp)","08:21"],
+
+["Wells-next-the-Sea, adj Grove Road","08:24"],
+["Wells-next-the-Sea, opp Co-op","08:33"],
+["Wells-next-the-Sea, opp Northfield Lane","08:34"],
+["Wells-next-the-Sea, opp Quay","08:36"],
+["Wells-next-the-Sea, opp Mainsail Yard","08:37"],
+
+["Holkham, adj The Victoria","08:41"],
+
+["Burnham Overy Staithe, adj Hero","08:48"],
+["Burnham Overy Staithe, adj Ostrich House","08:51"],
+
+["Burnham Market, opp Friars Lane","08:52"],
+["Burnham Market, adj All Saints Church","08:53"],
+["Burnham Market, adj green","08:54"],
+["Burnham Market, opp Church Walk","08:56"],
+
+["Burnham Deepdale, adj Dalegate Market","09:02"],
+
+["Brancaster Staithe, opp The White Horse","09:03"],
+["Brancaster Staithe, adj Jolly Sailors","09:04"],
+
+["Brancaster, adj Saxon Field","09:06"],
+["Brancaster, adj The Ship","09:07"],
+
+["Titchwell, opp Lark Cottage","09:09"],
+["RSPB Titchwell Marsh","09:10"],
+
+["Thornham, adj Castle Cottages","09:11"],
+
+["Holme next the Sea, opp Beach Road","09:15"],
+
+["Old Hunstanton, opp Waterworks Road","09:16"],
+["Old Hunstanton, adj Post Office","09:17"],
+
+["Hunstanton, opp Lighthouse Close","09:20"],
+["Hunstanton, adj Lincoln Square","09:21"],
+
+["Hunstanton Travel Hub (Stand A)","09:35"],
+
+["Hunstanton, adj Tesco","09:37"],
+["Hunstanton, opp Redgate Hill","09:39"],
+
+["Heacham, adj Manor Road","09:42"],
+["Heacham, adj Church Lane","09:42"],
+["Heacham, adj High Street","09:43"],
+["Heacham, adj Fox & Hound","09:44"],
+["Heacham Poplar Avenue (S-bound)","09:45"],
+["Heacham, adj College Drive","09:46"],
+["Heacham, opp Jennings Close","09:47"],
+["Heacham, adj Fengate","09:48"],
+["Heacham, adj Fenside","09:49"],
+["Heacham, adj Collingwood Close","09:50"],
+["Heacham, opp Bottom Farm","09:51"],
+
+["Snettisham, opp Grapes","09:54"],
+["Snettisham, opp Strickland Avenue","09:54"],
+["Snettisham, opp Station Road","09:55"],
+
+["Ingoldisthorpe, opp Coaly Lane","09:56"],
+["Ingoldisthorpe, adj Pond","09:57"],
+["Ingoldisthorpe, opp Ingoldsby Avenue","09:58"],
+
+["Dersingham, opp Thaxters","10:00"],
+["Dersingham, opp Bank Road","10:01"],
+["Dersingham, adj Manor Road","10:03"],
+
+["Sandringham, opp Edinburgh Plantation","10:05"],
+["Sandringham - A149 only, adj Cats Bottom Cottages","10:06"],
+["Sandringham, adj Cross Cottages","10:07"],
+
+["Castle Rising, adj Mill House Turn","10:09"],
+
+["South Wootton, adj Knight's Hill","10:10"],
+["South Wootton, adj Castle Reach","10:10"],
+["South Wootton, adj Sandy Lane","10:11"],
+["South Wootton, adj Langley Road","10:12"],
+["South Wootton, opp Deas Road","10:13"],
+["South Wootton, opp Nursery Lane","10:14"],
+
+["King's Lynn, opp St James Medical Practice","10:15"],
+["King's Lynn, adj Hamburg Way","10:16"],
+["King's Lynn, adj Bergen Way","10:18"],
+["King's Lynn, adj Retail Park","10:20"],
+["King's Lynn, adj Austin Fields","10:21"],
+["King's Lynn, adj Railway Station","10:23"],
+
+["King's Lynn Transport Interchange (Stand A)","10:26"]
+
+]);
+
+/* =========================================================
+   JOURNEYS
+========================================================= */
+
+const JOURNEYS={
+
+out:{
+
+  "06:30":OUT_0630,
+  "07:30":OUT_0730,
+  "08:30":OUT_STANDARD,
+
+  "09:30":addHours(OUT_STANDARD,1),
+  "10:30":addHours(OUT_STANDARD,2),
+  "11:30":addHours(OUT_STANDARD,3),
+  "12:30":addHours(OUT_STANDARD,4),
+  "13:30":addHours(OUT_STANDARD,5),
+  "14:30":addHours(OUT_STANDARD,6),
+  "15:30":addHours(OUT_STANDARD,7),
+  "16:30":addHours(OUT_STANDARD,8)
+
+},
+
+in:{
+
+  "08:00":IN_STANDARD,
+
+  "09:00":addHours(IN_STANDARD,1),
+  "10:00":addHours(IN_STANDARD,2),
+  "11:00":addHours(IN_STANDARD,3),
+  "12:00":addHours(IN_STANDARD,4),
+  "13:00":addHours(IN_STANDARD,5),
+  "14:00":addHours(IN_STANDARD,6),
+  "15:00":addHours(IN_STANDARD,7),
+  "16:00":addHours(IN_STANDARD,8),
+  "17:00":addHours(IN_STANDARD,9),
+  "18:00":addHours(IN_STANDARD,10)
+
+}
+
+};
+
+/* =========================================================
+   STATE
+========================================================= */
+
+let direction="";
+let currentJourney="";
+let stops=[];
+let currentIndex=0;
+
+let stopRequest=false;
+
+let watchID=null;
+
+let lastPosition=null;
+
+let naptanStops=[];
+
+let naptanReady=false;
+
+let lastAnnouncement=-1;
+
+let lastAutoAdvance=0;
+
+/*
+  GPS settings.
+*/
+
+const STOP_REACHED_RADIUS=80;
+
+const ANNOUNCE_RADIUS=450;
+
+const MAX_INITIAL_ROUTE_DISTANCE=3000;
+
+/* =========================================================
+   DIRECTION
+========================================================= */
+
+$("direction")
+.addEventListener(
+"change",
+function(){
+
+  direction=this.value;
+
+  const select=
+  $("journey");
+
+  select.innerHTML=
   '<option value="">Select journey</option>';
 
-  const route =
-  ROUTES[routeSelect.value];
+  if(!direction)
+    return;
 
-  if(!route) return;
+  Object.keys(
+    JOURNEYS[direction]
+  )
+  .forEach(time=>{
 
-  Object.entries(route.directions)
-  .forEach(([key,value])=>{
-
-    const option =
+    const option=
     document.createElement("option");
 
-    option.value = key;
-    option.textContent = value.label;
+    option.value=time;
 
-    directionSelect.appendChild(option);
+    option.textContent=time;
+
+    select.appendChild(option);
 
   });
 
 });
 
-
-directionSelect.addEventListener("change",()=>{
-
-  journeySelect.innerHTML =
-  '<option value="">Select journey</option>';
-
-  if(!routeSelect.value ||
-     !directionSelect.value) return;
-
-  /*
-    Replace these with your actual journey times
-    if you already have them in your old code.
-  */
-
-  const exampleJourneys = [
-    "06:10",
-    "07:10",
-    "08:10",
-    "09:10",
-    "10:10",
-    "11:10",
-    "12:10"
-  ];
-
-  exampleJourneys.forEach(time=>{
-
-    const option =
-    document.createElement("option");
-
-    option.value = time;
-    option.textContent = time;
-
-    journeySelect.appendChild(option);
-
-  });
-
-});
-
-
-/* ======================================================
+/* =========================================================
    START JOURNEY
-====================================================== */
+========================================================= */
 
-document
-.getElementById("startJourneyBtn")
-.addEventListener("click",startJourney);
+async function startJourney(){
 
+  direction=
+  $("direction").value;
 
-function startJourney(){
+  currentJourney=
+  $("journey").value;
 
-  const route =
-  routeSelect.value;
-
-  const direction =
-  directionSelect.value;
-
-  if(!route || !direction){
+  if(
+    !direction ||
+    !currentJourney
+  ){
 
     alert(
-      "Select a route and direction first."
+      "Select a direction and journey."
     );
 
     return;
 
   }
 
-  activeRoute =
-  ROUTES[route];
+  /*
+    Clone route data so GPS
+    coordinates don't alter templates.
+  */
 
-  activeDirection =
-  activeRoute.directions[direction];
+  stops=
+  JOURNEYS[direction]
+  [currentJourney]
+  .map(stop=>({
+    ...stop
+  }));
 
-  activeStops =
-  activeDirection.stops;
+  currentIndex=0;
 
-  currentStopIndex = 0;
+  $("destination")
+  .textContent=
+  direction==="out"
+  ?"Fakenham"
+  :"King's Lynn";
 
-  routeNumber.textContent =
-  route;
+  $("vehicle")
+  .textContent=
+  $("vehicleInput")
+  .value
+  .trim()
+  ||
+  "BUSBASE";
 
-  destination.textContent =
-  activeDirection.destination;
-
-  vehicleDisplay.textContent =
-  vehicleInput.value.trim()
-    ? vehicleInput.value.trim()
-    : "BUSBASE";
-
-  setupScreen.style.display =
+  $("setup")
+  .style.display=
   "none";
 
-  passengerScreen.style.display =
+  $("display")
+  .style.display=
   "block";
 
-  gpsState.style.display =
+  $("gear")
+  .style.display=
+  "flex";
+
+  $("gpsStatus")
+  .style.display=
   "block";
 
-  updatePassengerDisplay();
+  buildManualStops();
+
+  render();
+
+  welcome();
+
+  await loadNaPTAN();
 
   startGPS();
 
 }
 
+/* =========================================================
+   NAPTAN DATA
 
-/* ======================================================
-   UPDATE PASSENGER DISPLAY
-====================================================== */
+   Official Norfolk NaPTAN stop data.
+   Norfolk ATCO area = 290.
+========================================================= */
 
-function updatePassengerDisplay(){
+async function loadNaPTAN(force=false){
 
-  if(!activeStops.length) return;
+  setGPSMessage(
+    "LOADING STOP DATA",
+    ""
+  );
 
-  const current =
-  activeStops[currentStopIndex]
-  || activeStops[activeStops.length-1];
+  $("driverGps")
+  .textContent=
+  "Loading NaPTAN";
 
-  const next =
-  activeStops[currentStopIndex + 1];
+  /*
+    Use local cache so it doesn't need
+    downloading on every journey.
+  */
 
-  const following =
-  activeStops[currentStopIndex + 2];
+  if(!force){
 
-  const third =
-  activeStops[currentStopIndex + 3];
+    try{
 
-  document
-  .getElementById("driverCurrentStop")
-  .textContent = current || "—";
+      const cached=
+      localStorage.getItem(
+        "busbase_naptan_290_v1"
+      );
 
-  if(next){
+      if(cached){
 
-    nextStop.textContent =
-    next;
+        const parsed=
+        JSON.parse(cached);
 
-    thenStop.textContent =
-    following || activeDirection.destination;
+        if(
+          parsed &&
+          Array.isArray(parsed.stops) &&
+          parsed.stops.length>100
+        ){
 
-    followingStop.textContent =
-    third || activeDirection.destination;
+          naptanStops=
+          parsed.stops;
 
-    arrivalTime.textContent =
-    estimateArrival();
+          naptanReady=true;
 
-    infoMessage.textContent =
-    "Please remain seated until the bus has stopped.";
+          matchRouteStops();
+
+          setGPSMessage(
+            "STOP DATA READY",
+            "good"
+          );
+
+          $("driverGps")
+          .textContent=
+          "NaPTAN ready";
+
+          return;
+
+        }
+
+      }
+
+    }catch(e){}
+
+  }
+
+  const url=
+  "https://naptan.api.dft.gov.uk/v1/access-nodes" +
+  "?dataFormat=csv&atcoAreaCodes=290";
+
+  try{
+
+    const response=
+    await fetch(url);
+
+    if(!response.ok){
+      throw new Error(
+        "NaPTAN HTTP "+
+        response.status
+      );
+    }
+
+    const csv=
+    await response.text();
+
+    naptanStops=
+    parseNaPTAN(csv);
+
+    if(
+      naptanStops.length<100
+    ){
+      throw new Error(
+        "No Norfolk stops returned"
+      );
+    }
+
+    naptanReady=true;
+
+    /*
+      Store only fields we require.
+    */
+
+    try{
+
+      localStorage.setItem(
+
+        "busbase_naptan_290_v1",
+
+        JSON.stringify({
+          downloaded:
+          Date.now(),
+
+          stops:
+          naptanStops
+        })
+
+      );
+
+    }catch(e){}
+
+    matchRouteStops();
+
+    setGPSMessage(
+      "STOP DATA READY",
+      "good"
+    );
+
+    $("driverGps")
+    .textContent=
+    "NaPTAN ready";
+
+  }
+
+  catch(error){
+
+    console.error(
+      "NaPTAN:",
+      error
+    );
+
+    naptanReady=false;
+
+    setGPSMessage(
+      "STOP DATA FAILED",
+      "bad"
+    );
+
+    $("driverGps")
+    .textContent=
+    "Manual mode";
+
+    $("message")
+    .textContent=
+    "GPS stop database could not load. Manual controls are still available.";
+
+  }
+
+}
+
+/* =========================================================
+   CSV PARSER
+========================================================= */
+
+function parseCSVLine(line){
+
+  const values=[];
+
+  let current="";
+
+  let quoted=false;
+
+  for(
+    let i=0;
+    i<line.length;
+    i++
+  ){
+
+    const char=
+    line[i];
+
+    if(char==='"'){
+
+      if(
+        quoted &&
+        line[i+1]==='"'
+      ){
+
+        current+='"';
+
+        i++;
+
+      }else{
+
+        quoted=
+        !quoted;
+
+      }
+
+    }
+
+    else if(
+      char==="," &&
+      !quoted
+    ){
+
+      values.push(
+        current
+      );
+
+      current="";
+
+    }
+
+    else{
+
+      current+=char;
+
+    }
+
+  }
+
+  values.push(current);
+
+  return values;
+
+}
+
+function parseNaPTAN(csv){
+
+  const lines=
+  csv
+  .replace(/\r/g,"")
+  .split("\n")
+  .filter(line =>
+    line.trim()
+  );
+
+  if(!lines.length)
+    return [];
+
+  const header=
+  parseCSVLine(
+    lines[0]
+  );
+
+  const column={};
+
+  header.forEach(
+    (name,index)=>{
+
+      column[
+        normaliseHeader(name)
+      ]=index;
+
+    }
+  );
+
+  const getIndex=
+  (...names)=>{
+
+    for(const name of names){
+
+      const key=
+      normaliseHeader(name);
+
+      if(
+        column[key]!==undefined
+      ){
+        return column[key];
+      }
+
+    }
+
+    return -1;
+
+  };
+
+  const atcoIndex=
+  getIndex(
+    "ATCOCode",
+    "AtcoCode"
+  );
+
+  const naptanIndex=
+  getIndex(
+    "NaptanCode"
+  );
+
+  const nameIndex=
+  getIndex(
+    "CommonName"
+  );
+
+  const indicatorIndex=
+  getIndex(
+    "Indicator"
+  );
+
+  const localityIndex=
+  getIndex(
+    "LocalityName"
+  );
+
+  const latitudeIndex=
+  getIndex(
+    "Latitude"
+  );
+
+  const longitudeIndex=
+  getIndex(
+    "Longitude"
+  );
+
+  const stopTypeIndex=
+  getIndex(
+    "StopType"
+  );
+
+  const results=[];
+
+  for(
+    let i=1;
+    i<lines.length;
+    i++
+  ){
+
+    const row=
+    parseCSVLine(
+      lines[i]
+    );
+
+    const lat=
+    Number(
+      row[latitudeIndex]
+    );
+
+    const lon=
+    Number(
+      row[longitudeIndex]
+    );
+
+    if(
+      !Number.isFinite(lat) ||
+      !Number.isFinite(lon)
+    ){
+      continue;
+    }
+
+    const type=
+    stopTypeIndex>=0
+    ?row[stopTypeIndex]
+    :"";
+
+    /*
+      BCT = ordinary on-street stop
+      BCS = bus station bay
+      BCQ = variable bus bay
+    */
+
+    if(
+      type &&
+      ![
+        "BCT",
+        "BCS",
+        "BCQ",
+        "BST"
+      ].includes(type)
+    ){
+      continue;
+    }
+
+    const common=
+    row[nameIndex] || "";
+
+    const indicator=
+    row[indicatorIndex] || "";
+
+    const locality=
+    row[localityIndex] || "";
+
+    results.push({
+
+      atco:
+      row[atcoIndex] || "",
+
+      naptan:
+      row[naptanIndex] || "",
+
+      common,
+
+      indicator,
+
+      locality,
+
+      lat,
+
+      lon,
+
+      matchText:
+      normalise(
+        locality+
+        " "+
+        indicator+
+        " "+
+        common
+      )
+
+    });
+
+  }
+
+  return results;
+
+}
+
+function normaliseHeader(value){
+
+  return String(value||"")
+  .toLowerCase()
+  .replace(/[^a-z0-9]/g,"");
+
+}
+
+/* =========================================================
+   ROUTE STOP → NAPTAN MATCHING
+========================================================= */
+
+function matchRouteStops(){
+
+  if(
+    !naptanReady ||
+    !stops.length
+  ){
+    return;
+  }
+
+  let matchedCount=0;
+
+  stops.forEach(stop=>{
+
+    const match=
+    findBestNaPTAN(
+      stop.name
+    );
+
+    if(match){
+
+      stop.lat=
+      match.lat;
+
+      stop.lon=
+      match.lon;
+
+      stop.atco=
+      match.atco;
+
+      stop.naptan=
+      match.naptan;
+
+      stop.matched=true;
+
+      matchedCount++;
+
+    }
+
+  });
+
+  console.log(
+    "BusBase GPS:",
+    matchedCount+
+    "/"+
+    stops.length+
+    " route stops matched to NaPTAN."
+  );
+
+  $("driverGps")
+  .textContent=
+  matchedCount+
+  "/"+
+  stops.length+
+  " stops matched";
+
+}
+
+/* =========================================================
+   FUZZY MATCHER
+========================================================= */
+
+function findBestNaPTAN(routeName){
+
+  const target=
+  normalise(
+    routeName
+  );
+
+  const targetWords=
+  words(target);
+
+  let best=null;
+
+  let bestScore=-Infinity;
+
+  for(
+    const candidate of
+    naptanStops
+  ){
+
+    const text=
+    candidate.matchText;
+
+    const candidateWords=
+    words(text);
+
+    let score=0;
+
+    /*
+      Shared words.
+    */
+
+    for(
+      const word of
+      targetWords
+    ){
+
+      if(
+        candidateWords.has(word)
+      ){
+
+        score+=5;
+
+      }
+
+    }
+
+    /*
+      Reward longer exact chunks.
+    */
+
+    if(
+      text.includes(target)
+    ){
+      score+=80;
+    }
+
+    if(
+      target.includes(
+        normalise(
+          candidate.common
+        )
+      )
+    ){
+      score+=25;
+    }
+
+    /*
+      Strong locality weighting.
+    */
+
+    const routeLocality=
+    target
+    .split(" ")[0];
+
+    if(
+      normalise(
+        candidate.locality
+      )
+      .includes(
+        routeLocality
+      )
+    ){
+      score+=15;
+    }
+
+    /*
+      Direction / indicator clues.
+    */
+
+    if(
+      target.includes("opposite") &&
+      normalise(
+        candidate.indicator
+      )
+      .includes("opp")
+    ){
+      score+=12;
+    }
+
+    if(
+      target.includes("northbound") &&
+      normalise(
+        candidate.indicator
+      )
+      .includes("n")
+    ){
+      score+=8;
+    }
+
+    if(
+      target.includes("southbound") &&
+      normalise(
+        candidate.indicator
+      )
+      .includes("s")
+    ){
+      score+=8;
+    }
+
+    /*
+      Reject weak matches.
+    */
+
+    if(
+      score>bestScore
+    ){
+
+      bestScore=score;
+
+      best=candidate;
+
+    }
+
+  }
+
+  /*
+    Avoid attaching a completely
+    unrelated Norfolk stop.
+  */
+
+  if(bestScore<20){
+    return null;
+  }
+
+  return best;
+
+}
+
+/* =========================================================
+   GPS
+========================================================= */
+
+function startGPS(){
+
+  if(
+    !navigator.geolocation
+  ){
+
+    setGPSMessage(
+      "GPS NOT SUPPORTED",
+      "bad"
+    );
+
+    $("driverGps")
+    .textContent=
+    "Not supported";
+
+    return;
+
+  }
+
+  setGPSMessage(
+    "GPS SEARCHING",
+    ""
+  );
+
+  if(watchID!==null){
+
+    navigator.geolocation
+    .clearWatch(
+      watchID
+    );
+
+  }
+
+  watchID=
+  navigator.geolocation
+  .watchPosition(
+
+    gpsSuccess,
+
+    gpsError,
+
+    {
+
+      enableHighAccuracy:true,
+
+      maximumAge:1000,
+
+      timeout:15000
+
+    }
+
+  );
+
+}
+
+/* =========================================================
+   GPS SUCCESS
+========================================================= */
+
+function gpsSuccess(position){
+
+  lastPosition=
+  position.coords;
+
+  setGPSMessage(
+    "GPS LIVE",
+    "good"
+  );
+
+  $("driverAccuracy")
+  .textContent=
+  Math.round(
+    lastPosition.accuracy
+  )+
+  " m";
+
+  if(
+    lastPosition.speed!==null &&
+    Number.isFinite(
+      lastPosition.speed
+    )
+  ){
+
+    $("driverSpeed")
+    .textContent=
+    (
+      lastPosition.speed*
+      2.23694
+    )
+    .toFixed(1)+
+    " mph";
+
+  }else{
+
+    $("driverSpeed")
+    .textContent=
+    "—";
+
+  }
+
+  if(!naptanReady){
+    return;
+  }
+
+  processGPS();
+
+}
+
+/* =========================================================
+   GPS FAILURE
+========================================================= */
+
+function gpsError(error){
+
+  let text=
+  "GPS ERROR";
+
+  if(error.code===1){
+    text=
+    "LOCATION DENIED";
+  }
+
+  else if(error.code===2){
+    text=
+    "GPS UNAVAILABLE";
+  }
+
+  else if(error.code===3){
+    text=
+    "GPS TIMEOUT";
+  }
+
+  setGPSMessage(
+    text,
+    "bad"
+  );
+
+  $("driverGps")
+  .textContent=
+  text;
+
+}
+
+/* =========================================================
+   GPS PROCESSING
+========================================================= */
+
+function processGPS(){
+
+  if(
+    !lastPosition ||
+    !stops.length
+  ){
+    return;
+  }
+
+  const latitude=
+  lastPosition.latitude;
+
+  const longitude=
+  lastPosition.longitude;
+
+  /*
+    First locate where on the selected
+    route the bus currently is.
+
+    Only look forward from a small
+    amount behind the current position.
+  */
+
+  const start=
+  Math.max(
+    0,
+    currentIndex-2
+  );
+
+  const end=
+  Math.min(
+    stops.length,
+    currentIndex+10
+  );
+
+  let nearestIndex=-1;
+
+  let nearestDistance=
+  Infinity;
+
+  for(
+    let i=start;
+    i<end;
+    i++
+  ){
+
+    const stop=
+    stops[i];
+
+    if(
+      !Number.isFinite(stop.lat) ||
+      !Number.isFinite(stop.lon)
+    ){
+      continue;
+    }
+
+    const distance=
+    distanceMetres(
+
+      latitude,
+      longitude,
+
+      stop.lat,
+      stop.lon
+
+    );
+
+    if(
+      distance<
+      nearestDistance
+    ){
+
+      nearestDistance=
+      distance;
+
+      nearestIndex=i;
+
+    }
+
+  }
+
+  /*
+    On first useful location,
+    snap to nearby route stop.
+  */
+
+  if(
+    nearestIndex>=0 &&
+    currentIndex===0 &&
+    nearestDistance<
+    MAX_INITIAL_ROUTE_DISTANCE
+  ){
+
+    if(
+      nearestIndex>
+      currentIndex
+    ){
+
+      currentIndex=
+      nearestIndex;
+
+      render();
+
+    }
+
+  }
+
+  const nextIndex=
+  currentIndex+1;
+
+  const next=
+  stops[nextIndex];
+
+  if(!next){
+
+    $("distance")
+    .textContent=
+    "Terminus";
+
+    $("driverDistance")
+    .textContent=
+    "Terminus";
+
+    return;
+
+  }
+
+  if(
+    !Number.isFinite(next.lat) ||
+    !Number.isFinite(next.lon)
+  ){
+
+    $("distance")
+    .textContent=
+    "GPS unavailable";
+
+    return;
+
+  }
+
+  const nextDistance=
+  distanceMetres(
+
+    latitude,
+    longitude,
+
+    next.lat,
+    next.lon
+
+  );
+
+  $("distance")
+  .textContent=
+  formatDistance(
+    nextDistance
+  );
+
+  $("driverDistance")
+  .textContent=
+  formatDistance(
+    nextDistance
+  );
+
+  /*
+    Announce before arrival.
+  */
+
+  if(
+    nextDistance<=
+    ANNOUNCE_RADIUS &&
+    lastAnnouncement!==
+    nextIndex
+  ){
+
+    lastAnnouncement=
+    nextIndex;
+
+    announceNext();
+
+  }
+
+  /*
+    Automatically advance once
+    bus reaches the stop.
+
+    Five-second lock prevents GPS
+    bouncing through multiple stops.
+  */
+
+  if(
+    nextDistance<=
+    STOP_REACHED_RADIUS &&
+    Date.now()-
+    lastAutoAdvance>
+    5000
+  ){
+
+    lastAutoAdvance=
+    Date.now();
+
+    currentIndex=
+    nextIndex;
+
+    stopRequest=false;
+
+    $("stopping")
+    .classList
+    .remove("show");
+
+    render();
+
+    /*
+      If terminus reached.
+    */
+
+    if(
+      currentIndex===
+      stops.length-1
+    ){
+
+      announceTerminus();
+
+    }
+
+  }
+
+}
+
+/* =========================================================
+   DISTANCE CALCULATION
+========================================================= */
+
+function distanceMetres(
+  lat1,
+  lon1,
+  lat2,
+  lon2
+){
+
+  const R=
+  6371000;
+
+  const radians=
+  value=>
+  value*
+  Math.PI/180;
+
+  const dLat=
+  radians(
+    lat2-lat1
+  );
+
+  const dLon=
+  radians(
+    lon2-lon1
+  );
+
+  const a=
+  Math.sin(dLat/2)*
+  Math.sin(dLat/2)
+  +
+  Math.cos(
+    radians(lat1)
+  )
+  *
+  Math.cos(
+    radians(lat2)
+  )
+  *
+  Math.sin(dLon/2)
+  *
+  Math.sin(dLon/2);
+
+  return R*
+  2*
+  Math.atan2(
+    Math.sqrt(a),
+    Math.sqrt(1-a)
+  );
+
+}
+
+function formatDistance(distance){
+
+  if(
+    !Number.isFinite(distance)
+  ){
+    return "—";
+  }
+
+  if(distance<1000){
+
+    return (
+      Math.round(
+        distance/10
+      )*
+      10
+    )+
+    " m";
+
+  }
+
+  return (
+    distance/1000
+  )
+  .toFixed(1)+
+  " km";
+
+}
+
+/* =========================================================
+   GPS STATUS UI
+========================================================= */
+
+function setGPSMessage(
+  text,
+  state
+){
+
+  const box=
+  $("gpsStatus");
+
+  box.textContent=
+  text;
+
+  box.classList
+  .remove(
+    "good",
+    "bad"
+  );
+
+  if(state){
+    box.classList.add(state);
+  }
+
+}
+
+/* =========================================================
+   RELOCATE
+========================================================= */
+
+function relocateGPS(){
+
+  if(!lastPosition){
+
+    startGPS();
+
+    return;
+
+  }
+
+  let nearest=-1;
+
+  let best=
+  Infinity;
+
+  stops.forEach(
+    (stop,index)=>{
+
+      if(
+        !Number.isFinite(stop.lat) ||
+        !Number.isFinite(stop.lon)
+      ){
+        return;
+      }
+
+      const distance=
+      distanceMetres(
+
+        lastPosition.latitude,
+        lastPosition.longitude,
+
+        stop.lat,
+        stop.lon
+
+      );
+
+      if(distance<best){
+
+        best=distance;
+
+        nearest=index;
+
+      }
+
+    }
+  );
+
+  if(
+    nearest>=0 &&
+    best<
+    MAX_INITIAL_ROUTE_DISTANCE
+  ){
+
+    currentIndex=
+    nearest;
+
+    lastAnnouncement=-1;
+
+    render();
+
+    $("message")
+    .textContent=
+    "GPS re-located at "+
+    stops[nearest].name;
+
+  }
+
+}
+
+/* =========================================================
+   RENDER DISPLAY
+========================================================= */
+
+function render(){
+
+  if(!stops.length)
+    return;
+
+  currentIndex=
+  Math.max(
+    0,
+    Math.min(
+      currentIndex,
+      stops.length-1
+    )
+  );
+
+  const current=
+  stops[currentIndex];
+
+  const next=
+  stops[currentIndex+1];
+
+  const following=
+  stops[currentIndex+2];
+
+  if(!next){
+
+    $("nextStop")
+    .textContent=
+    "Terminus";
+
+    $("scheduled")
+    .textContent=
+    current.time;
+
+    $("then")
+    .textContent=
+    "—";
+
+    $("distance")
+    .textContent=
+    "Arriving";
+
+  }else{
+
+    $("nextStop")
+    .textContent=
+    next.name;
+
+    $("scheduled")
+    .textContent=
+    next.time;
+
+    $("then")
+    .textContent=
+    following
+    ?following.name
+    :"Terminus";
+
+  }
+
+  $("manualStop")
+  .value=
+  String(
+    currentIndex
+  );
+
+  renderUpcoming();
+
+  updateRunning();
+
+  /*
+    Recalculate distance immediately.
+  */
+
+  if(lastPosition){
+    processGPS();
+  }
+
+}
+
+/* =========================================================
+   UPCOMING
+========================================================= */
+
+function renderUpcoming(){
+
+  const box=
+  $("upcoming");
+
+  box.innerHTML="";
+
+  stops
+
+  .slice(
+    currentIndex+1,
+    currentIndex+10
+  )
+
+  .forEach(
+    (stop,index)=>{
+
+      const row=
+      document.createElement(
+        "div"
+      );
+
+      row.className=
+      "stopRow"+
+      (
+        index===0
+        ?" next"
+        :""
+      );
+
+      const name=
+      document.createElement(
+        "div"
+      );
+
+      name.textContent=
+      stop.name;
+
+      const time=
+      document.createElement(
+        "div"
+      );
+
+      time.className=
+      "stopTime";
+
+      time.textContent=
+      stop.time;
+
+      row.append(
+        name,
+        time
+      );
+
+      box.appendChild(
+        row
+      );
+
+    }
+  );
+
+}
+
+/* =========================================================
+   TIMETABLE STATUS
+========================================================= */
+
+function updateRunning(){
+
+  if(!stops.length)
+    return;
+
+  const current=
+  stops[currentIndex];
+
+  const now=
+  new Date();
+
+  let nowMinutes=
+  now.getHours()*60+
+  now.getMinutes();
+
+  let schedule=
+  minutes(
+    current.time
+  );
+
+  let difference=
+  nowMinutes-
+  schedule;
+
+  if(difference>720)
+    difference-=1440;
+
+  if(difference<-720)
+    difference+=1440;
+
+  const box=
+  $("lateness");
+
+  if(
+    Math.abs(difference)<=1
+  ){
+
+    box.textContent=
+    "ON TIME";
+
+    box.style.color=
+    "#80dda0";
+
+  }
+
+  else if(
+    difference>1
+  ){
+
+    box.textContent=
+    difference+
+    " MIN LATE";
+
+    box.style.color=
+    "#ffb347";
 
   }
 
   else{
 
-    nextStop.textContent =
-    activeDirection.destination;
+    box.textContent=
+    Math.abs(difference)+
+    " MIN EARLY";
 
-    thenStop.textContent =
-    "Terminus";
-
-    followingStop.textContent =
-    "—";
-
-    arrivalTime.textContent =
-    "Arriving";
+    box.style.color=
+    "#ffce47";
 
   }
 
-  renderStopList();
-
 }
 
+/* =========================================================
+   MANUAL STOPS
+========================================================= */
 
-/* ======================================================
-   UPCOMING STOPS
-====================================================== */
+function buildManualStops(){
 
-function renderStopList(){
+  const select=
+  $("manualStop");
 
-  stopList.innerHTML = "";
+  select.innerHTML="";
 
-  const start =
-  Math.max(currentStopIndex + 1,0);
+  stops.forEach(
+    (stop,index)=>{
 
-  const upcoming =
-  activeStops.slice(start,start + 7);
-
-  upcoming.forEach((stop,index)=>{
-
-    const div =
-    document.createElement("div");
-
-    div.className =
-    "stop-item";
-
-    if(index === 0)
-      div.classList.add("active");
-
-    if(
-      stop ===
-      activeDirection.destination
-    )
-      div.classList.add(
-        "destination-stop"
+      const option=
+      document.createElement(
+        "option"
       );
 
-    div.textContent =
-    stop;
+      option.value=
+      index;
 
-    stopList.appendChild(div);
+      option.textContent=
+      stop.time+
+      " · "+
+      stop.name;
 
-  });
+      select.appendChild(
+        option
+      );
+
+    }
+  );
 
 }
 
+function manualChange(){
 
-/* ======================================================
-   ARRIVAL ESTIMATE
-====================================================== */
-
-function estimateArrival(){
-
-  const now =
-  new Date();
-
-  now.setMinutes(
-    now.getMinutes() + 3
+  currentIndex=
+  Number(
+    $("manualStop").value
   );
 
-  return now.toLocaleTimeString(
+  lastAnnouncement=-1;
+
+  render();
+
+}
+
+function nextStopManual(){
+
+  if(
+    currentIndex<
+    stops.length-1
+  ){
+
+    currentIndex++;
+
+    lastAnnouncement=-1;
+
+    render();
+
+  }
+
+}
+
+function previousStop(){
+
+  if(currentIndex>0){
+
+    currentIndex--;
+
+    lastAnnouncement=-1;
+
+    render();
+
+  }
+
+}
+
+/* =========================================================
+   SPEECH
+========================================================= */
+
+function speak(text){
+
+  if(
+    !(
+      "speechSynthesis"
+      in window
+    )
+  ){
+    return;
+  }
+
+  speechSynthesis.cancel();
+
+  const utterance=
+  new SpeechSynthesisUtterance(
+    text
+  );
+
+  utterance.lang=
+  "en-GB";
+
+  utterance.rate=
+  .94;
+
+  utterance.pitch=
+  1;
+
+  const voice=
+  speechSynthesis
+  .getVoices()
+  .find(
+    voice=>
+    voice.lang==="en-GB"
+  );
+
+  if(voice){
+    utterance.voice=voice;
+  }
+
+  speechSynthesis.speak(
+    utterance
+  );
+
+}
+
+/* =========================================================
+   NEXT STOP ANNOUNCEMENT
+========================================================= */
+
+function announceNext(force=false){
+
+  const next=
+  stops[currentIndex+1];
+
+  if(!next)
+    return;
+
+  if(
+    !force &&
+    lastAnnouncement===
+    currentIndex+1
+  ){
+    return;
+  }
+
+  lastAnnouncement=
+  currentIndex+1;
+
+  speak(
+    "The next stop is "+
+    cleanAnnouncementName(
+      next.name
+    )+
+    "."
+  );
+
+  $("message")
+  .textContent=
+  "Next stop: "+
+  next.name+
+  " · scheduled "+
+  next.time;
+
+}
+
+function cleanAnnouncementName(name){
+
+  return name
+
+  .replace(/\bopp\b/gi,"")
+
+  .replace(/\badj\b/gi,"")
+
+  .replace(/\(.*?\)/g,"")
+
+  .replace(/\s+/g," ")
+
+  .trim();
+
+}
+
+/* =========================================================
+   WELCOME
+========================================================= */
+
+function welcome(){
+
+  const destination=
+  direction==="out"
+  ?"Fakenham"
+  :"King's Lynn";
+
+  const text=
+  "Welcome aboard Coastliner 36 to "+
+  destination+
+  ".";
+
+  $("message")
+  .textContent=text;
+
+  speak(text);
+
+}
+
+/* =========================================================
+   TERMINUS
+========================================================= */
+
+function announceTerminus(){
+
+  const destination=
+  direction==="out"
+  ?"Fakenham"
+  :"King's Lynn";
+
+  $("message")
+  .textContent=
+  "This bus terminates at "+
+  destination+
+  ".";
+
+  speak(
+    "This bus terminates at "+
+    destination+
+    ". Please take all belongings with you. Thank you for travelling with us."
+  );
+
+}
+
+/* =========================================================
+   BUS STOPPING
+========================================================= */
+
+function toggleStopping(){
+
+  stopRequest=
+  !stopRequest;
+
+  $("stopping")
+  .classList
+  .toggle(
+    "show",
+    stopRequest
+  );
+
+}
+
+/* =========================================================
+   DRIVER PANEL
+========================================================= */
+
+function togglePanel(){
+
+  $("panel")
+  .classList
+  .toggle(
+    "open"
+  );
+
+}
+
+/* =========================================================
+   FULLSCREEN
+========================================================= */
+
+async function fullScreen(){
+
+  try{
+
+    if(
+      !document.fullscreenElement
+    ){
+
+      await document
+      .documentElement
+      .requestFullscreen();
+
+    }else{
+
+      await document
+      .exitFullscreen();
+
+    }
+
+  }catch(e){}
+
+}
+
+/* =========================================================
+   RESTART
+========================================================= */
+
+function restartJourney(){
+
+  currentIndex=0;
+
+  lastAnnouncement=-1;
+
+  lastAutoAdvance=0;
+
+  stopRequest=false;
+
+  $("stopping")
+  .classList
+  .remove("show");
+
+  render();
+
+  $("message")
+  .textContent=
+  "Journey restarted.";
+
+}
+
+/* =========================================================
+   END
+========================================================= */
+
+function endJourney(){
+
+  if(watchID!==null){
+
+    navigator.geolocation
+    .clearWatch(
+      watchID
+    );
+
+    watchID=null;
+
+  }
+
+  $("panel")
+  .classList
+  .remove("open");
+
+  $("display")
+  .style.display=
+  "none";
+
+  $("gear")
+  .style.display=
+  "none";
+
+  $("gpsStatus")
+  .style.display=
+  "none";
+
+  $("setup")
+  .style.display=
+  "flex";
+
+  lastPosition=null;
+
+  stops=[];
+
+  currentIndex=0;
+
+}
+
+/* =========================================================
+   CLOCK
+========================================================= */
+
+function updateClock(){
+
+  $("clock")
+  .textContent=
+  new Date()
+  .toLocaleTimeString(
     "en-GB",
     {
       hour:"2-digit",
@@ -1794,484 +3427,19 @@ function estimateArrival(){
 
 }
 
+updateClock();
 
-/* ======================================================
-   MANUAL STOP CONTROLS
-====================================================== */
+setInterval(
+()=>{
+  updateClock();
 
-function nextStopManual(){
-
-  if(
-    currentStopIndex <
-    activeStops.length - 1
-  ){
-
-    currentStopIndex++;
-
-    updatePassengerDisplay();
-
-    announceNextStop();
-
+  if(stops.length){
+    updateRunning();
   }
 
-  if(
-    currentStopIndex >=
-    activeStops.length - 1
-  ){
-
-    showTerminus();
-
-  }
-
-}
-
-
-function previousStopManual(){
-
-  if(currentStopIndex > 0){
-
-    currentStopIndex--;
-
-    updatePassengerDisplay();
-
-  }
-
-}
-
-
-document
-.getElementById("nextStopBtn")
-.addEventListener(
-  "click",
-  nextStopManual
+},
+1000
 );
-
-
-document
-.getElementById("previousStopBtn")
-.addEventListener(
-  "click",
-  previousStopManual
-);
-
-
-/* ======================================================
-   SPEECH
-====================================================== */
-
-function speak(text){
-
-  if(
-    !("speechSynthesis" in window)
-  ) return;
-
-  speechSynthesis.cancel();
-
-  const speech =
-  new SpeechSynthesisUtterance(text);
-
-  speech.lang = "en-GB";
-
-  speech.rate = .92;
-
-  speech.pitch = 1;
-
-  speechSynthesis.speak(speech);
-
-}
-
-
-function announceNextStop(){
-
-  const stop =
-  activeStops[
-    currentStopIndex + 1
-  ];
-
-  if(!stop) return;
-
-  speak(
-    "The next stop is " + stop
-  );
-
-}
-
-
-document
-.getElementById("repeatBtn")
-.addEventListener(
-  "click",
-  announceNextStop
-);
-
-
-/* ======================================================
-   STOP REQUEST
-====================================================== */
-
-document
-.getElementById("stopRequestBtn")
-.addEventListener("click",()=>{
-
-  stopRequested =
-  !stopRequested;
-
-  stopRequest.classList.toggle(
-    "active",
-    stopRequested
-  );
-
-});
-
-
-/* ======================================================
-   DIVERSION
-====================================================== */
-
-document
-.getElementById("diversionBtn")
-.addEventListener("click",()=>{
-
-  diversionActive =
-  !diversionActive;
-
-  clearTakeovers();
-
-  if(diversionActive){
-
-    diversionTakeover
-    .classList.add("active");
-
-    infoMessage.textContent =
-    "This bus is operating on diversion.";
-
-    speak(
-      "This bus is currently on diversion."
-    );
-
-  }
-
-});
-
-
-/* ======================================================
-   CONTINUATION
-====================================================== */
-
-document
-.getElementById("continuationBtn")
-.addEventListener("click",()=>{
-
-  clearTakeovers();
-
-  continuationTakeover
-  .classList.add("active");
-
-});
-
-
-/* ======================================================
-   TERMINUS
-====================================================== */
-
-document
-.getElementById("terminusBtn")
-.addEventListener(
-  "click",
-  showTerminus
-);
-
-
-function showTerminus(){
-
-  clearTakeovers();
-
-  document
-  .getElementById("terminusName")
-  .textContent =
-  activeDirection
-  ? activeDirection.destination
-  : "Terminus";
-
-  terminusTakeover
-  .classList.add("active");
-
-  speak(
-    "This bus terminates here. Please take all belongings with you."
-  );
-
-}
-
-
-/* ======================================================
-   CLEAR TAKEOVERS
-====================================================== */
-
-function clearTakeovers(){
-
-  diversionTakeover
-  .classList.remove("active");
-
-  continuationTakeover
-  .classList.remove("active");
-
-  terminusTakeover
-  .classList.remove("active");
-
-}
-
-
-document
-.getElementById("clearMessageBtn")
-.addEventListener("click",()=>{
-
-  diversionActive = false;
-
-  clearTakeovers();
-
-  infoMessage.textContent =
-  "Please remain seated until the bus has stopped.";
-
-});
-
-
-/* ======================================================
-   DRIVER PANEL
-====================================================== */
-
-document
-.getElementById("driverBtn")
-.addEventListener("click",()=>{
-
-  driverPanel.classList.add("open");
-
-});
-
-
-document
-.getElementById("closeDriverBtn")
-.addEventListener("click",()=>{
-
-  driverPanel.classList.remove("open");
-
-});
-
-
-/* ======================================================
-   DISPLAY STYLE
-====================================================== */
-
-document
-.getElementById("compactStyleBtn")
-.addEventListener("click",()=>{
-
-  document.body
-  .classList.add("compact");
-
-  document
-  .getElementById("compactStyleBtn")
-  .classList.add("active");
-
-  document
-  .getElementById("fullStyleBtn")
-  .classList.remove("active");
-
-});
-
-
-document
-.getElementById("fullStyleBtn")
-.addEventListener("click",()=>{
-
-  document.body
-  .classList.remove("compact");
-
-  document
-  .getElementById("fullStyleBtn")
-  .classList.add("active");
-
-  document
-  .getElementById("compactStyleBtn")
-  .classList.remove("active");
-
-});
-
-
-/* ======================================================
-   FULLSCREEN
-====================================================== */
-
-document
-.getElementById("fullscreenBtn")
-.addEventListener("click",()=>{
-
-  if(!document.fullscreenElement){
-
-    document.documentElement
-    .requestFullscreen()
-    .catch(()=>{});
-
-  }
-
-  else{
-
-    document.exitFullscreen();
-
-  }
-
-});
-
-
-/* ======================================================
-   GPS
-====================================================== */
-
-function startGPS(){
-
-  if(!navigator.geolocation){
-
-    gpsState.textContent =
-    "GPS: NOT SUPPORTED";
-
-    return;
-
-  }
-
-  gpsState.textContent =
-  "GPS: SEARCHING";
-
-  watchId =
-  navigator.geolocation
-  .watchPosition(
-    gpsSuccess,
-    gpsError,
-    {
-      enableHighAccuracy:true,
-      maximumAge:1000,
-      timeout:10000
-    }
-  );
-
-}
-
-
-function gpsSuccess(position){
-
-  const coords =
-  position.coords;
-
-  gpsState.textContent =
-  "GPS: LIVE";
-
-  gpsState.classList.add("ok");
-
-  document
-  .getElementById("driverAccuracy")
-  .textContent =
-  Math.round(coords.accuracy) +
-  " m";
-
-  if(coords.speed !== null){
-
-    const mph =
-    coords.speed * 2.23694;
-
-    document
-    .getElementById("driverSpeed")
-    .textContent =
-    mph.toFixed(1) + " mph";
-
-  }
-
-  else{
-
-    document
-    .getElementById("driverSpeed")
-    .textContent =
-    "—";
-
-  }
-
-  /*
-   =================================================
-   IMPORTANT
-
-   Put your existing stop GPS matching code here.
-
-   For example:
-
-   const nearest =
-   findNearestStop(
-      coords.latitude,
-      coords.longitude
-   );
-
-   currentStopIndex =
-   nearest.index;
-
-   updatePassengerDisplay();
-
-   =================================================
-  */
-
-}
-
-
-function gpsError(){
-
-  gpsState.textContent =
-  "GPS: NO FIX";
-
-  gpsState.classList.remove("ok");
-
-}
-
-
-/* ======================================================
-   RESTART / END JOURNEY
-====================================================== */
-
-document
-.getElementById("restartBtn")
-.addEventListener("click",()=>{
-
-  currentStopIndex = 0;
-
-  clearTakeovers();
-
-  updatePassengerDisplay();
-
-});
-
-
-document
-.getElementById("endJourneyBtn")
-.addEventListener("click",()=>{
-
-  if(watchId !== null){
-
-    navigator.geolocation
-    .clearWatch(watchId);
-
-    watchId = null;
-
-  }
-
-  driverPanel
-  .classList.remove("open");
-
-  passengerScreen.style.display =
-  "none";
-
-  setupScreen.style.display =
-  "flex";
-
-  gpsState.style.display =
-  "none";
-
-  clearTakeovers();
-
-});
 
 </script>
 
