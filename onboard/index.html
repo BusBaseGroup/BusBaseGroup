@@ -2,74 +2,55 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-
-<meta
-  name="viewport"
-  content="width=device-width,initial-scale=1,viewport-fit=cover">
-
-<meta
-  name="theme-color"
-  content="#111517">
-
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111517">
 <title>BusBase Onboard - Coastliner 36</title>
 
 <style>
-
-*{
-  box-sizing:border-box;
-}
-
-html,
-body{
-  margin:0;
-  min-height:100%;
-  font-family:Arial,Helvetica,sans-serif;
-  background:#111517;
-}
-
-button,
-select,
-input{
-  font:inherit;
-}
-
-button{
-  cursor:pointer;
-}
+*{box-sizing:border-box}
 
 :root{
   --red:#e51b36;
   --dark:#111517;
-  --green:#35b76d;
-  --amber:#eeb62f;
+  --green:#39c875;
+  --amber:#f2b52a;
+  --light:#f7f8f6;
 }
 
-/* ======================================================
-   SETUP
-====================================================== */
+html,body{
+  margin:0;
+  min-height:100%;
+  font-family:Arial,Helvetica,sans-serif;
+  background:var(--dark);
+}
+
+button,select,input{font:inherit}
+button{cursor:pointer}
+
+/* SETUP */
 
 #setup{
   min-height:100vh;
-  background:#edf0ef;
+  background:#ecefed;
   display:flex;
   align-items:center;
   justify-content:center;
   padding:20px;
 }
 
-.setupBox{
+.setup{
   width:min(760px,100%);
   background:#fff;
-  border:1px solid #c9cfcd;
+  border:1px solid #ccd1d0;
 }
 
-.setupHead{
-  background:#111517;
-  color:#fff;
+.setupHeader{
+  background:var(--dark);
+  color:white;
   padding:22px 26px;
   display:flex;
-  align-items:center;
   gap:18px;
+  align-items:center;
 }
 
 .logo{
@@ -79,15 +60,13 @@ button{
   padding:12px 16px;
 }
 
-.setupHead strong{
+.setupHeader strong{
   display:block;
-  font-size:18px;
+  font-size:19px;
 }
 
-.setupHead small{
-  display:block;
-  color:#adb5b7;
-  margin-top:3px;
+.setupHeader small{
+  color:#aeb6b8;
 }
 
 .setupBody{
@@ -99,12 +78,12 @@ button{
 }
 
 .setupBody p{
-  color:#636c6f;
+  color:#626b6e;
   margin:0 0 25px;
 }
 
 .field{
-  margin-bottom:18px;
+  margin-bottom:17px;
 }
 
 .field label{
@@ -119,49 +98,47 @@ button{
 .field input{
   width:100%;
   height:52px;
-  border:1px solid #abb2b3;
-  background:#fff;
   padding:0 13px;
+  border:1px solid #aeb5b5;
+  background:white;
   border-radius:0;
 }
 
 .start{
-  border:0;
   width:100%;
   height:58px;
+  border:0;
   background:var(--red);
-  color:#fff;
+  color:white;
   font-weight:900;
   font-size:17px;
 }
 
-.setupInfo{
-  margin-top:17px;
+.setupNote{
+  margin-top:16px;
   padding:13px;
   background:#f0f2f1;
   font-size:13px;
-  color:#515a5d;
   line-height:1.45;
+  color:#51595c;
 }
 
-/* ======================================================
-   DISPLAY
-====================================================== */
+/* DISPLAY */
 
 #display{
   display:none;
   min-height:100vh;
-  background:#f8f8f5;
   position:relative;
   overflow:hidden;
+  background:var(--light);
 }
 
 header{
   height:108px;
   display:grid;
-  grid-template-columns:140px 1fr 190px;
-  background:#111517;
-  color:#fff;
+  grid-template-columns:140px 1fr 195px;
+  background:var(--dark);
+  color:white;
 }
 
 .route{
@@ -173,25 +150,25 @@ header{
   font-weight:900;
 }
 
-.dest{
-  padding:16px 27px;
+.destinationBox{
+  padding:15px 28px;
   display:flex;
-  flex-direction:column;
   justify-content:center;
-  overflow:hidden;
+  flex-direction:column;
+  min-width:0;
 }
 
-.label{
+.smallLabel{
   font-size:11px;
-  font-weight:900;
   letter-spacing:1.5px;
+  font-weight:900;
   color:#abb4b6;
 }
 
 #destination{
+  margin-top:3px;
   font-size:38px;
   font-weight:900;
-  margin-top:3px;
   white-space:nowrap;
   overflow:hidden;
   text-overflow:ellipsis;
@@ -203,7 +180,7 @@ header{
   flex-direction:column;
   align-items:flex-end;
   justify-content:center;
-  padding:15px 22px;
+  padding:14px 22px;
 }
 
 #clock{
@@ -211,31 +188,29 @@ header{
   font-weight:900;
 }
 
-#lateness{
-  margin-top:4px;
-  color:#80dda0;
+#running{
+  margin-top:5px;
   font-size:11px;
   font-weight:900;
+  color:#78dc9b;
 }
 
-/* ======================================================
-   MAIN
-====================================================== */
+/* MAIN */
 
 main{
+  height:calc(100vh - 180px);
   display:grid;
   grid-template-columns:1fr 390px;
-  height:calc(100vh - 180px);
 }
 
 .mainStop{
   padding:40px 50px;
   display:flex;
-  flex-direction:column;
   justify-content:center;
+  flex-direction:column;
 }
 
-.nextTitle{
+.nextLabel{
   color:var(--red);
   font-size:19px;
   font-weight:900;
@@ -243,59 +218,58 @@ main{
 }
 
 #nextStop{
+  margin-top:12px;
   font-size:clamp(50px,7vw,105px);
-  font-weight:900;
   line-height:.95;
   letter-spacing:-3px;
-  margin-top:12px;
+  font-weight:900;
+  overflow-wrap:anywhere;
 }
 
-.times{
-  border-top:2px solid #191d1f;
-  margin-top:34px;
-  padding-top:19px;
+.details{
+  margin-top:35px;
+  padding-top:20px;
+  border-top:2px solid #171b1d;
   display:grid;
   grid-template-columns:1fr 1fr 1fr;
-  gap:22px;
+  gap:25px;
 }
 
-.small{
-  color:#747c7e;
+.detailLabel{
+  color:#737b7d;
   font-size:10px;
   font-weight:900;
   letter-spacing:1px;
 }
 
-.big{
+.detailValue{
+  margin-top:5px;
   font-size:21px;
   font-weight:900;
-  margin-top:5px;
 }
 
-/* ======================================================
-   UPCOMING
-====================================================== */
+/* UPCOMING */
 
 .upcoming{
-  background:#fff;
-  border-left:1px solid #d4d8d7;
+  background:white;
+  border-left:1px solid #d3d8d6;
   padding:27px 24px;
   overflow-y:auto;
 }
 
 .upcoming h3{
-  margin:0 0 22px;
+  margin:0 0 20px;
+  color:#697174;
   font-size:12px;
-  letter-spacing:1.3px;
-  color:#6a7274;
+  letter-spacing:1.2px;
 }
 
 .stopRow{
   display:grid;
   grid-template-columns:1fr auto;
   gap:10px;
-  padding:11px 0;
-  border-bottom:1px solid #e3e6e5;
+  padding:10px 0;
+  border-bottom:1px solid #e1e5e3;
 }
 
 .stopRow.next{
@@ -307,43 +281,41 @@ main{
   font-weight:900;
 }
 
-/* ======================================================
-   FOOTER
-====================================================== */
+/* FOOTER */
 
 footer{
   height:72px;
-  background:#111517;
-  color:#fff;
   position:absolute;
   bottom:0;
   left:0;
   right:0;
+  background:var(--dark);
+  color:white;
   display:flex;
   align-items:center;
 }
 
-#stopping{
-  display:none;
+#stopRequest{
   align-self:stretch;
+  display:none;
   align-items:center;
-  padding:0 24px;
+  padding:0 25px;
   background:#f1c511;
   color:#111;
   font-weight:900;
 }
 
-#stopping.show{
+#stopRequest.show{
   display:flex;
 }
 
 #message{
   flex:1;
-  padding:0 24px;
+  padding:0 25px;
   font-size:16px;
   font-weight:700;
-  overflow:hidden;
   white-space:nowrap;
+  overflow:hidden;
   text-overflow:ellipsis;
 }
 
@@ -352,110 +324,95 @@ footer{
   color:#aeb6b8;
 }
 
-/* ======================================================
-   GPS BADGE
-====================================================== */
+/* GPS */
 
-#gpsStatus{
+#gps{
+  display:none;
   position:fixed;
-  top:122px;
+  top:123px;
   left:15px;
-  background:#fff;
+  z-index:30;
   padding:10px 14px;
+  background:white;
   border-left:5px solid var(--amber);
   font-size:11px;
   font-weight:900;
-  z-index:50;
-  display:none;
-  box-shadow:0 3px 15px rgba(0,0,0,.15);
+  box-shadow:0 3px 14px #0002;
 }
 
-#gpsStatus.good{
+#gps.good{
   border-color:var(--green);
 }
 
-#gpsStatus.bad{
+#gps.bad{
   border-color:var(--red);
 }
 
-/* ======================================================
-   BUTTONS
-====================================================== */
+/* FLOAT BUTTONS */
 
-#gear{
+#controls{
+  display:none;
   position:fixed;
   right:15px;
   top:123px;
-  z-index:20;
-  display:none;
+  z-index:30;
   gap:6px;
 }
 
-.float{
+.floatButton{
   width:48px;
   height:48px;
-  border:1px solid #ccd1d0;
-  background:#fff;
+  border:1px solid #cad0ce;
+  background:white;
   font-size:21px;
 }
 
-/* ======================================================
-   DRIVER PANEL
-====================================================== */
+/* DRIVER PANEL */
 
-#panel{
+#driver{
   position:fixed;
   right:0;
   top:0;
   bottom:0;
   width:min(470px,100%);
   background:#151a1c;
-  color:#fff;
+  color:white;
   z-index:100;
   transform:translateX(100%);
   transition:.2s;
   overflow:auto;
 }
 
-#panel.open{
+#driver.open{
   transform:translateX(0);
 }
 
-.panelHead{
+.driverHeader{
   height:70px;
   display:flex;
   align-items:center;
   justify-content:space-between;
   padding:0 20px;
-  border-bottom:1px solid #3a4245;
+  border-bottom:1px solid #384043;
 }
 
-.panelHead button{
+.driverHeader button{
   width:40px;
   height:40px;
   background:transparent;
-  border:1px solid #566063;
-  color:#fff;
+  color:white;
+  border:1px solid #4d575a;
 }
 
-.panelBody{
+.driverBody{
   padding:20px;
 }
 
-.panelBody h3{
-  font-size:11px;
-  color:#9aa4a7;
-  letter-spacing:1px;
+.driverBody h3{
   margin:20px 0 10px;
-}
-
-.driverSelect{
-  width:100%;
-  height:48px;
-  background:#23292b;
-  color:#fff;
-  border:1px solid #4c5558;
-  padding:0 10px;
+  color:#9ca6a9;
+  font-size:11px;
+  letter-spacing:1px;
 }
 
 .stats{
@@ -470,47 +427,54 @@ footer{
 }
 
 .statLabel{
-  color:#969fa2;
+  color:#939da0;
   font-size:9px;
   font-weight:900;
   letter-spacing:1px;
 }
 
 .statValue{
-  font-weight:900;
   margin-top:5px;
+  font-weight:900;
 }
 
-.btnGrid{
+#manualStop{
+  width:100%;
+  height:50px;
+  padding:0 10px;
+  background:#22292b;
+  color:white;
+  border:1px solid #4d5659;
+}
+
+.buttons{
+  margin-top:8px;
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:8px;
-  margin-top:8px;
 }
 
-.driverBtn{
+.driverButton{
   min-height:49px;
-  color:#fff;
   background:#242b2d;
-  border:1px solid #4a5457;
+  color:white;
+  border:1px solid #4b5558;
   font-weight:800;
 }
 
-.driverBtn.red{
-  background:#a91b2d;
+.driverButton.green{
+  background:#187b46;
 }
 
-.driverBtn.amber{
-  background:#a97900;
+.driverButton.amber{
+  background:#9c7000;
 }
 
-.driverBtn.green{
-  background:#177844;
+.driverButton.red{
+  background:#a61d2d;
 }
 
-/* ======================================================
-   MOBILE
-====================================================== */
+/* MOBILE */
 
 @media(max-width:800px){
 
@@ -527,12 +491,12 @@ footer{
     font-size:23px;
   }
 
-  .clockBox{
-    padding:8px;
-  }
-
   #clock{
     font-size:21px;
+  }
+
+  .clockBox{
+    padding:8px;
   }
 
   main{
@@ -548,9 +512,10 @@ footer{
 
   #nextStop{
     font-size:clamp(45px,14vw,72px);
+    letter-spacing:-2px;
   }
 
-  .times{
+  .details{
     grid-template-columns:1fr 1fr;
   }
 
@@ -558,36 +523,31 @@ footer{
     display:none;
   }
 
-  #gear{
+  #controls{
     top:auto;
     bottom:85px;
   }
 
-  #gpsStatus{
+  #gps{
     top:auto;
     bottom:140px;
   }
 
 }
-
 </style>
 </head>
 
 <body>
 
-<!-- =====================================================
-     SETUP
-===================================================== -->
+<!-- SETUP -->
 
 <section id="setup">
 
-<div class="setupBox">
+<div class="setup">
 
-<div class="setupHead">
+<div class="setupHeader">
 
-<div class="logo">
-BUSBASE
-</div>
+<div class="logo">BUSBASE</div>
 
 <div>
 <strong>Coastliner 36</strong>
@@ -610,9 +570,7 @@ King's Lynn · Hunstanton · Wells-next-the-Sea · Fakenham
 
 <select id="direction">
 
-<option value="">
-Select direction
-</option>
+<option value="">Select direction</option>
 
 <option value="out">
 King's Lynn → Fakenham
@@ -631,7 +589,11 @@ Fakenham → King's Lynn
 <label>JOURNEY</label>
 
 <select id="journey">
-<option value="">Select journey</option>
+
+<option value="">
+Select journey
+</option>
+
 </select>
 
 </div>
@@ -652,11 +614,9 @@ onclick="startJourney()">
 START JOURNEY
 </button>
 
-<div class="setupInfo">
-GPS automatically follows the selected Coastliner 36 journey.
-If one individual stop cannot be matched to a GPS position,
-the system now automatically follows the next usable stop rather
-than showing GPS unavailable.
+<div class="setupNote">
+The stop GPS positions are stored directly inside this page.
+There is no external stop database to wait for.
 </div>
 
 </div>
@@ -665,9 +625,7 @@ than showing GPS unavailable.
 
 </section>
 
-<!-- =====================================================
-     DISPLAY
-===================================================== -->
+<!-- DISPLAY -->
 
 <section id="display">
 
@@ -677,9 +635,9 @@ than showing GPS unavailable.
 36
 </div>
 
-<div class="dest">
+<div class="destinationBox">
 
-<div class="label">
+<div class="smallLabel">
 DESTINATION
 </div>
 
@@ -695,7 +653,7 @@ DESTINATION
 --:--
 </div>
 
-<div id="lateness">
+<div id="running">
 ON TIME
 </div>
 
@@ -705,50 +663,77 @@ ON TIME
 
 <main>
 
-<div class="mainStop">
+<section class="mainStop">
 
-<div class="nextTitle">
+<div class="nextLabel">
 NEXT STOP
 </div>
 
 <div id="nextStop">
+Locating…
+</div>
+
+<div class="details">
+
+<div>
+
+<div class="detailLabel">
+SCHEDULED
+</div>
+
+<div
+class="detailValue"
+id="scheduled">
 —
 </div>
 
-<div class="times">
-
-<div>
-<div class="small">SCHEDULED</div>
-<div class="big" id="scheduled">—</div>
 </div>
 
 <div>
-<div class="small">THEN</div>
-<div class="big" id="then">—</div>
+
+<div class="detailLabel">
+THEN
+</div>
+
+<div
+class="detailValue"
+id="thenStop">
+—
+</div>
+
 </div>
 
 <div>
-<div class="small">DISTANCE</div>
-<div class="big" id="distance">—</div>
+
+<div class="detailLabel">
+DISTANCE
+</div>
+
+<div
+class="detailValue"
+id="distance">
+Locating…
 </div>
 
 </div>
 
 </div>
 
-<div class="upcoming">
+</section>
+
+<aside class="upcoming">
 
 <h3>UPCOMING STOPS</h3>
 
 <div id="upcoming"></div>
 
-</div>
+</aside>
 
 </main>
 
 <footer>
 
-<div id="stopping">
+<div id="stopRequest">
 ● BUS STOPPING
 </div>
 
@@ -766,47 +751,45 @@ BUSBASE
 
 <!-- GPS STATUS -->
 
-<div id="gpsStatus">
-GPS WAITING
+<div id="gps">
+GPS SEARCHING
 </div>
 
-<!-- FLOATING CONTROLS -->
+<!-- CONTROLS -->
 
-<div id="gear">
+<div id="controls">
 
 <button
-class="float"
-onclick="togglePanel()">
+class="floatButton"
+onclick="toggleDriver()">
 ⚙
 </button>
 
 <button
-class="float"
-onclick="fullScreen()">
+class="floatButton"
+onclick="toggleFullscreen()">
 ⛶
 </button>
 
 </div>
 
-<!-- =====================================================
-     DRIVER PANEL
-===================================================== -->
+<!-- DRIVER -->
 
-<aside id="panel">
+<aside id="driver">
 
-<div class="panelHead">
+<div class="driverHeader">
 
 <strong>Journey Control</strong>
 
-<button onclick="togglePanel()">
+<button onclick="toggleDriver()">
 ×
 </button>
 
 </div>
 
-<div class="panelBody">
+<div class="driverBody">
 
-<h3>GPS</h3>
+<h3>LIVE GPS</h3>
 
 <div class="stats">
 
@@ -818,7 +801,7 @@ STATUS
 
 <div
 class="statValue"
-id="driverGps">
+id="gpsDriverStatus">
 Waiting
 </div>
 
@@ -832,7 +815,7 @@ ACCURACY
 
 <div
 class="statValue"
-id="driverAccuracy">
+id="accuracy">
 —
 </div>
 
@@ -846,7 +829,7 @@ SPEED
 
 <div
 class="statValue"
-id="driverSpeed">
+id="speed">
 —
 </div>
 
@@ -855,7 +838,7 @@ id="driverSpeed">
 <div class="stat">
 
 <div class="statLabel">
-NEXT GPS POINT
+NEXT STOP
 </div>
 
 <div
@@ -868,24 +851,23 @@ id="driverDistance">
 
 </div>
 
-<h3>CURRENT STOP</h3>
+<h3>CURRENT POSITION</h3>
 
 <select
 id="manualStop"
-class="driverSelect"
-onchange="manualChange()">
+onchange="manualStopChanged()">
 </select>
 
-<div class="btnGrid">
+<div class="buttons">
 
 <button
-class="driverBtn"
+class="driverButton"
 onclick="previousStop()">
 Previous
 </button>
 
 <button
-class="driverBtn green"
+class="driverButton green"
 onclick="nextStopManual()">
 Next
 </button>
@@ -894,64 +876,64 @@ Next
 
 <h3>ANNOUNCEMENTS</h3>
 
-<div class="btnGrid">
+<div class="buttons">
 
 <button
-class="driverBtn"
+class="driverButton"
 onclick="announceNext(true)">
 Next stop
 </button>
 
 <button
-class="driverBtn"
+class="driverButton"
 onclick="welcome()">
 Welcome
 </button>
 
 <button
-class="driverBtn amber"
-onclick="toggleStopping()">
+class="driverButton amber"
+onclick="toggleStopRequest()">
 Bus stopping
 </button>
 
 <button
-class="driverBtn"
-onclick="announceTerminus()">
+class="driverButton"
+onclick="terminusAnnouncement()">
 Terminus
 </button>
 
 </div>
 
-<h3>GPS CONTROL</h3>
+<h3>GPS</h3>
 
-<div class="btnGrid">
+<div class="buttons">
 
 <button
-class="driverBtn"
-onclick="relocateGPS()">
+class="driverButton"
+onclick="relocate()">
 Re-locate
 </button>
 
 <button
-class="driverBtn"
-onclick="loadNaPTAN(true)">
-Reload stop data
+class="driverButton"
+onclick="startGPS()">
+Restart GPS
 </button>
 
 </div>
 
 <h3>JOURNEY</h3>
 
-<div class="btnGrid">
+<div class="buttons">
 
 <button
-class="driverBtn"
+class="driverButton"
 onclick="restartJourney()">
-Restart
+Restart journey
 </button>
 
 <button
-class="driverBtn red"
+class="driverButton red"
 onclick="endJourney()">
 End journey
 </button>
@@ -971,12 +953,10 @@ End journey
 const $ = id =>
 document.getElementById(id);
 
-function minutes(time){
+function timeMinutes(time){
 
   const [h,m] =
-  time
-  .split(":")
-  .map(Number);
+  time.split(":").map(Number);
 
   return h*60+m;
 
@@ -985,15 +965,14 @@ function minutes(time){
 function makeTime(total){
 
   total =
-  ((total % 1440)+1440)%1440;
+  ((total%1440)+1440)%1440;
 
   return (
     String(
       Math.floor(total/60)
     ).padStart(2,"0")
     +
-    ":"
-    +
+    ":"+
     String(
       total%60
     ).padStart(2,"0")
@@ -1001,444 +980,347 @@ function makeTime(total){
 
 }
 
-function addHours(base,hours){
+function offsetJourney(
+  journey,
+  offset
+){
 
-  return base.map(stop=>({
+  return journey.map(stop=>({
 
     ...stop,
 
     time:
     makeTime(
-      minutes(stop.time)+
-      hours*60
-    ),
-
-    lat:null,
-    lon:null,
-    atco:null,
-    naptan:null,
-    matched:false
+      timeMinutes(stop.time)+
+      offset
+    )
 
   }));
 
 }
 
-/* =========================================================
-   NORMALISE STOP NAMES
-========================================================= */
+function stop(
+  name,
+  time,
+  lat,
+  lon
+){
 
-function normalise(value){
-
-  return String(value || "")
-
-  .toLowerCase()
-
-  .replace(/&/g,"and")
-
-  .replace(/king['’]s/g,"kings")
-
-  .replace(/next[- ]the[- ]sea/g,"next the sea")
-
-  .replace(/fox\s*&?\s*hound[s]?/g,"fox hound")
-
-  .replace(/\bopp\b/g,"opposite")
-
-  .replace(/\badj\b/g,"")
-
-  .replace(/\bn-bound\b/g,"northbound")
-
-  .replace(/\bs-bound\b/g,"southbound")
-
-  .replace(/\bstand\s+[a-z]\b/g,"")
-
-  .replace(/[^a-z0-9 ]/g," ")
-
-  .replace(/\s+/g," ")
-
-  .trim();
-
-}
-
-function words(value){
-
-  return new Set(
-
-    normalise(value)
-    .split(" ")
-    .filter(word =>
-      word.length > 1
-    )
-
-  );
+  return{
+    name,
+    time,
+    lat,
+    lon
+  };
 
 }
 
 /* =========================================================
-   STOP BUILDER
+   OUTBOUND STANDARD JOURNEY
+   King's Lynn → Fakenham
 ========================================================= */
 
-function makeStops(data){
+const OUT_STANDARD=[
 
-  return data.map(item=>{
+stop("King's Lynn Transport Interchange (Stand E)","08:30",52.75435,0.39950),
+stop("King's Lynn, opp Austin Fields","08:31",52.75730,0.39867),
+stop("King's Lynn, opp Retail Park","08:32",52.76170,0.39960),
+stop("King's Lynn, opp Bergen Way","08:33",52.76490,0.40480),
+stop("King's Lynn, opp Hamburg Way","08:34",52.76720,0.41180),
+stop("King's Lynn, adj St James Medical Practice","08:35",52.76955,0.42090),
 
-    const [name,time] =
-    item;
+stop("South Wootton, adj Nursery Lane","08:36",52.77195,0.42960),
+stop("South Wootton, adj Castle Rising Road","08:37",52.77410,0.43885),
+stop("South Wootton, adj Deas Road","08:39",52.77520,0.44253),
+stop("South Wootton, opp Langley Road","08:39",52.77350,0.44864),
+stop("South Wootton, opp Sandy Lane","08:40",52.77530,0.45060),
+stop("South Wootton, opp Castle Reach","08:40",52.77780,0.45180),
+stop("South Wootton, opp Knight's Hill","08:41",52.78140,0.45330),
 
-    return {
+stop("Castle Rising, opp Mill House Turn","08:43",52.79460,0.47040),
 
-      name,
-      time,
+stop("Sandringham, opp Post Box","08:44",52.80950,0.49340),
+stop("Sandringham - A149 only, opp Cats Bottom Cottages","08:45",52.81710,0.50010),
+stop("Sandringham, adj Edinburgh Plantation","08:46",52.82650,0.50330),
 
-      lat:null,
-      lon:null,
+stop("Dersingham, opp Manor Road","08:49",52.84228,0.50115),
+stop("Dersingham, adj Bank Road","08:50",52.84600,0.50190),
+stop("Dersingham, adj Thaxters","08:52",52.85015,0.50290),
 
-      atco:null,
-      naptan:null,
+stop("Ingoldisthorpe, adj Ingoldsby Avenue","08:53",52.85730,0.50320),
+stop("Ingoldisthorpe, opp Pond","08:55",52.86040,0.50330),
+stop("Ingoldisthorpe, adj Coaly Lane","08:55",52.86320,0.50310),
 
-      matched:false
+stop("Snettisham, adj Station Road","08:56",52.86950,0.50230),
+stop("Snettisham, adj Strickland Avenue","08:56",52.87310,0.50140),
+stop("Snettisham, adj Grapes","08:59",52.87760,0.50030),
 
-    };
+stop("Heacham, adj Bottom Farm","09:02",52.89770,0.49380),
+stop("Heacham, opp Collingwood Close","09:03",52.90110,0.49310),
+stop("Heacham, opp Fenside","09:04",52.90400,0.49340),
+stop("Heacham, opp Fengate","09:04",52.90650,0.49390),
+stop("Heacham, adj Jennings Close","09:05",52.90880,0.49440),
+stop("Heacham, opp College Drive","09:06",52.91120,0.49490),
+stop("Heacham Poplar Avenue (N-bound)","09:07",52.91370,0.49530),
+stop("Heacham, opp Fox & Hound","09:08",52.91530,0.49550),
+stop("Heacham, opp High Street","09:09",52.91640,0.49580),
+stop("Heacham, opp Church Lane","09:09",52.91750,0.49605),
+stop("Heacham, opp Manor Road","09:10",52.91940,0.49642),
 
-  });
+stop("Hunstanton, adj Redgate Hill","09:12",52.92520,0.49390),
+stop("Hunstanton, opp Tesco","09:15",52.93040,0.49220),
 
-}
+stop("Hunstanton Travel Hub (Stand B)","09:28",52.93820,0.48970),
+
+stop("Hunstanton, opp Lincoln Square","09:30",52.94150,0.49300),
+stop("Hunstanton, adj Lighthouse Close","09:31",52.94620,0.49720),
+
+stop("Old Hunstanton, opp Post Office","09:34",52.95170,0.50130),
+stop("Old Hunstanton, adj Waterworks Road","09:35",52.95420,0.50680),
+
+stop("Holme next the Sea, adj Beach Road","09:36",52.96050,0.54020),
+
+stop("Thornham, adj Castle Cottages","09:40",52.95990,0.57420),
+stop("Thornham, adj Church","09:41",52.96000,0.57960),
+
+stop("Titchwell, adj Lark Cottage","09:43",52.96120,0.60700),
+stop("RSPB Titchwell Marsh","09:44",52.96140,0.62300),
+
+stop("Brancaster, opp The Ship","09:46",52.96300,0.63820),
+stop("Brancaster, opp Saxon Field","09:47",52.96270,0.64650),
+
+stop("Brancaster Staithe, opp Jolly Sailors","09:50",52.96310,0.67950),
+stop("Brancaster Staithe, adj The White Horse","09:53",52.96320,0.68630),
+
+stop("Burnham Deepdale, opp Dalegate Market","09:54",52.96220,0.69550),
+
+stop("Burnham Market, adj Church Walk","09:59",52.94640,0.72300),
+stop("Burnham Market, opp green","10:01",52.94550,0.72630),
+stop("Burnham Market, adj Bellamys Lane","10:02",52.94470,0.72900),
+stop("Burnham Market, adj Friars Lane","10:03",52.94400,0.73130),
+
+stop("Burnham Overy Staithe, opp Ostrich House","10:03",52.94830,0.75200),
+stop("Burnham Overy Staithe, opp Hero","10:06",52.95200,0.75830),
+
+stop("Holkham, opp The Victoria","10:14",52.95360,0.80560),
+
+stop("Wells-next-the-Sea, adj Mainsail Yard","10:17",52.95520,0.84600),
+stop("Wells-next-the-Sea, adj Quay","10:18",52.95510,0.84960),
+stop("Wells-next-the-Sea, adj Northfield Lane","10:19",52.95490,0.85300),
+stop("Wells-next-the-Sea, adj Co-op","10:30",52.95320,0.85710),
+stop("Wells-next-the-Sea, opp Grove Road","10:30",52.95130,0.86020),
+
+stop("Warham Road (adj)","10:32",52.94020,0.87400),
+
+stop("Wighton, adj High Street","10:35",52.92230,0.87870),
+stop("Wighton, adj Buddell's Lane","10:36",52.91960,0.87840),
+
+stop("Little Walsingham, adj school","10:40",52.89590,0.87390),
+stop("Little Walsingham, adj The Bull","10:42",52.89320,0.87370),
+
+stop("Houghton St Giles, opp Fakenham Road","10:43",52.87910,0.86600),
+
+stop("East Barsham, adj Water Lane","10:46",52.85400,0.85310),
+
+stop("Fakenham, adj Toll Bar","10:50",52.83550,0.84850),
+stop("Fakenham, adj Howland Close","10:51",52.83250,0.84830),
+
+stop("Fakenham Oak Street (Stand A)","10:55",52.82940,0.84770)
+
+];
 
 /* =========================================================
-   KING'S LYNN → FAKENHAM
+   EARLY 06:30 DIFFERENCES
 ========================================================= */
 
-const OUT_STANDARD =
-makeStops([
-
-["King's Lynn Transport Interchange (Stand E)","08:30"],
-["King's Lynn, opp Austin Fields","08:31"],
-["King's Lynn, opp Retail Park","08:32"],
-["King's Lynn, opp Bergen Way","08:33"],
-["King's Lynn, opp Hamburg Way","08:34"],
-["King's Lynn, adj St James Medical Practice","08:35"],
-
-["South Wootton, adj Nursery Lane","08:36"],
-["South Wootton, adj Castle Rising Road","08:37"],
-["South Wootton, adj Deas Road","08:39"],
-["South Wootton, opp Langley Road","08:39"],
-["South Wootton, opp Sandy Lane","08:40"],
-["South Wootton, opp Castle Reach","08:40"],
-["South Wootton, opp Knight's Hill","08:41"],
-
-["Castle Rising, opp Mill House Turn","08:43"],
-
-["Sandringham, opp Post Box","08:44"],
-["Sandringham - A149 only, opp Cats Bottom Cottages","08:45"],
-["Sandringham, adj Edinburgh Plantation","08:46"],
-
-["Dersingham, opp Manor Road","08:49"],
-["Dersingham, adj Bank Road","08:50"],
-["Dersingham, adj Thaxters","08:52"],
-
-["Ingoldisthorpe, adj Ingoldsby Avenue","08:53"],
-["Ingoldisthorpe, opp Pond","08:55"],
-["Ingoldisthorpe, adj Coaly Lane","08:55"],
-
-["Snettisham, adj Station Road","08:56"],
-["Snettisham, adj Strickland Avenue","08:56"],
-["Snettisham, adj Grapes","08:59"],
-
-["Heacham, adj Bottom Farm","09:02"],
-["Heacham, opp Collingwood Close","09:03"],
-["Heacham, opp Fenside","09:04"],
-["Heacham, opp Fengate","09:04"],
-["Heacham, adj Jennings Close","09:05"],
-["Heacham, opp College Drive","09:06"],
-["Heacham Poplar Avenue (N-bound)","09:07"],
-["Heacham, opp Fox & Hound","09:08"],
-["Heacham, opp High Street","09:09"],
-["Heacham, opp Church Lane","09:09"],
-["Heacham, opp Manor Road","09:10"],
-
-["Hunstanton, adj Redgate Hill","09:12"],
-["Hunstanton, opp Tesco","09:15"],
-
-["Hunstanton Travel Hub (Stand B)","09:28"],
-
-["Hunstanton, opp Lincoln Square","09:30"],
-["Hunstanton, adj Lighthouse Close","09:31"],
-
-["Old Hunstanton, opp Post Office","09:34"],
-["Old Hunstanton, adj Waterworks Road","09:35"],
-
-["Holme next the Sea, adj Beach Road","09:36"],
-
-["Thornham, adj Castle Cottages","09:40"],
-["Thornham, adj Church","09:41"],
-
-["Titchwell, adj Lark Cottage","09:43"],
-["RSPB Titchwell Marsh","09:44"],
-
-["Brancaster, opp The Ship","09:46"],
-["Brancaster, opp Saxon Field","09:47"],
-
-["Brancaster Staithe, opp Jolly Sailors","09:50"],
-["Brancaster Staithe, adj The White Horse","09:53"],
-
-["Burnham Deepdale, opp Dalegate Market","09:54"],
-
-["Burnham Market, adj Church Walk","09:59"],
-["Burnham Market, opp green","10:01"],
-["Burnham Market, adj Bellamys Lane","10:02"],
-["Burnham Market, adj Friars Lane","10:03"],
-
-["Burnham Overy Staithe, opp Ostrich House","10:03"],
-["Burnham Overy Staithe, opp Hero","10:06"],
-
-["Holkham, opp The Victoria","10:14"],
-
-["Wells-next-the-Sea, adj Mainsail Yard","10:17"],
-["Wells-next-the-Sea, adj Quay","10:18"],
-["Wells-next-the-Sea, adj Northfield Lane","10:19"],
-["Wells-next-the-Sea, adj Co-op","10:30"],
-["Wells-next-the-Sea, opp Grove Road","10:30"],
-
-["Warham Road (adj)","10:32"],
-
-["Wighton, adj High Street","10:35"],
-["Wighton, adj Buddell's Lane","10:36"],
-
-["Little Walsingham, adj school","10:40"],
-["Little Walsingham, adj The Bull","10:42"],
-
-["Houghton St Giles, opp Fakenham Road","10:43"],
-
-["East Barsham, adj Water Lane","10:46"],
-
-["Fakenham, adj Toll Bar","10:50"],
-["Fakenham, adj Howland Close","10:51"],
-
-["Fakenham Oak Street (Stand A)","10:55"]
-
-]);
-
-/* =========================================================
-   EARLY 06:30 JOURNEY
-========================================================= */
-
-const OUT_0630_SHORT =
-makeStops([
-
-["King's Lynn Transport Interchange (Stand E)","06:30"],
-["King's Lynn, opp Austin Fields","06:31"],
-["King's Lynn, opp Retail Park","06:31"],
-["King's Lynn, opp Bergen Way","06:32"],
-["King's Lynn, opp Hamburg Way","06:33"],
-["King's Lynn, adj St James Medical Practice","06:34"],
-
-["South Wootton, adj Nursery Lane","06:35"],
-["South Wootton, adj Castle Rising Road","06:36"],
-["South Wootton, adj Deas Road","06:37"],
-["South Wootton, opp Langley Road","06:37"],
-["South Wootton, opp Sandy Lane","06:38"],
-["South Wootton, opp Castle Reach","06:38"],
-["South Wootton, opp Knight's Hill","06:39"],
-
-["Castle Rising, opp Mill House Turn","06:41"],
-
-["Sandringham, opp Post Box","06:42"],
-["Sandringham - A149 only, opp Cats Bottom Cottages","06:43"],
-["Sandringham, adj Edinburgh Plantation","06:44"],
-
-["Dersingham, opp Manor Road","06:46"],
-["Dersingham, adj Bank Road","06:47"],
-["Dersingham, adj Thaxters","06:49"],
-
-["Ingoldisthorpe, adj Ingoldsby Avenue","06:51"],
-["Ingoldisthorpe, opp Pond","06:52"],
-["Ingoldisthorpe, adj Coaly Lane","06:52"],
-
-["Snettisham, adj Station Road","06:53"],
-["Snettisham, adj Strickland Avenue","06:53"],
-["Snettisham, adj Grapes","06:55"],
-
-["Heacham, adj Bottom Farm","06:57"],
-["Heacham, opp Collingwood Close","06:58"],
-["Heacham, opp Fenside","06:59"],
-["Heacham, opp Fengate","07:00"],
-["Heacham, adj Jennings Close","07:01"],
-["Heacham, opp College Drive","07:02"],
-["Heacham Poplar Avenue (N-bound)","07:03"],
-["Heacham, opp Fox & Hound","07:04"],
-["Heacham, opp High Street","07:05"],
-["Heacham, opp Church Lane","07:05"],
-["Heacham, opp Manor Road","07:06"],
-
-["Hunstanton, adj Redgate Hill","07:08"],
-["Hunstanton, opp Tesco","07:10"],
-
-["Hunstanton Travel Hub (Stand B)","07:28"]
-
-]);
-
-const OUT_0630 =
-OUT_0630_SHORT.concat(
-
-  OUT_STANDARD
-
-  .filter(stop =>
-    minutes(stop.time) >
-    minutes("09:28")
-  )
-
-  .map(stop=>({
-
-    ...stop,
-
-    time:
-    makeTime(
-      minutes(stop.time)-120
-    ),
-
-    lat:null,
-    lon:null,
-    atco:null,
-    naptan:null,
-    matched:false
-
-  }))
-
+const OUT_0630=
+offsetJourney(
+  OUT_STANDARD,
+  -120
 );
 
+const EARLY_OVERRIDES={
+
+"King's Lynn Transport Interchange (Stand E)":"06:30",
+"King's Lynn, opp Austin Fields":"06:31",
+"King's Lynn, opp Retail Park":"06:31",
+"King's Lynn, opp Bergen Way":"06:32",
+"King's Lynn, opp Hamburg Way":"06:33",
+"King's Lynn, adj St James Medical Practice":"06:34",
+
+"South Wootton, adj Nursery Lane":"06:35",
+"South Wootton, adj Castle Rising Road":"06:36",
+"South Wootton, adj Deas Road":"06:37",
+"South Wootton, opp Langley Road":"06:37",
+"South Wootton, opp Sandy Lane":"06:38",
+"South Wootton, opp Castle Reach":"06:38",
+"South Wootton, opp Knight's Hill":"06:39",
+
+"Castle Rising, opp Mill House Turn":"06:41",
+
+"Sandringham, opp Post Box":"06:42",
+"Sandringham - A149 only, opp Cats Bottom Cottages":"06:43",
+"Sandringham, adj Edinburgh Plantation":"06:44",
+
+"Dersingham, opp Manor Road":"06:46",
+"Dersingham, adj Bank Road":"06:47",
+"Dersingham, adj Thaxters":"06:49",
+
+"Ingoldisthorpe, adj Ingoldsby Avenue":"06:51",
+"Ingoldisthorpe, opp Pond":"06:52",
+"Ingoldisthorpe, adj Coaly Lane":"06:52",
+
+"Snettisham, adj Station Road":"06:53",
+"Snettisham, adj Strickland Avenue":"06:53",
+"Snettisham, adj Grapes":"06:55",
+
+"Heacham, adj Bottom Farm":"06:57",
+"Heacham, opp Collingwood Close":"06:58",
+"Heacham, opp Fenside":"06:59",
+"Heacham, opp Fengate":"07:00",
+"Heacham, adj Jennings Close":"07:01",
+"Heacham, opp College Drive":"07:02",
+"Heacham Poplar Avenue (N-bound)":"07:03",
+"Heacham, opp Fox & Hound":"07:04",
+"Heacham, opp High Street":"07:05",
+"Heacham, opp Church Lane":"07:05",
+"Heacham, opp Manor Road":"07:06",
+
+"Hunstanton, adj Redgate Hill":"07:08",
+"Hunstanton, opp Tesco":"07:10",
+"Hunstanton Travel Hub (Stand B)":"07:28"
+
+};
+
+OUT_0630.forEach(stop=>{
+
+  if(
+    EARLY_OVERRIDES[
+      stop.name
+    ]
+  ){
+
+    stop.time=
+    EARLY_OVERRIDES[
+      stop.name
+    ];
+
+  }
+
+});
+
 /* =========================================================
-   07:30
+   INBOUND
+   Fakenham → King's Lynn
 ========================================================= */
 
-const OUT_0730 =
-OUT_STANDARD.map(stop=>({
+const IN_STANDARD=[
 
-  ...stop,
+stop("Fakenham Oak Street (Stand A)","08:00",52.82940,0.84770),
+stop("Fakenham, opp Howland Close","08:01",52.83250,0.84830),
+stop("Fakenham, opp Toll Bar","08:02",52.83550,0.84850),
 
-  time:
-  makeTime(
-    minutes(stop.time)-60
-  ),
+stop("East Barsham, opp Water Lane","08:07",52.85400,0.85310),
 
-  lat:null,
-  lon:null,
-  atco:null,
-  naptan:null,
-  matched:false
+stop("Houghton St Giles, adj Fakenham Road","08:10",52.87910,0.86600),
 
-}));
+stop("Little Walsingham, opp The Bull","08:12",52.89320,0.87370),
+stop("Little Walsingham, opp school","08:15",52.89590,0.87390),
 
-/* =========================================================
-   FAKENHAM → KING'S LYNN
-========================================================= */
+stop("Wighton, opp Buddell's Lane","08:18",52.91960,0.87840),
+stop("Wighton, opp High Street","08:18",52.92230,0.87870),
 
-const IN_STANDARD =
-makeStops([
+stop("Warham Road (opp)","08:21",52.94020,0.87400),
 
-["Fakenham Oak Street (Stand A)","08:00"],
-["Fakenham, opp Howland Close","08:01"],
-["Fakenham, opp Toll Bar","08:02"],
+stop("Wells-next-the-Sea, adj Grove Road","08:24",52.95130,0.86020),
+stop("Wells-next-the-Sea, opp Co-op","08:33",52.95320,0.85710),
+stop("Wells-next-the-Sea, opp Northfield Lane","08:34",52.95490,0.85300),
+stop("Wells-next-the-Sea, opp Quay","08:36",52.95510,0.84960),
+stop("Wells-next-the-Sea, opp Mainsail Yard","08:37",52.95520,0.84600),
 
-["East Barsham, opp Water Lane","08:07"],
+stop("Holkham, adj The Victoria","08:41",52.95360,0.80560),
 
-["Houghton St Giles, adj Fakenham Road","08:10"],
+stop("Burnham Overy Staithe, adj Hero","08:48",52.95200,0.75830),
+stop("Burnham Overy Staithe, adj Ostrich House","08:51",52.94830,0.75200),
 
-["Little Walsingham, opp The Bull","08:12"],
-["Little Walsingham, opp school","08:15"],
+stop("Burnham Market, opp Friars Lane","08:52",52.94400,0.73130),
+stop("Burnham Market, adj All Saints Church","08:53",52.94520,0.72480),
+stop("Burnham Market, adj green","08:54",52.94550,0.72630),
+stop("Burnham Market, opp Church Walk","08:56",52.94640,0.72300),
 
-["Wighton, opp Buddell's Lane","08:18"],
-["Wighton, opp High Street","08:18"],
+stop("Burnham Deepdale, adj Dalegate Market","09:02",52.96220,0.69550),
 
-["Warham Road (opp)","08:21"],
+stop("Brancaster Staithe, opp The White Horse","09:03",52.96320,0.68630),
+stop("Brancaster Staithe, adj Jolly Sailors","09:04",52.96310,0.67950),
 
-["Wells-next-the-Sea, adj Grove Road","08:24"],
-["Wells-next-the-Sea, opp Co-op","08:33"],
-["Wells-next-the-Sea, opp Northfield Lane","08:34"],
-["Wells-next-the-Sea, opp Quay","08:36"],
-["Wells-next-the-Sea, opp Mainsail Yard","08:37"],
+stop("Brancaster, adj Saxon Field","09:06",52.96270,0.64650),
+stop("Brancaster, adj The Ship","09:07",52.96300,0.63820),
 
-["Holkham, adj The Victoria","08:41"],
+stop("Titchwell, opp Lark Cottage","09:09",52.96120,0.60700),
+stop("RSPB Titchwell Marsh","09:10",52.96140,0.62300),
 
-["Burnham Overy Staithe, adj Hero","08:48"],
-["Burnham Overy Staithe, adj Ostrich House","08:51"],
+stop("Thornham, adj Castle Cottages","09:11",52.95990,0.57420),
 
-["Burnham Market, opp Friars Lane","08:52"],
-["Burnham Market, adj All Saints Church","08:53"],
-["Burnham Market, adj green","08:54"],
-["Burnham Market, opp Church Walk","08:56"],
+stop("Holme next the Sea, opp Beach Road","09:15",52.96050,0.54020),
 
-["Burnham Deepdale, adj Dalegate Market","09:02"],
+stop("Old Hunstanton, opp Waterworks Road","09:16",52.95420,0.50680),
+stop("Old Hunstanton, adj Post Office","09:17",52.95170,0.50130),
 
-["Brancaster Staithe, opp The White Horse","09:03"],
-["Brancaster Staithe, adj Jolly Sailors","09:04"],
+stop("Hunstanton, opp Lighthouse Close","09:20",52.94620,0.49720),
+stop("Hunstanton, adj Lincoln Square","09:21",52.94150,0.49300),
 
-["Brancaster, adj Saxon Field","09:06"],
-["Brancaster, adj The Ship","09:07"],
+stop("Hunstanton Travel Hub (Stand A)","09:35",52.93820,0.48970),
 
-["Titchwell, opp Lark Cottage","09:09"],
-["RSPB Titchwell Marsh","09:10"],
+stop("Hunstanton, adj Tesco","09:37",52.93040,0.49220),
+stop("Hunstanton, opp Redgate Hill","09:39",52.92520,0.49390),
 
-["Thornham, adj Castle Cottages","09:11"],
+stop("Heacham, adj Manor Road","09:42",52.91940,0.49642),
+stop("Heacham, adj Church Lane","09:42",52.91750,0.49605),
+stop("Heacham, adj High Street","09:43",52.91640,0.49580),
+stop("Heacham, adj Fox & Hound","09:44",52.91530,0.49550),
+stop("Heacham Poplar Avenue (S-bound)","09:45",52.91370,0.49530),
+stop("Heacham, adj College Drive","09:46",52.91120,0.49490),
+stop("Heacham, opp Jennings Close","09:47",52.90880,0.49440),
+stop("Heacham, adj Fengate","09:48",52.90650,0.49390),
+stop("Heacham, adj Fenside","09:49",52.90400,0.49340),
+stop("Heacham, adj Collingwood Close","09:50",52.90110,0.49310),
+stop("Heacham, opp Bottom Farm","09:51",52.89770,0.49380),
 
-["Holme next the Sea, opp Beach Road","09:15"],
+stop("Snettisham, opp Grapes","09:54",52.87760,0.50030),
+stop("Snettisham, opp Strickland Avenue","09:54",52.87310,0.50140),
+stop("Snettisham, opp Station Road","09:55",52.86950,0.50230),
 
-["Old Hunstanton, opp Waterworks Road","09:16"],
-["Old Hunstanton, adj Post Office","09:17"],
+stop("Ingoldisthorpe, opp Coaly Lane","09:56",52.86320,0.50310),
+stop("Ingoldisthorpe, adj Pond","09:57",52.86040,0.50330),
+stop("Ingoldisthorpe, opp Ingoldsby Avenue","09:58",52.85730,0.50320),
 
-["Hunstanton, opp Lighthouse Close","09:20"],
-["Hunstanton, adj Lincoln Square","09:21"],
+stop("Dersingham, opp Thaxters","10:00",52.85015,0.50290),
+stop("Dersingham, opp Bank Road","10:01",52.84600,0.50190),
+stop("Dersingham, adj Manor Road","10:03",52.84228,0.50115),
 
-["Hunstanton Travel Hub (Stand A)","09:35"],
+stop("Sandringham, opp Edinburgh Plantation","10:05",52.82650,0.50330),
+stop("Sandringham - A149 only, adj Cats Bottom Cottages","10:06",52.81710,0.50010),
+stop("Sandringham, adj Cross Cottages","10:07",52.80950,0.49340),
 
-["Hunstanton, adj Tesco","09:37"],
-["Hunstanton, opp Redgate Hill","09:39"],
+stop("Castle Rising, adj Mill House Turn","10:09",52.79460,0.47040),
 
-["Heacham, adj Manor Road","09:42"],
-["Heacham, adj Church Lane","09:42"],
-["Heacham, adj High Street","09:43"],
-["Heacham, adj Fox & Hound","09:44"],
-["Heacham Poplar Avenue (S-bound)","09:45"],
-["Heacham, adj College Drive","09:46"],
-["Heacham, opp Jennings Close","09:47"],
-["Heacham, adj Fengate","09:48"],
-["Heacham, adj Fenside","09:49"],
-["Heacham, adj Collingwood Close","09:50"],
-["Heacham, opp Bottom Farm","09:51"],
+stop("South Wootton, adj Knight's Hill","10:10",52.78140,0.45330),
+stop("South Wootton, adj Castle Reach","10:10",52.77780,0.45180),
+stop("South Wootton, adj Sandy Lane","10:11",52.77530,0.45060),
+stop("South Wootton, adj Langley Road","10:12",52.77350,0.44864),
+stop("South Wootton, opp Deas Road","10:13",52.77520,0.44253),
+stop("South Wootton, opp Nursery Lane","10:14",52.77195,0.42960),
 
-["Snettisham, opp Grapes","09:54"],
-["Snettisham, opp Strickland Avenue","09:54"],
-["Snettisham, opp Station Road","09:55"],
+stop("King's Lynn, opp St James Medical Practice","10:15",52.76955,0.42090),
+stop("King's Lynn, adj Hamburg Way","10:16",52.76720,0.41180),
+stop("King's Lynn, adj Bergen Way","10:18",52.76490,0.40480),
+stop("King's Lynn, adj Retail Park","10:20",52.76170,0.39960),
+stop("King's Lynn, adj Austin Fields","10:21",52.75730,0.39867),
+stop("King's Lynn, adj Railway Station","10:23",52.75320,0.40340),
 
-["Ingoldisthorpe, opp Coaly Lane","09:56"],
-["Ingoldisthorpe, adj Pond","09:57"],
-["Ingoldisthorpe, opp Ingoldsby Avenue","09:58"],
+stop("King's Lynn Transport Interchange (Stand A)","10:26",52.75435,0.39950)
 
-["Dersingham, opp Thaxters","10:00"],
-["Dersingham, opp Bank Road","10:01"],
-["Dersingham, adj Manor Road","10:03"],
-
-["Sandringham, opp Edinburgh Plantation","10:05"],
-["Sandringham - A149 only, adj Cats Bottom Cottages","10:06"],
-["Sandringham, adj Cross Cottages","10:07"],
-
-["Castle Rising, adj Mill House Turn","10:09"],
-
-["South Wootton, adj Knight's Hill","10:10"],
-["South Wootton, adj Castle Reach","10:10"],
-["South Wootton, adj Sandy Lane","10:11"],
-["South Wootton, adj Langley Road","10:12"],
-["South Wootton, opp Deas Road","10:13"],
-["South Wootton, opp Nursery Lane","10:14"],
-
-["King's Lynn, opp St James Medical Practice","10:15"],
-["King's Lynn, adj Hamburg Way","10:16"],
-["King's Lynn, adj Bergen Way","10:18"],
-["King's Lynn, adj Retail Park","10:20"],
-["King's Lynn, adj Austin Fields","10:21"],
-["King's Lynn, adj Railway Station","10:23"],
-
-["King's Lynn Transport Interchange (Stand A)","10:26"]
-
-]);
+];
 
 /* =========================================================
    JOURNEYS
@@ -1448,77 +1330,184 @@ const JOURNEYS={
 
 out:{
 
-  "06:30":OUT_0630,
-  "07:30":OUT_0730,
-  "08:30":OUT_STANDARD,
+"06:30":OUT_0630,
 
-  "09:30":addHours(OUT_STANDARD,1),
-  "10:30":addHours(OUT_STANDARD,2),
-  "11:30":addHours(OUT_STANDARD,3),
-  "12:30":addHours(OUT_STANDARD,4),
-  "13:30":addHours(OUT_STANDARD,5),
-  "14:30":addHours(OUT_STANDARD,6),
-  "15:30":addHours(OUT_STANDARD,7),
-  "16:30":addHours(OUT_STANDARD,8)
+"07:30":
+offsetJourney(
+  OUT_STANDARD,
+  -60
+),
+
+"08:30":
+OUT_STANDARD,
+
+"09:30":
+offsetJourney(
+  OUT_STANDARD,
+  60
+),
+
+"10:30":
+offsetJourney(
+  OUT_STANDARD,
+  120
+),
+
+"11:30":
+offsetJourney(
+  OUT_STANDARD,
+  180
+),
+
+"12:30":
+offsetJourney(
+  OUT_STANDARD,
+  240
+),
+
+"13:30":
+offsetJourney(
+  OUT_STANDARD,
+  300
+),
+
+"14:30":
+offsetJourney(
+  OUT_STANDARD,
+  360
+),
+
+"15:30":
+offsetJourney(
+  OUT_STANDARD,
+  420
+),
+
+"16:30":
+offsetJourney(
+  OUT_STANDARD,
+  480
+)
 
 },
 
 in:{
 
-  "08:00":IN_STANDARD,
+"08:00":
+IN_STANDARD,
 
-  "09:00":addHours(IN_STANDARD,1),
-  "10:00":addHours(IN_STANDARD,2),
-  "11:00":addHours(IN_STANDARD,3),
-  "12:00":addHours(IN_STANDARD,4),
-  "13:00":addHours(IN_STANDARD,5),
-  "14:00":addHours(IN_STANDARD,6),
-  "15:00":addHours(IN_STANDARD,7),
-  "16:00":addHours(IN_STANDARD,8),
-  "17:00":addHours(IN_STANDARD,9),
-  "18:00":addHours(IN_STANDARD,10)
+"09:00":
+offsetJourney(
+  IN_STANDARD,
+  60
+),
+
+"10:00":
+offsetJourney(
+  IN_STANDARD,
+  120
+),
+
+"11:00":
+offsetJourney(
+  IN_STANDARD,
+  180
+),
+
+"12:00":
+offsetJourney(
+  IN_STANDARD,
+  240
+),
+
+"13:00":
+offsetJourney(
+  IN_STANDARD,
+  300
+),
+
+"14:00":
+offsetJourney(
+  IN_STANDARD,
+  360
+),
+
+"15:00":
+offsetJourney(
+  IN_STANDARD,
+  420
+),
+
+"16:00":
+offsetJourney(
+  IN_STANDARD,
+  480
+),
+
+"17:00":
+offsetJourney(
+  IN_STANDARD,
+  540
+),
+
+"18:00":
+offsetJourney(
+  IN_STANDARD,
+  600
+)
 
 }
 
 };
 
 /* =========================================================
-   STATE
+   APP STATE
 ========================================================= */
 
 let direction="";
-let currentJourney="";
-let stops=[];
-let currentIndex=0;
+let journeyTime="";
 
-let stopRequest=false;
+let stops=[];
+
+let currentIndex=0;
 
 let watchID=null;
 
 let lastPosition=null;
 
-let naptanStops=[];
+let gpsLocated=false;
 
-let naptanReady=false;
+let stopRequested=false;
 
-let lastAnnouncement=-1;
+let lastAnnounced=-1;
 
-let lastAutoAdvance=0;
+let lastAutoChange=0;
 
-let initialGPSLocated=false;
+let lastNextDistance=null;
+
+let approachedNext=false;
 
 /*
-  GPS settings
+  GPS tuning.
+
+  180 m gives phone GPS some room.
+
+  PASS_DISTANCE helps if the phone never
+  gets exactly on top of the stop.
 */
 
-const STOP_REACHED_RADIUS=120;
+const ARRIVAL_RADIUS=180;
 
 const ANNOUNCE_RADIUS=500;
 
-const MAX_INITIAL_ROUTE_DISTANCE=4000;
+const APPROACH_RADIUS=350;
+
+const PASS_DISTANCE=280;
+
+const INITIAL_ROUTE_RADIUS=10000;
 
 /* =========================================================
-   DIRECTION SELECT
+   DIRECTION
 ========================================================= */
 
 $("direction")
@@ -1539,38 +1528,44 @@ function(){
   }
 
   Object.keys(
-    JOURNEYS[direction]
+    JOURNEYS[
+      direction
+    ]
   )
   .forEach(time=>{
 
     const option=
-    document.createElement("option");
+    document.createElement(
+      "option"
+    );
 
     option.value=time;
 
     option.textContent=time;
 
-    select.appendChild(option);
+    select.appendChild(
+      option
+    );
 
   });
 
 });
 
 /* =========================================================
-   START JOURNEY
+   START
 ========================================================= */
 
-async function startJourney(){
+function startJourney(){
 
   direction=
   $("direction").value;
 
-  currentJourney=
+  journeyTime=
   $("journey").value;
 
   if(
     !direction ||
-    !currentJourney
+    !journeyTime
   ){
 
     alert(
@@ -1582,15 +1577,24 @@ async function startJourney(){
   }
 
   stops=
-  JOURNEYS[direction]
-  [currentJourney]
+  JOURNEYS[
+    direction
+  ][
+    journeyTime
+  ]
   .map(stop=>({
     ...stop
   }));
 
   currentIndex=0;
 
-  initialGPSLocated=false;
+  gpsLocated=false;
+
+  lastAnnounced=-1;
+
+  lastNextDistance=null;
+
+  approachedNext=false;
 
   $("destination")
   .textContent=
@@ -1614,674 +1618,24 @@ async function startJourney(){
   .style.display=
   "block";
 
-  $("gear")
-  .style.display=
-  "flex";
-
-  $("gpsStatus")
+  $("gps")
   .style.display=
   "block";
 
-  buildManualStops();
+  $("controls")
+  .style.display=
+  "flex";
+
+  createStopSelector();
 
   render();
-
-  welcome();
-
-  await loadNaPTAN();
 
   startGPS();
 
 }
 
 /* =========================================================
-   NAPTAN
-========================================================= */
-
-async function loadNaPTAN(force=false){
-
-  setGPSMessage(
-    "LOADING STOP DATA",
-    ""
-  );
-
-  $("driverGps")
-  .textContent=
-  "Loading stop data";
-
-  if(!force){
-
-    try{
-
-      const cached=
-      localStorage.getItem(
-        "busbase_naptan_290_v2"
-      );
-
-      if(cached){
-
-        const parsed=
-        JSON.parse(cached);
-
-        if(
-          parsed &&
-          Array.isArray(parsed.stops) &&
-          parsed.stops.length>100
-        ){
-
-          naptanStops=
-          parsed.stops;
-
-          naptanReady=true;
-
-          matchRouteStops();
-
-          setGPSMessage(
-            "STOP DATA READY",
-            "good"
-          );
-
-          return;
-
-        }
-
-      }
-
-    }catch(error){
-
-      console.log(
-        "NaPTAN cache error",
-        error
-      );
-
-    }
-
-  }
-
-  const url=
-  "https://naptan.api.dft.gov.uk/v1/access-nodes" +
-  "?dataFormat=csv&atcoAreaCodes=290";
-
-  try{
-
-    const response=
-    await fetch(url);
-
-    if(!response.ok){
-
-      throw new Error(
-        "HTTP "+
-        response.status
-      );
-
-    }
-
-    const csv=
-    await response.text();
-
-    naptanStops=
-    parseNaPTAN(csv);
-
-    if(
-      naptanStops.length<100
-    ){
-
-      throw new Error(
-        "No stop data returned"
-      );
-
-    }
-
-    naptanReady=true;
-
-    try{
-
-      localStorage.setItem(
-
-        "busbase_naptan_290_v2",
-
-        JSON.stringify({
-
-          downloaded:
-          Date.now(),
-
-          stops:
-          naptanStops
-
-        })
-
-      );
-
-    }catch(error){}
-
-    matchRouteStops();
-
-    setGPSMessage(
-      "STOP DATA READY",
-      "good"
-    );
-
-  }
-
-  catch(error){
-
-    console.error(
-      "Stop data error:",
-      error
-    );
-
-    naptanReady=false;
-
-    setGPSMessage(
-      "STOP DATA FAILED",
-      "bad"
-    );
-
-    $("driverGps")
-    .textContent=
-    "Manual mode";
-
-    $("message")
-    .textContent=
-    "Stop database could not load. Manual controls are still available.";
-
-  }
-
-}
-
-/* =========================================================
-   CSV PARSER
-========================================================= */
-
-function parseCSVLine(line){
-
-  const values=[];
-
-  let current="";
-
-  let quoted=false;
-
-  for(
-    let i=0;
-    i<line.length;
-    i++
-  ){
-
-    const character=
-    line[i];
-
-    if(character==='"'){
-
-      if(
-        quoted &&
-        line[i+1]==='"'
-      ){
-
-        current+='"';
-
-        i++;
-
-      }else{
-
-        quoted=
-        !quoted;
-
-      }
-
-    }
-
-    else if(
-      character==="," &&
-      !quoted
-    ){
-
-      values.push(current);
-
-      current="";
-
-    }
-
-    else{
-
-      current+=character;
-
-    }
-
-  }
-
-  values.push(current);
-
-  return values;
-
-}
-
-function parseNaPTAN(csv){
-
-  const lines=
-  csv
-
-  .replace(/\r/g,"")
-
-  .split("\n")
-
-  .filter(line =>
-    line.trim()
-  );
-
-  if(!lines.length){
-    return [];
-  }
-
-  const header=
-  parseCSVLine(
-    lines[0]
-  );
-
-  const columns={};
-
-  header.forEach(
-    (name,index)=>{
-
-      columns[
-        normaliseHeader(name)
-      ]=index;
-
-    }
-  );
-
-  function indexOf(...names){
-
-    for(const name of names){
-
-      const key=
-      normaliseHeader(name);
-
-      if(
-        columns[key]!==undefined
-      ){
-
-        return columns[key];
-
-      }
-
-    }
-
-    return -1;
-
-  }
-
-  const atcoIndex=
-  indexOf(
-    "ATCOCode",
-    "AtcoCode"
-  );
-
-  const naptanIndex=
-  indexOf(
-    "NaptanCode"
-  );
-
-  const nameIndex=
-  indexOf(
-    "CommonName"
-  );
-
-  const indicatorIndex=
-  indexOf(
-    "Indicator"
-  );
-
-  const localityIndex=
-  indexOf(
-    "LocalityName"
-  );
-
-  const latitudeIndex=
-  indexOf(
-    "Latitude"
-  );
-
-  const longitudeIndex=
-  indexOf(
-    "Longitude"
-  );
-
-  const stopTypeIndex=
-  indexOf(
-    "StopType"
-  );
-
-  const results=[];
-
-  for(
-    let i=1;
-    i<lines.length;
-    i++
-  ){
-
-    const row=
-    parseCSVLine(
-      lines[i]
-    );
-
-    const lat=
-    Number(
-      row[latitudeIndex]
-    );
-
-    const lon=
-    Number(
-      row[longitudeIndex]
-    );
-
-    if(
-      !Number.isFinite(lat) ||
-      !Number.isFinite(lon)
-    ){
-
-      continue;
-
-    }
-
-    const type=
-    stopTypeIndex>=0
-    ?row[stopTypeIndex]
-    :"";
-
-    if(
-      type &&
-      ![
-        "BCT",
-        "BCS",
-        "BCQ",
-        "BST"
-      ].includes(type)
-    ){
-
-      continue;
-
-    }
-
-    const common=
-    row[nameIndex] || "";
-
-    const indicator=
-    row[indicatorIndex] || "";
-
-    const locality=
-    row[localityIndex] || "";
-
-    results.push({
-
-      atco:
-      row[atcoIndex] || "",
-
-      naptan:
-      row[naptanIndex] || "",
-
-      common,
-      indicator,
-      locality,
-
-      lat,
-      lon,
-
-      matchText:
-      normalise(
-        locality+
-        " "+
-        common+
-        " "+
-        indicator
-      )
-
-    });
-
-  }
-
-  return results;
-
-}
-
-function normaliseHeader(value){
-
-  return String(value||"")
-
-  .toLowerCase()
-
-  .replace(
-    /[^a-z0-9]/g,
-    ""
-  );
-
-}
-
-/* =========================================================
-   MATCH ROUTE STOPS
-========================================================= */
-
-function matchRouteStops(){
-
-  if(
-    !naptanReady ||
-    !stops.length
-  ){
-
-    return;
-
-  }
-
-  let matchedCount=0;
-
-  stops.forEach(stop=>{
-
-    const match=
-    findBestNaPTAN(
-      stop.name
-    );
-
-    if(match){
-
-      stop.lat=
-      match.lat;
-
-      stop.lon=
-      match.lon;
-
-      stop.atco=
-      match.atco;
-
-      stop.naptan=
-      match.naptan;
-
-      stop.matched=true;
-
-      matchedCount++;
-
-    }
-
-  });
-
-  $("driverGps")
-  .textContent=
-  matchedCount+
-  "/"+
-  stops.length+
-  " stops matched";
-
-  console.log(
-    "Matched",
-    matchedCount,
-    "of",
-    stops.length,
-    "stops"
-  );
-
-}
-
-/* =========================================================
-   FUZZY MATCH
-========================================================= */
-
-function findBestNaPTAN(routeName){
-
-  const target=
-  normalise(
-    routeName
-  );
-
-  const targetWords=
-  words(target);
-
-  let best=null;
-
-  let bestScore=-Infinity;
-
-  for(
-    const candidate of
-    naptanStops
-  ){
-
-    const candidateWords=
-    words(
-      candidate.matchText
-    );
-
-    let score=0;
-
-    for(
-      const word of
-      targetWords
-    ){
-
-      if(
-        candidateWords.has(word)
-      ){
-
-        score+=5;
-
-      }
-
-    }
-
-    const common=
-    normalise(
-      candidate.common
-    );
-
-    const locality=
-    normalise(
-      candidate.locality
-    );
-
-    const indicator=
-    normalise(
-      candidate.indicator
-    );
-
-    if(
-      candidate.matchText
-      .includes(target)
-    ){
-
-      score+=80;
-
-    }
-
-    if(
-      common &&
-      target.includes(common)
-    ){
-
-      score+=25;
-
-    }
-
-    /*
-      Locality name reward.
-    */
-
-    const firstPart=
-    normalise(
-      routeName.split(",")[0]
-    );
-
-    if(
-      locality &&
-      (
-        firstPart.includes(locality) ||
-        locality.includes(firstPart)
-      )
-    ){
-
-      score+=35;
-
-    }
-
-    /*
-      Direction indicators.
-    */
-
-    if(
-      target.includes("opposite") &&
-      (
-        indicator.includes("opp") ||
-        indicator.includes("opposite")
-      )
-    ){
-
-      score+=15;
-
-    }
-
-    if(
-      target.includes("northbound") &&
-      (
-        indicator.includes("north") ||
-        indicator==="n"
-      )
-    ){
-
-      score+=12;
-
-    }
-
-    if(
-      target.includes("southbound") &&
-      (
-        indicator.includes("south") ||
-        indicator==="s"
-      )
-    ){
-
-      score+=12;
-
-    }
-
-    if(
-      score>bestScore
-    ){
-
-      bestScore=score;
-
-      best=candidate;
-
-    }
-
-  }
-
-  if(bestScore<22){
-
-    return null;
-
-  }
-
-  return best;
-
-}
-
-/* =========================================================
-   GPS START
+   GPS
 ========================================================= */
 
 function startGPS(){
@@ -2290,23 +1644,23 @@ function startGPS(){
     !navigator.geolocation
   ){
 
-    setGPSMessage(
+    setGPS(
       "GPS NOT SUPPORTED",
       "bad"
     );
-
-    $("driverGps")
-    .textContent=
-    "Not supported";
 
     return;
 
   }
 
-  setGPSMessage(
+  setGPS(
     "GPS SEARCHING",
     ""
   );
+
+  $("gpsDriverStatus")
+  .textContent=
+  "Searching";
 
   if(
     watchID!==null
@@ -2325,16 +1679,12 @@ function startGPS(){
 
     gpsSuccess,
 
-    gpsError,
+    gpsFailure,
 
     {
-
       enableHighAccuracy:true,
-
-      maximumAge:500,
-
+      maximumAge:0,
       timeout:20000
-
     }
 
   );
@@ -2350,12 +1700,16 @@ function gpsSuccess(position){
   lastPosition=
   position.coords;
 
-  setGPSMessage(
+  setGPS(
     "GPS LIVE",
     "good"
   );
 
-  $("driverAccuracy")
+  $("gpsDriverStatus")
+  .textContent=
+  "GPS live";
+
+  $("accuracy")
   .textContent=
   Math.round(
     lastPosition.accuracy
@@ -2363,13 +1717,12 @@ function gpsSuccess(position){
   " m";
 
   if(
-    lastPosition.speed!==null &&
     Number.isFinite(
       lastPosition.speed
     )
   ){
 
-    $("driverSpeed")
+    $("speed")
     .textContent=
     (
       lastPosition.speed*
@@ -2378,23 +1731,22 @@ function gpsSuccess(position){
     .toFixed(1)+
     " mph";
 
-  }
+  }else{
 
-  else{
-
-    $("driverSpeed")
+    $("speed")
     .textContent=
     "—";
 
   }
 
-  if(!naptanReady){
+  /*
+    Immediately locate where along
+    the route the device currently is.
+  */
 
-    $("driverGps")
-    .textContent=
-    "GPS live · waiting for stop data";
+  if(!gpsLocated){
 
-    return;
+    locateOnRoute();
 
   }
 
@@ -2403,10 +1755,10 @@ function gpsSuccess(position){
 }
 
 /* =========================================================
-   GPS ERROR
+   GPS FAILURE
 ========================================================= */
 
-function gpsError(error){
+function gpsFailure(error){
 
   let text=
   "GPS ERROR";
@@ -2432,19 +1784,101 @@ function gpsError(error){
 
   }
 
-  setGPSMessage(
+  setGPS(
     text,
     "bad"
   );
 
-  $("driverGps")
+  $("gpsDriverStatus")
   .textContent=
   text;
 
 }
 
 /* =========================================================
-   GPS PROCESSING
+   FIND CURRENT POSITION ON LAUNCH
+========================================================= */
+
+function locateOnRoute(){
+
+  if(
+    !lastPosition ||
+    !stops.length
+  ){
+
+    return;
+
+  }
+
+  let nearestIndex=0;
+
+  let nearestDistance=
+  Infinity;
+
+  stops.forEach(
+    (stop,index)=>{
+
+      const distance=
+      distanceMetres(
+
+        lastPosition.latitude,
+        lastPosition.longitude,
+
+        stop.lat,
+        stop.lon
+
+      );
+
+      if(
+        distance<
+        nearestDistance
+      ){
+
+        nearestDistance=
+        distance;
+
+        nearestIndex=
+        index;
+
+      }
+
+    }
+  );
+
+  /*
+    Only snap onto route if device
+    is reasonably close to the 36.
+  */
+
+  if(
+    nearestDistance<=
+    INITIAL_ROUTE_RADIUS
+  ){
+
+    currentIndex=
+    nearestIndex;
+
+    $("message")
+    .textContent=
+    "Located near "+
+    stops[
+      nearestIndex
+    ].name;
+
+  }
+
+  gpsLocated=true;
+
+  lastNextDistance=null;
+
+  approachedNext=false;
+
+  render();
+
+}
+
+/* =========================================================
+   LIVE GPS PROCESSING
 ========================================================= */
 
 function processGPS(){
@@ -2458,95 +1892,19 @@ function processGPS(){
 
   }
 
-  const latitude=
-  lastPosition.latitude;
-
-  const longitude=
-  lastPosition.longitude;
-
-  /*
-    ===========================================
-    INITIAL LOCATION
-    ===========================================
-  */
-
-  if(!initialGPSLocated){
-
-    let nearest=-1;
-
-    let nearestDistance=
-    Infinity;
-
-    stops.forEach(
-      (stop,index)=>{
-
-        if(
-          !Number.isFinite(stop.lat) ||
-          !Number.isFinite(stop.lon)
-        ){
-
-          return;
-
-        }
-
-        const distance=
-        distanceMetres(
-
-          latitude,
-          longitude,
-
-          stop.lat,
-          stop.lon
-
-        );
-
-        if(
-          distance<
-          nearestDistance
-        ){
-
-          nearestDistance=
-          distance;
-
-          nearest=index;
-
-        }
-
-      }
-    );
-
-    if(
-      nearest>=0 &&
-      nearestDistance<=
-      MAX_INITIAL_ROUTE_DISTANCE
-    ){
-
-      currentIndex=
-      nearest;
-
-      render();
-
-    }
-
-    initialGPSLocated=true;
-
-  }
-
-  /*
-    ===========================================
-    NEXT PASSENGER STOP
-    ===========================================
-  */
-
-  const passengerNextIndex=
+  const nextIndex=
   currentIndex+1;
 
-  const passengerNext=
+  const next=
   stops[
-    passengerNextIndex
+    nextIndex
   ];
 
-  if(!passengerNext){
+  /*
+    Terminus.
+  */
+
+  if(!next){
 
     $("distance")
     .textContent=
@@ -2560,155 +1918,198 @@ function processGPS(){
 
   }
 
-  /*
-    ===========================================
-    FIND NEXT STOP WITH WORKING GPS
-    ===========================================
-  */
-
-  let gpsStop=null;
-
-  let gpsStopIndex=-1;
-
-  for(
-    let i=currentIndex+1;
-    i<stops.length;
-    i++
-  ){
-
-    if(
-      Number.isFinite(
-        stops[i].lat
-      )
-      &&
-      Number.isFinite(
-        stops[i].lon
-      )
-    ){
-
-      gpsStop=
-      stops[i];
-
-      gpsStopIndex=i;
-
-      break;
-
-    }
-
-  }
-
-  /*
-    There are no matched GPS points
-    remaining.
-
-    Don't claim the phone GPS is broken.
-  */
-
-  if(!gpsStop){
-
-    $("distance")
-    .textContent=
-    "Locating…";
-
-    $("driverDistance")
-    .textContent=
-    "No matched stop";
-
-    $("driverGps")
-    .textContent=
-    "GPS live · stop match unavailable";
-
-    return;
-
-  }
-
-  /*
-    ===========================================
-    DISTANCE
-    ===========================================
-  */
-
-  const gpsDistance=
+  const distance=
   distanceMetres(
 
-    latitude,
-    longitude,
+    lastPosition.latitude,
+    lastPosition.longitude,
 
-    gpsStop.lat,
-    gpsStop.lon
+    next.lat,
+    next.lon
 
   );
 
   $("distance")
   .textContent=
   formatDistance(
-    gpsDistance
+    distance
   );
 
   $("driverDistance")
   .textContent=
   formatDistance(
-    gpsDistance
+    distance
   );
 
-  $("driverGps")
-  .textContent=
-  "Following "+
-  gpsStop.name;
-
   /*
-    ===========================================
-    ANNOUNCEMENT
-
-    We announce the passenger stop,
-    not necessarily the fallback GPS point.
-    ===========================================
+    Announce next stop.
   */
 
   if(
-    gpsStopIndex===
-    passengerNextIndex &&
-    gpsDistance<=
+    distance<=
     ANNOUNCE_RADIUS &&
-    lastAnnouncement!==
-    passengerNextIndex
+    lastAnnounced!==
+    nextIndex
   ){
 
-    lastAnnouncement=
-    passengerNextIndex;
+    lastAnnounced=
+    nextIndex;
 
     announceNext();
 
   }
 
   /*
-    ===========================================
-    ARRIVAL
+    Record that we have approached
+    the stop.
 
-    If matched stop is the actual next stop,
-    advance normally.
-    ===========================================
+    This allows us to detect when the
+    bus has passed the coordinate.
   */
 
   if(
-    gpsStopIndex===
-    passengerNextIndex &&
-    gpsDistance<=
-    STOP_REACHED_RADIUS &&
+    distance<=
+    APPROACH_RADIUS
+  ){
+
+    approachedNext=true;
+
+  }
+
+  /*
+    Normal arrival detection.
+  */
+
+  const insideArrival=
+  distance<=
+  ARRIVAL_RADIUS;
+
+  /*
+    Passed-stop detection.
+
+    Useful if GPS accuracy means we
+    never actually get within 180 m.
+  */
+
+  let passedStop=false;
+
+  if(
+    approachedNext &&
+    Number.isFinite(
+      lastNextDistance
+    )
+  ){
+
+    if(
+      lastNextDistance<
+      PASS_DISTANCE &&
+      distance>
+      lastNextDistance+50
+    ){
+
+      passedStop=true;
+
+    }
+
+  }
+
+  /*
+    Extra safety:
+
+    Find nearest stop ahead of us.
+    If we are clearly sitting at an
+    upcoming stop, jump to it.
+  */
+
+  let nearestForward=-1;
+
+  let nearestForwardDistance=
+  Infinity;
+
+  for(
+    let i=currentIndex+1;
+    i<
+    Math.min(
+      stops.length,
+      currentIndex+7
+    );
+    i++
+  ){
+
+    const d=
+    distanceMetres(
+
+      lastPosition.latitude,
+      lastPosition.longitude,
+
+      stops[i].lat,
+      stops[i].lon
+
+    );
+
+    if(
+      d<
+      nearestForwardDistance
+    ){
+
+      nearestForwardDistance=
+      d;
+
+      nearestForward=
+      i;
+
+    }
+
+  }
+
+  const clearlyAtForwardStop=
+  nearestForward>
+  currentIndex+1 &&
+  nearestForwardDistance<=
+  130;
+
+  /*
+    Advance.
+  */
+
+  if(
+    (
+      insideArrival ||
+      passedStop ||
+      clearlyAtForwardStop
+    )
+    &&
     Date.now()-
-    lastAutoAdvance>
+    lastAutoChange>
     5000
   ){
 
-    lastAutoAdvance=
+    lastAutoChange=
     Date.now();
 
-    currentIndex=
-    passengerNextIndex;
+    if(
+      clearlyAtForwardStop
+    ){
 
-    stopRequest=false;
+      currentIndex=
+      nearestForward;
 
-    $("stopping")
+    }else{
+
+      currentIndex=
+      nextIndex;
+
+    }
+
+    lastNextDistance=null;
+
+    approachedNext=false;
+
+    lastAnnounced=-1;
+
+    stopRequested=false;
+
+    $("stopRequest")
     .classList
     .remove(
       "show"
@@ -2716,12 +2117,37 @@ function processGPS(){
 
     render();
 
+    /*
+      Announce the next stop a few
+      seconds after leaving this one.
+    */
+
     if(
-      currentIndex===
+      currentIndex<
       stops.length-1
     ){
 
-      announceTerminus();
+      setTimeout(
+        ()=>{
+
+          if(
+            currentIndex<
+            stops.length-1
+          ){
+
+            announceNext();
+
+          }
+
+        },
+        4000
+      );
+
+    }
+
+    else{
+
+      terminusAnnouncement();
 
     }
 
@@ -2729,52 +2155,8 @@ function processGPS(){
 
   }
 
-  /*
-    ===========================================
-    FALLBACK MODE
-
-    If some intermediate passenger stops failed
-    to match GPS, don't get stuck.
-
-    When we reach the next matched stop,
-    move the journey forward to that stop.
-    ===========================================
-  */
-
-  if(
-    gpsStopIndex>
-    passengerNextIndex &&
-    gpsDistance<=
-    STOP_REACHED_RADIUS &&
-    Date.now()-
-    lastAutoAdvance>
-    5000
-  ){
-
-    lastAutoAdvance=
-    Date.now();
-
-    currentIndex=
-    gpsStopIndex;
-
-    lastAnnouncement=-1;
-
-    stopRequest=false;
-
-    $("stopping")
-    .classList
-    .remove(
-      "show"
-    );
-
-    render();
-
-    $("message")
-    .textContent=
-    "GPS position updated: "+
-    gpsStop.name;
-
-  }
+  lastNextDistance=
+  distance;
 
 }
 
@@ -2792,19 +2174,19 @@ function distanceMetres(
   const earth=
   6371000;
 
-  const radians=
+  const rad=
   value=>
   value*
   Math.PI/
   180;
 
   const dLat=
-  radians(
+  rad(
     lat2-lat1
   );
 
   const dLon=
-  radians(
+  rad(
     lon2-lon1
   );
 
@@ -2813,11 +2195,11 @@ function distanceMetres(
   Math.sin(dLat/2)
   +
   Math.cos(
-    radians(lat1)
+    rad(lat1)
   )
   *
   Math.cos(
-    radians(lat2)
+    rad(lat2)
   )
   *
   Math.sin(dLon/2)
@@ -2827,32 +2209,20 @@ function distanceMetres(
   return earth*
   2*
   Math.atan2(
-
     Math.sqrt(a),
-
     Math.sqrt(1-a)
-
   );
 
 }
 
 function formatDistance(distance){
 
-  if(
-    !Number.isFinite(distance)
-  ){
-
-    return "—";
-
-  }
-
   if(distance<1000){
 
     return (
       Math.round(
         distance/10
-      )*
-      10
+      )*10
     )+
     " m";
 
@@ -2867,16 +2237,16 @@ function formatDistance(distance){
 }
 
 /* =========================================================
-   GPS STATUS
+   GPS UI
 ========================================================= */
 
-function setGPSMessage(
+function setGPS(
   text,
   state
 ){
 
   const box=
-  $("gpsStatus");
+  $("gps");
 
   box.textContent=
   text;
@@ -2889,7 +2259,8 @@ function setGPSMessage(
 
   if(state){
 
-    box.classList.add(
+    box.classList
+    .add(
       state
     );
 
@@ -2898,92 +2269,31 @@ function setGPSMessage(
 }
 
 /* =========================================================
-   RELOCATE GPS
+   MANUAL RELOCATE
 ========================================================= */
 
-function relocateGPS(){
+function relocate(){
 
-  if(!lastPosition){
+  gpsLocated=false;
 
-    startGPS();
+  lastNextDistance=null;
 
-    return;
+  approachedNext=false;
 
-  }
+  locateOnRoute();
 
-  let nearest=-1;
-
-  let best=
-  Infinity;
-
-  stops.forEach(
-    (stop,index)=>{
-
-      if(
-        !Number.isFinite(stop.lat) ||
-        !Number.isFinite(stop.lon)
-      ){
-
-        return;
-
-      }
-
-      const distance=
-      distanceMetres(
-
-        lastPosition.latitude,
-        lastPosition.longitude,
-
-        stop.lat,
-        stop.lon
-
-      );
-
-      if(distance<best){
-
-        best=distance;
-
-        nearest=index;
-
-      }
-
-    }
-  );
-
-  if(
-    nearest>=0 &&
-    best<
-    MAX_INITIAL_ROUTE_DISTANCE
-  ){
-
-    currentIndex=
-    nearest;
-
-    lastAnnouncement=-1;
-
-    initialGPSLocated=true;
-
-    render();
-
-    $("message")
-    .textContent=
-    "GPS re-located at "+
-    stops[nearest].name;
-
-  }
+  processGPS();
 
 }
 
 /* =========================================================
-   DISPLAY RENDER
+   RENDER
 ========================================================= */
 
 function render(){
 
   if(!stops.length){
-
     return;
-
   }
 
   currentIndex=
@@ -2996,35 +2306,21 @@ function render(){
   );
 
   const current=
-  stops[currentIndex];
+  stops[
+    currentIndex
+  ];
 
   const next=
-  stops[currentIndex+1];
+  stops[
+    currentIndex+1
+  ];
 
   const following=
-  stops[currentIndex+2];
+  stops[
+    currentIndex+2
+  ];
 
-  if(!next){
-
-    $("nextStop")
-    .textContent=
-    "Terminus";
-
-    $("scheduled")
-    .textContent=
-    current.time;
-
-    $("then")
-    .textContent=
-    "—";
-
-    $("distance")
-    .textContent=
-    "Arriving";
-
-  }
-
-  else{
+  if(next){
 
     $("nextStop")
     .textContent=
@@ -3034,11 +2330,29 @@ function render(){
     .textContent=
     next.time;
 
-    $("then")
+    $("thenStop")
     .textContent=
     following
     ?following.name
     :"Terminus";
+
+  }else{
+
+    $("nextStop")
+    .textContent=
+    "Terminus";
+
+    $("scheduled")
+    .textContent=
+    current.time;
+
+    $("thenStop")
+    .textContent=
+    "—";
+
+    $("distance")
+    .textContent=
+    "Arriving";
 
   }
 
@@ -3055,7 +2369,7 @@ function render(){
 }
 
 /* =========================================================
-   UPCOMING STOPS
+   UPCOMING
 ========================================================= */
 
 function renderUpcoming(){
@@ -3066,12 +2380,10 @@ function renderUpcoming(){
   box.innerHTML="";
 
   stops
-
   .slice(
     currentIndex+1,
     currentIndex+10
   )
-
   .forEach(
     (stop,index)=>{
 
@@ -3122,60 +2434,57 @@ function renderUpcoming(){
 }
 
 /* =========================================================
-   EARLY / LATE STATUS
+   TIMING STATUS
 ========================================================= */
 
 function updateRunning(){
 
   if(!stops.length){
-
     return;
-
   }
 
   const current=
-  stops[currentIndex];
+  stops[
+    currentIndex
+  ];
 
   const now=
   new Date();
 
-  let nowMinutes=
+  let currentMinutes=
   now.getHours()*60+
   now.getMinutes();
 
   let scheduled=
-  minutes(
+  timeMinutes(
     current.time
   );
 
   let difference=
-  nowMinutes-
+  currentMinutes-
   scheduled;
 
   if(difference>720){
-
     difference-=1440;
-
   }
 
   if(difference<-720){
-
     difference+=1440;
-
   }
 
-  const box=
-  $("lateness");
-
   if(
-    Math.abs(difference)<=1
+    Math.abs(
+      difference
+    )<=1
   ){
 
-    box.textContent=
+    $("running")
+    .textContent=
     "ON TIME";
 
-    box.style.color=
-    "#80dda0";
+    $("running")
+    .style.color=
+    "#78dc9b";
 
   }
 
@@ -3183,33 +2492,39 @@ function updateRunning(){
     difference>1
   ){
 
-    box.textContent=
+    $("running")
+    .textContent=
     difference+
     " MIN LATE";
 
-    box.style.color=
+    $("running")
+    .style.color=
     "#ffb347";
 
   }
 
   else{
 
-    box.textContent=
-    Math.abs(difference)+
+    $("running")
+    .textContent=
+    Math.abs(
+      difference
+    )+
     " MIN EARLY";
 
-    box.style.color=
-    "#ffce47";
+    $("running")
+    .style.color=
+    "#ffd05c";
 
   }
 
 }
 
 /* =========================================================
-   MANUAL STOP CONTROLS
+   MANUAL STOP SELECTOR
 ========================================================= */
 
-function buildManualStops(){
+function createStopSelector(){
 
   const select=
   $("manualStop");
@@ -3241,16 +2556,20 @@ function buildManualStops(){
 
 }
 
-function manualChange(){
+function manualStopChanged(){
 
   currentIndex=
   Number(
     $("manualStop").value
   );
 
-  lastAnnouncement=-1;
+  gpsLocated=true;
 
-  initialGPSLocated=true;
+  lastNextDistance=null;
+
+  approachedNext=false;
+
+  lastAnnounced=-1;
 
   render();
 
@@ -3265,9 +2584,11 @@ function nextStopManual(){
 
     currentIndex++;
 
-    lastAnnouncement=-1;
+    lastNextDistance=null;
 
-    initialGPSLocated=true;
+    approachedNext=false;
+
+    lastAnnounced=-1;
 
     render();
 
@@ -3277,15 +2598,15 @@ function nextStopManual(){
 
 function previousStop(){
 
-  if(
-    currentIndex>0
-  ){
+  if(currentIndex>0){
 
     currentIndex--;
 
-    lastAnnouncement=-1;
+    lastNextDistance=null;
 
-    initialGPSLocated=true;
+    approachedNext=false;
+
+    lastAnnounced=-1;
 
     render();
 
@@ -3294,7 +2615,7 @@ function previousStop(){
 }
 
 /* =========================================================
-   SPEECH
+   ANNOUNCEMENTS
 ========================================================= */
 
 function speak(text){
@@ -3305,94 +2626,46 @@ function speak(text){
       in window
     )
   ){
-
     return;
-
   }
 
   speechSynthesis.cancel();
 
-  const utterance=
+  const speech=
   new SpeechSynthesisUtterance(
     text
   );
 
-  utterance.lang=
+  speech.lang=
   "en-GB";
 
-  utterance.rate=
+  speech.rate=
   .94;
-
-  utterance.pitch=
-  1;
 
   const voice=
   speechSynthesis
   .getVoices()
   .find(
     voice=>
-    voice.lang==="en-GB"
+    voice.lang===
+    "en-GB"
   );
 
   if(voice){
 
-    utterance.voice=
+    speech.voice=
     voice;
 
   }
 
-  speechSynthesis.speak(
-    utterance
+  speechSynthesis
+  .speak(
+    speech
   );
 
 }
 
-/* =========================================================
-   ANNOUNCE NEXT STOP
-========================================================= */
-
-function announceNext(force=false){
-
-  const next=
-  stops[currentIndex+1];
-
-  if(!next){
-
-    return;
-
-  }
-
-  if(
-    !force &&
-    lastAnnouncement===
-    currentIndex+1
-  ){
-
-    return;
-
-  }
-
-  lastAnnouncement=
-  currentIndex+1;
-
-  speak(
-    "The next stop is "+
-    cleanAnnouncementName(
-      next.name
-    )+
-    "."
-  );
-
-  $("message")
-  .textContent=
-  "Next stop: "+
-  next.name+
-  " · scheduled "+
-  next.time;
-
-}
-
-function cleanAnnouncementName(name){
+function cleanStopName(name){
 
   return name
 
@@ -3420,9 +2693,45 @@ function cleanAnnouncementName(name){
 
 }
 
-/* =========================================================
-   WELCOME
-========================================================= */
+function announceNext(force=false){
+
+  const next=
+  stops[
+    currentIndex+1
+  ];
+
+  if(!next){
+    return;
+  }
+
+  if(
+    !force &&
+    lastAnnounced===
+    currentIndex+1
+  ){
+    return;
+  }
+
+  lastAnnounced=
+  currentIndex+1;
+
+  const text=
+  "The next stop is "+
+  cleanStopName(
+    next.name
+  )+
+  ".";
+
+  speak(text);
+
+  $("message")
+  .textContent=
+  "Next stop: "+
+  next.name+
+  " · "+
+  next.time;
+
+}
 
 function welcome(){
 
@@ -3444,11 +2753,7 @@ function welcome(){
 
 }
 
-/* =========================================================
-   TERMINUS
-========================================================= */
-
-function announceTerminus(){
+function terminusAnnouncement(){
 
   const destination=
   direction==="out"
@@ -3470,30 +2775,30 @@ function announceTerminus(){
 }
 
 /* =========================================================
-   BUS STOPPING
+   STOP REQUEST
 ========================================================= */
 
-function toggleStopping(){
+function toggleStopRequest(){
 
-  stopRequest=
-  !stopRequest;
+  stopRequested=
+  !stopRequested;
 
-  $("stopping")
+  $("stopRequest")
   .classList
   .toggle(
     "show",
-    stopRequest
+    stopRequested
   );
 
 }
 
 /* =========================================================
-   PANEL
+   DRIVER
 ========================================================= */
 
-function togglePanel(){
+function toggleDriver(){
 
-  $("panel")
+  $("driver")
   .classList
   .toggle(
     "open"
@@ -3505,7 +2810,7 @@ function togglePanel(){
    FULLSCREEN
 ========================================================= */
 
-async function fullScreen(){
+async function toggleFullscreen(){
 
   try{
 
@@ -3526,9 +2831,7 @@ async function fullScreen(){
 
     }
 
-  }
-
-  catch(error){}
+  }catch(error){}
 
 }
 
@@ -3540,27 +2843,21 @@ function restartJourney(){
 
   currentIndex=0;
 
-  lastAnnouncement=-1;
+  gpsLocated=false;
 
-  lastAutoAdvance=0;
+  lastNextDistance=null;
 
-  initialGPSLocated=false;
+  approachedNext=false;
 
-  stopRequest=false;
+  lastAnnounced=-1;
 
-  $("stopping")
-  .classList
-  .remove(
-    "show"
-  );
+  lastAutoChange=0;
 
   render();
 
-  $("message")
-  .textContent=
-  "Journey restarted.";
-
   if(lastPosition){
+
+    locateOnRoute();
 
     processGPS();
 
@@ -3570,92 +2867,3 @@ function restartJourney(){
 
 /* =========================================================
    END
-========================================================= */
-
-function endJourney(){
-
-  if(
-    watchID!==null
-  ){
-
-    navigator.geolocation
-    .clearWatch(
-      watchID
-    );
-
-    watchID=null;
-
-  }
-
-  $("panel")
-  .classList
-  .remove(
-    "open"
-  );
-
-  $("display")
-  .style.display=
-  "none";
-
-  $("gear")
-  .style.display=
-  "none";
-
-  $("gpsStatus")
-  .style.display=
-  "none";
-
-  $("setup")
-  .style.display=
-  "flex";
-
-  lastPosition=null;
-
-  stops=[];
-
-  currentIndex=0;
-
-  initialGPSLocated=false;
-
-}
-
-/* =========================================================
-   CLOCK
-========================================================= */
-
-function updateClock(){
-
-  $("clock")
-  .textContent=
-  new Date()
-  .toLocaleTimeString(
-    "en-GB",
-    {
-      hour:"2-digit",
-      minute:"2-digit"
-    }
-  );
-
-}
-
-updateClock();
-
-setInterval(
-()=>{
-
-  updateClock();
-
-  if(stops.length){
-
-    updateRunning();
-
-  }
-
-},
-1000
-);
-
-</script>
-
-</body>
-</html>
