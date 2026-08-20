@@ -1,370 +1,2279 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>BusBase Onboard</title>
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover"
-  >
+<style>
+*{
+  box-sizing:border-box;
+}
 
-  <meta
-    name="theme-color"
-    content="#101419"
-  >
+html,body{
+  margin:0;
+  width:100%;
+  min-height:100%;
+  font-family:Arial,Helvetica,sans-serif;
+  background:#101214;
+  color:#111;
+}
 
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+button,
+select,
+input{
+  font:inherit;
+}
 
-  <title>Onboard Passenger Information</title>
+button{
+  cursor:pointer;
+}
 
-  <link rel="stylesheet" href="style.css?v=lynx-pis-v7">
+body{
+  overflow-x:hidden;
+}
+
+/* =========================
+   SETUP SCREEN
+========================= */
+
+#setupScreen{
+  min-height:100vh;
+  background:#eceeed;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+}
+
+.setup-shell{
+  width:min(760px,100%);
+  background:#fff;
+  border:1px solid #d5d8d7;
+}
+
+.setup-header{
+  background:#15191b;
+  color:#fff;
+  padding:24px 28px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+}
+
+.setup-brand{
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+
+.logo-block{
+  background:#d72335;
+  color:#fff;
+  font-weight:900;
+  font-size:25px;
+  padding:12px 16px;
+  letter-spacing:-1px;
+}
+
+.setup-header small{
+  display:block;
+  color:#c7cdcf;
+  margin-top:4px;
+}
+
+.setup-body{
+  padding:30px 28px 32px;
+}
+
+.setup-body h1{
+  margin:0 0 6px;
+  font-size:30px;
+  letter-spacing:-1px;
+}
+
+.setup-body .lead{
+  margin:0 0 28px;
+  color:#646b6e;
+  line-height:1.5;
+}
+
+.form-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+}
+
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.field.full{
+  grid-column:1/-1;
+}
+
+.field label{
+  text-transform:uppercase;
+  letter-spacing:.7px;
+  font-weight:800;
+  font-size:12px;
+  color:#444b4e;
+}
+
+.field select,
+.field input{
+  width:100%;
+  min-height:50px;
+  background:#fff;
+  border:1px solid #aeb4b6;
+  border-radius:0;
+  padding:0 14px;
+  outline:none;
+}
+
+.field select:focus,
+.field input:focus{
+  border-color:#111;
+  box-shadow:0 0 0 1px #111;
+}
+
+.start-btn{
+  margin-top:26px;
+  width:100%;
+  min-height:56px;
+  border:0;
+  background:#d72335;
+  color:#fff;
+  font-weight:900;
+  font-size:17px;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+}
+
+.start-btn:hover{
+  background:#bd1728;
+}
+
+/* =========================
+   PASSENGER DISPLAY
+========================= */
+
+#passengerScreen{
+  min-height:100vh;
+  display:none;
+  background:#f7f7f4;
+  position:relative;
+  overflow:hidden;
+}
+
+.display-header{
+  min-height:108px;
+  background:#171a1c;
+  color:#fff;
+  display:grid;
+  grid-template-columns:132px 1fr auto;
+  align-items:stretch;
+}
+
+.route-box{
+  background:#d72335;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:58px;
+  font-weight:900;
+  letter-spacing:-3px;
+}
+
+.destination-box{
+  padding:16px 28px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  min-width:0;
+}
+
+.destination-label{
+  font-size:12px;
+  color:#aeb5b7;
+  text-transform:uppercase;
+  letter-spacing:1.6px;
+  font-weight:700;
+  margin-bottom:4px;
+}
+
+.destination{
+  font-size:37px;
+  font-weight:800;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  letter-spacing:-1px;
+}
+
+.clock-box{
+  min-width:190px;
+  padding:18px 24px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:flex-end;
+  border-left:1px solid #363a3d;
+}
+
+.clock{
+  font-size:32px;
+  font-weight:800;
+  font-variant-numeric:tabular-nums;
+}
+
+.running-status{
+  margin-top:4px;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.8px;
+  color:#9ed4a8;
+  font-weight:800;
+}
+
+.display-main{
+  min-height:calc(100vh - 108px);
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 360px;
+}
+
+.next-area{
+  padding:50px 52px 110px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  min-width:0;
+}
+
+.eyebrow{
+  font-size:20px;
+  text-transform:uppercase;
+  letter-spacing:2px;
+  font-weight:900;
+  color:#d72335;
+  margin-bottom:10px;
+}
+
+.next-stop{
+  font-size:clamp(58px,8vw,116px);
+  line-height:.93;
+  letter-spacing:-4px;
+  font-weight:900;
+  overflow-wrap:anywhere;
+  max-width:1000px;
+}
+
+.next-meta{
+  margin-top:34px;
+  border-top:2px solid #222;
+  padding-top:22px;
+  display:flex;
+  align-items:flex-start;
+  gap:42px;
+  flex-wrap:wrap;
+}
+
+.meta-group{
+  min-width:180px;
+}
+
+.meta-label{
+  text-transform:uppercase;
+  font-size:11px;
+  letter-spacing:1.3px;
+  font-weight:900;
+  color:#757b7c;
+  margin-bottom:4px;
+}
+
+.meta-value{
+  font-size:21px;
+  font-weight:800;
+}
+
+.stops-panel{
+  border-left:1px solid #d4d6d3;
+  background:#fff;
+  padding:34px 26px;
+}
+
+.stops-panel-title{
+  text-transform:uppercase;
+  letter-spacing:1.3px;
+  font-size:13px;
+  font-weight:900;
+  color:#686e70;
+  margin-bottom:26px;
+}
+
+.stop-list{
+  position:relative;
+}
+
+.stop-list:before{
+  content:"";
+  position:absolute;
+  left:10px;
+  top:14px;
+  bottom:18px;
+  width:2px;
+  background:#c6c9c7;
+}
+
+.stop-item{
+  position:relative;
+  padding:0 0 26px 38px;
+  font-size:18px;
+  line-height:1.2;
+  font-weight:700;
+}
+
+.stop-item:before{
+  content:"";
+  position:absolute;
+  left:4px;
+  top:4px;
+  width:14px;
+  height:14px;
+  background:#fff;
+  border:3px solid #8a9092;
+  border-radius:50%;
+  z-index:1;
+}
+
+.stop-item.active{
+  font-size:22px;
+  font-weight:900;
+}
+
+.stop-item.active:before{
+  background:#d72335;
+  border-color:#d72335;
+}
+
+.stop-item.destination-stop{
+  color:#d72335;
+}
+
+/* =========================
+   INFORMATION BAR
+========================= */
+
+.info-bar{
+  position:absolute;
+  bottom:0;
+  left:0;
+  right:0;
+  min-height:72px;
+  background:#171a1c;
+  color:#fff;
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  z-index:20;
+}
+
+.stop-request{
+  display:none;
+  align-self:stretch;
+  padding:0 28px;
+  background:#f1c40f;
+  color:#151515;
+  align-items:center;
+  font-size:21px;
+  font-weight:900;
+  letter-spacing:.3px;
+}
+
+.stop-request.active{
+  display:flex;
+}
+
+.info-message{
+  padding:14px 28px;
+  font-size:18px;
+  font-weight:700;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+
+.vehicle-info{
+  padding:0 24px;
+  font-size:12px;
+  color:#aeb4b6;
+  text-align:right;
+}
+
+/* =========================
+   TAKEOVER SCREENS
+========================= */
+
+.takeover{
+  position:absolute;
+  inset:108px 0 72px;
+  background:#f7f7f4;
+  z-index:15;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:60px;
+}
+
+.takeover.active{
+  display:flex;
+}
+
+.takeover-inner{
+  max-width:1000px;
+}
+
+.takeover-kicker{
+  font-size:20px;
+  text-transform:uppercase;
+  letter-spacing:2px;
+  font-weight:900;
+  margin-bottom:14px;
+}
+
+.takeover-title{
+  font-size:clamp(52px,8vw,112px);
+  line-height:.95;
+  letter-spacing:-4px;
+  font-weight:900;
+}
+
+.takeover-text{
+  margin-top:26px;
+  font-size:25px;
+  color:#565d60;
+}
+
+#diversionTakeover{
+  background:#b71d2a;
+  color:#fff;
+}
+
+#diversionTakeover .takeover-text{
+  color:#fff;
+}
+
+#continuationTakeover{
+  background:#15191b;
+  color:#fff;
+}
+
+.continue-route{
+  display:inline-block;
+  margin-top:28px;
+  background:#d72335;
+  color:#fff;
+  padding:14px 24px;
+  font-size:54px;
+  font-weight:900;
+}
+
+#terminusTakeover{
+  background:#f5d028;
+}
+
+/* =========================
+   GPS / DRIVER BUTTON
+========================= */
+
+.system-controls{
+  position:fixed;
+  top:122px;
+  right:16px;
+  z-index:40;
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+.icon-btn{
+  border:1px solid #c8ccca;
+  background:rgba(255,255,255,.94);
+  width:48px;
+  height:48px;
+  font-size:21px;
+}
+
+.gps-state{
+  position:fixed;
+  left:16px;
+  top:122px;
+  z-index:40;
+  background:#fff;
+  border-left:5px solid #d72335;
+  padding:10px 14px;
+  font-size:12px;
+  font-weight:800;
+}
+
+.gps-state.ok{
+  border-left-color:#2c9a48;
+}
+
+/* =========================
+   DRIVER PANEL
+========================= */
+
+#driverPanel{
+  position:fixed;
+  top:0;
+  right:0;
+  bottom:0;
+  width:min(440px,100%);
+  background:#161a1c;
+  color:#fff;
+  z-index:100;
+  transform:translateX(100%);
+  transition:transform .2s ease;
+  overflow-y:auto;
+  box-shadow:-10px 0 30px rgba(0,0,0,.2);
+}
+
+#driverPanel.open{
+  transform:translateX(0);
+}
+
+.driver-head{
+  min-height:74px;
+  padding:0 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  border-bottom:1px solid #353a3c;
+}
+
+.driver-head h2{
+  margin:0;
+  font-size:20px;
+}
+
+.close-btn{
+  width:40px;
+  height:40px;
+  border:1px solid #4d5457;
+  background:transparent;
+  color:#fff;
+  font-size:22px;
+}
+
+.driver-content{
+  padding:20px;
+}
+
+.driver-section{
+  border-bottom:1px solid #343a3c;
+  padding-bottom:20px;
+  margin-bottom:20px;
+}
+
+.driver-section h3{
+  margin:0 0 14px;
+  text-transform:uppercase;
+  color:#9ea6a9;
+  font-size:12px;
+  letter-spacing:1.3px;
+}
+
+.driver-stats{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.stat{
+  background:#202527;
+  padding:14px;
+}
+
+.stat-label{
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.9px;
+  color:#949c9f;
+  margin-bottom:4px;
+}
+
+.stat-value{
+  font-weight:800;
+  font-size:16px;
+}
+
+.driver-buttons{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+}
+
+.driver-btn{
+  min-height:50px;
+  border:1px solid #485053;
+  background:#22282a;
+  color:#fff;
+  font-weight:800;
+  padding:10px;
+}
+
+.driver-btn:hover{
+  background:#303739;
+}
+
+.driver-btn.red{
+  background:#a51b28;
+  border-color:#a51b28;
+}
+
+.driver-btn.amber{
+  background:#b88100;
+  border-color:#b88100;
+}
+
+.style-selector{
+  display:flex;
+  gap:8px;
+}
+
+.style-selector button{
+  flex:1;
+  min-height:44px;
+  background:#23282a;
+  color:#fff;
+  border:1px solid #4a5154;
+}
+
+.style-selector button.active{
+  background:#d72335;
+  border-color:#d72335;
+}
+
+/* =========================
+   COMPACT MODE
+========================= */
+
+body.compact #passengerScreen{
+  min-height:300px;
+}
+
+body.compact .display-main{
+  min-height:192px;
+  grid-template-columns:1fr;
+}
+
+body.compact .display-header{
+  min-height:82px;
+  grid-template-columns:100px 1fr auto;
+}
+
+body.compact .route-box{
+  font-size:44px;
+}
+
+body.compact .destination{
+  font-size:27px;
+}
+
+body.compact .clock{
+  font-size:25px;
+}
+
+body.compact .next-area{
+  padding:28px 36px 80px;
+}
+
+body.compact .next-stop{
+  font-size:52px;
+}
+
+body.compact .next-meta{
+  margin-top:18px;
+  padding-top:12px;
+}
+
+body.compact .stops-panel{
+  display:none;
+}
+
+body.compact .takeover{
+  inset:82px 0 72px;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:800px){
+  .form-grid{
+    grid-template-columns:1fr;
+  }
+
+  .field.full{
+    grid-column:auto;
+  }
+
+  .display-header{
+    min-height:82px;
+    grid-template-columns:86px 1fr auto;
+  }
+
+  .route-box{
+    font-size:39px;
+  }
+
+  .destination-box{
+    padding:12px 14px;
+  }
+
+  .destination-label{
+    font-size:9px;
+  }
+
+  .destination{
+    font-size:22px;
+  }
+
+  .clock-box{
+    min-width:104px;
+    padding:12px;
+  }
+
+  .clock{
+    font-size:21px;
+  }
+
+  .running-status{
+    font-size:9px;
+  }
+
+  .display-main{
+    display:block;
+  }
+
+  .next-area{
+    min-height:calc(100vh - 82px);
+    padding:50px 24px 110px;
+    justify-content:flex-start;
+  }
+
+  .eyebrow{
+    font-size:15px;
+    margin-top:25px;
+  }
+
+  .next-stop{
+    font-size:clamp(48px,14vw,76px);
+    letter-spacing:-2px;
+  }
+
+  .next-meta{
+    margin-top:28px;
+    gap:22px;
+  }
+
+  .stops-panel{
+    display:none;
+  }
+
+  .info-bar{
+    min-height:74px;
+    grid-template-columns:1fr;
+  }
+
+  .stop-request{
+    min-height:50px;
+    justify-content:center;
+  }
+
+  .info-message{
+    font-size:14px;
+    padding:14px 18px;
+  }
+
+  .vehicle-info{
+    display:none;
+  }
+
+  .takeover{
+    inset:82px 0 74px;
+    padding:32px 20px;
+  }
+
+  .takeover-title{
+    font-size:56px;
+    letter-spacing:-2px;
+  }
+
+  .takeover-text{
+    font-size:20px;
+  }
+
+  .system-controls{
+    top:auto;
+    bottom:88px;
+  }
+
+  .gps-state{
+    display:none;
+  }
+}
+
+@media(max-width:500px){
+  .setup-header{
+    padding:20px;
+  }
+
+  .setup-body{
+    padding:24px 20px;
+  }
+
+  .logo-block{
+    font-size:19px;
+  }
+
+  .setup-body h1{
+    font-size:25px;
+  }
+
+  .clock-box{
+    display:none;
+  }
+
+  .display-header{
+    grid-template-columns:78px 1fr;
+  }
+}
+</style>
 </head>
 
 <body>
-  <noscript>
-    <div class="noscript-warning">
-      JavaScript must be enabled to use the onboard passenger information
-      system.
-    </div>
-  </noscript>
 
-  <main id="app" class="app-shell">
+<!-- =========================
+     JOURNEY SETUP
+========================= -->
 
-    <!-- =========================================================
-         START / DRIVER SETUP SCREEN
-         ========================================================= -->
-    <section id="setupScreen" class="screen setup-screen">
-      <div class="setup-card">
+<section id="setupScreen">
 
-        <header class="setup-header">
-          <p class="eyebrow">Passenger information system</p>
-          <h1>Start a journey</h1>
-          <p class="setup-description">
-            Select the route, direction and journey before enabling GPS.
-          </p>
-        </header>
+  <div class="setup-shell">
 
-        <form id="journeyForm" class="journey-form" autocomplete="off">
+    <div class="setup-header">
+      <div class="setup-brand">
+        <div class="logo-block">BUSBASE</div>
 
-          <label class="field">
-            <span class="field-label">Route</span>
-            <select id="routeSelect" required>
-              <option value="">Select route</option>
-              <option value="33">33</option>
-              <option value="33A">33A</option>
-              <option value="33B">33B</option>
-              <option value="33C">33C</option>
-              <option value="34">34</option>
-              <option value="35">35</option>
-              <option value="36">36 Coastliner</option>
-              <option value="37">37</option>
-              <option value="38">38</option>
-              <option value="39">39</option>
-              <option value="41">41</option>
-              <option value="42">42</option>
-              <option value="43">43</option>
-              <option value="44">44 the loop</option>
-              <option value="46">46</option>
-              <option value="X46">X46</option>
-              <option value="48">48</option>
-              <option value="49">49</option>
-              <option value="49A">49A</option>
-              <option value="48A">48A</option>
-              <option value="54">54</option>
-              <option value="54A">54A</option>
-              <option value="60">60</option>
-              <option value="414">414</option>
-              <option value="415">415</option>
-            </select>
-          </label>
-
-          <label class="field">
-            <span class="field-label">Direction</span>
-            <select id="directionSelect" required disabled>
-              <option value="">Select direction</option>
-            </select>
-          </label>
-
-          <label class="field">
-            <span class="field-label">Journey</span>
-            <select id="journeySelect" required disabled>
-              <option value="">Select journey</option>
-            </select>
-          </label>
-
-          <label class="field">
-            <span class="field-label">Vehicle</span>
-            <input
-              id="vehicleInput"
-              type="text"
-              inputmode="text"
-              placeholder="Optional fleet number or registration"
-            >
-          </label>
-
-          <div id="setupMessage" class="setup-message" role="status"></div>
-
-          <button id="startJourneyButton" class="primary-button" type="submit">
-            Start journey
-          </button>
-
-        </form>
-      </div>
-    </section>
-
-
-    <!-- =========================================================
-         PASSENGER DISPLAY — modern, high-contrast layout
-         ========================================================= -->
-    <section id="passengerScreen" class="screen passenger-screen is-hidden" aria-live="polite">
-
-      <header class="service-header">
-        <div id="routeNumber" class="route-number">36</div>
-
-        <div class="destination-block">
-          <span class="destination-label">To</span>
-          <strong id="destinationName" class="destination-name">Hunstanton</strong>
-        </div>
-
-        <div class="header-status" aria-label="Live journey information">
-          <div class="header-status-item">
-            <span class="status-icon" aria-hidden="true">◷</span>
-            <time id="currentTime" class="clock" datetime="">--:--</time>
-          </div>
-
-          <div id="runningStatus" class="header-status-item running-status running-on-time">
-            On time
-          </div>
-
-          <div class="header-status-item weather-status">
-            <span class="status-icon" aria-hidden="true">☁</span>
-            <span id="headerWeatherTemperature">--°C</span>
-            <span id="headerWeatherDescription" class="weather-description">Weather</span>
-          </div>
-
-          <button id="openDriverPanelButton" class="header-menu-button is-hidden" type="button" aria-label="Open driver controls" hidden tabindex="-1"></button>
-        </div>
-      </header>
-
-      <section id="normalDisplay" class="display-content">
-        <div class="main-information-column">
-          <div id="stopStatePanel" class="stop-state-panel">
-            <p id="stopStateLabel" class="stop-state-label">Next stop</p>
-            <h2 id="currentStopName" class="current-stop-name">Waiting for location</h2>
-          </div>
-
-          <div id="followingStopsPanel" class="following-panel">
-            <div class="following-arrow" aria-hidden="true">→</div>
-            <div class="following-copy">
-              <span class="following-label">Then</span>
-              <strong id="followingStopName">—</strong>
-              <span id="secondFollowingStopName" class="second-following-stop"></span>
-            </div>
-            <div class="following-eta">
-              <strong id="nextStopEta">Calculating…</strong>
-              <span id="nextStopDistance" class="extra-detail"></span>
-            </div>
-          </div>
-
-          <section class="passenger-extras" aria-label="Journey information">
-            <div class="eta-card passenger-card">
-              <span class="card-icon" aria-hidden="true">◷</span>
-              <div>
-                <span class="extra-label">Time to next stop</span>
-                <strong id="nextStopEtaMirror">Calculating…</strong>
-                <span id="nextStopDistanceMirror" class="extra-detail"></span>
-              </div>
-            </div>
-
-            <div id="informationCard" class="information-card passenger-card">
-              <span class="card-icon" aria-hidden="true">i</span>
-              <div>
-                <span id="informationCardLabel" class="extra-label">Journey information</span>
-                <strong id="informationCardTitle">Welcome aboard</strong>
-                <span id="informationCardText" class="extra-detail">Useful information will appear here during your journey.</span>
-              </div>
-            </div>
-
-            <div class="connection-card passenger-card">
-              <span class="card-icon" aria-hidden="true">⌖</span>
-              <div>
-                <span class="extra-label">Passenger information</span>
-                <strong>Alight and connection information</strong>
-                <span id="connectionMessage" class="extra-detail">Information will appear when relevant.</span>
-              </div>
-            </div>
-          </section>
-        </div>
-
-        <aside class="route-map-panel" aria-label="Upcoming stops">
-          <h3>Upcoming stops</h3>
-          <div id="routeMapStops" class="route-map-stops"></div>
-        </aside>
-      </section>
-
-      <section id="busStoppingDisplay" class="bus-stopping-display is-hidden" aria-live="assertive">
-        <div class="stop-request-icon" aria-hidden="true">STOP</div>
-        <div>BUS STOPPING</div>
-      </section>
-
-      <section id="continuationDisplay" class="special-display continuation-display is-hidden">
-        <p class="special-kicker">This bus continues as</p>
-        <div id="continuationRouteNumber" class="continuation-route-number">34</div>
-        <p class="special-destination">To <strong id="continuationDestination">King's Lynn</strong></p>
-        <p class="special-message">Please remain seated if you are continuing your journey.</p>
-      </section>
-
-      <section id="disruptionDisplay" class="special-display disruption-display is-hidden">
-        <p class="disruption-title">Service disruption</p>
-        <p class="disruption-message">This bus is currently on diversion.</p>
-        <p class="disruption-help">Please listen for driver announcements.</p>
-      </section>
-
-      <section id="terminusDisplay" class="special-display terminus-display is-hidden">
-        <p class="special-kicker">This bus terminates here</p>
-        <h2 id="terminusName" class="terminus-name">Hunstanton</h2>
-        <p class="special-message">Please take all belongings with you.</p>
-      </section>
-
-      <footer class="information-footer">
-        <button id="fullscreenButton" class="footer-button is-hidden" type="button">Full screen</button>
-
-        <div class="passenger-safety-message" aria-label="Passenger safety message">
-          <span class="speaker-symbol" aria-hidden="true">◖))</span>
-          <span>Please remain seated until the bus stops</span>
-        </div>
-
-        <div class="lynx-wordmark" aria-label="Lynx">LYNX</div>
-
-        <div id="gpsStatus" class="gps-status gps-waiting">
-          <span class="gps-dot" aria-hidden="true"></span>
-          <span id="gpsStatusText">Waiting for GPS</span>
-        </div>
-
-        <div id="vehicleDisplay" class="vehicle-display is-hidden"></div>
-      </footer>
-    </section>
-
-    <!-- =========================================================
-         DRIVER CONTROLS
-         Hidden during normal passenger use.
-         ========================================================= -->
-    <aside id="driverPanel" class="driver-panel is-hidden">
-
-      <div class="driver-panel-header">
         <div>
-          <p class="eyebrow">Driver controls</p>
-          <h2>Journey control</h2>
-        </div>
-
-        <button
-          id="closeDriverPanelButton"
-          class="icon-button"
-          type="button"
-          aria-label="Close driver controls"
-        >
-          ×
-        </button>
-      </div>
-
-
-      <div class="driver-status-grid">
-        <div class="driver-status-card">
-          <span>Current stop</span>
-          <strong id="driverCurrentStop">—</strong>
-        </div>
-
-        <div class="driver-status-card">
-          <span>Distance</span>
-          <strong id="driverDistance">—</strong>
-        </div>
-
-        <div class="driver-status-card">
-          <span>GPS accuracy</span>
-          <strong id="driverAccuracy">—</strong>
-        </div>
-
-        <div class="driver-status-card">
-          <span>Speed</span>
-          <strong id="driverSpeed">—</strong>
+          <strong>Onboard passenger information</strong>
+          <small>Journey setup</small>
         </div>
       </div>
+    </div>
 
+    <div class="setup-body">
 
-      <section class="layout-picker" aria-labelledby="layoutPickerTitle">
-        <p id="layoutPickerTitle" class="field-label">Passenger screen style</p>
-        <div class="layout-options">
-          <label class="layout-option">
-            <input type="radio" name="displayLayout" value="full" checked>
-            <span><strong>Full screen</strong><small>Large 22-inch passenger information display</small></span>
-          </label>
-          <label class="layout-option">
-            <input type="radio" name="displayLayout" value="slim">
-            <span><strong>Compact bar</strong><small>Short rectangular next-stop display</small></span>
-          </label>
+      <h1>Start a journey</h1>
+
+      <p class="lead">
+        Select the service and direction before starting the passenger display.
+      </p>
+
+      <div class="form-grid">
+
+        <div class="field">
+          <label for="routeSelect">Route</label>
+
+          <select id="routeSelect">
+            <option value="">Select route</option>
+            <option value="34">34</option>
+            <option value="35">35</option>
+            <option value="36">36</option>
+          </select>
         </div>
-      </section>
 
-      <div class="driver-button-grid">
-        <button id="previousStopButton" type="button">
-          Previous stop
-        </button>
+        <div class="field">
+          <label for="directionSelect">Direction</label>
 
-        <button id="nextStopButton" type="button">
-          Next stop
-        </button>
+          <select id="directionSelect">
+            <option value="">Select direction</option>
+          </select>
+        </div>
 
-        <button id="repeatAnnouncementButton" type="button">
-          Repeat announcement
-        </button>
+        <div class="field">
+          <label for="journeySelect">Journey</label>
 
-        <button id="toggleDiversionButton" type="button">
-          Toggle diversion
-        </button>
+          <select id="journeySelect">
+            <option value="">Select journey</option>
+          </select>
+        </div>
 
-        <button id="busStoppingButton" type="button">
-          Bus stopping
-        </button>
+        <div class="field">
+          <label for="vehicleInput">Vehicle</label>
 
-        <button id="restartJourneyButton" type="button">
-          Restart journey
-        </button>
+          <input
+            id="vehicleInput"
+            placeholder="Fleet number or registration"
+          >
+        </div>
 
-        <button id="endJourneyButton" class="danger-button" type="button">
-          End journey
-        </button>
       </div>
 
+      <button class="start-btn" id="startJourneyBtn">
+        Start journey
+      </button>
 
-      <div class="driver-gps-log">
-        <p class="field-label">Location status</p>
-        <pre id="gpsDebugOutput">No GPS fix received.</pre>
+    </div>
+
+  </div>
+
+</section>
+
+<!-- =========================
+     PASSENGER DISPLAY
+========================= -->
+
+<section id="passengerScreen">
+
+  <header class="display-header">
+
+    <div class="route-box" id="routeNumber">
+      36
+    </div>
+
+    <div class="destination-box">
+
+      <div class="destination-label">
+        Destination
+      </div>
+
+      <div class="destination" id="destination">
+        Hunstanton
+      </div>
+
+    </div>
+
+    <div class="clock-box">
+
+      <div class="clock" id="clock">
+        --:--
+      </div>
+
+      <div class="running-status" id="runningStatus">
+        ON TIME
+      </div>
+
+    </div>
+
+  </header>
+
+  <main class="display-main">
+
+    <div class="next-area">
+
+      <div class="eyebrow">
+        Next stop
+      </div>
+
+      <div class="next-stop" id="nextStop">
+        Waiting for location
+      </div>
+
+      <div class="next-meta">
+
+        <div class="meta-group">
+          <div class="meta-label">
+            Then
+          </div>
+
+          <div class="meta-value" id="thenStop">
+            —
+          </div>
+        </div>
+
+        <div class="meta-group">
+          <div class="meta-label">
+            Following
+          </div>
+
+          <div class="meta-value" id="followingStop">
+            —
+          </div>
+        </div>
+
+        <div class="meta-group">
+          <div class="meta-label">
+            Estimated arrival
+          </div>
+
+          <div class="meta-value" id="arrivalTime">
+            Calculating…
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <aside class="stops-panel">
+
+      <div class="stops-panel-title">
+        Upcoming stops
+      </div>
+
+      <div class="stop-list" id="stopList">
       </div>
 
     </aside>
 
-
-    <!-- Accessible announcement status. -->
-    <div
-      id="announcementStatus"
-      class="sr-only"
-      role="status"
-      aria-live="assertive"
-    ></div>
-
   </main>
 
+  <!-- BOTTOM INFORMATION BAR -->
 
-  <!-- Route files register their route data in window.LYNX_ROUTES. -->
-  <script>
-    window.LYNX_ROUTES = window.LYNX_ROUTES || {};
-  </script>
+  <div class="info-bar">
 
-  <script src="routes/route-network.js?v=lynx-pis-v7"></script>
-  <script src="routes/route-34.js"></script>
-  <script src="routes/route-36.js"></script>
-  <script src="app.js?v=lynx-pis-v7"></script>
+    <div class="stop-request" id="stopRequest">
+      ● BUS STOPPING
+    </div>
+
+    <div class="info-message" id="infoMessage">
+      Welcome aboard.
+    </div>
+
+    <div class="vehicle-info" id="vehicleDisplay">
+      BUSBASE
+    </div>
+
+  </div>
+
+  <!-- TAKEOVER: DIVERSION -->
+
+  <section class="takeover" id="diversionTakeover">
+
+    <div class="takeover-inner">
+
+      <div class="takeover-kicker">
+        Service disruption
+      </div>
+
+      <div class="takeover-title">
+        On diversion
+      </div>
+
+      <div class="takeover-text">
+        This bus is currently operating away from its normal route.
+        Please listen for driver announcements.
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- TAKEOVER: CONTINUATION -->
+
+  <section class="takeover" id="continuationTakeover">
+
+    <div class="takeover-inner">
+
+      <div class="takeover-kicker">
+        This bus continues as
+      </div>
+
+      <div class="continue-route" id="continuationRoute">
+        34
+      </div>
+
+      <div class="takeover-title" id="continuationDestination">
+        King's Lynn
+      </div>
+
+      <div class="takeover-text">
+        Please remain seated if you are continuing your journey.
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- TAKEOVER: TERMINUS -->
+
+  <section class="takeover" id="terminusTakeover">
+
+    <div class="takeover-inner">
+
+      <div class="takeover-kicker">
+        End of route
+      </div>
+
+      <div class="takeover-title" id="terminusName">
+        Hunstanton
+      </div>
+
+      <div class="takeover-text">
+        This bus terminates here.<br>
+        Please take all belongings with you.
+      </div>
+
+    </div>
+
+  </section>
+
+</section>
+
+<!-- =========================
+     SYSTEM BUTTONS
+========================= -->
+
+<div class="gps-state" id="gpsState">
+  GPS: WAITING
+</div>
+
+<div class="system-controls">
+
+  <button
+    class="icon-btn"
+    id="fullscreenBtn"
+    title="Full screen"
+  >
+    ⛶
+  </button>
+
+  <button
+    class="icon-btn"
+    id="driverBtn"
+    title="Driver controls"
+  >
+    ⚙
+  </button>
+
+</div>
+
+<!-- =========================
+     DRIVER PANEL
+========================= -->
+
+<aside id="driverPanel">
+
+  <div class="driver-head">
+
+    <h2>Journey control</h2>
+
+    <button class="close-btn" id="closeDriverBtn">
+      ×
+    </button>
+
+  </div>
+
+  <div class="driver-content">
+
+    <section class="driver-section">
+
+      <h3>Live information</h3>
+
+      <div class="driver-stats">
+
+        <div class="stat">
+          <div class="stat-label">Current stop</div>
+          <div class="stat-value" id="driverCurrentStop">—</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Distance</div>
+          <div class="stat-value" id="driverDistance">—</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">GPS accuracy</div>
+          <div class="stat-value" id="driverAccuracy">—</div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-label">Speed</div>
+          <div class="stat-value" id="driverSpeed">—</div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <section class="driver-section">
+
+      <h3>Passenger screen style</h3>
+
+      <div class="style-selector">
+
+        <button
+          id="fullStyleBtn"
+          class="active"
+        >
+          Full screen
+        </button>
+
+        <button id="compactStyleBtn">
+          Compact
+        </button>
+
+      </div>
+
+    </section>
+
+    <section class="driver-section">
+
+      <h3>Stop control</h3>
+
+      <div class="driver-buttons">
+
+        <button class="driver-btn" id="previousStopBtn">
+          Previous stop
+        </button>
+
+        <button class="driver-btn" id="nextStopBtn">
+          Next stop
+        </button>
+
+        <button class="driver-btn" id="repeatBtn">
+          Repeat announcement
+        </button>
+
+        <button class="driver-btn amber" id="stopRequestBtn">
+          Bus stopping
+        </button>
+
+      </div>
+
+    </section>
+
+    <section class="driver-section">
+
+      <h3>Journey messages</h3>
+
+      <div class="driver-buttons">
+
+        <button class="driver-btn" id="diversionBtn">
+          Toggle diversion
+        </button>
+
+        <button class="driver-btn" id="continuationBtn">
+          Continuation
+        </button>
+
+        <button class="driver-btn" id="terminusBtn">
+          Terminus
+        </button>
+
+        <button class="driver-btn" id="clearMessageBtn">
+          Clear message
+        </button>
+
+      </div>
+
+    </section>
+
+    <section>
+
+      <div class="driver-buttons">
+
+        <button class="driver-btn" id="restartBtn">
+          Restart journey
+        </button>
+
+        <button class="driver-btn red" id="endJourneyBtn">
+          End journey
+        </button>
+
+      </div>
+
+    </section>
+
+  </div>
+
+</aside>
+
+<script>
+
+/* ======================================================
+   ROUTE DATA
+
+   Replace these example arrays with your complete route
+   data if you already have it.
+====================================================== */
+
+const ROUTES = {
+
+  "34": {
+
+    directions: {
+
+      outbound: {
+        label: "King's Lynn → Hunstanton",
+        destination: "Hunstanton",
+        stops: [
+          "King's Lynn Transport Interchange",
+          "South Wootton",
+          "Castle Rising",
+          "Dersingham",
+          "Snettisham",
+          "Heacham",
+          "Hunstanton"
+        ]
+      },
+
+      inbound: {
+        label: "Hunstanton → King's Lynn",
+        destination: "King's Lynn",
+        stops: [
+          "Hunstanton",
+          "Heacham",
+          "Snettisham",
+          "Dersingham",
+          "Castle Rising",
+          "South Wootton",
+          "King's Lynn Transport Interchange"
+        ]
+      }
+
+    }
+
+  },
+
+
+  "35": {
+
+    directions: {
+
+      outbound: {
+        label: "King's Lynn → Hunstanton",
+        destination: "Hunstanton",
+        stops: [
+          "King's Lynn Transport Interchange",
+          "Gaywood",
+          "Grimston",
+          "Dersingham",
+          "Snettisham",
+          "Heacham",
+          "Hunstanton"
+        ]
+      },
+
+      inbound: {
+        label: "Hunstanton → King's Lynn",
+        destination: "King's Lynn",
+        stops: [
+          "Hunstanton",
+          "Heacham",
+          "Snettisham",
+          "Dersingham",
+          "Grimston",
+          "Gaywood",
+          "King's Lynn Transport Interchange"
+        ]
+      }
+
+    }
+
+  },
+
+
+  "36": {
+
+    directions: {
+
+      outbound: {
+        label: "King's Lynn → Hunstanton",
+        destination: "Hunstanton",
+        stops: [
+          "King's Lynn Transport Interchange",
+          "Gaywood",
+          "Castle Rising",
+          "Dersingham",
+          "Snettisham",
+          "Heacham",
+          "Hunstanton"
+        ]
+      },
+
+      inbound: {
+        label: "Hunstanton → King's Lynn",
+        destination: "King's Lynn",
+        stops: [
+          "Hunstanton",
+          "Heacham",
+          "Snettisham",
+          "Dersingham",
+          "Castle Rising",
+          "Gaywood",
+          "King's Lynn Transport Interchange"
+        ]
+      }
+
+    }
+
+  }
+
+};
+
+
+/* ======================================================
+   STATE
+====================================================== */
+
+let activeRoute = null;
+let activeDirection = null;
+let activeStops = [];
+
+let currentStopIndex = 0;
+
+let watchId = null;
+
+let diversionActive = false;
+let stopRequested = false;
+
+
+/* ======================================================
+   ELEMENTS
+====================================================== */
+
+const setupScreen =
+document.getElementById("setupScreen");
+
+const passengerScreen =
+document.getElementById("passengerScreen");
+
+const routeSelect =
+document.getElementById("routeSelect");
+
+const directionSelect =
+document.getElementById("directionSelect");
+
+const journeySelect =
+document.getElementById("journeySelect");
+
+const vehicleInput =
+document.getElementById("vehicleInput");
+
+const routeNumber =
+document.getElementById("routeNumber");
+
+const destination =
+document.getElementById("destination");
+
+const nextStop =
+document.getElementById("nextStop");
+
+const thenStop =
+document.getElementById("thenStop");
+
+const followingStop =
+document.getElementById("followingStop");
+
+const arrivalTime =
+document.getElementById("arrivalTime");
+
+const stopList =
+document.getElementById("stopList");
+
+const clock =
+document.getElementById("clock");
+
+const infoMessage =
+document.getElementById("infoMessage");
+
+const vehicleDisplay =
+document.getElementById("vehicleDisplay");
+
+const stopRequest =
+document.getElementById("stopRequest");
+
+const gpsState =
+document.getElementById("gpsState");
+
+const driverPanel =
+document.getElementById("driverPanel");
+
+const diversionTakeover =
+document.getElementById("diversionTakeover");
+
+const continuationTakeover =
+document.getElementById("continuationTakeover");
+
+const terminusTakeover =
+document.getElementById("terminusTakeover");
+
+
+/* ======================================================
+   CLOCK
+====================================================== */
+
+function updateClock(){
+
+  const now = new Date();
+
+  clock.textContent =
+  now.toLocaleTimeString("en-GB",{
+    hour:"2-digit",
+    minute:"2-digit"
+  });
+
+}
+
+setInterval(updateClock,1000);
+updateClock();
+
+
+/* ======================================================
+   ROUTE SELECT
+====================================================== */
+
+routeSelect.addEventListener("change",()=>{
+
+  directionSelect.innerHTML =
+  '<option value="">Select direction</option>';
+
+  journeySelect.innerHTML =
+  '<option value="">Select journey</option>';
+
+  const route =
+  ROUTES[routeSelect.value];
+
+  if(!route) return;
+
+  Object.entries(route.directions)
+  .forEach(([key,value])=>{
+
+    const option =
+    document.createElement("option");
+
+    option.value = key;
+    option.textContent = value.label;
+
+    directionSelect.appendChild(option);
+
+  });
+
+});
+
+
+directionSelect.addEventListener("change",()=>{
+
+  journeySelect.innerHTML =
+  '<option value="">Select journey</option>';
+
+  if(!routeSelect.value ||
+     !directionSelect.value) return;
+
+  /*
+    Replace these with your actual journey times
+    if you already have them in your old code.
+  */
+
+  const exampleJourneys = [
+    "06:10",
+    "07:10",
+    "08:10",
+    "09:10",
+    "10:10",
+    "11:10",
+    "12:10"
+  ];
+
+  exampleJourneys.forEach(time=>{
+
+    const option =
+    document.createElement("option");
+
+    option.value = time;
+    option.textContent = time;
+
+    journeySelect.appendChild(option);
+
+  });
+
+});
+
+
+/* ======================================================
+   START JOURNEY
+====================================================== */
+
+document
+.getElementById("startJourneyBtn")
+.addEventListener("click",startJourney);
+
+
+function startJourney(){
+
+  const route =
+  routeSelect.value;
+
+  const direction =
+  directionSelect.value;
+
+  if(!route || !direction){
+
+    alert(
+      "Select a route and direction first."
+    );
+
+    return;
+
+  }
+
+  activeRoute =
+  ROUTES[route];
+
+  activeDirection =
+  activeRoute.directions[direction];
+
+  activeStops =
+  activeDirection.stops;
+
+  currentStopIndex = 0;
+
+  routeNumber.textContent =
+  route;
+
+  destination.textContent =
+  activeDirection.destination;
+
+  vehicleDisplay.textContent =
+  vehicleInput.value.trim()
+    ? vehicleInput.value.trim()
+    : "BUSBASE";
+
+  setupScreen.style.display =
+  "none";
+
+  passengerScreen.style.display =
+  "block";
+
+  gpsState.style.display =
+  "block";
+
+  updatePassengerDisplay();
+
+  startGPS();
+
+}
+
+
+/* ======================================================
+   UPDATE PASSENGER DISPLAY
+====================================================== */
+
+function updatePassengerDisplay(){
+
+  if(!activeStops.length) return;
+
+  const current =
+  activeStops[currentStopIndex]
+  || activeStops[activeStops.length-1];
+
+  const next =
+  activeStops[currentStopIndex + 1];
+
+  const following =
+  activeStops[currentStopIndex + 2];
+
+  const third =
+  activeStops[currentStopIndex + 3];
+
+  document
+  .getElementById("driverCurrentStop")
+  .textContent = current || "—";
+
+  if(next){
+
+    nextStop.textContent =
+    next;
+
+    thenStop.textContent =
+    following || activeDirection.destination;
+
+    followingStop.textContent =
+    third || activeDirection.destination;
+
+    arrivalTime.textContent =
+    estimateArrival();
+
+    infoMessage.textContent =
+    "Please remain seated until the bus has stopped.";
+
+  }
+
+  else{
+
+    nextStop.textContent =
+    activeDirection.destination;
+
+    thenStop.textContent =
+    "Terminus";
+
+    followingStop.textContent =
+    "—";
+
+    arrivalTime.textContent =
+    "Arriving";
+
+  }
+
+  renderStopList();
+
+}
+
+
+/* ======================================================
+   UPCOMING STOPS
+====================================================== */
+
+function renderStopList(){
+
+  stopList.innerHTML = "";
+
+  const start =
+  Math.max(currentStopIndex + 1,0);
+
+  const upcoming =
+  activeStops.slice(start,start + 7);
+
+  upcoming.forEach((stop,index)=>{
+
+    const div =
+    document.createElement("div");
+
+    div.className =
+    "stop-item";
+
+    if(index === 0)
+      div.classList.add("active");
+
+    if(
+      stop ===
+      activeDirection.destination
+    )
+      div.classList.add(
+        "destination-stop"
+      );
+
+    div.textContent =
+    stop;
+
+    stopList.appendChild(div);
+
+  });
+
+}
+
+
+/* ======================================================
+   ARRIVAL ESTIMATE
+====================================================== */
+
+function estimateArrival(){
+
+  const now =
+  new Date();
+
+  now.setMinutes(
+    now.getMinutes() + 3
+  );
+
+  return now.toLocaleTimeString(
+    "en-GB",
+    {
+      hour:"2-digit",
+      minute:"2-digit"
+    }
+  );
+
+}
+
+
+/* ======================================================
+   MANUAL STOP CONTROLS
+====================================================== */
+
+function nextStopManual(){
+
+  if(
+    currentStopIndex <
+    activeStops.length - 1
+  ){
+
+    currentStopIndex++;
+
+    updatePassengerDisplay();
+
+    announceNextStop();
+
+  }
+
+  if(
+    currentStopIndex >=
+    activeStops.length - 1
+  ){
+
+    showTerminus();
+
+  }
+
+}
+
+
+function previousStopManual(){
+
+  if(currentStopIndex > 0){
+
+    currentStopIndex--;
+
+    updatePassengerDisplay();
+
+  }
+
+}
+
+
+document
+.getElementById("nextStopBtn")
+.addEventListener(
+  "click",
+  nextStopManual
+);
+
+
+document
+.getElementById("previousStopBtn")
+.addEventListener(
+  "click",
+  previousStopManual
+);
+
+
+/* ======================================================
+   SPEECH
+====================================================== */
+
+function speak(text){
+
+  if(
+    !("speechSynthesis" in window)
+  ) return;
+
+  speechSynthesis.cancel();
+
+  const speech =
+  new SpeechSynthesisUtterance(text);
+
+  speech.lang = "en-GB";
+
+  speech.rate = .92;
+
+  speech.pitch = 1;
+
+  speechSynthesis.speak(speech);
+
+}
+
+
+function announceNextStop(){
+
+  const stop =
+  activeStops[
+    currentStopIndex + 1
+  ];
+
+  if(!stop) return;
+
+  speak(
+    "The next stop is " + stop
+  );
+
+}
+
+
+document
+.getElementById("repeatBtn")
+.addEventListener(
+  "click",
+  announceNextStop
+);
+
+
+/* ======================================================
+   STOP REQUEST
+====================================================== */
+
+document
+.getElementById("stopRequestBtn")
+.addEventListener("click",()=>{
+
+  stopRequested =
+  !stopRequested;
+
+  stopRequest.classList.toggle(
+    "active",
+    stopRequested
+  );
+
+});
+
+
+/* ======================================================
+   DIVERSION
+====================================================== */
+
+document
+.getElementById("diversionBtn")
+.addEventListener("click",()=>{
+
+  diversionActive =
+  !diversionActive;
+
+  clearTakeovers();
+
+  if(diversionActive){
+
+    diversionTakeover
+    .classList.add("active");
+
+    infoMessage.textContent =
+    "This bus is operating on diversion.";
+
+    speak(
+      "This bus is currently on diversion."
+    );
+
+  }
+
+});
+
+
+/* ======================================================
+   CONTINUATION
+====================================================== */
+
+document
+.getElementById("continuationBtn")
+.addEventListener("click",()=>{
+
+  clearTakeovers();
+
+  continuationTakeover
+  .classList.add("active");
+
+});
+
+
+/* ======================================================
+   TERMINUS
+====================================================== */
+
+document
+.getElementById("terminusBtn")
+.addEventListener(
+  "click",
+  showTerminus
+);
+
+
+function showTerminus(){
+
+  clearTakeovers();
+
+  document
+  .getElementById("terminusName")
+  .textContent =
+  activeDirection
+  ? activeDirection.destination
+  : "Terminus";
+
+  terminusTakeover
+  .classList.add("active");
+
+  speak(
+    "This bus terminates here. Please take all belongings with you."
+  );
+
+}
+
+
+/* ======================================================
+   CLEAR TAKEOVERS
+====================================================== */
+
+function clearTakeovers(){
+
+  diversionTakeover
+  .classList.remove("active");
+
+  continuationTakeover
+  .classList.remove("active");
+
+  terminusTakeover
+  .classList.remove("active");
+
+}
+
+
+document
+.getElementById("clearMessageBtn")
+.addEventListener("click",()=>{
+
+  diversionActive = false;
+
+  clearTakeovers();
+
+  infoMessage.textContent =
+  "Please remain seated until the bus has stopped.";
+
+});
+
+
+/* ======================================================
+   DRIVER PANEL
+====================================================== */
+
+document
+.getElementById("driverBtn")
+.addEventListener("click",()=>{
+
+  driverPanel.classList.add("open");
+
+});
+
+
+document
+.getElementById("closeDriverBtn")
+.addEventListener("click",()=>{
+
+  driverPanel.classList.remove("open");
+
+});
+
+
+/* ======================================================
+   DISPLAY STYLE
+====================================================== */
+
+document
+.getElementById("compactStyleBtn")
+.addEventListener("click",()=>{
+
+  document.body
+  .classList.add("compact");
+
+  document
+  .getElementById("compactStyleBtn")
+  .classList.add("active");
+
+  document
+  .getElementById("fullStyleBtn")
+  .classList.remove("active");
+
+});
+
+
+document
+.getElementById("fullStyleBtn")
+.addEventListener("click",()=>{
+
+  document.body
+  .classList.remove("compact");
+
+  document
+  .getElementById("fullStyleBtn")
+  .classList.add("active");
+
+  document
+  .getElementById("compactStyleBtn")
+  .classList.remove("active");
+
+});
+
+
+/* ======================================================
+   FULLSCREEN
+====================================================== */
+
+document
+.getElementById("fullscreenBtn")
+.addEventListener("click",()=>{
+
+  if(!document.fullscreenElement){
+
+    document.documentElement
+    .requestFullscreen()
+    .catch(()=>{});
+
+  }
+
+  else{
+
+    document.exitFullscreen();
+
+  }
+
+});
+
+
+/* ======================================================
+   GPS
+====================================================== */
+
+function startGPS(){
+
+  if(!navigator.geolocation){
+
+    gpsState.textContent =
+    "GPS: NOT SUPPORTED";
+
+    return;
+
+  }
+
+  gpsState.textContent =
+  "GPS: SEARCHING";
+
+  watchId =
+  navigator.geolocation
+  .watchPosition(
+    gpsSuccess,
+    gpsError,
+    {
+      enableHighAccuracy:true,
+      maximumAge:1000,
+      timeout:10000
+    }
+  );
+
+}
+
+
+function gpsSuccess(position){
+
+  const coords =
+  position.coords;
+
+  gpsState.textContent =
+  "GPS: LIVE";
+
+  gpsState.classList.add("ok");
+
+  document
+  .getElementById("driverAccuracy")
+  .textContent =
+  Math.round(coords.accuracy) +
+  " m";
+
+  if(coords.speed !== null){
+
+    const mph =
+    coords.speed * 2.23694;
+
+    document
+    .getElementById("driverSpeed")
+    .textContent =
+    mph.toFixed(1) + " mph";
+
+  }
+
+  else{
+
+    document
+    .getElementById("driverSpeed")
+    .textContent =
+    "—";
+
+  }
+
+  /*
+   =================================================
+   IMPORTANT
+
+   Put your existing stop GPS matching code here.
+
+   For example:
+
+   const nearest =
+   findNearestStop(
+      coords.latitude,
+      coords.longitude
+   );
+
+   currentStopIndex =
+   nearest.index;
+
+   updatePassengerDisplay();
+
+   =================================================
+  */
+
+}
+
+
+function gpsError(){
+
+  gpsState.textContent =
+  "GPS: NO FIX";
+
+  gpsState.classList.remove("ok");
+
+}
+
+
+/* ======================================================
+   RESTART / END JOURNEY
+====================================================== */
+
+document
+.getElementById("restartBtn")
+.addEventListener("click",()=>{
+
+  currentStopIndex = 0;
+
+  clearTakeovers();
+
+  updatePassengerDisplay();
+
+});
+
+
+document
+.getElementById("endJourneyBtn")
+.addEventListener("click",()=>{
+
+  if(watchId !== null){
+
+    navigator.geolocation
+    .clearWatch(watchId);
+
+    watchId = null;
+
+  }
+
+  driverPanel
+  .classList.remove("open");
+
+  passengerScreen.style.display =
+  "none";
+
+  setupScreen.style.display =
+  "flex";
+
+  gpsState.style.display =
+  "none";
+
+  clearTakeovers();
+
+});
+
+</script>
+
 </body>
 </html>
