@@ -1,0 +1,5034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>My Bus Log | BusBase</title>
+
+<style>
+:root {
+    --red: #df2029;
+    --red-dark: #bd1921;
+
+    --dark: #111318;
+    --dark-soft: #1a1d22;
+
+    --bg: #f4f5f7;
+    --panel: #ffffff;
+
+    --text: #15171b;
+    --muted: #6d727b;
+
+    --border: #dfe2e6;
+
+    --green: #157a46;
+    --green-bg: #e7f5ed;
+
+    --danger-bg: #fff0f1;
+
+    --radius: 13px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Arial,
+        sans-serif;
+
+    background: var(--bg);
+    color: var(--text);
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+
+/* =========================================
+   LOGIN
+   ========================================= */
+
+#loginScreen {
+    min-height: 100vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 24px;
+
+    background: #111318;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 430px;
+
+    overflow: hidden;
+
+    border-radius: 18px;
+
+    background: white;
+
+    box-shadow:
+        0 30px 90px
+        rgba(0, 0, 0, .32);
+}
+
+.login-header {
+    padding: 25px;
+
+    background: #17191d;
+    color: white;
+}
+
+.login-brand {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+}
+
+.logo {
+    width: 42px;
+    height: 42px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 9px;
+
+    background: var(--red);
+
+    color: white;
+
+    font-size: 21px;
+    font-weight: 900;
+}
+
+.login-brand strong {
+    display: block;
+
+    font-size: 20px;
+}
+
+.login-brand span {
+    display: block;
+
+    margin-top: 2px;
+
+    color: #aeb3bc;
+
+    font-size: 12px;
+}
+
+.login-body {
+    padding: 25px;
+}
+
+.login-body h1 {
+    margin:
+        0
+        0
+        6px;
+
+    font-size: 26px;
+
+    letter-spacing: -.7px;
+}
+
+.login-description {
+    margin:
+        0
+        0
+        21px;
+
+    color: var(--muted);
+
+    font-size: 14px;
+
+    line-height: 1.55;
+}
+
+.login-tabs {
+    display: grid;
+
+    grid-template-columns:
+        1fr
+        1fr;
+
+    gap: 3px;
+
+    margin-bottom: 20px;
+
+    padding: 4px;
+
+    border-radius: 9px;
+
+    background: #eff0f2;
+}
+
+.login-tab {
+    border: none;
+
+    padding: 9px;
+
+    border-radius: 7px;
+
+    background: transparent;
+
+    color: var(--muted);
+
+    font-weight: 650;
+}
+
+.login-tab.active {
+    background: white;
+    color: var(--text);
+
+    box-shadow:
+        0 1px 5px
+        rgba(0, 0, 0, .08);
+}
+
+.field {
+    margin-bottom: 15px;
+}
+
+.field label {
+    display: block;
+
+    margin-bottom: 6px;
+
+    font-size: 13px;
+    font-weight: 650;
+}
+
+.field input,
+.field textarea {
+    width: 100%;
+
+    padding: 11px 12px;
+
+    border: 1px solid var(--border);
+    border-radius: 9px;
+
+    background: white;
+
+    outline: none;
+}
+
+.field input:focus,
+.field textarea:focus {
+    border-color: #8c929b;
+}
+
+.field textarea {
+    min-height: 85px;
+
+    resize: vertical;
+}
+
+.login-button {
+    width: 100%;
+
+    border: none;
+
+    padding: 12px;
+
+    border-radius: 9px;
+
+    background: var(--red);
+
+    color: white;
+
+    font-weight: 750;
+}
+
+.login-button:hover {
+    background: var(--red-dark);
+}
+
+.login-button:disabled {
+    opacity: .6;
+
+    cursor: wait;
+}
+
+.forgot {
+    width: 100%;
+
+    margin-top: 12px;
+
+    border: none;
+
+    background: transparent;
+
+    color: #626873;
+
+    font-size: 13px;
+}
+
+.forgot:hover {
+    color: var(--red);
+}
+
+.message {
+    display: none;
+
+    margin-bottom: 16px;
+
+    padding: 11px 12px;
+
+    border-radius: 8px;
+
+    font-size: 13px;
+
+    line-height: 1.45;
+}
+
+.message.error {
+    display: block;
+
+    background: var(--danger-bg);
+
+    color: #ad1c23;
+}
+
+.message.success {
+    display: block;
+
+    background: var(--green-bg);
+
+    color: var(--green);
+}
+
+
+/* =========================================
+   APP
+   ========================================= */
+
+#app {
+    display: none;
+}
+
+header {
+    background: var(--dark);
+
+    color: white;
+}
+
+.header-inner {
+    width:
+        min(
+            1180px,
+            calc(100% - 30px)
+        );
+
+    min-height: 70px;
+
+    margin: auto;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 15px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+
+    gap: 11px;
+}
+
+.brand strong {
+    display: block;
+
+    font-size: 18px;
+}
+
+.brand span {
+    display: block;
+
+    margin-top: 2px;
+
+    color: #a9afb8;
+
+    font-size: 12px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+}
+
+.account {
+    min-width: 0;
+
+    text-align: right;
+}
+
+#accountEmail {
+    display: block;
+
+    max-width: 240px;
+
+    overflow: hidden;
+
+    white-space: nowrap;
+
+    text-overflow: ellipsis;
+
+    font-size: 12px;
+}
+
+#syncStatus {
+    display: block;
+
+    margin-top: 2px;
+
+    color: #969da7;
+
+    font-size: 11px;
+}
+
+.logout {
+    border: 1px solid #363a42;
+
+    padding: 8px 11px;
+
+    border-radius: 8px;
+
+    background: transparent;
+
+    color: white;
+}
+
+.logout:hover {
+    background: #202329;
+}
+
+main {
+    width:
+        min(
+            1180px,
+            calc(100% - 30px)
+        );
+
+    margin:
+        30px
+        auto
+        70px;
+}
+
+
+/* =========================================
+   HERO
+   ========================================= */
+
+.hero {
+    display: flex;
+
+    align-items: end;
+    justify-content: space-between;
+
+    gap: 18px;
+
+    margin-bottom: 24px;
+}
+
+.hero h1 {
+    margin:
+        0
+        0
+        6px;
+
+    font-size:
+        clamp(
+            30px,
+            5vw,
+            42px
+        );
+
+    letter-spacing: -1.4px;
+}
+
+.hero p {
+    margin: 0;
+
+    color: var(--muted);
+
+    line-height: 1.5;
+}
+
+.refresh {
+    white-space: nowrap;
+}
+
+
+/* =========================================
+   BUTTONS
+   ========================================= */
+
+.button {
+    border: none;
+
+    padding: 10px 13px;
+
+    border-radius: 8px;
+
+    background: var(--dark-soft);
+
+    color: white;
+
+    font-weight: 650;
+
+    font-size: 14px;
+}
+
+.button:hover {
+    background: #2a2e35;
+}
+
+.button.red {
+    background: var(--red);
+}
+
+.button.red:hover {
+    background: var(--red-dark);
+}
+
+.button.light {
+    border: 1px solid var(--border);
+
+    background: white;
+
+    color: var(--text);
+}
+
+.button.light:hover {
+    background: #f8f8f9;
+}
+
+
+/* =========================================
+   STATS
+   ========================================= */
+
+.stats {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, 1fr);
+
+    gap: 12px;
+
+    margin-bottom: 14px;
+}
+
+.stat {
+    min-width: 0;
+
+    padding: 17px;
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
+
+    background: white;
+}
+
+.stat span {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: var(--muted);
+
+    font-size: 12px;
+}
+
+.stat strong {
+    display: block;
+
+    overflow: hidden;
+
+    white-space: nowrap;
+
+    text-overflow: ellipsis;
+
+    font-size: 27px;
+
+    letter-spacing: -.8px;
+}
+
+
+/* =========================================
+   PROGRESS
+   ========================================= */
+
+.progress-panel {
+    margin-bottom: 28px;
+
+    padding: 17px 19px;
+
+    border: 1px solid var(--border);
+    border-radius: 12px;
+
+    background: white;
+}
+
+.progress-heading {
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    margin-bottom: 11px;
+
+    font-size: 13px;
+}
+
+.progress-heading span {
+    color: var(--muted);
+}
+
+.progress-track {
+    height: 9px;
+
+    overflow: hidden;
+
+    border-radius: 20px;
+
+    background: #e9ebee;
+}
+
+#progressBar {
+    width: 0;
+    height: 100%;
+
+    border-radius: inherit;
+
+    background: var(--red);
+
+    transition: width .25s ease;
+}
+
+
+/* =========================================
+   SECTION
+   ========================================= */
+
+.section-title {
+    display: flex;
+
+    align-items: end;
+    justify-content: space-between;
+
+    gap: 15px;
+
+    margin:
+        30px
+        0
+        13px;
+}
+
+.section-title h2 {
+    margin: 0;
+
+    font-size: 21px;
+
+    letter-spacing: -.4px;
+}
+
+.section-title span {
+    display: block;
+
+    margin-top: 4px;
+
+    color: var(--muted);
+
+    font-size: 12px;
+}
+
+.toolbar {
+    display: flex;
+
+    gap: 9px;
+
+    margin-bottom: 13px;
+}
+
+.toolbar input,
+.toolbar select {
+    border: 1px solid var(--border);
+
+    padding: 10px 12px;
+
+    border-radius: 9px;
+
+    background: white;
+
+    outline: none;
+}
+
+.toolbar input {
+    flex: 1;
+
+    max-width: 430px;
+}
+
+.toolbar input:focus,
+.toolbar select:focus {
+    border-color: #969ba2;
+}
+
+
+/* =========================================
+   FLEET
+   ========================================= */
+
+.fleet {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 11px;
+}
+
+.bus {
+    min-width: 0;
+
+    padding: 16px;
+
+    border: 1px solid var(--border);
+    border-radius: 11px;
+
+    background: white;
+
+    text-align: left;
+
+    transition:
+        border-color .15s,
+        transform .15s,
+        box-shadow .15s;
+}
+
+.bus:hover {
+    transform: translateY(-1px);
+
+    border-color: #b6bac1;
+
+    box-shadow:
+        0 5px 17px
+        rgba(0, 0, 0, .05);
+}
+
+.bus.travelled {
+    border-color: #9ed0b3;
+}
+
+.bus-top {
+    display: flex;
+
+    align-items: start;
+    justify-content: space-between;
+
+    gap: 10px;
+
+    margin-bottom: 11px;
+}
+
+.fleet-no {
+    min-width: 42px;
+
+    padding: 6px 8px;
+
+    border-radius: 6px;
+
+    background: #17191d;
+
+    color: white;
+
+    text-align: center;
+
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.done {
+    display: none;
+
+    padding: 5px 8px;
+
+    border-radius: 20px;
+
+    background: var(--green-bg);
+
+    color: var(--green);
+
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.bus.travelled .done {
+    display: inline-block;
+}
+
+.reg {
+    margin-bottom: 5px;
+
+    font-size: 19px;
+    font-weight: 800;
+}
+
+.type {
+    min-height: 18px;
+
+    color: var(--muted);
+
+    font-size: 13px;
+}
+
+.count {
+    margin-top: 12px;
+
+    padding-top: 10px;
+
+    border-top: 1px solid #eef0f2;
+
+    color: var(--muted);
+
+    font-size: 12px;
+}
+
+
+/* =========================================
+   HISTORY
+   ========================================= */
+
+.history {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 9px;
+}
+
+.journey {
+    display: grid;
+
+    grid-template-columns:
+        135px
+        1fr
+        auto;
+
+    align-items: center;
+
+    gap: 17px;
+
+    padding: 15px 16px;
+
+    border: 1px solid var(--border);
+    border-radius: 11px;
+
+    background: white;
+}
+
+.journey-date {
+    color: var(--muted);
+
+    font-size: 12px;
+}
+
+.journey-date strong {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: var(--text);
+
+    font-size: 14px;
+}
+
+.journey-main {
+    min-width: 0;
+}
+
+.journey-main strong {
+    display: block;
+
+    margin-bottom: 4px;
+}
+
+.journey-main span {
+    display: block;
+
+    color: var(--muted);
+
+    font-size: 12px;
+
+    line-height: 1.5;
+}
+
+.delete {
+    width: 37px;
+    height: 37px;
+
+    border: none;
+
+    border-radius: 8px;
+
+    background: transparent;
+
+    color: #999ea5;
+
+    font-size: 20px;
+}
+
+.delete:hover {
+    background: #fff0f1;
+
+    color: var(--red);
+}
+
+.empty {
+    grid-column:
+        1 / -1;
+
+    padding: 32px 20px;
+
+    border: 1px dashed #cbd0d5;
+    border-radius: 11px;
+
+    background: white;
+
+    color: var(--muted);
+
+    text-align: center;
+}
+
+
+/* =========================================
+   MODAL
+   ========================================= */
+
+.modal-bg {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 1000;
+
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background:
+        rgba(
+            8,
+            9,
+            11,
+            .67
+        );
+}
+
+.modal-bg.open {
+    display: flex;
+}
+
+.modal {
+    width:
+        min(
+            510px,
+            100%
+        );
+
+    overflow: hidden;
+
+    border-radius: 15px;
+
+    background: white;
+
+    box-shadow:
+        0 30px 80px
+        rgba(0,0,0,.28);
+}
+
+.modal-header {
+    display: flex;
+
+    justify-content: space-between;
+
+    gap: 15px;
+
+    padding: 19px;
+
+    border-bottom: 1px solid var(--border);
+}
+
+.modal-header h2 {
+    margin:
+        0
+        0
+        4px;
+
+    font-size: 20px;
+}
+
+#selectedBus {
+    color: var(--muted);
+
+    font-size: 12px;
+}
+
+.close {
+    width: 34px;
+    height: 34px;
+
+    border: none;
+
+    border-radius: 50%;
+
+    background: #f0f1f3;
+
+    font-size: 20px;
+}
+
+.modal-body {
+    padding: 19px;
+}
+
+.two {
+    display: grid;
+
+    grid-template-columns:
+        1fr
+        1fr;
+
+    gap: 11px;
+}
+
+.modal-footer {
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 8px;
+
+    padding: 14px 19px;
+
+    border-top: 1px solid var(--border);
+
+    background: #f8f9fa;
+}
+
+
+/* =========================================
+   LOADING OVERLAY
+   ========================================= */
+
+#loading {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 3000;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background: #111318;
+
+    color: white;
+}
+
+.loading-box {
+    text-align: center;
+}
+
+.spinner {
+    width: 34px;
+    height: 34px;
+
+    margin:
+        0
+        auto
+        13px;
+
+    border: 3px solid #393c42;
+    border-top-color: var(--red);
+
+    border-radius: 50%;
+
+    animation:
+        spin .8s
+        linear
+        infinite;
+}
+
+@keyframes spin {
+    to {
+        transform:
+            rotate(360deg);
+    }
+}
+
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
+@media(max-width: 850px) {
+
+    .stats {
+        grid-template-columns:
+            1fr
+            1fr;
+    }
+
+    .fleet {
+        grid-template-columns:
+            1fr
+            1fr;
+    }
+
+}
+
+@media(max-width: 600px) {
+
+    .header-inner,
+    main {
+        width:
+            calc(
+                100% - 20px
+            );
+    }
+
+    .account {
+        display: none;
+    }
+
+    .hero {
+        align-items: start;
+
+        flex-direction: column;
+    }
+
+    .stats {
+        gap: 8px;
+    }
+
+    .stat {
+        padding: 14px;
+    }
+
+    .stat strong {
+        font-size: 22px;
+    }
+
+    .toolbar {
+        flex-direction: column;
+    }
+
+    .toolbar input {
+        max-width: none;
+    }
+
+    .fleet {
+        grid-template-columns:
+            1fr;
+    }
+
+    .journey {
+        grid-template-columns:
+            1fr
+            auto;
+    }
+
+    .journey-date,
+    .journey-main {
+        grid-column: 1;
+    }
+
+    .delete {
+        grid-column: 2;
+
+        grid-row:
+            1 / 3;
+    }
+
+    .two {
+        grid-template-columns:
+            1fr;
+    }
+
+}
+</style>
+</head>
+
+<body>
+
+
+<!-- =========================================
+     LOADING
+     ========================================= -->
+
+<div id="loading">
+
+    <div class="loading-box">
+
+        <div class="spinner"></div>
+
+        <div>
+            Loading BusBase…
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- =========================================
+     LOGIN
+     ========================================= -->
+
+<section id="loginScreen">
+
+    <div class="login-card">
+
+        <div class="login-header">
+
+            <div class="login-brand">
+
+                <div class="logo">
+                    B
+                </div>
+
+                <div>
+
+                    <strong>
+                        BusBase
+                    </strong>
+
+                    <span>
+                        Travel Log
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="login-body">
+
+            <h1 id="loginHeading">
+                Sign in
+            </h1>
+
+            <p
+                id="loginDescription"
+                class="login-description"
+            >
+                Sign in to see your bus journeys on any device.
+            </p>
+
+
+            <div class="login-tabs">
+
+                <button
+                    id="signInTab"
+                    type="button"
+                    class="login-tab active"
+                >
+                    Sign in
+                </button>
+
+
+                <button
+                    id="registerTab"
+                    type="button"
+                    class="login-tab"
+                >
+                    Create account
+                </button>
+
+            </div>
+
+
+            <div
+                id="message"
+                class="message"
+            ></div>
+
+
+            <form id="loginForm">
+
+                <div class="field">
+
+                    <label for="email">
+                        Email address
+                    </label>
+
+                    <input
+                        id="email"
+                        type="email"
+                        autocomplete="email"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="field">
+
+                    <label for="password">
+                        Password
+                    </label>
+
+                    <input
+                        id="password"
+                        type="password"
+                        minlength="6"
+                        required
+                    >
+
+                </div>
+
+
+                <button
+                    id="loginButton"
+                    type="submit"
+                    class="login-button"
+                >
+                    Sign in
+                </button>
+
+            </form>
+
+
+            <button
+                id="forgotButton"
+                type="button"
+                class="forgot"
+            >
+                Forgot password?
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- =========================================
+     MAIN APP
+     ========================================= -->
+
+<div id="app">
+
+<header>
+
+    <div class="header-inner">
+
+        <div class="brand">
+
+            <div class="logo">
+                B
+            </div>
+
+            <div>
+
+                <strong>
+                    BusBase
+                </strong>
+
+                <span>
+                    My Bus Log
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div class="header-right">
+
+            <div class="account">
+
+                <span id="accountEmail"></span>
+
+                <span id="syncStatus">
+                    Synced
+                </span>
+
+            </div>
+
+
+            <button
+                id="logoutButton"
+                type="button"
+                class="logout"
+            >
+                Log out
+            </button>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<main>
+
+
+    <section class="hero">
+
+        <div>
+
+            <h1>
+                My Bus Log
+            </h1>
+
+            <p>
+                Keep track of every bus you've travelled on.
+            </p>
+
+        </div>
+
+
+        <button
+            id="refreshButton"
+            type="button"
+            class="button light refresh"
+        >
+            ↻ Refresh
+        </button>
+
+    </section>
+
+
+
+    <!-- STATS -->
+
+    <section class="stats">
+
+        <div class="stat">
+
+            <span>
+                Journeys
+            </span>
+
+            <strong id="journeyStat">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="stat">
+
+            <span>
+                Buses travelled
+            </span>
+
+            <strong id="busStat">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="stat">
+
+            <span>
+                Routes
+            </span>
+
+            <strong id="routeStat">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="stat">
+
+            <span>
+                Most travelled
+            </span>
+
+            <strong id="mostStat">
+                —
+            </strong>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- PROGRESS -->
+
+    <section class="progress-panel">
+
+        <div class="progress-heading">
+
+            <strong>
+                Fleet completion
+            </strong>
+
+            <span id="progressText">
+                0 / 0
+            </span>
+
+        </div>
+
+
+        <div class="progress-track">
+
+            <div id="progressBar"></div>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- FLEET -->
+
+    <div class="section-title">
+
+        <div>
+
+            <h2>
+                Fleet
+            </h2>
+
+            <span id="fleetStatus">
+                Loading BusBase fleet…
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div class="toolbar">
+
+        <input
+            id="fleetSearch"
+            type="search"
+            placeholder="Search fleet number, registration or vehicle..."
+        >
+
+
+        <select id="fleetFilter">
+
+            <option value="all">
+                All buses
+            </option>
+
+            <option value="travelled">
+                Travelled
+            </option>
+
+            <option value="not">
+                Not travelled
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <div
+        id="fleet"
+        class="fleet"
+    ></div>
+
+
+
+    <!-- HISTORY -->
+
+    <div class="section-title">
+
+        <div>
+
+            <h2>
+                Journey history
+            </h2>
+
+            <span id="journeyCount">
+                No journeys
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div
+        id="history"
+        class="history"
+    ></div>
+
+
+</main>
+
+</div>
+
+
+
+<!-- =========================================
+     JOURNEY MODAL
+     ========================================= -->
+
+<div
+    id="modalBackground"
+    class="modal-bg"
+>
+
+    <div class="modal">
+
+        <div class="modal-header">
+
+            <div>
+
+                <h2>
+                    Log journey
+                </h2>
+
+                <div id="selectedBus"></div>
+
+            </div>
+
+
+            <button
+                id="closeModalButton"
+                type="button"
+                class="close"
+            >
+                ×
+            </button>
+
+        </div>
+
+
+        <form id="journeyForm">
+
+
+            <div class="modal-body">
+
+
+                <div class="field">
+
+                    <label for="journeyDate">
+                        Date
+                    </label>
+
+                    <input
+                        id="journeyDate"
+                        type="date"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="field">
+
+                    <label for="journeyRoute">
+                        Route
+                    </label>
+
+                    <input
+                        id="journeyRoute"
+                        type="text"
+                        list="routeList"
+                        placeholder="e.g. 36"
+                    >
+
+                    <datalist id="routeList">
+
+                        <option value="33B"></option>
+                        <option value="33C"></option>
+                        <option value="34"></option>
+                        <option value="35"></option>
+                        <option value="36"></option>
+                        <option value="39"></option>
+                        <option value="41"></option>
+                        <option value="42"></option>
+                        <option value="43"></option>
+                        <option value="44"></option>
+
+                    </datalist>
+
+                </div>
+
+
+                <div class="two">
+
+
+                    <div class="field">
+
+                        <label for="journeyFrom">
+                            From
+                        </label>
+
+                        <input
+                            id="journeyFrom"
+                            type="text"
+                            placeholder="King's Lynn"
+                        >
+
+                    </div>
+
+
+                    <div class="field">
+
+                        <label for="journeyTo">
+                            To
+                        </label>
+
+                        <input
+                            id="journeyTo"
+                            type="text"
+                            placeholder="Hunstanton"
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="field">
+
+                    <label for="journeyNotes">
+                        Notes
+                    </label>
+
+                    <textarea
+                        id="journeyNotes"
+                        placeholder="Optional notes..."
+                    ></textarea>
+
+                </div>
+
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button
+                    id="cancelModalButton"
+                    type="button"
+                    class="button light"
+                >
+                    Cancel
+                </button>
+
+
+                <button
+                    id="saveJourneyButton"
+                    type="submit"
+                    class="button red"
+                >
+                    Save journey
+                </button>
+
+            </div>
+
+
+        </form>
+
+    </div>
+
+</div>
+
+
+
+<script type="module">
+
+
+/* =========================================
+   FIREBASE IMPORTS
+   ========================================= */
+
+
+import {
+    initializeApp
+}
+from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+
+
+import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged,
+    setPersistence,
+    browserLocalPersistence,
+    sendPasswordResetEmail
+}
+from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+
+
+import {
+    getFirestore,
+    collection,
+    addDoc,
+    deleteDoc,
+    doc,
+    query,
+    orderBy,
+    onSnapshot,
+    serverTimestamp
+}
+from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+
+
+/* =========================================
+   FIREBASE CONFIG
+   ========================================= */
+
+
+const firebaseConfig = {
+
+    apiKey:
+        "AIzaSyDfRI9cAXkZJ4iMEalBwkssfr14m1n8VRY",
+
+    authDomain:
+        "bus-l-bd1ca.firebaseapp.com",
+
+    projectId:
+        "bus-l-bd1ca",
+
+    storageBucket:
+        "bus-l-bd1ca.firebasestorage.app",
+
+    messagingSenderId:
+        "641838052684",
+
+    appId:
+        "1:641838052684:web:3b3e2b6affdce4ec414be9",
+
+    measurementId:
+        "G-KXXEQFX199"
+
+};
+
+
+
+/* =========================================
+   INITIALISE FIREBASE
+   ========================================= */
+
+
+const firebaseApp =
+    initializeApp(
+        firebaseConfig
+    );
+
+
+const auth =
+    getAuth(
+        firebaseApp
+    );
+
+
+const database =
+    getFirestore(
+        firebaseApp
+    );
+
+
+await setPersistence(
+    auth,
+    browserLocalPersistence
+);
+
+
+
+/* =========================================
+   SETTINGS
+   ========================================= */
+
+
+/*
+    This should point to the BusBase page
+    containing the fleet list.
+*/
+
+const FLEET_PAGE =
+    "/index.html";
+
+
+
+/* =========================================
+   STATE
+   ========================================= */
+
+
+let currentUser =
+    null;
+
+
+let fleet =
+    [];
+
+
+let journeys =
+    [];
+
+
+let selectedBus =
+    null;
+
+
+let loginMode =
+    "signin";
+
+
+let stopJourneyListener =
+    null;
+
+
+
+/* =========================================
+   LOGIN ELEMENTS
+   ========================================= */
+
+
+const loginScreen =
+    document.getElementById(
+        "loginScreen"
+    );
+
+
+const appScreen =
+    document.getElementById(
+        "app"
+    );
+
+
+const loading =
+    document.getElementById(
+        "loading"
+    );
+
+
+
+/* =========================================
+   AUTH TABS
+   ========================================= */
+
+
+document
+.getElementById(
+    "signInTab"
+)
+.addEventListener(
+    "click",
+    () => setLoginMode(
+        "signin"
+    )
+);
+
+
+document
+.getElementById(
+    "registerTab"
+)
+.addEventListener(
+    "click",
+    () => setLoginMode(
+        "register"
+    )
+);
+
+
+
+function setLoginMode(
+    mode
+) {
+
+    loginMode =
+        mode;
+
+
+    const signin =
+        mode ===
+        "signin";
+
+
+    document
+    .getElementById(
+        "signInTab"
+    )
+    .classList
+    .toggle(
+        "active",
+        signin
+    );
+
+
+    document
+    .getElementById(
+        "registerTab"
+    )
+    .classList
+    .toggle(
+        "active",
+        !signin
+    );
+
+
+    document
+    .getElementById(
+        "loginHeading"
+    )
+    .textContent =
+        signin
+        ? "Sign in"
+        : "Create account";
+
+
+    document
+    .getElementById(
+        "loginDescription"
+    )
+    .textContent =
+        signin
+
+        ? "Sign in to see your bus journeys on any device."
+
+        : "Create an account and your journeys will sync between your devices.";
+
+
+    document
+    .getElementById(
+        "loginButton"
+    )
+    .textContent =
+        signin
+        ? "Sign in"
+        : "Create account";
+
+
+    document
+    .getElementById(
+        "forgotButton"
+    )
+    .style.display =
+        signin
+        ? "block"
+        : "none";
+
+
+    clearMessage();
+
+}
+
+
+
+/* =========================================
+   LOGIN / REGISTER
+   ========================================= */
+
+
+document
+.getElementById(
+    "loginForm"
+)
+.addEventListener(
+    "submit",
+    async event => {
+
+        event.preventDefault();
+
+
+        const email =
+            document
+            .getElementById(
+                "email"
+            )
+            .value
+            .trim();
+
+
+        const password =
+            document
+            .getElementById(
+                "password"
+            )
+            .value;
+
+
+        const button =
+            document
+            .getElementById(
+                "loginButton"
+            );
+
+
+        button.disabled =
+            true;
+
+
+        button.textContent =
+            loginMode ===
+                "signin"
+
+            ? "Signing in…"
+
+            : "Creating account…";
+
+
+        clearMessage();
+
+
+        try {
+
+
+            if(
+                loginMode ===
+                "register"
+            ) {
+
+                await createUserWithEmailAndPassword(
+                    auth,
+                    email,
+                    password
+                );
+
+            }
+
+
+            else {
+
+                await signInWithEmailAndPassword(
+                    auth,
+                    email,
+                    password
+                );
+
+            }
+
+
+        }
+
+
+        catch(error) {
+
+            console.error(
+                error
+            );
+
+
+            showMessage(
+                friendlyAuthError(
+                    error.code
+                ),
+                "error"
+            );
+
+        }
+
+
+        finally {
+
+            button.disabled =
+                false;
+
+
+            button.textContent =
+                loginMode ===
+                    "signin"
+
+                ? "Sign in"
+
+                : "Create account";
+
+        }
+
+    }
+);
+
+
+
+/* =========================================
+   PASSWORD RESET
+   ========================================= */
+
+
+document
+.getElementById(
+    "forgotButton"
+)
+.addEventListener(
+    "click",
+    async () => {
+
+        const email =
+            document
+            .getElementById(
+                "email"
+            )
+            .value
+            .trim();
+
+
+        if(
+            !email
+        ) {
+
+            showMessage(
+                "Enter your email address first.",
+                "error"
+            );
+
+            return;
+
+        }
+
+
+        try {
+
+            await sendPasswordResetEmail(
+                auth,
+                email
+            );
+
+
+            showMessage(
+                "Password reset email sent.",
+                "success"
+            );
+
+        }
+
+
+        catch(error) {
+
+            console.error(
+                error
+            );
+
+
+            showMessage(
+                friendlyAuthError(
+                    error.code
+                ),
+                "error"
+            );
+
+        }
+
+    }
+);
+
+
+
+/* =========================================
+   LOG OUT
+   ========================================= */
+
+
+document
+.getElementById(
+    "logoutButton"
+)
+.addEventListener(
+    "click",
+    async () => {
+
+        await signOut(
+            auth
+        );
+
+    }
+);
+
+
+
+/* =========================================
+   AUTH STATE
+   ========================================= */
+
+
+onAuthStateChanged(
+    auth,
+    async user => {
+
+
+        loading.style.display =
+            "none";
+
+
+        if(
+            user
+        ) {
+
+
+            currentUser =
+                user;
+
+
+            loginScreen.style.display =
+                "none";
+
+
+            appScreen.style.display =
+                "block";
+
+
+            document
+            .getElementById(
+                "accountEmail"
+            )
+            .textContent =
+                user.email || "";
+
+
+            await loadFleet();
+
+
+            listenToJourneys();
+
+        }
+
+
+        else {
+
+
+            currentUser =
+                null;
+
+
+            journeys =
+                [];
+
+
+            if(
+                stopJourneyListener
+            ) {
+
+                stopJourneyListener();
+
+                stopJourneyListener =
+                    null;
+
+            }
+
+
+            appScreen.style.display =
+                "none";
+
+
+            loginScreen.style.display =
+                "flex";
+
+        }
+
+    }
+);
+
+
+
+/* =========================================
+   FIRESTORE LIVE JOURNEYS
+   ========================================= */
+
+
+function listenToJourneys() {
+
+
+    if(
+        !currentUser
+    ) {
+
+        return;
+
+    }
+
+
+    if(
+        stopJourneyListener
+    ) {
+
+        stopJourneyListener();
+
+    }
+
+
+    setSyncStatus(
+        "Syncing…"
+    );
+
+
+    const journeyCollection =
+        collection(
+            database,
+            "users",
+            currentUser.uid,
+            "journeys"
+        );
+
+
+    const journeyQuery =
+        query(
+            journeyCollection,
+            orderBy(
+                "journeyDate",
+                "desc"
+            )
+        );
+
+
+    stopJourneyListener =
+        onSnapshot(
+
+            journeyQuery,
+
+            snapshot => {
+
+
+                journeys =
+                    snapshot.docs.map(
+                        item => ({
+
+                            id:
+                                item.id,
+
+                            ...item.data()
+
+                        })
+                    );
+
+
+                /*
+                    If two journeys have the same date,
+                    newest created journey goes first.
+                */
+
+                journeys.sort(
+                    (a, b) => {
+
+                        if(
+                            a.journeyDate !==
+                            b.journeyDate
+                        ) {
+
+                            return String(
+                                b.journeyDate || ""
+                            )
+                            .localeCompare(
+                                String(
+                                    a.journeyDate || ""
+                                )
+                            );
+
+                        }
+
+
+                        const aCreated =
+                            a.createdAt
+                            ?.seconds || 0;
+
+
+                        const bCreated =
+                            b.createdAt
+                            ?.seconds || 0;
+
+
+                        return (
+                            bCreated -
+                            aCreated
+                        );
+
+                    }
+                );
+
+
+                renderEverything();
+
+
+                setSyncStatus(
+                    "Synced"
+                );
+
+            },
+
+
+            error => {
+
+
+                console.error(
+                    "Firestore:",
+                    error
+                );
+
+
+                setSyncStatus(
+                    "Sync error"
+                );
+
+
+                alert(
+                    "Could not load your journeys. Check your Firestore rules."
+                );
+
+            }
+
+        );
+
+}
+
+
+
+/* =========================================
+   SAVE JOURNEY
+   ========================================= */
+
+
+document
+.getElementById(
+    "journeyForm"
+)
+.addEventListener(
+    "submit",
+    async event => {
+
+
+        event.preventDefault();
+
+
+        if(
+            !currentUser ||
+            !selectedBus
+        ) {
+
+            return;
+
+        }
+
+
+        const saveButton =
+            document
+            .getElementById(
+                "saveJourneyButton"
+            );
+
+
+        saveButton.disabled =
+            true;
+
+
+        saveButton.textContent =
+            "Saving…";
+
+
+        setSyncStatus(
+            "Saving…"
+        );
+
+
+        const data = {
+
+
+            fleetNumber:
+                selectedBus.number
+                || "",
+
+
+            registration:
+                selectedBus.reg,
+
+
+            vehicleType:
+                selectedBus.type
+                || "",
+
+
+            journeyDate:
+                document
+                .getElementById(
+                    "journeyDate"
+                )
+                .value,
+
+
+            route:
+                clean(
+                    document
+                    .getElementById(
+                        "journeyRoute"
+                    )
+                    .value
+                ),
+
+
+            from:
+                clean(
+                    document
+                    .getElementById(
+                        "journeyFrom"
+                    )
+                    .value
+                ),
+
+
+            to:
+                clean(
+                    document
+                    .getElementById(
+                        "journeyTo"
+                    )
+                    .value
+                ),
+
+
+            notes:
+                clean(
+                    document
+                    .getElementById(
+                        "journeyNotes"
+                    )
+                    .value
+                ),
+
+
+            createdAt:
+                serverTimestamp()
+
+        };
+
+
+        try {
+
+
+            await addDoc(
+
+                collection(
+                    database,
+                    "users",
+                    currentUser.uid,
+                    "journeys"
+                ),
+
+                data
+
+            );
+
+
+            closeModal();
+
+        }
+
+
+        catch(error) {
+
+
+            console.error(
+                error
+            );
+
+
+            alert(
+                "Could not save the journey. Check Firebase and your Firestore rules."
+            );
+
+
+            setSyncStatus(
+                "Sync error"
+            );
+
+        }
+
+
+        finally {
+
+
+            saveButton.disabled =
+                false;
+
+
+            saveButton.textContent =
+                "Save journey";
+
+        }
+
+    }
+);
+
+
+
+/* =========================================
+   DELETE JOURNEY
+   ========================================= */
+
+
+async function deleteJourney(
+    journey
+) {
+
+
+    const confirmed =
+        confirm(
+            `Delete your journey on ${journey.registration}?`
+        );
+
+
+    if(
+        !confirmed
+    ) {
+
+        return;
+
+    }
+
+
+    setSyncStatus(
+        "Deleting…"
+    );
+
+
+    try {
+
+
+        await deleteDoc(
+
+            doc(
+                database,
+                "users",
+                currentUser.uid,
+                "journeys",
+                journey.id
+            )
+
+        );
+
+
+    }
+
+
+    catch(error) {
+
+
+        console.error(
+            error
+        );
+
+
+        alert(
+            "Could not delete the journey."
+        );
+
+
+        setSyncStatus(
+            "Sync error"
+        );
+
+    }
+
+}
+
+
+
+/* =========================================
+   LOAD BUSBASE FLEET
+   ========================================= */
+
+
+async function loadFleet() {
+
+
+    const status =
+        document
+        .getElementById(
+            "fleetStatus"
+        );
+
+
+    status.textContent =
+        "Loading BusBase fleet…";
+
+
+    try {
+
+
+        const response =
+            await fetch(
+                FLEET_PAGE +
+                "?buslog=" +
+                Date.now()
+            );
+
+
+        if(
+            !response.ok
+        ) {
+
+            throw new Error(
+                "Fleet page couldn't be loaded"
+            );
+
+        }
+
+
+        const html =
+            await response.text();
+
+
+        const detected =
+            parseFleet(
+                html
+            );
+
+
+        if(
+            !detected.length
+        ) {
+
+            throw new Error(
+                "No vehicles detected"
+            );
+
+        }
+
+
+        fleet =
+            detected;
+
+
+        status.textContent =
+            `${fleet.length} vehicles loaded from BusBase`;
+
+    }
+
+
+    catch(error) {
+
+
+        console.warn(
+            "Fleet loader:",
+            error
+        );
+
+
+        fleet =
+            normaliseFleet(
+                fallbackFleet
+            );
+
+
+        status.textContent =
+            "Using backup fleet list";
+
+    }
+
+
+    renderEverything();
+
+}
+
+
+
+/* =========================================
+   BUSBASE FLEET PARSER
+   ========================================= */
+
+
+function parseFleet(
+    html
+) {
+
+
+    const parser =
+        new DOMParser();
+
+
+    const page =
+        parser.parseFromString(
+            html,
+            "text/html"
+        );
+
+
+    const vehicles =
+        [];
+
+
+    /*
+        METHOD 1:
+        data-registration / data-reg
+    */
+
+
+    page
+    .querySelectorAll(
+        "[data-registration], [data-reg]"
+    )
+    .forEach(
+        element => {
+
+
+            const reg =
+                element.dataset.registration
+                ||
+                element.dataset.reg;
+
+
+            if(
+                !reg
+            ) {
+
+                return;
+
+            }
+
+
+            vehicles.push({
+
+
+                number:
+                    element.dataset.fleetNumber
+                    ||
+                    element.dataset.fleet
+                    ||
+                    "",
+
+
+                reg:
+                    reg,
+
+
+                type:
+                    element.dataset.vehicleType
+                    ||
+                    element.dataset.type
+                    ||
+                    ""
+
+            });
+
+        }
+    );
+
+
+    /*
+        METHOD 2:
+        tables
+    */
+
+
+    page
+    .querySelectorAll(
+        "table tr"
+    )
+    .forEach(
+        row => {
+
+
+            const cells =
+                [
+                    ...row.querySelectorAll(
+                        "td, th"
+                    )
+                ]
+                .map(
+                    cell =>
+                        clean(
+                            cell.textContent
+                        )
+                );
+
+
+            if(
+                !cells.length
+            ) {
+
+                return;
+
+            }
+
+
+            let registration =
+                "";
+
+
+            let registrationIndex =
+                -1;
+
+
+            for(
+                let i = 0;
+                i < cells.length;
+                i++
+            ) {
+
+
+                const found =
+                    findRegistration(
+                        cells[i]
+                    );
+
+
+                if(
+                    found
+                ) {
+
+
+                    registration =
+                        found;
+
+
+                    registrationIndex =
+                        i;
+
+
+                    break;
+
+                }
+
+            }
+
+
+            if(
+                !registration
+            ) {
+
+                return;
+
+            }
+
+
+            let number =
+                "";
+
+
+            /*
+                Look immediately before
+                registration for fleet number.
+            */
+
+
+            if(
+                registrationIndex > 0
+            ) {
+
+
+                const previous =
+                    cells[
+                        registrationIndex - 1
+                    ];
+
+
+                if(
+                    previous.length <= 15
+                ) {
+
+                    number =
+                        previous;
+
+                }
+
+            }
+
+
+            let type =
+                "";
+
+
+            /*
+                Look after registration
+                for vehicle description.
+            */
+
+
+            for(
+                let i =
+                    registrationIndex + 1;
+
+                i < cells.length;
+
+                i++
+            ) {
+
+
+                const value =
+                    cells[i];
+
+
+                if(
+                    value.length > 3 &&
+                    !findRegistration(
+                        value
+                    )
+                ) {
+
+
+                    type =
+                        value;
+
+
+                    break;
+
+                }
+
+            }
+
+
+            vehicles.push({
+
+                number,
+
+                reg:
+                    registration,
+
+                type
+
+            });
+
+        }
+    );
+
+
+    /*
+        METHOD 3:
+        common fleet/card layouts
+    */
+
+
+    page
+    .querySelectorAll(
+        [
+            ".fleet-card",
+            ".fleet-item",
+            ".vehicle-card",
+            ".vehicle",
+            ".bus-card",
+            ".fleet-entry",
+            ".vehicle-item"
+        ].join(",")
+    )
+    .forEach(
+        card => {
+
+
+            const text =
+                clean(
+                    card.textContent
+                );
+
+
+            const registration =
+                findRegistration(
+                    text
+                );
+
+
+            if(
+                !registration
+            ) {
+
+                return;
+
+            }
+
+
+            let number =
+                "";
+
+
+            const numberElement =
+                card.querySelector(
+                    [
+                        ".fleet-number",
+                        ".fleet-no",
+                        ".fleetNumber",
+                        "[data-fleet]"
+                    ].join(",")
+                );
+
+
+            if(
+                numberElement
+            ) {
+
+                number =
+                    clean(
+                        numberElement.textContent
+                        ||
+                        numberElement.dataset.fleet
+                    );
+
+            }
+
+
+            if(
+                !number
+            ) {
+
+
+                const match =
+                    text.match(
+                        /(?:fleet\s*(?:number|no|#)?\s*[:\-]?\s*)(\d{1,4})/i
+                    );
+
+
+                if(
+                    match
+                ) {
+
+                    number =
+                        match[1];
+
+                }
+
+            }
+
+
+            let type =
+                "";
+
+
+            const typeElement =
+                card.querySelector(
+                    [
+                        ".vehicle-type",
+                        ".type",
+                        ".model",
+                        ".description"
+                    ].join(",")
+                );
+
+
+            if(
+                typeElement
+            ) {
+
+                type =
+                    clean(
+                        typeElement.textContent
+                    );
+
+            }
+
+
+            vehicles.push({
+
+                number,
+
+                reg:
+                    registration,
+
+                type
+
+            });
+
+        }
+    );
+
+
+    return normaliseFleet(
+        vehicles
+    );
+
+}
+
+
+
+/* =========================================
+   REGISTRATION DETECTOR
+   ========================================= */
+
+
+function findRegistration(
+    value
+) {
+
+
+    if(
+        !value
+    ) {
+
+        return "";
+
+    }
+
+
+    const text =
+        String(
+            value
+        )
+        .toUpperCase()
+        .replace(
+            /\s+/g,
+            " "
+        );
+
+
+    const patterns = [
+
+
+        /*
+            Modern:
+            YX76 KLM
+        */
+
+        /\b[A-Z]{2}\d{2}\s?[A-Z]{3}\b/,
+
+
+        /*
+            Prefix:
+            R123 ABC
+        */
+
+        /\b[A-Z]\d{1,3}\s?[A-Z]{3}\b/,
+
+
+        /*
+            Suffix:
+            ABC 123D
+        */
+
+        /\b[A-Z]{3}\s?\d{1,3}[A-Z]\b/
+
+    ];
+
+
+    for(
+        const pattern
+        of patterns
+    ) {
+
+
+        const match =
+            text.match(
+                pattern
+            );
+
+
+        if(
+            match
+        ) {
+
+            return formatRegistration(
+                match[0]
+            );
+
+        }
+
+    }
+
+
+    /*
+        Special registration currently
+        used in the BusBase fleet.
+    */
+
+
+    if(
+        text.includes(
+            "UWW 2X"
+        )
+        ||
+        text.includes(
+            "UWW2X"
+        )
+    ) {
+
+        return "UWW 2X";
+
+    }
+
+
+    return "";
+
+}
+
+
+
+/* =========================================
+   REG FORMATTER
+   ========================================= */
+
+
+function formatRegistration(
+    value
+) {
+
+
+    if(
+        !value
+    ) {
+
+        return "";
+
+    }
+
+
+    const compact =
+        String(
+            value
+        )
+        .trim()
+        .toUpperCase()
+        .replace(
+            /\s+/g,
+            ""
+        );
+
+
+    if(
+        /^[A-Z]{2}\d{2}[A-Z]{3}$/
+        .test(
+            compact
+        )
+    ) {
+
+        return (
+            compact.slice(
+                0,
+                4
+            )
+            +
+            " "
+            +
+            compact.slice(
+                4
+            )
+        );
+
+    }
+
+
+    if(
+        /^[A-Z]\d{1,3}[A-Z]{3}$/
+        .test(
+            compact
+        )
+    ) {
+
+
+        const match =
+            compact.match(
+                /^([A-Z]\d{1,3})([A-Z]{3})$/
+            );
+
+
+        return (
+            match[1]
+            +
+            " "
+            +
+            match[2]
+        );
+
+    }
+
+
+    if(
+        compact ===
+        "UWW2X"
+    ) {
+
+        return "UWW 2X";
+
+    }
+
+
+    return String(
+        value
+    )
+    .trim()
+    .toUpperCase();
+
+}
+
+
+
+/* =========================================
+   NORMALISE FLEET
+   ========================================= */
+
+
+function normaliseFleet(
+    list
+) {
+
+
+    const unique =
+        new Map();
+
+
+    list.forEach(
+        bus => {
+
+
+            const registration =
+                formatRegistration(
+                    bus.reg
+                );
+
+
+            if(
+                !registration
+            ) {
+
+                return;
+
+            }
+
+
+            if(
+                unique.has(
+                    registration
+                )
+            ) {
+
+
+                const existing =
+                    unique.get(
+                        registration
+                    );
+
+
+                if(
+                    !existing.number &&
+                    bus.number
+                ) {
+
+                    existing.number =
+                        clean(
+                            bus.number
+                        );
+
+                }
+
+
+                if(
+                    (
+                        !existing.type ||
+                        existing.type ===
+                        "Vehicle"
+                    )
+                    &&
+                    bus.type
+                ) {
+
+                    existing.type =
+                        clean(
+                            bus.type
+                        );
+
+                }
+
+
+                return;
+
+            }
+
+
+            unique.set(
+                registration,
+                {
+
+                    number:
+                        clean(
+                            bus.number
+                            || ""
+                        ),
+
+                    reg:
+                        registration,
+
+                    type:
+                        clean(
+                            bus.type
+                            || "Vehicle"
+                        )
+
+                }
+            );
+
+        }
+    );
+
+
+    return [
+        ...unique.values()
+    ]
+    .sort(
+        sortFleet
+    );
+
+}
+
+
+
+/* =========================================
+   FLEET SORT
+   ========================================= */
+
+
+function sortFleet(
+    a,
+    b
+) {
+
+
+    const aNumber =
+        parseInt(
+            a.number
+        );
+
+
+    const bNumber =
+        parseInt(
+            b.number
+        );
+
+
+    if(
+        !isNaN(aNumber)
+        &&
+        !isNaN(bNumber)
+    ) {
+
+        return (
+            aNumber -
+            bNumber
+        );
+
+    }
+
+
+    if(
+        !isNaN(aNumber)
+    ) {
+
+        return -1;
+
+    }
+
+
+    if(
+        !isNaN(bNumber)
+    ) {
+
+        return 1;
+
+    }
+
+
+    return a.reg.localeCompare(
+        b.reg
+    );
+
+}
+
+
+
+/* =========================================
+   FALLBACK FLEET
+   ========================================= */
+
+
+const fallbackFleet = [
+
+    {
+        number: "",
+        reg: "YJ55 BKG",
+        type: "Optare Tempo"
+    },
+
+    {
+        number: "",
+        reg: "FX12 MUB",
+        type: "Mercedes-Benz Citaro O530"
+    },
+
+    {
+        number: "",
+        reg: "DU61 FVY",
+        type: "Alexander Dennis Enviro400"
+    },
+
+    {
+        number: "",
+        reg: "UWW 2X",
+        type: "Alexander Dennis Enviro400"
+    },
+
+    {
+        number: "",
+        reg: "LJ53 BFU",
+        type: "VDL DB250 / Wright Gemini"
+    },
+
+    {
+        number: "",
+        reg: "LJ53 BGU",
+        type: "VDL DB250 / Wright Gemini"
+    },
+
+    {
+        number: "",
+        reg: "LJ04 LDL",
+        type: "VDL DB250 / Wright Gemini"
+    },
+
+    {
+        number: "",
+        reg: "SK21 FNG",
+        type: "ADL Enviro400 MMC"
+    },
+
+    {
+        number: "",
+        reg: "SK21 FNH",
+        type: "ADL Enviro400 MMC"
+    },
+
+    {
+        number: "",
+        reg: "YX22 OLN",
+        type: "ADL Enviro400 MMC"
+    },
+
+    {
+        number: "",
+        reg: "YX72 OLO",
+        type: "ADL Enviro400 MMC"
+    },
+
+    {
+        number: "",
+        reg: "YX72 OLP",
+        type: "ADL Enviro400 MMC"
+    },
+
+    {
+        number: "",
+        reg: "YX23 OSE",
+        type: "ADL Enviro400 MMC"
+    },
+
+    {
+        number: "",
+        reg: "YX73 PHJ",
+        type: "ADL Enviro400 MMC"
+    },
+
+    {
+        number: "",
+        reg: "YY24 EKZ",
+        type: "ADL Enviro200 MMC"
+    },
+
+    {
+        number: "",
+        reg: "YY24 ELC",
+        type: "ADL Enviro200 MMC"
+    },
+
+    {
+        number: "",
+        reg: "YY24 ELH",
+        type: "ADL Enviro200 MMC"
+    },
+
+    {
+        number: "",
+        reg: "YY24 ELJ",
+        type: "ADL Enviro200 MMC"
+    },
+
+    {
+        number: "",
+        reg: "YX75 LCL",
+        type: "ADL Enviro200 MMC"
+    },
+
+    {
+        number: "",
+        reg: "YX75 KVF",
+        type: "ADL Enviro200 MMC"
+    },
+
+    {
+        number: "",
+        reg: "YX75 KVG",
+        type: "ADL Enviro200 MMC"
+    },
+
+    {
+        number: "68",
+        reg: "YX76 KLM",
+        type: "ADL Enviro400 MMC"
+    }
+
+];
+
+
+
+/* =========================================
+   RENDER EVERYTHING
+   ========================================= */
+
+
+function renderEverything() {
+
+    renderFleet();
+
+    renderHistory();
+
+    renderStats();
+
+}
+
+
+
+/* =========================================
+   RENDER FLEET
+   ========================================= */
+
+
+function renderFleet() {
+
+
+    const container =
+        document
+        .getElementById(
+            "fleet"
+        );
+
+
+    const search =
+        document
+        .getElementById(
+            "fleetSearch"
+        )
+        .value
+        .trim()
+        .toLowerCase();
+
+
+    const filter =
+        document
+        .getElementById(
+            "fleetFilter"
+        )
+        .value;
+
+
+    const visible =
+        fleet.filter(
+            bus => {
+
+
+                const rides =
+                    journeyCountForBus(
+                        bus.reg
+                    );
+
+
+                if(
+                    filter ===
+                        "travelled"
+                    &&
+                    rides === 0
+                ) {
+
+                    return false;
+
+                }
+
+
+                if(
+                    filter ===
+                        "not"
+                    &&
+                    rides > 0
+                ) {
+
+                    return false;
+
+                }
+
+
+                const searchable =
+                    `${bus.number} ${bus.reg} ${bus.type}`
+                    .toLowerCase();
+
+
+                return searchable.includes(
+                    search
+                );
+
+            }
+        );
+
+
+    container.innerHTML =
+        "";
+
+
+    if(
+        !visible.length
+    ) {
+
+
+        container.innerHTML =
+            `
+            <div class="empty">
+                No buses found.
+            </div>
+            `;
+
+
+        return;
+
+    }
+
+
+    visible.forEach(
+        bus => {
+
+
+            const rides =
+                journeyCountForBus(
+                    bus.reg
+                );
+
+
+            const card =
+                document
+                .createElement(
+                    "button"
+                );
+
+
+            card.type =
+                "button";
+
+
+            card.className =
+                "bus"
+                +
+                (
+                    rides
+                    ? " travelled"
+                    : ""
+                );
+
+
+            card.innerHTML =
+                `
+
+                <div class="bus-top">
+
+                    <span class="fleet-no">
+                        ${
+                            escapeHTML(
+                                bus.number
+                                || "—"
+                            )
+                        }
+                    </span>
+
+                    <span class="done">
+                        ✓ Travelled
+                    </span>
+
+                </div>
+
+
+                <div class="reg">
+                    ${
+                        escapeHTML(
+                            bus.reg
+                        )
+                    }
+                </div>
+
+
+                <div class="type">
+                    ${
+                        escapeHTML(
+                            bus.type
+                            || "Vehicle"
+                        )
+                    }
+                </div>
+
+
+                <div class="count">
+
+                    ${
+                        rides === 0
+
+                        ? "No journeys logged"
+
+                        : rides === 1
+
+                        ? "1 journey logged"
+
+                        : `${rides} journeys logged`
+                    }
+
+                </div>
+
+                `;
+
+
+            card.addEventListener(
+                "click",
+                () => openModal(
+                    bus
+                )
+            );
+
+
+            container.appendChild(
+                card
+            );
+
+        }
+    );
+
+}
+
+
+
+/* =========================================
+   RENDER HISTORY
+   ========================================= */
+
+
+function renderHistory() {
+
+
+    const container =
+        document
+        .getElementById(
+            "history"
+        );
+
+
+    document
+    .getElementById(
+        "journeyCount"
+    )
+    .textContent =
+        journeys.length === 0
+
+        ? "No journeys"
+
+        : journeys.length === 1
+
+        ? "1 journey"
+
+        : `${journeys.length} journeys`;
+
+
+    container.innerHTML =
+        "";
+
+
+    if(
+        !journeys.length
+    ) {
+
+
+        container.innerHTML =
+            `
+            <div class="empty">
+                No journeys logged yet.
+                Select a bus above to add your first one.
+            </div>
+            `;
+
+
+        return;
+
+    }
+
+
+    journeys.forEach(
+        journey => {
+
+
+            const item =
+                document
+                .createElement(
+                    "article"
+                );
+
+
+            item.className =
+                "journey";
+
+
+            const busTitle =
+                journey.fleetNumber
+
+                ? `${journey.fleetNumber} • ${journey.registration}`
+
+                : journey.registration;
+
+
+            let location =
+                "";
+
+
+            if(
+                journey.from
+                &&
+                journey.to
+            ) {
+
+                location =
+                    `${journey.from} → ${journey.to}`;
+
+            }
+
+
+            else if(
+                journey.from
+            ) {
+
+                location =
+                    `From ${journey.from}`;
+
+            }
+
+
+            else if(
+                journey.to
+            ) {
+
+                location =
+                    `To ${journey.to}`;
+
+            }
+
+
+            item.innerHTML =
+                `
+
+                <div class="journey-date">
+
+                    <strong>
+                        ${
+                            formatDate(
+                                journey.journeyDate
+                            )
+                        }
+                    </strong>
+
+                    ${
+                        journey.route
+
+                        ? `Route ${escapeHTML(
+                            journey.route
+                        )}`
+
+                        : "No route"
+                    }
+
+                </div>
+
+
+                <div class="journey-main">
+
+                    <strong>
+                        ${
+                            escapeHTML(
+                                busTitle
+                            )
+                        }
+                    </strong>
+
+
+                    ${
+                        journey.vehicleType
+
+                        ? `
+                        <span>
+                            ${
+                                escapeHTML(
+                                    journey.vehicleType
+                                )
+                            }
+                        </span>
+                        `
+
+                        : ""
+                    }
+
+
+                    ${
+                        location
+
+                        ? `
+                        <span>
+                            ${
+                                escapeHTML(
+                                    location
+                                )
+                            }
+                        </span>
+                        `
+
+                        : ""
+                    }
+
+
+                    ${
+                        journey.notes
+
+                        ? `
+                        <span>
+                            ${
+                                escapeHTML(
+                                    journey.notes
+                                )
+                            }
+                        </span>
+                        `
+
+                        : ""
+                    }
+
+                </div>
+
+
+                <button
+                    type="button"
+                    class="delete"
+                    title="Delete journey"
+                >
+                    ×
+                </button>
+
+                `;
+
+
+            item
+            .querySelector(
+                ".delete"
+            )
+            .addEventListener(
+                "click",
+                () => deleteJourney(
+                    journey
+                )
+            );
+
+
+            container.appendChild(
+                item
+            );
+
+        }
+    );
+
+}
+
+
+
+/* =========================================
+   STATS
+   ========================================= */
+
+
+function renderStats() {
+
+
+    document
+    .getElementById(
+        "journeyStat"
+    )
+    .textContent =
+        journeys.length;
+
+
+    const travelledRegistrations =
+        new Set(
+
+            journeys
+            .map(
+                journey =>
+                    journey.registration
+            )
+            .filter(
+                Boolean
+            )
+
+        );
+
+
+    document
+    .getElementById(
+        "busStat"
+    )
+    .textContent =
+        travelledRegistrations.size;
+
+
+    const routes =
+        new Set(
+
+            journeys
+            .map(
+                journey =>
+                    journey.route
+                    ?.trim()
+                    .toUpperCase()
+            )
+            .filter(
+                Boolean
+            )
+
+        );
+
+
+    document
+    .getElementById(
+        "routeStat"
+    )
+    .textContent =
+        routes.size;
+
+
+    /*
+        Most travelled vehicle
+    */
+
+
+    const counts =
+        {};
+
+
+    journeys.forEach(
+        journey => {
+
+
+            if(
+                !journey.registration
+            ) {
+
+                return;
+
+            }
+
+
+            counts[
+                journey.registration
+            ] =
+                (
+                    counts[
+                        journey.registration
+                    ]
+                    || 0
+                )
+                + 1;
+
+        }
+    );
+
+
+    let highestReg =
+        "";
+
+
+    let highestCount =
+        0;
+
+
+    Object.entries(
+        counts
+    )
+    .forEach(
+        ([reg, count]) => {
+
+
+            if(
+                count >
+                highestCount
+            ) {
+
+
+                highestCount =
+                    count;
+
+
+                highestReg =
+                    reg;
+
+            }
+
+        }
+    );
+
+
+    const vehicle =
+        fleet.find(
+            bus =>
+                bus.reg ===
+                highestReg
+        );
+
+
+    document
+    .getElementById(
+        "mostStat"
+    )
+    .textContent =
+        vehicle?.number
+        ||
+        highestReg
+        ||
+        "—";
+
+
+    /*
+        Fleet completion
+    */
+
+
+    const completed =
+        fleet.filter(
+            bus =>
+                travelledRegistrations
+                .has(
+                    bus.reg
+                )
+        )
+        .length;
+
+
+    const percentage =
+        fleet.length
+
+        ? (
+            completed /
+            fleet.length
+        ) * 100
+
+        : 0;
+
+
+    document
+    .getElementById(
+        "progressText"
+    )
+    .textContent =
+        `${completed} / ${fleet.length} • ${Math.round(
+            percentage
+        )}%`;
+
+
+    document
+    .getElementById(
+        "progressBar"
+    )
+    .style.width =
+        `${percentage}%`;
+
+}
+
+
+
+/* =========================================
+   JOURNEY COUNT
+   ========================================= */
+
+
+function journeyCountForBus(
+    registration
+) {
+
+
+    return journeys.filter(
+        journey =>
+            journey.registration ===
+            registration
+    )
+    .length;
+
+}
+
+
+
+/* =========================================
+   JOURNEY MODAL
+   ========================================= */
+
+
+function openModal(
+    bus
+) {
+
+
+    selectedBus =
+        bus;
+
+
+    document
+    .getElementById(
+        "selectedBus"
+    )
+    .textContent =
+
+        (
+            bus.number
+            ? `Fleet ${bus.number} • `
+            : ""
+        )
+
+        +
+
+        `${bus.reg} • ${bus.type}`;
+
+
+    document
+    .getElementById(
+        "journeyDate"
+    )
+    .value =
+        today();
+
+
+    document
+    .getElementById(
+        "journeyRoute"
+    )
+    .value =
+        "";
+
+
+    document
+    .getElementById(
+        "journeyFrom"
+    )
+    .value =
+        "";
+
+
+    document
+    .getElementById(
+        "journeyTo"
+    )
+    .value =
+        "";
+
+
+    document
+    .getElementById(
+        "journeyNotes"
+    )
+    .value =
+        "";
+
+
+    document
+    .getElementById(
+        "modalBackground"
+    )
+    .classList.add(
+        "open"
+    );
+
+}
+
+
+
+function closeModal() {
+
+
+    selectedBus =
+        null;
+
+
+    document
+    .getElementById(
+        "modalBackground"
+    )
+    .classList.remove(
+        "open"
+    );
+
+}
+
+
+
+document
+.getElementById(
+    "closeModalButton"
+)
+.addEventListener(
+    "click",
+    closeModal
+);
+
+
+document
+.getElementById(
+    "cancelModalButton"
+)
+.addEventListener(
+    "click",
+    closeModal
+);
+
+
+document
+.getElementById(
+    "modalBackground"
+)
+.addEventListener(
+    "click",
+    event => {
+
+
+        if(
+            event.target.id ===
+            "modalBackground"
+        ) {
+
+            closeModal();
+
+        }
+
+    }
+);
+
+
+
+/* =========================================
+   SEARCH / FILTER
+   ========================================= */
+
+
+document
+.getElementById(
+    "fleetSearch"
+)
+.addEventListener(
+    "input",
+    renderFleet
+);
+
+
+document
+.getElementById(
+    "fleetFilter"
+)
+.addEventListener(
+    "change",
+    renderFleet
+);
+
+
+
+/* =========================================
+   REFRESH
+   ========================================= */
+
+
+document
+.getElementById(
+    "refreshButton"
+)
+.addEventListener(
+    "click",
+    async () => {
+
+
+        await loadFleet();
+
+
+        /*
+            Firestore is already live,
+            so journeys don't need
+            manually refreshing.
+        */
+
+
+        setSyncStatus(
+            "Synced"
+        );
+
+    }
+);
+
+
+
+/* =========================================
+   ESCAPE KEY
+   ========================================= */
+
+
+document.addEventListener(
+    "keydown",
+    event => {
+
+
+        if(
+            event.key ===
+            "Escape"
+        ) {
+
+            closeModal();
+
+        }
+
+    }
+);
+
+
+
+/* =========================================
+   DATE
+   ========================================= */
+
+
+function today() {
+
+
+    const now =
+        new Date();
+
+
+    const year =
+        now.getFullYear();
+
+
+    const month =
+        String(
+            now.getMonth() + 1
+        )
+        .padStart(
+            2,
+            "0"
+        );
+
+
+    const day =
+        String(
+            now.getDate()
+        )
+        .padStart(
+            2,
+            "0"
+        );
+
+
+    return (
+        `${year}-${month}-${day}`
+    );
+
+}
+
+
+
+function formatDate(
+    value
+) {
+
+
+    if(
+        !value
+    ) {
+
+        return "Unknown date";
+
+    }
+
+
+    const parts =
+        value
+        .split("-")
+        .map(
+            Number
+        );
+
+
+    if(
+        parts.length !== 3
+    ) {
+
+        return value;
+
+    }
+
+
+    const date =
+        new Date(
+            parts[0],
+            parts[1] - 1,
+            parts[2]
+        );
+
+
+    return date.toLocaleDateString(
+        "en-GB",
+        {
+
+            day:
+                "numeric",
+
+            month:
+                "short",
+
+            year:
+                "numeric"
+
+        }
+    );
+
+}
+
+
+
+/* =========================================
+   TEXT
+   ========================================= */
+
+
+function clean(
+    value
+) {
+
+
+    return String(
+        value || ""
+    )
+    .replace(
+        /\s+/g,
+        " "
+    )
+    .trim();
+
+}
+
+
+
+function escapeHTML(
+    value
+) {
+
+
+    const element =
+        document
+        .createElement(
+            "div"
+        );
+
+
+    element.textContent =
+        String(
+            value || ""
+        );
+
+
+    return element.innerHTML;
+
+}
+
+
+
+/* =========================================
+   LOGIN MESSAGE
+   ========================================= */
+
+
+function showMessage(
+    text,
+    type
+) {
+
+
+    const message =
+        document
+        .getElementById(
+            "message"
+        );
+
+
+    message.className =
+        `message ${type}`;
+
+
+    message.textContent =
+        text;
+
+}
+
+
+
+function clearMessage() {
+
+
+    const message =
+        document
+        .getElementById(
+            "message"
+        );
+
+
+    message.className =
+        "message";
+
+
+    message.textContent =
+        "";
+
+}
+
+
+
+/* =========================================
+   AUTH ERROR MESSAGE
+   ========================================= */
+
+
+function friendlyAuthError(
+    code
+) {
+
+
+    switch(
+        code
+    ) {
+
+
+        case "auth/email-already-in-use":
+
+            return "An account already exists with that email address.";
+
+
+        case "auth/invalid-email":
+
+            return "Enter a valid email address.";
+
+
+        case "auth/weak-password":
+
+            return "Your password is too weak. Use at least 6 characters.";
+
+
+        case "auth/invalid-credential":
+
+            return "The email address or password is incorrect.";
+
+
+        case "auth/user-not-found":
+
+            return "No account was found with that email address.";
+
+
+        case "auth/wrong-password":
+
+            return "The password is incorrect.";
+
+
+        case "auth/too-many-requests":
+
+            return "Too many attempts. Try again later.";
+
+
+        case "auth/network-request-failed":
+
+            return "Could not connect to Firebase. Check your internet connection.";
+
+
+        case "auth/operation-not-allowed":
+
+            return "Email/password login has not been enabled in Firebase.";
+
+
+        default:
+
+            return "Something went wrong. Please try again.";
+
+    }
+
+}
+
+
+
+/* =========================================
+   SYNC STATUS
+   ========================================= */
+
+
+function setSyncStatus(
+    text
+) {
+
+
+    document
+    .getElementById(
+        "syncStatus"
+    )
+    .textContent =
+        text;
+
+}
+
+
+</script>
+
+</body>
+</html>
