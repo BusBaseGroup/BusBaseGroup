@@ -1,0 +1,14 @@
+name = "bus-tracker-api"
+main = "worker.js"
+compatibility_date = "2026-08-30"
+
+[vars]
+ALLOWED_ORIGIN = "*"
+FIREBASE_PROJECT_ID = "busbase-bus-tracker"
+
+# No BODS key is required.
+# The Worker reads the public BusTimes live vehicle JSON and filters to
+# the LYNX operator internally.
+#
+# When the site is live, you can tighten ALLOWED_ORIGIN to your domain,
+# for example: https://busbase.co.uk

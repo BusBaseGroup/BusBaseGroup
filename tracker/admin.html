@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111827">
+  <title>Bus Tracker Admin</title>
+  <style>
+    :root{--bg:#f4f5f7;--panel:#fff;--ink:#111827;--muted:#667085;--line:#e5e7eb;--brand:#e31b23;--brand-dark:#bd161d;--good:#15803d;--bad:#b42318;--shadow:0 10px 35px rgba(15,23,42,.08)}
+    *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}
+    .topbar{height:62px;background:#111827;color:#fff;border-bottom:3px solid var(--brand);display:flex;align-items:center;justify-content:space-between;padding:0 18px}.brand{font-weight:900}.brand small{display:block;margin-top:2px;color:#cbd5e1;font-size:11px;font-weight:500}.public-link{color:#fff;text-decoration:none;border:1px solid #374151;padding:8px 10px;border-radius:8px;font-size:12px}
+    .wrap{width:min(1180px,calc(100% - 28px));margin:24px auto 50px}.login-card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}.login-card{width:min(430px,100%);margin:70px auto;padding:22px}.login-card h1{margin:0 0 6px;font-size:22px}.login-card p{margin:0 0 18px;color:var(--muted);font-size:13px}
+    label{display:block;font-size:12px;font-weight:800;margin-bottom:6px}input,textarea{width:100%;min-height:44px;border:1px solid #d0d5dd;border-radius:8px;padding:10px 11px;background:#fff;color:var(--ink);outline:none}textarea{min-height:88px;resize:vertical}input:focus,textarea:focus{border-color:#98a2b3;box-shadow:0 0 0 3px rgba(152,162,179,.16)}
+    .field{margin-bottom:12px}.btn{min-height:42px;border:0;border-radius:8px;padding:0 14px;font-weight:800}.btn-primary{background:var(--brand);color:#fff}.btn-primary:hover{background:var(--brand-dark)}.btn-light{background:#f2f4f7;color:#344054}.btn-danger{background:#fee4e2;color:var(--bad)}.btn:disabled{opacity:.55;cursor:default}.message{margin-top:12px;min-height:18px;font-size:12px;color:var(--bad)}.success{color:var(--good)}
+    .admin{display:none}.admin.active{display:block}.heading{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:16px}.heading h1{margin:0;font-size:25px;letter-spacing:-.03em}.heading p{margin:5px 0 0;color:var(--muted);font-size:13px}.heading-actions{display:flex;gap:8px}.grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);gap:16px;align-items:start}.panel{overflow:hidden}.panel-head{padding:15px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}.panel-head h2{margin:0;font-size:15px}.panel-head span{color:var(--muted);font-size:11px}.panel-body{padding:14px 16px}.unknown-list{display:grid;gap:8px}.unknown-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px;border:1px solid var(--line);border-radius:9px}.unknown-title{font-weight:900;font-size:13px}.unknown-meta{margin-top:4px;color:var(--muted);font-size:11px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.form-field.full{grid-column:1/-1}.form-actions{display:flex;gap:8px;margin-top:14px}.form-note{margin-top:10px;color:var(--muted);font-size:11px;line-height:1.5}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:760px}th,td{padding:11px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}th{background:#f9fafb;color:#667085;font-size:11px;text-transform:uppercase;letter-spacing:.04em}td{font-size:12px}tbody tr:last-child td{border-bottom:0}.fleet{font-weight:900;font-size:13px}.muted{color:var(--muted)}.row-actions{display:flex;gap:6px}.mini{min-height:32px;padding:0 9px;font-size:11px}.pill{display:inline-flex;align-items:center;border-radius:999px;padding:4px 7px;background:#f2f4f7;color:#475467;font-size:10px;font-weight:800}.empty{padding:26px;text-align:center;color:var(--muted);font-size:12px}
+    @media(max-width:860px){.wrap{width:min(100% - 20px,1180px);margin-top:14px}.grid{grid-template-columns:1fr}.heading{align-items:flex-start;flex-direction:column}.form-grid{grid-template-columns:1fr}.form-field.full{grid-column:auto}.topbar{padding:0 10px}}
+  </style>
+</head>
+<body>
+  <header class="topbar"><div class="brand">Bus Tracker Admin<small>Vehicle matching and fleet details</small></div><a class="public-link" href="index.html">Public tracker</a></header>
+  <main class="wrap">
+    <section id="loginCard" class="login-card">
+      <h1>Admin login</h1>
+      <p>Sign in with your Firebase account. Only accounts listed in the <strong>admins</strong> collection can enter.</p>
+      <form id="loginForm">
+        <div class="field"><label for="email">Email</label><input id="email" type="email" autocomplete="email" required></div>
+        <div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required></div>
+        <button class="btn btn-primary" type="submit">Log in</button>
+        <div id="loginMessage" class="message"></div>
+      </form>
+    </section>
+
+    <section id="adminArea" class="admin">
+      <div class="heading">
+        <div><h1>Vehicle mappings</h1><p>Unknown buses show their machine ID. Add the real details and normal users will only see the fleet information.</p></div>
+        <div class="heading-actions"><button id="refreshAll" class="btn btn-light" type="button">Refresh live data</button><button id="logoutBtn" class="btn btn-light" type="button">Log out</button></div>
+      </div>
+      <div class="grid">
+        <div>
+          <section class="panel"><div class="panel-head"><h2>Unknown live vehicles</h2><span id="unknownCount">0 live</span></div><div class="panel-body"><div id="unknownList" class="unknown-list"></div></div></section>
+          <section class="panel" style="margin-top:16px"><div class="panel-head"><h2>Saved vehicles</h2><span id="mappingCount">0 saved</span></div><div id="mappingTable" class="table-wrap"></div></section>
+        </div>
+        <section class="panel"><div class="panel-head"><h2 id="formTitle">Add vehicle</h2><span id="formMode">New mapping</span></div><div class="panel-body">
+          <form id="mappingForm"><div class="form-grid">
+            <div class="form-field full"><label for="machineId">Tracking ID</label><input id="machineId" required placeholder="Select an unknown live vehicle or type the ID"></div>
+            <div class="form-field"><label for="fleetNumber">Fleet number</label><input id="fleetNumber" placeholder="e.g. 68"></div>
+            <div class="form-field"><label for="registration">Registration</label><input id="registration" placeholder="e.g. YX76 KLM" autocapitalize="characters"></div>
+            <div class="form-field full"><label for="vehicleType">Vehicle type</label><input id="vehicleType" placeholder="e.g. ADL Enviro400 MMC"></div>
+            <div class="form-field full"><label for="livery">Livery / branding</label><input id="livery" placeholder="Optional"></div>
+            <div class="form-field full"><label for="notes">Notes</label><textarea id="notes" placeholder="Optional admin notes"></textarea></div>
+          </div><div class="form-actions"><button id="saveBtn" class="btn btn-primary" type="submit">Save vehicle</button><button id="clearBtn" class="btn btn-light" type="button">Clear</button></div><div id="formMessage" class="message"></div><div class="form-note">The machine ID is the Firestore document ID. It stays visible in admin but is not shown on the public tracker after a mapping exists.</div></form>
+        </div></section>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+    import { getFirestore, collection, deleteDoc, doc, getDoc, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDKxl6hCqHsmv8SqVTDIZcQqLoNPVWpXsg",
+      authDomain: "busbase-bus-tracker.firebaseapp.com",
+      projectId: "busbase-bus-tracker",
+      storageBucket: "busbase-bus-tracker.firebasestorage.app",
+      messagingSenderId: "380602561765",
+      appId: "1:380602561765:web:5bf01fc6d7982dc950500c"
+    };
+
+    // CHANGE THIS after deploying the Cloudflare Worker.
+    const API_BASE = 'https://YOUR-WORKER.workers.dev';
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const $ = id => document.getElementById(id);
+    const els = Object.fromEntries(['loginCard','adminArea','loginForm','email','password','loginMessage','unknownCount','unknownList','mappingCount','mappingTable','mappingForm','machineId','fleetNumber','registration','vehicleType','livery','notes','formTitle','formMode','formMessage','saveBtn','clearBtn','refreshAll','logoutBtn'].map(id => [id,$(id)]));
+    let mappings = [];
+    let liveVehicles = [];
+    let verifiedAdmin = false;
+    const collator = new Intl.Collator('en-GB',{numeric:true,sensitivity:'base'});
+
+    onAuthStateChanged(auth, async user => {
+      if (!user) { verifiedAdmin=false; showLogin(); return; }
+      try {
+        const adminSnap = await getDoc(doc(db,'admins',user.uid));
+        if (!adminSnap.exists()) {
+          els.loginMessage.textContent = 'This account is not an administrator.';
+          await signOut(auth);
+          return;
+        }
+        verifiedAdmin = true;
+        els.loginCard.style.display='none';
+        els.adminArea.classList.add('active');
+        await loadAll();
+      } catch (error) {
+        console.error(error);
+        els.loginMessage.textContent='Could not verify admin access.';
+      }
+    });
+
+    els.loginForm.addEventListener('submit', async event => {
+      event.preventDefault(); els.loginMessage.textContent='';
+      try { await signInWithEmailAndPassword(auth, els.email.value.trim(), els.password.value); els.password.value=''; }
+      catch(error){ els.loginMessage.textContent = friendlyAuthError(error); }
+    });
+    els.logoutBtn.addEventListener('click', () => signOut(auth));
+    els.refreshAll.addEventListener('click', loadAll);
+    els.clearBtn.addEventListener('click', () => clearForm(true));
+
+    els.mappingForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      if (!verifiedAdmin) return;
+      els.formMessage.className='message'; els.formMessage.textContent=''; els.saveBtn.disabled=true;
+      const machineId = els.machineId.value.trim();
+      const data = {
+        fleetNumber:els.fleetNumber.value.trim(), registration:els.registration.value.trim().toUpperCase(), vehicleType:els.vehicleType.value.trim(), livery:els.livery.value.trim(), notes:els.notes.value.trim(), updatedAt:new Date().toISOString()
+      };
+      if (!machineId) { els.formMessage.textContent='Machine ID is required.'; els.saveBtn.disabled=false; return; }
+      if (!data.fleetNumber && !data.registration && !data.vehicleType) { els.formMessage.textContent='Add at least a fleet number, registration or vehicle type.'; els.saveBtn.disabled=false; return; }
+      try {
+        await setDoc(doc(db,'vehicles',machineId), data, {merge:true});
+        els.formMessage.className='message success'; els.formMessage.textContent='Vehicle saved.'; clearForm(false); await loadAll();
+      } catch(error){ console.error(error); els.formMessage.textContent='Could not save vehicle. Check your Firestore rules.'; }
+      finally{ els.saveBtn.disabled=false; }
+    });
+
+    async function loadAll(){
+      if(!verifiedAdmin)return;
+      els.refreshAll.disabled=true;
+      try{
+        const token = await auth.currentUser.getIdToken();
+        const [mappingSnap, liveResponse] = await Promise.all([getDocs(collection(db,'vehicles')), fetch(`${API_BASE}/api/admin-vehicles`,{cache:'no-store',headers:{'Authorization':`Bearer ${token}`}})]);
+        const liveData = await liveResponse.json();
+        if(!liveResponse.ok || !liveData.ok) throw new Error(liveData.error || `HTTP ${liveResponse.status}`);
+        mappings = mappingSnap.docs.map(d => ({machineId:d.id,...d.data()}));
+        liveVehicles = Array.isArray(liveData.vehicles) ? liveData.vehicles : [];
+        mappings.sort((a,b)=>collator.compare(a.fleetNumber||a.registration||a.machineId,b.fleetNumber||b.registration||b.machineId));
+        renderUnknown(); renderMappings();
+      }catch(error){console.error(error);alert(error.message || 'Could not refresh data.');}
+      finally{els.refreshAll.disabled=false;}
+    }
+
+    function renderUnknown(){
+      const mappedIds = new Set(mappings.map(m=>m.machineId));
+      const unknown = liveVehicles.filter(v=>!mappedIds.has(v.machineId)).sort((a,b)=>collator.compare(a.route||'',b.route||'') || collator.compare(a.machineId||'',b.machineId||''));
+      els.unknownCount.textContent=`${unknown.length} live`;
+      if(!unknown.length){els.unknownList.innerHTML='<div class="empty">Every live vehicle is already matched, or no vehicles are reporting.</div>';return;}
+      els.unknownList.innerHTML=unknown.map(v=>`<div class="unknown-row"><div><div class="unknown-title">Tracker ${escapeHtml(v.machineLabel || v.machineId)}</div><div class="unknown-meta">Route ${escapeHtml(v.route||'—')}${v.destination?` • to ${escapeHtml(v.destination)}`:''} • updated ${escapeHtml(timeAgo(v.recordedAt))}</div></div><button class="btn btn-primary mini" type="button" data-add="${escapeAttr(v.machineId)}">Add details</button></div>`).join('');
+      els.unknownList.querySelectorAll('[data-add]').forEach(btn=>btn.addEventListener('click',()=>beginAdd(btn.dataset.add)));
+    }
+
+    function renderMappings(){
+      els.mappingCount.textContent=`${mappings.length} saved`;
+      if(!mappings.length){els.mappingTable.innerHTML='<div class="empty">No vehicle mappings saved yet.</div>';return;}
+      els.mappingTable.innerHTML=`<table><thead><tr><th>Tracking ID</th><th>Fleet</th><th>Registration</th><th>Vehicle</th><th>Livery</th><th></th></tr></thead><tbody>${mappings.map(m=>`<tr><td><span class="pill">${escapeHtml(m.machineId)}</span></td><td class="fleet">${escapeHtml(m.fleetNumber||'—')}</td><td>${escapeHtml(m.registration||'—')}</td><td>${escapeHtml(m.vehicleType||'—')}</td><td class="muted">${escapeHtml(m.livery||'—')}</td><td><div class="row-actions"><button class="btn btn-light mini" type="button" data-edit="${escapeAttr(m.machineId)}">Edit</button><button class="btn btn-danger mini" type="button" data-delete="${escapeAttr(m.machineId)}">Delete</button></div></td></tr>`).join('')}</tbody></table>`;
+      els.mappingTable.querySelectorAll('[data-edit]').forEach(btn=>btn.addEventListener('click',()=>editMapping(btn.dataset.edit)));
+      els.mappingTable.querySelectorAll('[data-delete]').forEach(btn=>btn.addEventListener('click',()=>deleteMapping(btn.dataset.delete)));
+    }
+
+    function beginAdd(machineId){clearForm(false);els.machineId.value=machineId;els.formMode.textContent=`Tracker ${machineId}`;els.machineId.focus();window.scrollTo({top:0,behavior:'smooth'});}
+    function editMapping(machineId){const m=mappings.find(x=>x.machineId===machineId);if(!m)return;els.machineId.value=m.machineId||'';els.fleetNumber.value=m.fleetNumber||'';els.registration.value=m.registration||'';els.vehicleType.value=m.vehicleType||'';els.livery.value=m.livery||'';els.notes.value=m.notes||'';els.formTitle.textContent='Edit vehicle';els.formMode.textContent=`Tracker ${m.machineId}`;els.formMessage.textContent='';window.scrollTo({top:0,behavior:'smooth'});}
+    async function deleteMapping(machineId){const m=mappings.find(x=>x.machineId===machineId);const label=m?(m.fleetNumber?`fleet ${m.fleetNumber}`:(m.registration||machineId)):machineId;if(!confirm(`Delete the mapping for ${label}?`))return;try{await deleteDoc(doc(db,'vehicles',machineId));clearForm(false);await loadAll();}catch(error){console.error(error);alert('Could not delete mapping.');}}
+    function clearForm(focus=false){els.mappingForm.reset();els.formTitle.textContent='Add vehicle';els.formMode.textContent='New mapping';els.formMessage.className='message';els.formMessage.textContent='';if(focus)els.machineId.focus();}
+    function showLogin(){els.adminArea.classList.remove('active');els.loginCard.style.display='block';}
+    function friendlyAuthError(error){const code=error?.code||'';if(code.includes('invalid-credential'))return'Incorrect email or password.';if(code.includes('too-many-requests'))return'Too many attempts. Try again later.';return error?.message||'Could not log in.';}
+    function timeAgo(iso){const t=Date.parse(iso||'');if(!t)return'just now';const s=Math.max(0,Math.round((Date.now()-t)/1000));if(s<10)return'just now';if(s<60)return`${s}s ago`;const m=Math.round(s/60);if(m<60)return`${m}m ago`;return new Date(t).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});}
+    function escapeHtml(value){return String(value??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+    function escapeAttr(value){return escapeHtml(value);}
+  </script>
+</body>
+</html>

@@ -1,1 +1,344 @@
-hey!
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#111827">
+  <title>Bus Tracker</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIINfQ3yn5rY3gMZrMVTMOGusJtn8Y7cA=" crossorigin="">
+  <style>
+    :root{
+      --bg:#f4f5f7;--panel:#fff;--ink:#111827;--muted:#667085;--line:#e5e7eb;
+      --brand:#e31b23;--brand-dark:#bd161d;--dark:#111827;--good:#16a34a;--bad:#dc2626;
+      --shadow:0 12px 32px rgba(15,23,42,.12)
+    }
+    *{box-sizing:border-box} html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
+    button,input,select{font:inherit} button{cursor:pointer}
+    .topbar{height:64px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;gap:16px;background:var(--dark);color:#fff;border-bottom:3px solid var(--brand)}
+    .brand{display:flex;align-items:center;gap:10px;min-width:0}.brand-mark{width:36px;height:36px;border-radius:9px;background:var(--brand);display:grid;place-items:center;font-weight:900}.brand-title{font-weight:900;letter-spacing:-.02em}.brand-sub{font-size:11px;color:#cbd5e1;margin-top:2px}
+    .top-actions{display:flex;align-items:center;gap:8px}.top-btn{min-height:38px;border:1px solid #374151;border-radius:8px;background:#1f2937;color:#fff;padding:0 11px;font-size:12px;font-weight:800}.top-btn.admin{background:var(--brand);border-color:var(--brand);text-decoration:none;display:none;align-items:center}.top-btn:hover{filter:brightness(1.08)}
+    .layout{display:grid;grid-template-columns:360px minmax(0,1fr);min-height:calc(100vh - 64px)}
+    .sidebar{background:var(--panel);border-right:1px solid var(--line);overflow:auto}.side-head{padding:15px;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30;background:rgba(255,255,255,.98);backdrop-filter:blur(8px)}
+    .side-head h1{font-size:18px;margin:0 0 3px}.summary{font-size:12px;color:var(--muted)}
+    .toolbar{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:12px}.route-select,.refresh{min-height:42px;border:1px solid var(--line);border-radius:8px;background:#fff}.route-select{padding:0 10px}.refresh{padding:0 12px;font-weight:800}
+    .vehicle-list{padding:8px}.vehicle-card{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:10px;width:100%;border:0;background:transparent;border-radius:10px;padding:10px;text-align:left;color:inherit}.vehicle-card:hover,.vehicle-card.active{background:#f3f4f6}.route-badge{height:38px;border-radius:8px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:14px;font-weight:900;padding:0 6px}.vehicle-card.unknown .route-badge{background:#374151}.vehicle-main{min-width:0}.vehicle-name{display:block;font-size:14px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vehicle-meta,.vehicle-dest,.vehicle-time{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vehicle-meta{font-size:12px;color:var(--muted);margin-top:2px}.vehicle-dest{font-size:12px;color:#374151;margin-top:6px}.vehicle-time{font-size:11px;color:#98a2b3;margin-top:3px}
+    .fav-btn{width:36px;height:36px;border:0;border-radius:8px;background:transparent;font-size:21px;color:#98a2b3;align-self:start}.fav-btn.on{color:#f59e0b}.fav-btn:hover{background:#eef2f7}.empty{padding:34px 18px;text-align:center;color:var(--muted);font-size:13px}
+    .map-wrap{position:relative;min-width:0}#map{height:calc(100vh - 64px);width:100%;background:#dfe6eb}.map-note{position:absolute;z-index:500;left:14px;bottom:14px;max-width:min(460px,calc(100% - 28px));background:rgba(17,24,39,.92);color:#fff;padding:9px 11px;border-radius:8px;font-size:11px;box-shadow:var(--shadow);pointer-events:none}
+    .bus-marker-wrap{background:transparent;border:0}.bus-marker{position:relative;display:grid;place-items:center;min-width:38px;height:30px;padding:0 7px;border-radius:8px;background:var(--brand);color:#fff;border:2px solid #fff;box-shadow:0 3px 10px rgba(15,23,42,.35);font:800 12px/1 system-ui,sans-serif}.bus-marker.unknown{background:#374151}.bus-marker::after{content:"";position:absolute;left:50%;bottom:-7px;width:9px;height:9px;background:inherit;border-right:2px solid #fff;border-bottom:2px solid #fff;transform:translateX(-50%) rotate(45deg)}
+    .popup{min-width:210px}.popup-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}.popup-route{background:var(--brand);color:#fff;padding:5px 7px;border-radius:6px;font-weight:900}.popup-route.unknown{background:#374151}.popup-title{font-weight:900;font-size:14px}.popup-row{margin-top:5px;color:#4b5563;font-size:12px}.popup-muted{color:#9ca3af;font-size:11px;margin-top:8px}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.58);display:none;align-items:center;justify-content:center;padding:18px;z-index:2000}.modal-backdrop.show{display:flex}.modal{width:min(440px,100%);background:#fff;border-radius:14px;box-shadow:0 20px 70px rgba(15,23,42,.32);overflow:hidden}.modal-head{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:1px solid var(--line)}.modal-head h2{margin:0;font-size:18px}.close{width:36px;height:36px;border:0;border-radius:8px;background:#f2f4f7;font-size:18px}.modal-body{padding:18px}.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:#f2f4f7;padding:4px;border-radius:9px;margin-bottom:16px}.tab{min-height:38px;border:0;border-radius:7px;background:transparent;font-weight:800}.tab.active{background:#fff;box-shadow:0 1px 3px rgba(15,23,42,.1)}
+    .field{margin-bottom:12px}.field label{display:block;font-size:12px;font-weight:800;margin-bottom:6px}.field input{width:100%;min-height:44px;border:1px solid #d0d5dd;border-radius:8px;padding:0 11px;outline:none}.field input:focus{border-color:#98a2b3;box-shadow:0 0 0 3px rgba(152,162,179,.15)}.primary{width:100%;min-height:44px;border:0;border-radius:8px;background:var(--brand);color:#fff;font-weight:900}.link-btn{border:0;background:transparent;color:#475467;font-size:12px;padding:8px 0}.auth-message{min-height:18px;margin-top:10px;font-size:12px;color:var(--bad)}.account-card{display:none}.account-card.show{display:block}.signed-card{padding:4px 0 12px}.signed-name{font-size:18px;font-weight:900}.signed-email{font-size:12px;color:var(--muted);margin-top:3px}.account-actions{display:grid;gap:8px;margin-top:14px}.secondary{min-height:42px;border:1px solid var(--line);border-radius:8px;background:#fff;font-weight:800}.danger{color:var(--bad)}
+    @media(max-width:760px){.topbar{height:58px;padding:0 10px}.brand-sub{display:none}.layout{display:block;min-height:0}.sidebar{max-height:320px;border-right:0;border-bottom:1px solid var(--line)}.side-head{position:static}#map{height:62vh;min-height:420px}.top-btn span.label{display:none}.map-note{left:10px;bottom:10px;max-width:calc(100% - 20px)}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">B</div>
+      <div><div class="brand-title">Bus Tracker</div><div class="brand-sub">Live vehicle positions</div></div>
+    </div>
+    <div class="top-actions">
+      <a id="adminLink" class="top-btn admin" href="admin.html">Admin</a>
+      <button id="accountBtn" class="top-btn" type="button">Login / Create account</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="sidebar">
+      <div class="side-head">
+        <h1>Vehicles in service</h1>
+        <div id="summary" class="summary">Loading live buses…</div>
+        <div class="toolbar">
+          <select id="routeFilter" class="route-select" aria-label="Filter by route"><option value="">All routes</option></select>
+          <button id="refreshBtn" class="refresh" type="button">Refresh</button>
+        </div>
+      </div>
+      <div id="vehicleList" class="vehicle-list"></div>
+    </aside>
+    <section class="map-wrap">
+      <div id="map" aria-label="Live bus map"></div>
+      <div class="map-note">Unknown vehicles show their machine ID. Once an administrator adds the vehicle details, the machine ID is hidden from normal users.</div>
+    </section>
+  </main>
+
+  <div id="accountModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
+    <div class="modal">
+      <div class="modal-head"><h2 id="accountTitle">Account</h2><button id="closeModal" class="close" type="button" aria-label="Close">×</button></div>
+      <div class="modal-body">
+        <div id="signedOutBox">
+          <div class="tabs">
+            <button id="loginTab" class="tab active" type="button">Login</button>
+            <button id="registerTab" class="tab" type="button">Create account</button>
+          </div>
+          <form id="authForm">
+            <div id="nameField" class="field" style="display:none"><label for="displayName">Name</label><input id="displayName" autocomplete="name"></div>
+            <div class="field"><label for="email">Email</label><input id="email" type="email" autocomplete="email" required></div>
+            <div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" minlength="6" required></div>
+            <div id="confirmField" class="field" style="display:none"><label for="confirmPassword">Confirm password</label><input id="confirmPassword" type="password" minlength="6"></div>
+            <button id="authSubmit" class="primary" type="submit">Login</button>
+            <button id="forgotBtn" class="link-btn" type="button">Forgot password?</button>
+            <div id="authMessage" class="auth-message"></div>
+          </form>
+        </div>
+        <div id="signedInBox" class="account-card">
+          <div class="signed-card"><div id="signedName" class="signed-name"></div><div id="signedEmail" class="signed-email"></div></div>
+          <div class="account-actions"><button id="showFavsBtn" class="secondary" type="button">Show my favourites</button><button id="signOutBtn" class="secondary danger" type="button">Sign out</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDKxl6hCqHsmv8SqVTDIZcQqLoNPVWpXsg",
+      authDomain: "busbase-bus-tracker.firebaseapp.com",
+      projectId: "busbase-bus-tracker",
+      storageBucket: "busbase-bus-tracker.firebasestorage.app",
+      messagingSenderId: "380602561765",
+      appId: "1:380602561765:web:5bf01fc6d7982dc950500c"
+    };
+
+    // CHANGE THIS after deploying the Cloudflare Worker.
+    const API_BASE = 'https://YOUR-WORKER.workers.dev';
+    const REFRESH_MS = 20000;
+    const DEFAULT_CENTER = [52.7517, 0.3970];
+    const DEFAULT_ZOOM = 10;
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const map = L.map('map').setView(DEFAULT_CENTER, DEFAULT_ZOOM);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+
+    const els = Object.fromEntries([
+      'summary','routeFilter','refreshBtn','vehicleList','accountBtn','adminLink','accountModal','closeModal','signedOutBox','signedInBox','loginTab','registerTab','authForm','nameField','displayName','email','password','confirmField','confirmPassword','authSubmit','forgotBtn','authMessage','signedName','signedEmail','showFavsBtn','signOutBtn'
+    ].map(id => [id, document.getElementById(id)]));
+
+    const state = {
+      vehicles: [], markers: new Map(), route: '', selectedId: null,
+      timer: null, firstGoodLoad: true, user: null, isAdmin: false,
+      favourites: new Set(), showFavouritesOnly: false, authMode: 'login'
+    };
+    const collator = new Intl.Collator('en-GB', { numeric:true, sensitivity:'base' });
+
+    onAuthStateChanged(auth, async user => {
+      state.user = user;
+      state.isAdmin = false;
+      state.favourites = new Set();
+      if (user) {
+        els.accountBtn.textContent = user.displayName || user.email || 'Account';
+        els.signedOutBox.style.display = 'none';
+        els.signedInBox.classList.add('show');
+        els.signedName.textContent = user.displayName || 'My account';
+        els.signedEmail.textContent = user.email || '';
+
+        const [userSnap, adminSnap] = await Promise.all([
+          getDoc(doc(db, 'users', user.uid)),
+          getDoc(doc(db, 'admins', user.uid))
+        ]);
+        if (userSnap.exists()) {
+          const data = userSnap.data();
+          state.favourites = new Set(Array.isArray(data.favouriteVehicles) ? data.favouriteVehicles : []);
+        } else {
+          await setDoc(doc(db, 'users', user.uid), { displayName: user.displayName || '', email: user.email || '', favouriteVehicles: [] }, { merge:true });
+        }
+        state.isAdmin = adminSnap.exists();
+        els.adminLink.style.display = state.isAdmin ? 'inline-flex' : 'none';
+      } else {
+        els.accountBtn.textContent = 'Login / Create account';
+        els.signedOutBox.style.display = 'block';
+        els.signedInBox.classList.remove('show');
+        els.adminLink.style.display = 'none';
+        state.showFavouritesOnly = false;
+      }
+      render();
+    });
+
+    els.accountBtn.addEventListener('click', () => els.accountModal.classList.add('show'));
+    els.closeModal.addEventListener('click', closeModal);
+    els.accountModal.addEventListener('click', e => { if (e.target === els.accountModal) closeModal(); });
+    els.loginTab.addEventListener('click', () => setAuthMode('login'));
+    els.registerTab.addEventListener('click', () => setAuthMode('register'));
+    els.refreshBtn.addEventListener('click', () => loadLive(true));
+    els.routeFilter.addEventListener('change', () => { state.route = els.routeFilter.value; render(); });
+    els.showFavsBtn.addEventListener('click', () => { state.showFavouritesOnly = !state.showFavouritesOnly; els.showFavsBtn.textContent = state.showFavouritesOnly ? 'Show all vehicles' : 'Show my favourites'; closeModal(); render(); });
+    els.signOutBtn.addEventListener('click', async () => { await signOut(auth); closeModal(); });
+
+    els.authForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      els.authMessage.textContent = '';
+      const email = els.email.value.trim();
+      const password = els.password.value;
+      try {
+        if (state.authMode === 'register') {
+          const name = els.displayName.value.trim();
+          if (password !== els.confirmPassword.value) throw new Error('Passwords do not match.');
+          const cred = await createUserWithEmailAndPassword(auth, email, password);
+          if (name) await updateProfile(cred.user, { displayName:name });
+          await setDoc(doc(db, 'users', cred.user.uid), { displayName:name, email, favouriteVehicles:[] }, { merge:true });
+          els.authMessage.style.color = 'var(--good)';
+          els.authMessage.textContent = 'Account created.';
+          setTimeout(closeModal, 500);
+        } else {
+          await signInWithEmailAndPassword(auth, email, password);
+          closeModal();
+        }
+      } catch (error) {
+        els.authMessage.style.color = 'var(--bad)';
+        els.authMessage.textContent = friendlyAuthError(error);
+      }
+    });
+
+    els.forgotBtn.addEventListener('click', async () => {
+      const email = els.email.value.trim();
+      if (!email) { els.authMessage.textContent = 'Enter your email address first.'; return; }
+      try {
+        await sendPasswordResetEmail(auth, email);
+        els.authMessage.style.color = 'var(--good)';
+        els.authMessage.textContent = 'Password reset email sent.';
+      } catch (error) {
+        els.authMessage.style.color = 'var(--bad)';
+        els.authMessage.textContent = friendlyAuthError(error);
+      }
+    });
+
+    async function toggleFavourite(vehicle) {
+      if (!state.user) {
+        setAuthMode('login');
+        els.accountModal.classList.add('show');
+        return;
+      }
+      const key = favouriteKey(vehicle);
+      if (state.favourites.has(key)) state.favourites.delete(key); else state.favourites.add(key);
+      await setDoc(doc(db, 'users', state.user.uid), { favouriteVehicles:[...state.favourites] }, { merge:true });
+      render();
+    }
+
+    async function loadLive(manual=false) {
+      if (manual) els.refreshBtn.disabled = true;
+      try {
+        const response = await fetch(`${API_BASE}/api/vehicles`, { cache:'no-store' });
+        const data = await response.json();
+        if (!response.ok || !data.ok) throw new Error(data.error || `HTTP ${response.status}`);
+        state.vehicles = Array.isArray(data.vehicles) ? data.vehicles : [];
+        updateRoutes();
+        render();
+        if (state.firstGoodLoad && state.vehicles.length) {
+          fitToVehicles(state.vehicles);
+          state.firstGoodLoad = false;
+        }
+      } catch (error) {
+        console.error(error);
+        if (!state.vehicles.length) {
+          els.vehicleList.innerHTML = '<div class="empty">Could not load live vehicles. Check the Worker URL and BusTimes connection.</div>';
+          els.summary.textContent = 'Live data unavailable';
+        }
+      } finally {
+        els.refreshBtn.disabled = false;
+        clearTimeout(state.timer);
+        state.timer = setTimeout(loadLive, REFRESH_MS);
+      }
+    }
+
+    function visibleVehicles() {
+      return state.vehicles.filter(v => !state.route || v.route === state.route).filter(v => !state.showFavouritesOnly || state.favourites.has(favouriteKey(v))).sort(vehicleSort);
+    }
+
+    function render() {
+      const vehicles = visibleVehicles();
+      els.summary.textContent = `${vehicles.length} live ${vehicles.length === 1 ? 'vehicle' : 'vehicles'}${state.route ? ` on route ${state.route}` : ''}${state.showFavouritesOnly ? ' • favourites' : ''}`;
+      renderList(vehicles);
+      renderMarkers(vehicles);
+    }
+
+    function updateRoutes() {
+      const current = state.route;
+      const routes = [...new Set(state.vehicles.map(v => (v.route || '').trim()).filter(Boolean))].sort(collator.compare);
+      els.routeFilter.innerHTML = '<option value="">All routes</option>' + routes.map(r => `<option value="${escapeAttr(r)}">${escapeHtml(r)}</option>`).join('');
+      if (routes.includes(current)) els.routeFilter.value = current; else { state.route=''; els.routeFilter.value=''; }
+    }
+
+    function renderList(vehicles) {
+      if (!vehicles.length) { els.vehicleList.innerHTML = '<div class="empty">No live vehicles match this filter.</div>'; return; }
+      els.vehicleList.innerHTML = vehicles.map(v => {
+        const title = v.mapped ? ([v.fleetNumber ? `Fleet ${v.fleetNumber}` : '', v.registration].filter(Boolean).join(' • ') || 'Mapped vehicle') : `Tracker ${v.machineLabel || v.machineId || 'Unknown'}`;
+        const second = v.mapped ? (v.vehicleType || v.livery || 'Vehicle details added') : 'Vehicle details not added yet';
+        const destination = v.destination ? `to ${v.destination}` : (v.direction || 'Live journey');
+        const fav = state.user && state.favourites.has(favouriteKey(v));
+        return `<div class="vehicle-card ${v.mapped ? '' : 'unknown'} ${state.selectedId === v.id ? 'active' : ''}" data-card="${escapeAttr(v.id)}">
+          <span class="route-badge">${escapeHtml(v.route || '—')}</span>
+          <span class="vehicle-main"><span class="vehicle-name">${escapeHtml(title)}</span><span class="vehicle-meta">${escapeHtml(second)}</span><span class="vehicle-dest">${escapeHtml(destination)}</span><span class="vehicle-time">Updated ${escapeHtml(timeAgo(v.recordedAt))}</span></span>
+          <button class="fav-btn ${fav ? 'on' : ''}" type="button" data-fav="${escapeAttr(v.id)}" title="${state.user ? 'Favourite this vehicle' : 'Login to save favourites'}">★</button>
+        </div>`;
+      }).join('');
+      els.vehicleList.querySelectorAll('[data-card]').forEach(card => card.addEventListener('click', e => { if (e.target.closest('[data-fav]')) return; selectVehicle(card.dataset.card); }));
+      els.vehicleList.querySelectorAll('[data-fav]').forEach(btn => btn.addEventListener('click', () => { const v = vehicles.find(x => x.id === btn.dataset.fav); if (v) toggleFavourite(v); }));
+    }
+
+    function renderMarkers(vehicles) {
+      const ids = new Set(vehicles.map(v => v.id));
+      for (const [id, marker] of state.markers) if (!ids.has(id)) { map.removeLayer(marker); state.markers.delete(id); }
+      for (const v of vehicles) {
+        if (!Number.isFinite(v.latitude) || !Number.isFinite(v.longitude)) continue;
+        let marker = state.markers.get(v.id);
+        const icon = L.divIcon({ className:'bus-marker-wrap', html:`<div class="bus-marker${v.mapped ? '' : ' unknown'}">${escapeHtml(v.route || '—')}</div>`, iconSize:[44,38], iconAnchor:[22,36], popupAnchor:[0,-31] });
+        if (!marker) {
+          marker = L.marker([v.latitude,v.longitude], { icon }).addTo(map);
+          marker.on('click', () => { state.selectedId = v.id; renderList(visibleVehicles()); });
+          state.markers.set(v.id, marker);
+        } else { marker.setLatLng([v.latitude,v.longitude]); marker.setIcon(icon); }
+        marker.bindPopup(popupHtml(v));
+      }
+    }
+
+    function popupHtml(v) {
+      const title = v.mapped ? ([v.fleetNumber ? `Fleet ${v.fleetNumber}` : '', v.registration].filter(Boolean).join(' • ') || 'Mapped vehicle') : `Tracker ${v.machineLabel || v.machineId || 'Unknown'}`;
+      const rows = [];
+      if (v.mapped && v.vehicleType) rows.push(v.vehicleType);
+      if (v.mapped && v.livery) rows.push(v.livery);
+      if (v.destination) rows.push(`Destination: ${v.destination}`);
+      return `<div class="popup"><div class="popup-top"><span class="popup-route ${v.mapped ? '' : 'unknown'}">${escapeHtml(v.route || '—')}</span><span class="popup-title">${escapeHtml(title)}</span></div>${rows.map(r => `<div class="popup-row">${escapeHtml(r)}</div>`).join('')}<div class="popup-muted">Updated ${escapeHtml(timeAgo(v.recordedAt))}</div></div>`;
+    }
+
+    function selectVehicle(id) {
+      state.selectedId = id;
+      const vehicle = visibleVehicles().find(v => v.id === id);
+      if (!vehicle) return;
+      const marker = state.markers.get(id);
+      if (marker) { map.setView(marker.getLatLng(), Math.max(map.getZoom(),14), { animate:true }); marker.openPopup(); }
+      renderList(visibleVehicles());
+    }
+
+    function fitToVehicles(vehicles) {
+      const points = vehicles.filter(v => Number.isFinite(v.latitude) && Number.isFinite(v.longitude)).map(v => [v.latitude,v.longitude]);
+      if (points.length === 1) map.setView(points[0],13); else if (points.length > 1) map.fitBounds(points,{padding:[34,34],maxZoom:12});
+    }
+
+    function setAuthMode(mode) {
+      state.authMode = mode;
+      const register = mode === 'register';
+      els.loginTab.classList.toggle('active', !register); els.registerTab.classList.toggle('active', register);
+      els.nameField.style.display = register ? 'block' : 'none'; els.confirmField.style.display = register ? 'block' : 'none';
+      els.confirmPassword.required = register; els.displayName.required = register;
+      els.authSubmit.textContent = register ? 'Create account' : 'Login'; els.forgotBtn.style.display = register ? 'none' : 'inline-block';
+      els.password.autocomplete = register ? 'new-password' : 'current-password'; els.authMessage.textContent='';
+    }
+    function closeModal(){ els.accountModal.classList.remove('show'); els.authMessage.textContent=''; }
+    function favouriteKey(v){ return v.mapped ? `bus:${v.fleetNumber || v.registration || v.id}` : `machine:${v.machineId || v.id}`; }
+    function vehicleSort(a,b){ if(a.mapped!==b.mapped) return a.mapped?-1:1; return collator.compare(a.fleetNumber||a.registration||a.machineId||'', b.fleetNumber||b.registration||b.machineId||''); }
+    function timeAgo(iso){ const t=Date.parse(iso||''); if(!t)return'just now'; const s=Math.max(0,Math.round((Date.now()-t)/1000)); if(s<10)return'just now'; if(s<60)return`${s}s ago`; const m=Math.round(s/60); if(m<60)return`${m}m ago`; return new Date(t).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'}); }
+    function friendlyAuthError(error){ const code=error?.code||''; if(code.includes('invalid-credential'))return'Incorrect email or password.'; if(code.includes('email-already-in-use'))return'That email already has an account.'; if(code.includes('weak-password'))return'Use a stronger password.'; if(code.includes('invalid-email'))return'Enter a valid email address.'; if(code.includes('too-many-requests'))return'Too many attempts. Try again later.'; return error?.message || 'Something went wrong.'; }
+    function escapeHtml(value){ return String(value??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+    function escapeAttr(value){ return escapeHtml(value); }
+
+    setAuthMode('login');
+    loadLive();
+  </script>
+</body>
+</html>
