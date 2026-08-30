@@ -14,3 +14,11 @@ IMPORTANT:
 This is a test/direct-browser version. If bustimes.org does not allow CORS from your website, the browser will block the live request. In that case a tiny backend/proxy is unavoidable.
 
 Mapped vehicle IDs are hidden in the page UI, but because this version fetches BusTimes directly in the browser, a technical user can still inspect the raw BusTimes request in browser developer tools.
+
+
+ACCURACY UPDATE
+- Public marker centre is now exactly anchored to the BusTimes GPS coordinate.
+- Removed straight-line marker interpolation that could cut corners/off-road.
+- Polls BusTimes every 7 seconds.
+- Positions older than 4 minutes are not plotted as live.
+- No location extrapolation is used.

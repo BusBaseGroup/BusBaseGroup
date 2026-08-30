@@ -152,10 +152,10 @@
     #map .maplibregl-popup-content{padding:12px 13px;border-radius:11px;box-shadow:0 12px 32px rgba(15,23,42,.18)}
     #map .maplibregl-popup-close-button{width:30px;height:30px;border-radius:7px;font-size:18px;color:#667085}
     #map .maplibregl-popup-close-button:hover{background:#f2f4f7}
-    .bus-map-marker{min-width:42px;height:34px;padding:0 8px;border:2px solid #fff;border-radius:9px;background:var(--brand);color:#fff;display:grid;place-items:center;box-shadow:0 5px 14px rgba(15,23,42,.35);font:900 12px/1 Inter,ui-sans-serif,system-ui,sans-serif;white-space:nowrap;transition:width .15s,height .15s,background .15s,box-shadow .15s;position:relative}
-    .bus-map-marker::after{content:"";position:absolute;left:50%;bottom:-6px;width:8px;height:8px;background:inherit;border-right:2px solid #fff;border-bottom:2px solid #fff;transform:translateX(-50%) rotate(45deg)}
+    .bus-map-marker{width:38px;height:38px;padding:0;border:3px solid #fff;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;box-shadow:0 4px 12px rgba(15,23,42,.34);font:900 11.5px/1 Inter,ui-sans-serif,system-ui,sans-serif;white-space:nowrap;position:relative;transform:translateZ(0)}
+    .bus-map-marker::after{content:"";position:absolute;left:50%;top:50%;width:5px;height:5px;border-radius:50%;background:#fff;transform:translate(-50%,-50%);opacity:.24;pointer-events:none}
     .bus-map-marker.unknown{background:var(--unknown)}
-    .bus-map-marker.selected{min-width:48px;height:38px;box-shadow:0 7px 18px rgba(15,23,42,.42)}
+    .bus-map-marker.selected{width:44px;height:44px;border-width:4px;box-shadow:0 6px 18px rgba(15,23,42,.42)}
     .bus-map-marker:focus-visible{outline:3px solid rgba(215,25,32,.25);outline-offset:3px}
     .popup{min-width:205px;padding-right:10px}
     .popup-top{display:flex;align-items:center;gap:8px;margin-bottom:7px}
@@ -234,7 +234,7 @@
       <div class="brand-mark">B</div>
       <div class="brand-copy">
         <div class="brand-title">Bus Tracker</div>
-        <div class="brand-sub">Live vehicle positions</div>
+        <div class="brand-sub">Live GPS vehicle positions</div>
       </div>
     </div>
 
@@ -384,10 +384,12 @@
     // No map API key is required. The map uses MapLibre + OpenFreeMap.
     const MAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty';
 
-    // Check BusTimes for updated positions every 10 seconds.
-    // Vehicle mappings are cached in-browser for 60 seconds to reduce Firestore reads.
-    const REFRESH_MS = 10000;
+    // Check BusTimes frequently, but always display the newest RAW GPS point.
+    // We deliberately do NOT interpolate between points because straight-line animation
+    // can cut corners and make a bus look like it is driving through fields/buildings.
+    const REFRESH_MS = 7000;
     const MAPPING_REFRESH_MS = 60000;
+    const STALE_POSITION_MS = 4 * 60 * 1000;
     const DEFAULT_CENTER = { lat: 52.7517, lng: 0.3970 };
     const DEFAULT_ZOOM = 10;
     const LIVE_AREA = { south: 52.10, west: -1.00, north: 53.30, east: 1.80 };
@@ -850,9 +852,16 @@
     }
 
     function normalizeDate(value) {
-      if (!value) return new Date().toISOString();
+      if (!value) return '';
       const date = new Date(value);
-      return Number.isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
+      return Number.isNaN(date.getTime()) ? '' : date.toISOString();
+    }
+
+    function isFreshPosition(vehicle) {
+      if (!vehicle.recordedAt) return true;
+      const time = Date.parse(vehicle.recordedAt);
+      if (!Number.isFinite(time)) return true;
+      return Date.now() - time <= STALE_POSITION_MS;
     }
 
     function newer(a, b) {
@@ -887,7 +896,7 @@
     }
 
     function validVehicles(vehicles) {
-      return vehicles.filter(isValidPosition);
+      return vehicles.filter(vehicle => isValidPosition(vehicle) && isFreshPosition(vehicle));
     }
 
     function updateRoutes() {
@@ -933,7 +942,7 @@
               <span class="vehicle-name">${escapeHtml(publicVehicleTitle(vehicle))}</span>
               <span class="vehicle-meta">${escapeHtml(publicVehicleSubtitle(vehicle))}</span>
               <span class="vehicle-dest">${escapeHtml(dest)}</span>
-              <span class="vehicle-time">Updated ${escapeHtml(timeAgo(vehicle.recordedAt))}</span>
+              <span class="vehicle-time">GPS ${escapeHtml(timeAgo(vehicle.recordedAt))}</span>
             </span>
             <button class="fav-btn ${favourite ? 'on' : ''}" type="button" data-fav="${escapeAttr(vehicle.id)}" aria-label="${state.user ? 'Favourite this vehicle' : 'Login to save favourites'}" title="${state.user ? 'Favourite this vehicle' : 'Login to save favourites'}">★</button>
           </div>`;
@@ -987,7 +996,10 @@
           element.setAttribute('aria-label', `${vehicle.route || 'Bus'} ${publicVehicleTitle(vehicle)}`);
           updateMarkerElement(element, vehicle);
 
-          const marker = new maplibregl.Marker({ element, anchor: 'bottom' })
+          // Anchor the CENTRE of the marker to the GPS coordinate.
+          // This prevents the marker graphic itself from appearing several pixels
+          // south of the real point, which was happening with the old pin tip.
+          const marker = new maplibregl.Marker({ element, anchor: 'center' })
             .setLngLat([target.lng, target.lat])
             .addTo(state.map);
 
@@ -1010,16 +1022,16 @@
           entry.vehicle = vehicle;
           updateMarkerElement(entry.element, vehicle);
 
-          const positionChanged = !entry.target || distanceMetres(entry.target, target) >= 1;
+          const positionChanged = !entry.target || distanceMetres(entry.target, target) >= 0.5;
           if (positionChanged || entry.recordedAt !== (vehicle.recordedAt || '')) {
-            moveMarkerSmoothly(entry, target);
+            setMarkerToExactGps(entry, target);
             entry.recordedAt = vehicle.recordedAt || '';
             entry.target = target;
 
             if (state.followSelected && state.selectedId === vehicle.id) {
               state.map.easeTo({
                 center: [target.lng, target.lat],
-                duration: 650,
+                duration: 280,
                 essential: true
               });
             }
@@ -1041,43 +1053,19 @@
       element.setAttribute('aria-label', `${vehicle.route || 'Bus'} ${publicVehicleTitle(vehicle)}`);
     }
 
-    function moveMarkerSmoothly(entry, target) {
-      const current = entry.marker.getLngLat();
-      if (!current) {
-        entry.marker.setLngLat([target.lng, target.lat]);
-        return;
+    function setMarkerToExactGps(entry, target) {
+      // Use the exact latest BusTimes coordinate immediately.
+      // Never estimate/extrapolate or draw a straight line between old/new points.
+      if (entry.animationFrame) {
+        cancelAnimationFrame(entry.animationFrame);
+        entry.animationFrame = null;
       }
 
-      const start = { lat: current.lat, lng: current.lng };
-      const distance = distanceMetres(start, target);
+      entry.marker.setLngLat([target.lng, target.lat]);
 
-      // If a ticket machine jumps to another bus or the feed has a bad point,
-      // move immediately instead of animating a marker across the county.
-      if (!Number.isFinite(distance) || distance > 5000 || distance < 2) {
-        entry.marker.setLngLat([target.lng, target.lat]);
-        return;
+      if (state.popup && state.infoOpenId === entry.vehicle.id) {
+        state.popup.setLngLat([target.lng, target.lat]);
       }
-
-      if (entry.animationFrame) cancelAnimationFrame(entry.animationFrame);
-      const started = performance.now();
-      const duration = Math.min(2200, Math.max(850, distance * 2.2));
-
-      const frame = now => {
-        const progress = Math.min(1, (now - started) / duration);
-        const eased = 1 - Math.pow(1 - progress, 3);
-        const lng = start.lng + (target.lng - start.lng) * eased;
-        const lat = start.lat + (target.lat - start.lat) * eased;
-        entry.marker.setLngLat([lng, lat]);
-
-        if (state.popup && state.infoOpenId === entry.vehicle.id) {
-          state.popup.setLngLat([lng, lat]);
-        }
-
-        if (progress < 1) entry.animationFrame = requestAnimationFrame(frame);
-        else entry.animationFrame = null;
-      };
-
-      entry.animationFrame = requestAnimationFrame(frame);
     }
 
     function distanceMetres(a, b) {
@@ -1103,7 +1091,7 @@
           <span class="popup-title">${escapeHtml(publicVehicleTitle(vehicle))}</span>
         </div>
         ${rows.map(row => `<div class="popup-row">${escapeHtml(row)}</div>`).join('')}
-        <div class="popup-muted">Updated ${escapeHtml(timeAgo(vehicle.recordedAt))}</div>
+        <div class="popup-muted">GPS ${escapeHtml(timeAgo(vehicle.recordedAt))}</div>
       </div>`;
     }
 
@@ -1169,7 +1157,7 @@
       els.selectedTitle.textContent = publicVehicleTitle(vehicle);
       els.selectedSub.textContent = publicVehicleSubtitle(vehicle);
       els.selectedDest.textContent = vehicle.destination ? `Service to ${vehicle.destination}` : 'Live journey';
-      els.selectedTime.textContent = `Updated ${timeAgo(vehicle.recordedAt)}`;
+      els.selectedTime.textContent = `GPS ${timeAgo(vehicle.recordedAt)}`;
       els.selectedCard.classList.add('show');
     }
 
@@ -1239,7 +1227,7 @@
 
     function timeAgo(iso) {
       const time = Date.parse(iso || '');
-      if (!time) return 'just now';
+      if (!time) return 'time unavailable';
       const seconds = Math.max(0, Math.round((Date.now() - time) / 1000));
       if (seconds < 10) return 'just now';
       if (seconds < 60) return `${seconds}s ago`;
