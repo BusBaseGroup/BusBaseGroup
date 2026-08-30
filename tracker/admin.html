@@ -10,7 +10,7 @@
     *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,textarea{font:inherit}button{cursor:pointer}
     .topbar{height:62px;background:#111827;color:#fff;border-bottom:3px solid var(--brand);display:flex;align-items:center;justify-content:space-between;padding:0 18px}.brand{font-weight:900}.brand small{display:block;margin-top:2px;color:#cbd5e1;font-size:11px;font-weight:500}.public-link{color:#fff;text-decoration:none;border:1px solid #374151;padding:8px 10px;border-radius:8px;font-size:12px}
     .wrap{width:min(1180px,calc(100% - 28px));margin:24px auto 50px}.login-card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}.login-card{width:min(430px,100%);margin:70px auto;padding:22px}.login-card h1{margin:0 0 6px;font-size:22px}.login-card p{margin:0 0 18px;color:var(--muted);font-size:13px}
-    label{display:block;font-size:12px;font-weight:800;margin-bottom:6px}input,textarea{width:100%;min-height:44px;border:1px solid #d0d5dd;border-radius:8px;padding:10px 11px;background:#fff;color:var(--ink);outline:none}textarea{min-height:88px;resize:vertical}input:focus,textarea:focus{border-color:#98a2b3;box-shadow:0 0 0 3px rgba(152,162,179,.16)}
+    label{display:block;font-size:12px;font-weight:800;margin-bottom:6px}input,textarea{width:100%;min-height:44px;border:1px solid #d0d5dd;border-radius:8px;padding:10px 11px;background:#fff;color:var(--ink);outline:none}textarea{min-height:88px;resize:vertical}.colour-row{display:grid;grid-template-columns:54px minmax(0,1fr);gap:9px;align-items:center}.colour-row input[type=color]{width:54px;height:44px;padding:3px;cursor:pointer}.colour-swatch{display:inline-block;width:18px;height:18px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px #d0d5dd;vertical-align:middle;margin-right:7px}input:focus,textarea:focus{border-color:#98a2b3;box-shadow:0 0 0 3px rgba(152,162,179,.16)}
     .field{margin-bottom:12px}.btn{min-height:42px;border:0;border-radius:8px;padding:0 14px;font-weight:800}.btn-primary{background:var(--brand);color:#fff}.btn-primary:hover{background:var(--brand-dark)}.btn-light{background:#f2f4f7;color:#344054}.btn-danger{background:#fee4e2;color:var(--bad)}.btn:disabled{opacity:.55;cursor:default}.message{margin-top:12px;min-height:18px;font-size:12px;color:var(--bad)}.success{color:var(--good)}
     .admin{display:none}.admin.active{display:block}.heading{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin-bottom:16px}.heading h1{margin:0;font-size:25px;letter-spacing:-.03em}.heading p{margin:5px 0 0;color:var(--muted);font-size:13px}.heading-actions{display:flex;gap:8px}.grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);gap:16px;align-items:start}.panel{overflow:hidden}.panel-head{padding:15px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}.panel-head h2{margin:0;font-size:15px}.panel-head span{color:var(--muted);font-size:11px}.panel-body{padding:14px 16px}.unknown-list{display:grid;gap:8px}.unknown-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px;border:1px solid var(--line);border-radius:9px}.unknown-title{font-weight:900;font-size:13px}.unknown-meta{margin-top:4px;color:var(--muted);font-size:11px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.form-field.full{grid-column:1/-1}.form-actions{display:flex;gap:8px;margin-top:14px}.form-note{margin-top:10px;color:var(--muted);font-size:11px;line-height:1.5}.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:760px}th,td{padding:11px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}th{background:#f9fafb;color:#667085;font-size:11px;text-transform:uppercase;letter-spacing:.04em}td{font-size:12px}tbody tr:last-child td{border-bottom:0}.fleet{font-weight:900;font-size:13px}.muted{color:var(--muted)}.row-actions{display:flex;gap:6px}.mini{min-height:32px;padding:0 9px;font-size:11px}.pill{display:inline-flex;align-items:center;border-radius:999px;padding:4px 7px;background:#f2f4f7;color:#475467;font-size:10px;font-weight:800}.empty{padding:26px;text-align:center;color:var(--muted);font-size:12px}
     @media(max-width:860px){.wrap{width:min(100% - 20px,1180px);margin-top:14px}.grid{grid-template-columns:1fr}.heading{align-items:flex-start;flex-direction:column}.form-grid{grid-template-columns:1fr}.form-field.full{grid-column:auto}.topbar{padding:0 10px}}
@@ -46,7 +46,8 @@
             <div class="form-field"><label for="fleetNumber">Fleet number</label><input id="fleetNumber" placeholder="e.g. 68"></div>
             <div class="form-field"><label for="registration">Registration</label><input id="registration" placeholder="e.g. YX76 KLM" autocapitalize="characters"></div>
             <div class="form-field full"><label for="vehicleType">Vehicle type</label><input id="vehicleType" placeholder="e.g. ADL Enviro400 MMC"></div>
-            <div class="form-field full"><label for="livery">Livery / branding</label><input id="livery" placeholder="Optional"></div>
+            <div class="form-field full"><label for="livery">Livery / branding</label><input id="livery" placeholder="e.g. Coastliner / red &amp; cream"></div>
+            <div class="form-field full"><label for="liveryColour">Livery colour on map</label><div class="colour-row"><input id="liveryColour" type="color" value="#d71920" aria-label="Choose livery colour"><input id="liveryColourHex" value="#D71920" maxlength="7" placeholder="#D71920" autocapitalize="characters"></div></div>
             <div class="form-field full"><label for="notes">Notes</label><textarea id="notes" placeholder="Optional admin notes"></textarea></div>
           </div><div class="form-actions"><button id="saveBtn" class="btn btn-primary" type="submit">Save vehicle</button><button id="clearBtn" class="btn btn-light" type="button">Clear</button></div><div id="formMessage" class="message"></div><div class="form-note">The machine ID is the Firestore document ID. It stays visible in admin but is not shown on the public tracker after a mapping exists.</div></form>
         </div></section>
@@ -75,7 +76,7 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
     const $ = id => document.getElementById(id);
-    const els = Object.fromEntries(['loginCard','adminArea','loginForm','email','password','loginMessage','unknownCount','unknownList','mappingCount','mappingTable','mappingForm','machineId','fleetNumber','registration','vehicleType','livery','notes','formTitle','formMode','formMessage','saveBtn','clearBtn','refreshAll','logoutBtn'].map(id => [id,$(id)]));
+    const els = Object.fromEntries(['loginCard','adminArea','loginForm','email','password','loginMessage','unknownCount','unknownList','mappingCount','mappingTable','mappingForm','machineId','fleetNumber','registration','vehicleType','livery','liveryColour','liveryColourHex','notes','formTitle','formMode','formMessage','saveBtn','clearBtn','refreshAll','logoutBtn'].map(id => [id,$(id)]));
     let mappings = [];
     let liveVehicles = [];
     let verifiedAdmin = false;
@@ -109,13 +110,21 @@
     els.refreshAll.addEventListener('click', loadAll);
     els.clearBtn.addEventListener('click', () => clearForm(true));
 
+    els.liveryColour.addEventListener('input', () => {
+      els.liveryColourHex.value = els.liveryColour.value.toUpperCase();
+    });
+    els.liveryColourHex.addEventListener('input', () => {
+      const value = normaliseColour(els.liveryColourHex.value);
+      if (value) els.liveryColour.value = value;
+    });
+
     els.mappingForm.addEventListener('submit', async event => {
       event.preventDefault();
       if (!verifiedAdmin) return;
       els.formMessage.className='message'; els.formMessage.textContent=''; els.saveBtn.disabled=true;
       const machineId = els.machineId.value.trim();
       const data = {
-        fleetNumber:els.fleetNumber.value.trim(), registration:els.registration.value.trim().toUpperCase(), vehicleType:els.vehicleType.value.trim(), livery:els.livery.value.trim(), notes:els.notes.value.trim(), updatedAt:new Date().toISOString()
+        fleetNumber:els.fleetNumber.value.trim(), registration:els.registration.value.trim().toUpperCase(), vehicleType:els.vehicleType.value.trim(), livery:els.livery.value.trim(), liveryColour:normaliseColour(els.liveryColourHex.value || els.liveryColour.value), notes:els.notes.value.trim(), updatedAt:new Date().toISOString()
       };
       if (!machineId) { els.formMessage.textContent='Machine ID is required.'; els.saveBtn.disabled=false; return; }
       if (!data.fleetNumber && !data.registration && !data.vehicleType) { els.formMessage.textContent='Add at least a fleet number, registration or vehicle type.'; els.saveBtn.disabled=false; return; }
@@ -214,6 +223,7 @@
     }
 
     function clean(value){return String(value??'').trim();}
+    function normaliseColour(value){const colour=clean(value);if(/^#[0-9a-f]{6}$/i.test(colour))return colour.toUpperCase();if(/^#[0-9a-f]{3}$/i.test(colour))return('#'+colour.slice(1).split('').map(ch=>ch+ch).join('')).toUpperCase();return'';}
     function normalizeDate(value){if(!value)return new Date().toISOString();const d=new Date(value);return Number.isNaN(d.getTime())?new Date().toISOString():d.toISOString();}
     function newer(a,b){return(Date.parse(a||'')||0)>=(Date.parse(b||'')||0);}
     function slugify(value){return clean(value).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');}
@@ -230,15 +240,15 @@
     function renderMappings(){
       els.mappingCount.textContent=`${mappings.length} saved`;
       if(!mappings.length){els.mappingTable.innerHTML='<div class="empty">No vehicle mappings saved yet.</div>';return;}
-      els.mappingTable.innerHTML=`<table><thead><tr><th>Tracking ID</th><th>Fleet</th><th>Registration</th><th>Vehicle</th><th>Livery</th><th></th></tr></thead><tbody>${mappings.map(m=>`<tr><td><span class="pill">${escapeHtml(m.machineId)}</span></td><td class="fleet">${escapeHtml(m.fleetNumber||'—')}</td><td>${escapeHtml(m.registration||'—')}</td><td>${escapeHtml(m.vehicleType||'—')}</td><td class="muted">${escapeHtml(m.livery||'—')}</td><td><div class="row-actions"><button class="btn btn-light mini" type="button" data-edit="${escapeAttr(m.machineId)}">Edit</button><button class="btn btn-danger mini" type="button" data-delete="${escapeAttr(m.machineId)}">Delete</button></div></td></tr>`).join('')}</tbody></table>`;
+      els.mappingTable.innerHTML=`<table><thead><tr><th>Tracking ID</th><th>Fleet</th><th>Registration</th><th>Vehicle</th><th>Livery</th><th></th></tr></thead><tbody>${mappings.map(m=>{const colour=normaliseColour(m.liveryColour)||'#D71920';return `<tr><td><span class="pill">${escapeHtml(m.machineId)}</span></td><td class="fleet">${escapeHtml(m.fleetNumber||'—')}</td><td>${escapeHtml(m.registration||'—')}</td><td>${escapeHtml(m.vehicleType||'—')}</td><td class="muted"><span class="colour-swatch" style="background:${escapeAttr(colour)}"></span>${escapeHtml(m.livery||'—')}</td><td><div class="row-actions"><button class="btn btn-light mini" type="button" data-edit="${escapeAttr(m.machineId)}">Edit</button><button class="btn btn-danger mini" type="button" data-delete="${escapeAttr(m.machineId)}">Delete</button></div></td></tr>`}).join('')}</tbody></table>`;
       els.mappingTable.querySelectorAll('[data-edit]').forEach(btn=>btn.addEventListener('click',()=>editMapping(btn.dataset.edit)));
       els.mappingTable.querySelectorAll('[data-delete]').forEach(btn=>btn.addEventListener('click',()=>deleteMapping(btn.dataset.delete)));
     }
 
     function beginAdd(machineId){clearForm(false);els.machineId.value=machineId;els.formMode.textContent=`Tracker ${machineId}`;els.machineId.focus();window.scrollTo({top:0,behavior:'smooth'});}
-    function editMapping(machineId){const m=mappings.find(x=>x.machineId===machineId);if(!m)return;els.machineId.value=m.machineId||'';els.fleetNumber.value=m.fleetNumber||'';els.registration.value=m.registration||'';els.vehicleType.value=m.vehicleType||'';els.livery.value=m.livery||'';els.notes.value=m.notes||'';els.formTitle.textContent='Edit vehicle';els.formMode.textContent=`Tracker ${m.machineId}`;els.formMessage.textContent='';window.scrollTo({top:0,behavior:'smooth'});}
+    function editMapping(machineId){const m=mappings.find(x=>x.machineId===machineId);if(!m)return;els.machineId.value=m.machineId||'';els.fleetNumber.value=m.fleetNumber||'';els.registration.value=m.registration||'';els.vehicleType.value=m.vehicleType||'';els.livery.value=m.livery||'';const colour=normaliseColour(m.liveryColour)||'#D71920';els.liveryColour.value=colour;els.liveryColourHex.value=colour;els.notes.value=m.notes||'';els.formTitle.textContent='Edit vehicle';els.formMode.textContent=`Tracker ${m.machineId}`;els.formMessage.textContent='';window.scrollTo({top:0,behavior:'smooth'});}
     async function deleteMapping(machineId){const m=mappings.find(x=>x.machineId===machineId);const label=m?(m.fleetNumber?`fleet ${m.fleetNumber}`:(m.registration||machineId)):machineId;if(!confirm(`Delete the mapping for ${label}?`))return;try{await deleteDoc(doc(db,'vehicles',machineId));clearForm(false);await loadAll();}catch(error){console.error(error);alert('Could not delete mapping.');}}
-    function clearForm(focus=false){els.mappingForm.reset();els.formTitle.textContent='Add vehicle';els.formMode.textContent='New mapping';els.formMessage.className='message';els.formMessage.textContent='';if(focus)els.machineId.focus();}
+    function clearForm(focus=false){els.mappingForm.reset();els.liveryColour.value='#D71920';els.liveryColourHex.value='#D71920';els.formTitle.textContent='Add vehicle';els.formMode.textContent='New mapping';els.formMessage.className='message';els.formMessage.textContent='';if(focus)els.machineId.focus();}
     function showLogin(){els.adminArea.classList.remove('active');els.loginCard.style.display='block';}
     function friendlyAuthError(error){const code=error?.code||'';if(code.includes('invalid-credential'))return'Incorrect email or password.';if(code.includes('too-many-requests'))return'Too many attempts. Try again later.';return error?.message||'Could not log in.';}
     function timeAgo(iso){const t=Date.parse(iso||'');if(!t)return'just now';const s=Math.max(0,Math.round((Date.now()-t)/1000));if(s<10)return'just now';if(s<60)return`${s}s ago`;const m=Math.round(s/60);if(m<60)return`${m}m ago`;return new Date(t).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});}
