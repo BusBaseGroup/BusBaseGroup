@@ -57,3 +57,10 @@ BUSTIMES DEPENDENCY
 - The live endpoint used by this project is part of the BusTimes website implementation. It does
   not require a key, but it could change in the future. If BusTimes changes it, worker.js may need
   updating.
+
+MAP LAYOUT UPDATE
+- Desktop now uses a proper fixed vehicle sidebar + full map area, instead of placing the list over the map.
+- Mobile keeps the map full-screen with a collapsible bottom vehicle sheet.
+- Leaflet resize handling has been hardened for Safari/mobile viewport changes.
+- Fit-all no longer pushes the vehicle bounds heavily to one side.
+- Standard OpenStreetMap colours are used without the previous tile filter.
