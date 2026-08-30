@@ -3,63 +3,236 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#111827">
+  <meta name="theme-color" content="#15181d">
   <title>Bus Tracker</title>
 
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIINfQ3yn5rY3ZgMZrMVTMOGusJtn8Y7cA="
-    crossorigin=""
-  >
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css">
+  <script src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js"></script>
 
   <style>
-:root {
-  --bg:#f6f7f9;
-  --panel:#ffffff;
-  --ink:#15171a;
-  --muted:#667085;
-  --line:#e6e8ec;
-  --brand:#d71920;
-  --brand-dark:#aa1117;
-  --dark:#14181f;
-  --good:#16803c;
-  --bad:#c62828;
-  --amber:#d58a00;
-  --sidebar:356px;
-  --header:58px;
-  --shadow:0 10px 30px rgba(15,23,42,.13);
-}
-*{box-sizing:border-box}
-html,body{margin:0;width:100%;height:100%;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-body{overflow:hidden}
-button,input,select{font:inherit}
-button{cursor:pointer}
-.topbar{height:var(--header);padding:0 14px;display:flex;align-items:center;justify-content:space-between;gap:14px;background:var(--dark);color:#fff;border-bottom:3px solid var(--brand);position:relative;z-index:1500}
-.brand{min-width:0;display:flex;align-items:center;gap:10px}.brand-mark{width:34px;height:34px;border-radius:8px;background:var(--brand);display:grid;place-items:center;font-weight:950;letter-spacing:-.04em;flex:0 0 auto}.brand-title{font-weight:900;letter-spacing:-.02em;line-height:1.05}.brand-sub{margin-top:3px;color:#bfc6d0;font-size:11px;line-height:1}.top-actions{display:flex;align-items:center;gap:7px;flex:0 0 auto}.top-btn{min-height:36px;border:1px solid #343b47;border-radius:8px;background:#202631;color:#fff;padding:0 11px;font-size:12px;font-weight:800}.top-btn.admin{display:none;align-items:center;background:var(--brand);border-color:var(--brand);text-decoration:none}.top-btn:hover{background:#2b3340}.top-btn.admin:hover{background:var(--brand-dark)}
-.map-stage{position:relative;height:calc(100vh - var(--header));height:calc(100dvh - var(--header));display:grid;grid-template-columns:var(--sidebar) minmax(0,1fr);background:#d9dee5;overflow:hidden}
-#map{grid-column:2;position:relative;width:100%;height:100%;min-width:0;background:#dce2e8;z-index:1}
-.tracker-panel{grid-column:1;grid-row:1;position:relative;z-index:900;width:100%;height:100%;min-height:0;display:flex;flex-direction:column;background:var(--panel);border-right:1px solid var(--line);overflow:hidden;box-shadow:4px 0 18px rgba(15,23,42,.06)}
-.panel-head{padding:15px 14px 12px;border-bottom:1px solid var(--line);flex:0 0 auto;background:#fff}.panel-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:9px}.panel-head h1{margin:0;font-size:18px;letter-spacing:-.025em;line-height:1.12}.summary{margin-top:4px;color:var(--muted);font-size:12px}.live-pill{display:inline-flex;align-items:center;gap:6px;min-height:27px;padding:0 8px;border:1px solid #caecd6;border-radius:999px;background:#f3fbf6;color:#12642f;font-size:10.5px;font-weight:850;white-space:nowrap}.live-dot{width:7px;height:7px;border-radius:50%;background:var(--good)}.live-pill.loading{border-color:#e4e7ec;background:#f8f9fb;color:#667085}.live-pill.loading .live-dot{background:#98a2b3}.live-pill.error{border-color:#f7cdcd;background:#fff5f5;color:#9e1c1c}.live-pill.error .live-dot{background:var(--bad)}
-.filters{margin-top:12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px}.route-select,.refresh{min-height:40px;border:1px solid #d7dae0;border-radius:8px;background:#fff;color:var(--ink);outline:none}.route-select{width:100%;padding:0 10px}.refresh{padding:0 12px;font-size:12px;font-weight:850}.route-select:focus,.refresh:focus-visible,.map-tool:focus-visible,.panel-toggle:focus-visible{outline:3px solid rgba(215,25,32,.14);outline-offset:1px}.refresh:hover{background:#f7f8fa}
-.list-wrap{min-height:0;flex:1 1 auto;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#cbd0d8 transparent}.vehicle-list{padding:7px}.vehicle-card{width:100%;display:grid;grid-template-columns:46px minmax(0,1fr) 34px;gap:9px;align-items:start;padding:9px;border:1px solid transparent;border-radius:9px;background:transparent;color:inherit;text-align:left;transition:background .12s ease,border-color .12s ease}.vehicle-card+.vehicle-card{margin-top:2px}.vehicle-card:hover{background:#f5f6f8}.vehicle-card.active{background:#fff3f3;border-color:#f5c8ca}.route-badge{min-width:44px;height:36px;padding:0 5px;border-radius:7px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:950;line-height:1}.vehicle-card.unknown .route-badge{background:#505966}.vehicle-main{min-width:0}.vehicle-name,.vehicle-meta,.vehicle-dest,.vehicle-time{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.vehicle-name{font-size:13.5px;font-weight:900;color:#101828}.vehicle-meta{margin-top:2px;color:var(--muted);font-size:11.5px}.vehicle-dest{margin-top:5px;color:#344054;font-size:11.5px}.vehicle-time{margin-top:3px;color:#98a2b3;font-size:10.5px}.fav-btn{width:34px;height:34px;border:0;border-radius:8px;background:transparent;color:#b3bac6;font-size:19px;line-height:1;align-self:start}.fav-btn:hover{background:#e9edf2}.fav-btn.on{color:var(--amber)}.empty{padding:32px 18px;text-align:center;color:var(--muted);font-size:12.5px;line-height:1.55}
-.map-tools{position:absolute;z-index:850;top:12px;right:12px;display:grid;gap:7px}.map-tool{width:40px;height:40px;border:1px solid rgba(17,24,39,.12);border-radius:9px;background:#fff;color:#344054;display:grid;place-items:center;box-shadow:0 4px 14px rgba(15,23,42,.12)}.map-tool:hover{background:#f8fafc;color:#111827}.map-tool svg{width:19px;height:19px}.map-key{position:absolute;z-index:700;right:12px;bottom:12px;display:flex;align-items:center;gap:9px;padding:7px 9px;border:1px solid rgba(17,24,39,.09);border-radius:8px;background:rgba(255,255,255,.96);color:#667085;box-shadow:0 4px 16px rgba(15,23,42,.09);font-size:10.5px}.key-item{display:inline-flex;align-items:center;gap:5px}.key-dot{width:8px;height:8px;border-radius:50%;background:var(--brand)}.key-dot.unknown{background:#505966}
-.selected-card{position:absolute;z-index:820;left:calc(var(--sidebar) + 14px);top:12px;width:min(350px,calc(100% - var(--sidebar) - 84px));min-width:260px;padding:13px;border:1px solid rgba(17,24,39,.10);border-radius:11px;background:#fff;box-shadow:0 8px 28px rgba(15,23,42,.14);display:none}.selected-card.show{display:block}.selected-top{display:flex;gap:9px;align-items:flex-start}.selected-route{min-width:44px;height:36px;padding:0 6px;border-radius:7px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:950}.selected-route.unknown{background:#505966}.selected-copy{min-width:0;flex:1}.selected-title{font-size:13.5px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.selected-sub{margin-top:2px;color:var(--muted);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.selected-dest{margin-top:9px;color:#344054;font-size:11.5px}.selected-time{margin-top:5px;color:#98a2b3;font-size:10.5px}.selected-close{width:30px;height:30px;flex:0 0 auto;border:0;border-radius:7px;background:#f1f3f5;color:#475467;font-size:17px;line-height:1}.panel-toggle{display:none}
-.bus-marker-wrap{background:transparent!important;border:0!important}.bus-pin{position:relative;height:31px;min-width:45px;padding:0 8px;border-radius:8px;background:var(--brand);color:#fff;border:2px solid #fff;display:flex;align-items:center;justify-content:center;gap:4px;box-shadow:0 3px 10px rgba(15,23,42,.28);font-size:11.5px;font-weight:950;line-height:1;transform-origin:50% 100%;transition:transform .12s ease}.bus-pin.unknown{background:#505966}.bus-pin.selected{transform:scale(1.12);box-shadow:0 5px 16px rgba(15,23,42,.32),0 0 0 3px rgba(215,25,32,.14)}.bus-pin.selected.unknown{box-shadow:0 5px 16px rgba(15,23,42,.32),0 0 0 3px rgba(80,89,102,.16)}.bus-pin::after{content:"";position:absolute;left:50%;bottom:-6px;width:8px;height:8px;background:inherit;border-right:2px solid #fff;border-bottom:2px solid #fff;transform:translateX(-50%) rotate(45deg);border-bottom-right-radius:1px}.bus-symbol{width:12px;height:12px;display:block;opacity:.98}
-.leaflet-control-zoom{margin-top:12px!important;margin-right:62px!important;border:0!important;box-shadow:0 4px 14px rgba(15,23,42,.12)!important}.leaflet-control-zoom a{width:40px!important;height:40px!important;line-height:40px!important;border:0!important;color:#344054!important}.leaflet-control-zoom-in{border-radius:9px 9px 0 0!important}.leaflet-control-zoom-out{border-radius:0 0 9px 9px!important}.leaflet-control-attribution{font-size:9px!important;background:rgba(255,255,255,.88)!important}.leaflet-popup-content-wrapper{border-radius:10px;box-shadow:0 10px 30px rgba(15,23,42,.18)}.leaflet-popup-content{margin:12px 13px}.popup{min-width:210px}.popup-top{display:flex;align-items:center;gap:7px;margin-bottom:7px}.popup-route{min-width:36px;padding:5px 6px;border-radius:6px;background:var(--brand);color:#fff;text-align:center;font-weight:950}.popup-route.unknown{background:#505966}.popup-title{min-width:0;font-size:13px;font-weight:900}.popup-row{margin-top:4px;color:#475467;font-size:11.5px}.popup-muted{margin-top:8px;color:#98a2b3;font-size:10.5px}
-.modal-backdrop{position:fixed;inset:0;z-index:2200;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(15,23,42,.58)}.modal-backdrop.show{display:flex}.modal{width:min(440px,100%);overflow:hidden;border-radius:12px;background:#fff;box-shadow:0 20px 70px rgba(15,23,42,.32)}.modal-head{display:flex;align-items:center;justify-content:space-between;padding:15px 17px;border-bottom:1px solid var(--line)}.modal-head h2{margin:0;font-size:18px}.close{width:36px;height:36px;border:0;border-radius:8px;background:#f2f4f7;font-size:18px}.modal-body{padding:17px}.tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;margin-bottom:15px;border-radius:8px;background:#f2f4f7}.tab{min-height:38px;border:0;border-radius:7px;background:transparent;font-weight:800}.tab.active{background:#fff;box-shadow:0 1px 3px rgba(15,23,42,.1)}.field{margin-bottom:11px}.field label{display:block;margin-bottom:5px;font-size:11.5px;font-weight:800}.field input{width:100%;min-height:42px;border:1px solid #d0d5dd;border-radius:8px;padding:0 10px;outline:none}.field input:focus{border-color:#98a2b3;box-shadow:0 0 0 3px rgba(152,162,179,.13)}.primary{width:100%;min-height:43px;border:0;border-radius:8px;background:var(--brand);color:#fff;font-weight:900}.primary:hover{background:var(--brand-dark)}.link-btn{border:0;background:transparent;color:#475467;padding:0;font-size:12px;font-weight:700}.auth-message{min-height:18px;margin-top:10px;color:var(--bad);font-size:11.5px}.account-card{display:none}.account-card.show{display:block}.signed-card{padding:4px 0 12px}.signed-name{font-size:18px;font-weight:900}.signed-email{margin-top:3px;color:var(--muted);font-size:12px}.account-actions{display:grid;gap:8px;margin-top:14px}.secondary{min-height:42px;border:1px solid var(--line);border-radius:8px;background:#fff;font-weight:800}.danger{color:var(--bad)}
-@media (max-width:820px){
-  :root{--header:56px}.topbar{padding:0 10px}.brand-sub{display:none}.brand-mark{width:32px;height:32px}.top-btn{min-height:34px;padding:0 9px}.map-stage{display:block;position:relative}.map-stage #map{position:absolute;inset:0;width:100%;height:100%}.tracker-panel{position:absolute;z-index:930;left:8px;right:8px;bottom:8px;width:auto;height:min(44%,350px);min-height:224px;border:1px solid rgba(17,24,39,.10);border-radius:13px;box-shadow:0 12px 32px rgba(15,23,42,.18);transition:transform .2s ease;background:rgba(255,255,255,.98)}.tracker-panel.collapsed{transform:translateY(calc(100% - 56px))}.panel-head{padding:11px 12px 10px}.panel-head h1{font-size:16px}.filters{margin-top:9px}.route-select,.refresh{min-height:38px}.vehicle-list{padding:5px}.vehicle-card{grid-template-columns:44px minmax(0,1fr) 32px;padding:8px}.route-badge{min-width:42px;height:35px}.fav-btn{width:32px;height:32px}.panel-toggle{display:block;position:absolute;z-index:980;left:50%;bottom:calc(min(44%,350px) + 16px);transform:translateX(-50%);min-height:38px;border:0;border-radius:999px;padding:0 14px;background:#151a22;color:#fff;box-shadow:0 6px 20px rgba(15,23,42,.22);font-size:11.5px;font-weight:850;transition:bottom .2s ease}.tracker-panel.collapsed + .panel-toggle{bottom:16px}.map-tools{top:10px;right:9px}.map-tool{width:39px;height:39px}.leaflet-control-zoom{margin-top:58px!important;margin-right:9px!important}.leaflet-control-zoom a{width:39px!important;height:39px!important;line-height:39px!important}.selected-card{left:9px;right:58px;top:10px;width:auto;min-width:0}.map-key{display:none}
-}
-@media (max-width:430px){.top-actions{gap:5px}.top-btn{max-width:146px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.live-pill{padding:0 7px}.panel-title-row{gap:6px}}
+    :root{
+      --bg:#f4f5f7;
+      --panel:#fff;
+      --ink:#17191d;
+      --muted:#667085;
+      --line:#e4e7ec;
+      --brand:#d71920;
+      --brand-dark:#aa1117;
+      --header:#171a20;
+      --unknown:#4b5563;
+      --good:#16803c;
+      --bad:#c62828;
+      --amber:#b77900;
+      --sidebar:360px;
+      --shadow:0 10px 30px rgba(15,23,42,.14);
+    }
 
+    *{box-sizing:border-box}
+    html,body{margin:0;width:100%;height:100%;}
+    body{
+      height:100vh;
+      height:100dvh;
+      overflow:hidden;
+      display:grid;
+      grid-template-rows:60px minmax(0,1fr);
+      background:var(--bg);
+      color:var(--ink);
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    }
+    button,input,select{font:inherit}
+    button{cursor:pointer}
+    a{color:inherit}
+
+    .topbar{
+      min-width:0;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding:0 14px;
+      background:var(--header);
+      color:#fff;
+      border-bottom:3px solid var(--brand);
+      z-index:1000;
+    }
+    .brand{min-width:0;display:flex;align-items:center;gap:10px}
+    .brand-mark{width:34px;height:34px;display:grid;place-items:center;border-radius:8px;background:var(--brand);font-weight:950}
+    .brand-copy{min-width:0}
+    .brand-title{font-size:15px;font-weight:900;line-height:1.05}
+    .brand-sub{margin-top:3px;color:#bdc4ce;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .top-actions{display:flex;align-items:center;gap:7px;flex:0 0 auto}
+    .top-btn{min-height:36px;border:1px solid #343b47;border-radius:8px;background:#20252e;color:#fff;padding:0 11px;font-size:12px;font-weight:800}
+    .top-btn:hover{background:#2b313c}
+    .top-btn.admin{display:none;align-items:center;text-decoration:none;background:var(--brand);border-color:var(--brand)}
+    .top-btn.admin:hover{background:var(--brand-dark)}
+
+    .app-main{
+      min-width:0;
+      min-height:0;
+      display:grid;
+      grid-template-columns:var(--sidebar) minmax(0,1fr);
+      background:#dce2e8;
+    }
+
+    .vehicle-pane{
+      min-width:0;
+      min-height:0;
+      display:flex;
+      flex-direction:column;
+      background:var(--panel);
+      border-right:1px solid var(--line);
+      overflow:hidden;
+      z-index:2;
+    }
+    .vehicle-head{flex:0 0 auto;padding:15px 14px 12px;border-bottom:1px solid var(--line);background:#fff}
+    .vehicle-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+    .vehicle-title-row h1{margin:0;font-size:18px;line-height:1.15;letter-spacing:-.025em}
+    .summary{margin-top:4px;color:var(--muted);font-size:12px}
+    .live-pill{display:inline-flex;align-items:center;gap:6px;min-height:28px;padding:0 9px;border:1px solid #cbead4;border-radius:999px;background:#f4fbf6;color:#12642f;font-size:10.5px;font-weight:850;white-space:nowrap}
+    .live-pill.loading{border-color:#e1e5ea;background:#f8f9fa;color:#667085}
+    .live-pill.error{border-color:#f4c9c9;background:#fff4f4;color:#9f1d1d}
+    .live-dot{width:7px;height:7px;border-radius:50%;background:var(--good)}
+    .live-pill.loading .live-dot{background:#98a2b3}
+    .live-pill.error .live-dot{background:var(--bad)}
+
+    .filters{margin-top:12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px}
+    .route-select,.refresh-btn{min-height:40px;border:1px solid #d5d9df;border-radius:8px;background:#fff;color:var(--ink);outline:none}
+    .route-select{width:100%;padding:0 10px}
+    .refresh-btn{padding:0 12px;font-size:12px;font-weight:850}
+    .route-select:focus,.refresh-btn:focus-visible,.map-tool:focus-visible,.top-btn:focus-visible,.fav-btn:focus-visible,.close:focus-visible,.tab:focus-visible,.primary:focus-visible,.secondary:focus-visible{outline:3px solid rgba(215,25,32,.15);outline-offset:1px}
+    .refresh-btn:hover{background:#f7f8fa}
+
+    .list-scroll{min-height:0;flex:1 1 auto;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#cdd2d9 transparent}
+    .vehicle-list{padding:7px}
+    .vehicle-card{width:100%;display:grid;grid-template-columns:46px minmax(0,1fr) 34px;gap:9px;align-items:start;padding:9px;border:1px solid transparent;border-radius:9px;background:transparent;text-align:left;color:inherit;transition:background .12s,border-color .12s}
+    .vehicle-card+.vehicle-card{margin-top:2px}
+    .vehicle-card:hover{background:#f5f6f8}
+    .vehicle-card.active{background:#fff3f3;border-color:#f3c7c9}
+    .route-badge{min-width:44px;height:36px;padding:0 5px;border-radius:7px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:950;line-height:1}
+    .vehicle-card.unknown .route-badge{background:var(--unknown)}
+    .vehicle-main{min-width:0}
+    .vehicle-name,.vehicle-meta,.vehicle-dest,.vehicle-time{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .vehicle-name{font-size:13.5px;font-weight:900;color:#101828}
+    .vehicle-meta{margin-top:2px;color:var(--muted);font-size:11.5px}
+    .vehicle-dest{margin-top:5px;color:#344054;font-size:11.5px}
+    .vehicle-time{margin-top:3px;color:#98a2b3;font-size:10.5px}
+    .fav-btn{width:34px;height:34px;border:0;border-radius:8px;background:transparent;color:#b4bbc5;font-size:19px;line-height:1}
+    .fav-btn:hover{background:#eaedf1}
+    .fav-btn.on{color:var(--amber)}
+    .empty{padding:32px 18px;text-align:center;color:var(--muted);font-size:12.5px;line-height:1.55}
+
+    .map-pane{position:relative;min-width:0;min-height:0;overflow:hidden;background:#dce2e8}
+    #map{position:absolute;inset:0;width:100%;height:100%;background:#dce2e8}
+
+    .map-tools{position:absolute;z-index:700;top:12px;right:12px;display:grid;gap:7px}
+    .map-tool{width:42px;height:42px;border:1px solid rgba(17,24,39,.13);border-radius:9px;background:#fff;color:#344054;display:grid;place-items:center;box-shadow:0 4px 14px rgba(15,23,42,.13)}
+    .map-tool:hover{background:#f8fafc;color:#111827}
+    .map-tool svg{width:20px;height:20px}
+
+    .selected-card{position:absolute;z-index:700;left:12px;bottom:12px;width:min(380px,calc(100% - 24px));padding:13px;border:1px solid rgba(17,24,39,.11);border-radius:11px;background:#fff;box-shadow:var(--shadow);display:none}
+    .selected-card.show{display:block}
+    .selected-top{display:flex;align-items:flex-start;gap:9px}
+    .selected-route{min-width:45px;height:36px;padding:0 6px;border-radius:7px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:950}
+    .selected-route.unknown{background:var(--unknown)}
+    .selected-copy{min-width:0;flex:1}
+    .selected-title{font-size:13.5px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .selected-sub{margin-top:2px;color:var(--muted);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .selected-dest{margin-top:8px;color:#344054;font-size:11.5px}
+    .selected-time{margin-top:4px;color:#98a2b3;font-size:10.5px}
+    .selected-close{width:30px;height:30px;flex:0 0 auto;border:0;border-radius:7px;background:#f1f3f5;color:#475467;font-size:17px;line-height:1}
+
+    .map-status{position:absolute;z-index:700;left:12px;top:12px;max-width:min(420px,calc(100% - 80px));display:none;padding:9px 11px;border:1px solid #f0c9c9;border-radius:8px;background:#fff7f7;color:#8f1f1f;box-shadow:0 4px 14px rgba(15,23,42,.10);font-size:11.5px;line-height:1.4}
+    .map-status.show{display:block}
+
+    /* MapLibre/OpenFreeMap */
+    #map .maplibregl-canvas{outline:none}
+    #map .maplibregl-ctrl-group{border-radius:9px;box-shadow:0 4px 14px rgba(15,23,42,.13);overflow:hidden}
+    #map .maplibregl-ctrl-group button{width:38px;height:38px}
+    #map .maplibregl-ctrl-attrib{font-size:10px}
+    #map .maplibregl-popup-content{padding:12px 13px;border-radius:11px;box-shadow:0 12px 32px rgba(15,23,42,.18)}
+    #map .maplibregl-popup-close-button{width:30px;height:30px;border-radius:7px;font-size:18px;color:#667085}
+    #map .maplibregl-popup-close-button:hover{background:#f2f4f7}
+    .bus-map-marker{min-width:42px;height:34px;padding:0 8px;border:2px solid #fff;border-radius:9px;background:var(--brand);color:#fff;display:grid;place-items:center;box-shadow:0 5px 14px rgba(15,23,42,.35);font:900 12px/1 Inter,ui-sans-serif,system-ui,sans-serif;white-space:nowrap;transition:width .15s,height .15s,background .15s,box-shadow .15s;position:relative}
+    .bus-map-marker::after{content:"";position:absolute;left:50%;bottom:-6px;width:8px;height:8px;background:inherit;border-right:2px solid #fff;border-bottom:2px solid #fff;transform:translateX(-50%) rotate(45deg)}
+    .bus-map-marker.unknown{background:var(--unknown)}
+    .bus-map-marker.selected{min-width:48px;height:38px;box-shadow:0 7px 18px rgba(15,23,42,.42)}
+    .bus-map-marker:focus-visible{outline:3px solid rgba(215,25,32,.25);outline-offset:3px}
+    .popup{min-width:205px;padding-right:10px}
+    .popup-top{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+    .popup-route{min-width:38px;height:28px;padding:0 7px;border-radius:6px;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:950;font-size:12px}
+    .popup-route.unknown{background:var(--unknown)}
+    .popup-title{font-weight:900;font-size:13px}
+    .popup-row{margin-top:5px;color:#475467;font-size:11.5px}
+    .popup-muted{margin-top:7px;color:#98a2b3;font-size:10.5px}
+
+    .modal-backdrop{position:fixed;inset:0;z-index:3000;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(15,23,42,.52)}
+    .modal-backdrop.show{display:flex}
+    .modal{width:min(430px,100%);max-height:calc(100dvh - 32px);overflow:auto;border-radius:13px;background:#fff;box-shadow:0 25px 80px rgba(0,0,0,.28)}
+    .modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 16px;border-bottom:1px solid var(--line)}
+    .modal-head h2{margin:0;font-size:17px}
+    .close{width:34px;height:34px;border:0;border-radius:8px;background:#f1f3f5;color:#475467;font-size:20px}
+    .modal-body{padding:16px}
+    .tabs{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:4px;border-radius:9px;background:#f2f4f7}
+    .tab{min-height:38px;border:0;border-radius:7px;background:transparent;color:#667085;font-weight:800}
+    .tab.active{background:#fff;color:#101828;box-shadow:0 1px 3px rgba(15,23,42,.10)}
+    .field{margin-top:13px}
+    .field label{display:block;margin-bottom:6px;font-size:11.5px;font-weight:850}
+    .field input{width:100%;min-height:44px;border:1px solid #d0d5dd;border-radius:8px;padding:9px 10px;outline:none}
+    .field input:focus{border-color:#98a2b3;box-shadow:0 0 0 3px rgba(152,162,179,.15)}
+    .primary,.secondary{width:100%;min-height:43px;border-radius:8px;font-weight:850}
+    .primary{margin-top:14px;border:0;background:var(--brand);color:#fff}
+    .primary:hover{background:var(--brand-dark)}
+    .secondary{border:1px solid var(--line);background:#fff;color:#344054}
+    .link-btn{margin-top:10px;border:0;background:transparent;padding:0;color:#475467;font-size:11.5px;font-weight:750}
+    .auth-message{min-height:18px;margin-top:10px;color:var(--bad);font-size:11.5px}
+    .account-card{display:none}
+    .account-card.show{display:block}
+    .signed-name{font-size:18px;font-weight:900}
+    .signed-email{margin-top:3px;color:var(--muted);font-size:12px}
+    .account-actions{display:grid;gap:8px;margin-top:15px}
+    .danger{color:var(--bad)}
+
+    @media (max-width:820px){
+      body{grid-template-rows:56px minmax(0,1fr)}
+      .topbar{padding:0 10px}
+      .brand-sub{display:none}
+      .brand-mark{width:32px;height:32px}
+      .top-btn{min-height:34px;padding:0 9px;max-width:155px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .app-main{grid-template-columns:1fr;grid-template-rows:minmax(0,58fr) minmax(0,42fr)}
+      .map-pane{grid-row:1;grid-column:1}
+      .vehicle-pane{grid-row:2;grid-column:1;border-right:0;border-top:1px solid var(--line)}
+      .vehicle-head{padding:10px 11px 9px}
+      .vehicle-title-row h1{font-size:16px}
+      .filters{margin-top:8px}
+      .route-select,.refresh-btn{min-height:38px}
+      .vehicle-list{padding:5px}
+      .vehicle-card{grid-template-columns:44px minmax(0,1fr) 32px;padding:8px}
+      .route-badge{min-width:42px;height:35px}
+      .fav-btn{width:32px;height:32px}
+      .map-tools{top:9px;right:9px}
+      .map-tool{width:40px;height:40px}
+      .selected-card{left:9px;right:9px;bottom:9px;width:auto}
+      .map-status{left:9px;top:9px}
+    }
+
+    @media (max-width:480px){
+      .top-actions{gap:5px}
+      .top-btn.admin{padding:0 8px}
+      .live-pill{padding:0 7px}
+      .vehicle-card{grid-template-columns:42px minmax(0,1fr) 30px;gap:7px}
+      .route-badge{min-width:40px;height:34px}
+    }
+
+    @media (max-height:650px) and (max-width:820px){
+      .app-main{grid-template-rows:minmax(0,52fr) minmax(0,48fr)}
+    }
   </style>
 </head>
 <body>
   <header class="topbar">
     <div class="brand">
       <div class="brand-mark">B</div>
-      <div>
+      <div class="brand-copy">
         <div class="brand-title">Bus Tracker</div>
         <div class="brand-sub">Live vehicle positions</div>
       </div>
@@ -71,17 +244,14 @@ button{cursor:pointer}
     </div>
   </header>
 
-  <main class="map-stage">
-    <div id="map" aria-label="Live bus map"></div>
-
-    <aside id="trackerPanel" class="tracker-panel" aria-label="Live vehicles">
-      <div class="panel-head">
-        <div class="panel-title-row">
+  <main class="app-main">
+    <aside class="vehicle-pane" aria-label="Live vehicles">
+      <div class="vehicle-head">
+        <div class="vehicle-title-row">
           <div>
             <h1>Vehicles in service</h1>
             <div id="summary" class="summary">Loading live buses…</div>
           </div>
-
           <div id="livePill" class="live-pill loading">
             <span class="live-dot"></span>
             <span id="livePillText">Loading</span>
@@ -92,48 +262,42 @@ button{cursor:pointer}
           <select id="routeFilter" class="route-select" aria-label="Filter by route">
             <option value="">All routes</option>
           </select>
-          <button id="refreshBtn" class="refresh" type="button">Refresh</button>
+          <button id="refreshBtn" class="refresh-btn" type="button">Refresh</button>
         </div>
       </div>
 
-      <div class="list-wrap">
+      <div class="list-scroll">
         <div id="vehicleList" class="vehicle-list"></div>
       </div>
     </aside>
 
-    <button id="panelToggle" class="panel-toggle" type="button" aria-expanded="true">Hide vehicle list</button>
+    <section id="mapPane" class="map-pane" aria-label="Live bus map">
+      <div id="map"></div>
 
-    <div class="map-tools" aria-label="Map controls">
-      <button id="fitBtn" class="map-tool" type="button" title="Show all visible buses" aria-label="Show all visible buses">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path fill="currentColor" d="M4 9V4h5v2H6v3H4Zm11-5h5v5h-2V6h-3V4ZM6 15v3h3v2H4v-5h2Zm12 0h2v5h-5v-2h3v-3ZM8 8h8v8H8V8Zm2 2v4h4v-4h-4Z"/>
-        </svg>
-      </button>
-
-      <button id="mapRefreshBtn" class="map-tool" type="button" title="Refresh live positions" aria-label="Refresh live positions">
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path fill="currentColor" d="M12 4a8 8 0 0 1 7.45 5.1l1.4-1.4L22.25 9l-3.75 3.75L14.75 9l1.4-1.4 1.16 1.16A6 6 0 1 0 18 14h2a8 8 0 1 1-8-10Z"/>
-        </svg>
-      </button>
-    </div>
-
-    <section id="selectedCard" class="selected-card" aria-live="polite">
-      <div class="selected-top">
-        <div id="selectedRoute" class="selected-route">—</div>
-        <div class="selected-copy">
-          <div id="selectedTitle" class="selected-title"></div>
-          <div id="selectedSub" class="selected-sub"></div>
-          <div id="selectedDest" class="selected-dest"></div>
-          <div id="selectedTime" class="selected-time"></div>
-        </div>
-        <button id="selectedClose" class="selected-close" type="button" aria-label="Close vehicle details">×</button>
+      <div class="map-tools" aria-label="Map controls">
+        <button id="fitBtn" class="map-tool" type="button" title="Show all visible buses" aria-label="Show all visible buses">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 9V4h5v2H6v3H4Zm11-5h5v5h-2V6h-3V4ZM6 15v3h3v2H4v-5h2Zm12 0h2v5h-5v-2h3v-3ZM8 8h8v8H8V8Zm2 2v4h4v-4h-4Z"/></svg>
+        </button>
+        <button id="mapRefreshBtn" class="map-tool" type="button" title="Refresh live positions" aria-label="Refresh live positions">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 4a8 8 0 0 1 7.45 5.1l1.4-1.4L22.25 9l-3.75 3.75L14.75 9l1.4-1.4 1.16 1.16A6 6 0 1 0 18 14h2a8 8 0 1 1-8-10Z"/></svg>
+        </button>
       </div>
-    </section>
 
-    <div class="map-key" aria-hidden="true">
-      <span class="key-item"><span class="key-dot"></span>Vehicle added</span>
-      <span class="key-item"><span class="key-dot unknown"></span>Not yet identified</span>
-    </div>
+      <div id="mapStatus" class="map-status"></div>
+
+      <section id="selectedCard" class="selected-card" aria-live="polite">
+        <div class="selected-top">
+          <div id="selectedRoute" class="selected-route">—</div>
+          <div class="selected-copy">
+            <div id="selectedTitle" class="selected-title"></div>
+            <div id="selectedSub" class="selected-sub"></div>
+            <div id="selectedDest" class="selected-dest"></div>
+            <div id="selectedTime" class="selected-time"></div>
+          </div>
+          <button id="selectedClose" class="selected-close" type="button" aria-label="Close vehicle details">×</button>
+        </div>
+      </section>
+    </section>
   </main>
 
   <div id="accountModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
@@ -155,22 +319,18 @@ button{cursor:pointer}
               <label for="displayName">Name</label>
               <input id="displayName" autocomplete="name">
             </div>
-
             <div class="field">
               <label for="email">Email</label>
               <input id="email" type="email" autocomplete="email" required>
             </div>
-
             <div class="field">
               <label for="password">Password</label>
               <input id="password" type="password" autocomplete="current-password" minlength="6" required>
             </div>
-
             <div id="confirmField" class="field" style="display:none">
               <label for="confirmPassword">Confirm password</label>
               <input id="confirmPassword" type="password" minlength="6">
             </div>
-
             <button id="authSubmit" class="primary" type="submit">Login</button>
             <button id="forgotBtn" class="link-btn" type="button">Forgot password?</button>
             <div id="authMessage" class="auth-message"></div>
@@ -178,10 +338,8 @@ button{cursor:pointer}
         </div>
 
         <div id="signedInBox" class="account-card">
-          <div class="signed-card">
-            <div id="signedName" class="signed-name"></div>
-            <div id="signedEmail" class="signed-email"></div>
-          </div>
+          <div class="signed-name" id="signedName"></div>
+          <div class="signed-email" id="signedEmail"></div>
           <div class="account-actions">
             <button id="showFavsBtn" class="secondary" type="button">Show my favourites</button>
             <button id="signOutBtn" class="secondary danger" type="button">Sign out</button>
@@ -190,12 +348,6 @@ button{cursor:pointer}
       </div>
     </div>
   </div>
-
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin=""
-  ></script>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
@@ -210,8 +362,10 @@ button{cursor:pointer}
     } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
     import {
       getFirestore,
+      collection,
       doc,
       getDoc,
+      getDocs,
       setDoc
     } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
@@ -224,92 +378,33 @@ button{cursor:pointer}
       appId: "1:380602561765:web:5bf01fc6d7982dc950500c"
     };
 
-    // Change this after deploying your Worker.
-    const API_BASE = 'https://YOUR-WORKER.workers.dev';
-    const REFRESH_MS = 20000;
-    const DEFAULT_CENTER = [52.7517, 0.3970];
+    // Direct BusTimes live feed. No separate API_BASE or API key is needed.
+    const BUSTIMES_LIVE_URL = 'https://bustimes.org/vehicles.json?operator=LYNX';
+
+    // No map API key is required. The map uses MapLibre + OpenFreeMap.
+    const MAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty';
+
+    // Check BusTimes for updated positions every 10 seconds.
+    // Vehicle mappings are cached in-browser for 60 seconds to reduce Firestore reads.
+    const REFRESH_MS = 10000;
+    const MAPPING_REFRESH_MS = 60000;
+    const DEFAULT_CENTER = { lat: 52.7517, lng: 0.3970 };
     const DEFAULT_ZOOM = 10;
+    const LIVE_AREA = { south: 52.10, west: -1.00, north: 53.30, east: 1.80 };
 
-    // Stops a bad/rogue position from zooming the whole map out to another country.
-    // This box comfortably covers the operating area used by this tracker.
-    const LIVE_AREA = L.latLngBounds(
-      [52.10, -0.85],
-      [53.30, 1.75]
-    );
+    const firebaseApp = initializeApp(firebaseConfig);
+    const auth = getAuth(firebaseApp);
+    const db = getFirestore(firebaseApp);
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    const map = L.map('map', {
-      zoomControl: false,
-      preferCanvas: true,
-      minZoom: 7,
-      maxZoom: 19
-    }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
-
-    L.control.zoom({ position: 'topright' }).addTo(map);
-    L.control.scale({ position: 'bottomright', imperial: false, maxWidth: 110 }).addTo(map);
-
-    // Keep Leaflet correctly sized on Safari/mobile and after the bottom sheet changes size.
-    const invalidateMap = () => requestAnimationFrame(() => map.invalidateSize({ pan: false }));
-    window.addEventListener('resize', invalidateMap, { passive: true });
-    window.addEventListener('orientationchange', () => setTimeout(invalidateMap, 120), { passive: true });
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', invalidateMap, { passive: true });
-    }
-    if ('ResizeObserver' in window) {
-      const mapResizeObserver = new ResizeObserver(invalidateMap);
-      mapResizeObserver.observe(document.getElementById('map'));
-    }
-    setTimeout(invalidateMap, 80);
-
-    const els = Object.fromEntries([
-      'summary',
-      'routeFilter',
-      'refreshBtn',
-      'vehicleList',
-      'accountBtn',
-      'adminLink',
-      'accountModal',
-      'closeModal',
-      'signedOutBox',
-      'signedInBox',
-      'loginTab',
-      'registerTab',
-      'authForm',
-      'nameField',
-      'displayName',
-      'email',
-      'password',
-      'confirmField',
-      'confirmPassword',
-      'authSubmit',
-      'forgotBtn',
-      'authMessage',
-      'signedName',
-      'signedEmail',
-      'showFavsBtn',
-      'signOutBtn',
-      'trackerPanel',
-      'panelToggle',
-      'fitBtn',
-      'mapRefreshBtn',
-      'livePill',
-      'livePillText',
-      'selectedCard',
-      'selectedRoute',
-      'selectedTitle',
-      'selectedSub',
-      'selectedDest',
-      'selectedTime',
-      'selectedClose'
-    ].map(id => [id, document.getElementById(id)]));
+    const ids = [
+      'summary','routeFilter','refreshBtn','vehicleList','accountBtn','adminLink',
+      'accountModal','closeModal','signedOutBox','signedInBox','loginTab','registerTab',
+      'authForm','nameField','displayName','email','password','confirmField','confirmPassword',
+      'authSubmit','forgotBtn','authMessage','signedName','signedEmail','showFavsBtn','signOutBtn',
+      'fitBtn','mapRefreshBtn','livePill','livePillText','selectedCard','selectedRoute','selectedTitle',
+      'selectedSub','selectedDest','selectedTime','selectedClose','mapStatus','mapPane','map'
+    ];
+    const els = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
 
     const state = {
       vehicles: [],
@@ -317,19 +412,23 @@ button{cursor:pointer}
       route: '',
       selectedId: null,
       timer: null,
+      loadingLive: false,
       firstGoodLoad: true,
       user: null,
       isAdmin: false,
       favourites: new Set(),
       showFavouritesOnly: false,
       authMode: 'login',
-      panelCollapsed: false
+      map: null,
+      popup: null,
+      mapReady: false,
+      infoOpenId: null,
+      followSelected: false,
+      mappingCache: new Map(),
+      mappingLoadedAt: 0
     };
 
-    const collator = new Intl.Collator('en-GB', {
-      numeric: true,
-      sensitivity: 'base'
-    });
+    const collator = new Intl.Collator('en-GB', { numeric: true, sensitivity: 'base' });
 
     onAuthStateChanged(auth, async user => {
       state.user = user;
@@ -351,9 +450,7 @@ button{cursor:pointer}
 
           if (userSnap.exists()) {
             const data = userSnap.data();
-            state.favourites = new Set(
-              Array.isArray(data.favouriteVehicles) ? data.favouriteVehicles : []
-            );
+            state.favourites = new Set(Array.isArray(data.favouriteVehicles) ? data.favouriteVehicles : []);
           } else {
             await setDoc(doc(db, 'users', user.uid), {
               displayName: user.displayName || '',
@@ -362,7 +459,7 @@ button{cursor:pointer}
             }, { merge: true });
           }
 
-          state.isAdmin = adminSnap.exists();
+          state.isAdmin = adminSnap.exists() && adminSnap.data()?.admin === true;
           els.adminLink.style.display = state.isAdmin ? 'inline-flex' : 'none';
         } catch (error) {
           console.error('Could not load account data:', error);
@@ -383,35 +480,32 @@ button{cursor:pointer}
     els.accountModal.addEventListener('click', event => {
       if (event.target === els.accountModal) closeModal();
     });
-
     els.loginTab.addEventListener('click', () => setAuthMode('login'));
     els.registerTab.addEventListener('click', () => setAuthMode('register'));
 
     els.refreshBtn.addEventListener('click', () => loadLive(true));
     els.mapRefreshBtn.addEventListener('click', () => loadLive(true));
-    els.fitBtn.addEventListener('click', () => fitToVehicles(visibleVehicles(), true));
+    els.fitBtn.addEventListener('click', () => fitToVehicles(visibleVehicles()));
 
     els.routeFilter.addEventListener('change', () => {
       state.route = els.routeFilter.value;
       state.selectedId = null;
+      state.followSelected = false;
+      state.infoOpenId = null;
       hideSelectedCard();
+      if (state.popup) { state.popup.remove(); state.popup = null; }
       render();
-      fitToVehicles(visibleVehicles(), true);
-    });
-
-    els.panelToggle.addEventListener('click', () => {
-      state.panelCollapsed = !state.panelCollapsed;
-      els.trackerPanel.classList.toggle('collapsed', state.panelCollapsed);
-      els.panelToggle.textContent = state.panelCollapsed ? 'Show vehicle list' : 'Hide vehicle list';
-      els.panelToggle.setAttribute('aria-expanded', String(!state.panelCollapsed));
-      setTimeout(() => map.invalidateSize({ pan: false }), 250);
+      fitToVehicles(visibleVehicles());
     });
 
     els.selectedClose.addEventListener('click', () => {
       state.selectedId = null;
+      state.followSelected = false;
+      state.infoOpenId = null;
       hideSelectedCard();
-      renderMarkers(visibleVehicles());
+      if (state.popup) { state.popup.remove(); state.popup = null; }
       renderList(visibleVehicles());
+      renderMarkers(visibleVehicles());
     });
 
     els.showFavsBtn.addEventListener('click', () => {
@@ -419,9 +513,12 @@ button{cursor:pointer}
       els.showFavsBtn.textContent = state.showFavouritesOnly ? 'Show all vehicles' : 'Show my favourites';
       closeModal();
       state.selectedId = null;
+      state.followSelected = false;
+      state.infoOpenId = null;
       hideSelectedCard();
+      if (state.popup) { state.popup.remove(); state.popup = null; }
       render();
-      fitToVehicles(visibleVehicles(), true);
+      fitToVehicles(visibleVehicles());
     });
 
     els.signOutBtn.addEventListener('click', async () => {
@@ -432,23 +529,16 @@ button{cursor:pointer}
     els.authForm.addEventListener('submit', async event => {
       event.preventDefault();
       els.authMessage.textContent = '';
-
       const email = els.email.value.trim();
       const password = els.password.value;
 
       try {
         if (state.authMode === 'register') {
           const name = els.displayName.value.trim();
-
-          if (password !== els.confirmPassword.value) {
-            throw new Error('Passwords do not match.');
-          }
+          if (password !== els.confirmPassword.value) throw new Error('Passwords do not match.');
 
           const credential = await createUserWithEmailAndPassword(auth, email, password);
-
-          if (name) {
-            await updateProfile(credential.user, { displayName: name });
-          }
+          if (name) await updateProfile(credential.user, { displayName: name });
 
           await setDoc(doc(db, 'users', credential.user.uid), {
             displayName: name,
@@ -471,7 +561,6 @@ button{cursor:pointer}
 
     els.forgotBtn.addEventListener('click', async () => {
       const email = els.email.value.trim();
-
       if (!email) {
         els.authMessage.textContent = 'Enter your email address first.';
         return;
@@ -495,21 +584,77 @@ button{cursor:pointer}
       }
 
       const key = favouriteKey(vehicle);
-
-      if (state.favourites.has(key)) {
-        state.favourites.delete(key);
-      } else {
-        state.favourites.add(key);
-      }
+      if (state.favourites.has(key)) state.favourites.delete(key);
+      else state.favourites.add(key);
 
       await setDoc(doc(db, 'users', state.user.uid), {
         favouriteVehicles: [...state.favourites]
       }, { merge: true });
-
       render();
     }
 
+    async function initialiseMap() {
+      showMapStatus('Loading map…');
+
+      try {
+        if (!window.maplibregl) {
+          throw new Error('Map library could not be loaded.');
+        }
+
+        state.map = new maplibregl.Map({
+          container: els.map,
+          style: MAP_STYLE,
+          center: [DEFAULT_CENTER.lng, DEFAULT_CENTER.lat],
+          zoom: DEFAULT_ZOOM,
+          minZoom: 7,
+          maxZoom: 19,
+          attributionControl: true
+        });
+
+        state.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
+        state.map.addControl(new maplibregl.ScaleControl({ maxWidth: 110, unit: 'metric' }), 'bottom-left');
+
+        state.map.on('dragstart', () => {
+          state.followSelected = false;
+        });
+
+        state.map.on('load', () => {
+          state.mapReady = true;
+          hideMapStatus();
+          renderMarkers(visibleVehicles());
+
+          if (state.firstGoodLoad && validVehicles(state.vehicles).length) {
+            fitToVehicles(state.vehicles);
+            state.firstGoodLoad = false;
+          }
+        });
+
+        state.map.on('error', event => {
+          console.error('Map error:', event?.error || event);
+        });
+
+        const resizeMap = () => {
+          if (state.map) state.map.resize();
+        };
+
+        if ('ResizeObserver' in window) {
+          const observer = new ResizeObserver(() => resizeMap());
+          observer.observe(els.mapPane);
+        }
+
+        window.addEventListener('resize', resizeMap, { passive: true });
+        window.addEventListener('orientationchange', () => setTimeout(resizeMap, 180), { passive: true });
+
+      } catch (error) {
+        console.error(error);
+        showMapStatus(error.message || 'Map could not be loaded.');
+      }
+    }
+
     async function loadLive(manual = false) {
+      if (state.loadingLive) return;
+      state.loadingLive = true;
+
       if (manual) {
         els.refreshBtn.disabled = true;
         els.mapRefreshBtn.disabled = true;
@@ -518,42 +663,207 @@ button{cursor:pointer}
       setLiveState('loading', 'Updating');
 
       try {
-        const response = await fetch(`${API_BASE}/api/vehicles`, { cache: 'no-store' });
-        const data = await response.json();
+        const [response, mappings] = await Promise.all([
+          fetch(BUSTIMES_LIVE_URL, {
+            cache: 'no-store',
+            mode: 'cors',
+            headers: { 'Accept': 'application/json' }
+          }),
+          getVehicleMappings(manual)
+        ]);
 
-        if (!response.ok || !data.ok) {
-          throw new Error(data.error || `HTTP ${response.status}`);
+        if (!response.ok) {
+          throw new Error(`BusTimes returned HTTP ${response.status}.`);
         }
 
-        state.vehicles = Array.isArray(data.vehicles) ? data.vehicles : [];
+        const payload = await response.json();
+        if (!Array.isArray(payload)) {
+          throw new Error('BusTimes returned an unexpected live-data format.');
+        }
+
+        const seen = new Map();
+        for (const item of payload) {
+          const raw = parseBusTimesVehicle(item);
+          if (!raw) continue;
+          const previous = seen.get(raw.machineId);
+          if (!previous || newer(raw.recordedAt, previous.recordedAt)) {
+            seen.set(raw.machineId, raw);
+          }
+        }
+
+        state.vehicles = [...seen.values()].map(raw =>
+          toPublicVehicle(raw, mappings.get(raw.machineId))
+        );
 
         updateRoutes();
         render();
         setLiveState('live', 'Live');
 
-        if (state.firstGoodLoad && validVisibleVehicles(state.vehicles).length) {
-          fitToVehicles(state.vehicles, false);
+        if (state.firstGoodLoad && state.mapReady && validVehicles(state.vehicles).length) {
+          fitToVehicles(state.vehicles);
           state.firstGoodLoad = false;
         }
       } catch (error) {
         console.error(error);
         setLiveState('error', 'Offline');
-
         if (!state.vehicles.length) {
-          els.vehicleList.innerHTML = `
-            <div class="empty">
-              Could not load live vehicles.<br>
-              Check the Worker URL and live data connection.
-            </div>
-          `;
+          const message = /Failed to fetch|CORS|NetworkError/i.test(String(error?.message || error))
+            ? 'Your browser blocked the direct BusTimes live feed. This direct version needs BusTimes to allow cross-site requests.'
+            : (error.message || 'Could not load live vehicles.');
+          els.vehicleList.innerHTML = `<div class="empty">${escapeHtml(message)}</div>`;
           els.summary.textContent = 'Live data unavailable';
         }
       } finally {
+        state.loadingLive = false;
         els.refreshBtn.disabled = false;
         els.mapRefreshBtn.disabled = false;
         clearTimeout(state.timer);
         state.timer = setTimeout(loadLive, REFRESH_MS);
       }
+    }
+
+    async function getVehicleMappings(force = false) {
+      const now = Date.now();
+      if (!force && state.mappingCache.size && now - state.mappingLoadedAt < MAPPING_REFRESH_MS) {
+        return state.mappingCache;
+      }
+
+      const snap = await getDocs(collection(db, 'vehicles'));
+      const map = new Map();
+      snap.forEach(document => map.set(document.id, document.data() || {}));
+      state.mappingCache = map;
+      state.mappingLoadedAt = now;
+      return map;
+    }
+
+    function parseBusTimesVehicle(item) {
+      if (!item || typeof item !== 'object') return null;
+
+      const coordinates = Array.isArray(item.coordinates)
+        ? item.coordinates
+        : Array.isArray(item.location?.coordinates)
+          ? item.location.coordinates
+          : null;
+
+      if (!coordinates || coordinates.length < 2) return null;
+
+      const longitude = Number(coordinates[0]);
+      const latitude = Number(coordinates[1]);
+      if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+
+      const vehicleInfo = item.vehicle && typeof item.vehicle === 'object' ? item.vehicle : {};
+      const machineId = vehicleKeyFromBusTimes(vehicleInfo, item);
+      if (!machineId) return null;
+
+      const service = item.service && typeof item.service === 'object' ? item.service : {};
+
+      return {
+        machineId,
+        machineLabel: machineLabelFromBusTimes(vehicleInfo, machineId),
+        route: clean(service.line_name ?? item.route_name ?? item.line_name ?? item.route ?? ''),
+        lineRef: clean(item.service_id ?? service.id ?? service.url ?? ''),
+        direction: '',
+        origin: clean(item.origin ?? item.origin_name ?? ''),
+        destination: clean(item.destination ?? item.destination_name ?? item.headsign ?? item.trip?.headsign ?? ''),
+        destinationRef: clean(item.destination_ref ?? ''),
+        latitude,
+        longitude,
+        bearing: numberOrNull(item.direction ?? item.bearing ?? item.heading),
+        recordedAt: normalizeDate(item.datetime ?? item.recorded_at ?? item.recordedAt ?? item.timestamp ?? item.time),
+        journeyRef: clean(item.journey_id ?? item.journeyRef ?? item.trip_id ?? '')
+      };
+    }
+
+    function vehicleKeyFromBusTimes(vehicleInfo, item) {
+      const url = clean(vehicleInfo.url);
+      if (url) {
+        const bits = url.split('/').filter(Boolean);
+        const slug = bits[bits.length - 1] || '';
+        if (slug) return slug.slice(0, 180);
+      }
+
+      const explicit = clean(item.vehicle_id ?? item.vehicleId ?? vehicleInfo.id ?? '');
+      if (explicit) return `bt-${explicit}`.slice(0, 180);
+
+      const name = clean(vehicleInfo.name);
+      return name ? `bt-${slugify(name)}`.slice(0, 180) : '';
+    }
+
+    function machineLabelFromBusTimes(vehicleInfo, machineId) {
+      const name = clean(vehicleInfo.name);
+      if (name.includes(' - ')) {
+        const first = clean(name.split(' - ')[0]);
+        if (first) return first;
+      }
+      return machineId;
+    }
+
+    function toPublicVehicle(vehicle, mapping) {
+      if (mapping) {
+        return {
+          id: `mapped:${vehicle.machineId}`,
+          mapped: true,
+          fleetNumber: clean(mapping.fleetNumber),
+          registration: clean(mapping.registration),
+          vehicleType: clean(mapping.vehicleType),
+          livery: clean(mapping.livery),
+          route: vehicle.route,
+          lineRef: vehicle.lineRef,
+          direction: vehicle.direction,
+          origin: vehicle.origin,
+          destination: vehicle.destination,
+          destinationRef: vehicle.destinationRef,
+          latitude: vehicle.latitude,
+          longitude: vehicle.longitude,
+          bearing: vehicle.bearing,
+          recordedAt: vehicle.recordedAt,
+          journeyRef: vehicle.journeyRef
+        };
+      }
+
+      return {
+        id: `machine:${vehicle.machineId}`,
+        mapped: false,
+        machineId: vehicle.machineId,
+        machineLabel: vehicle.machineLabel,
+        route: vehicle.route,
+        lineRef: vehicle.lineRef,
+        direction: vehicle.direction,
+        origin: vehicle.origin,
+        destination: vehicle.destination,
+        destinationRef: vehicle.destinationRef,
+        latitude: vehicle.latitude,
+        longitude: vehicle.longitude,
+        bearing: vehicle.bearing,
+        recordedAt: vehicle.recordedAt,
+        journeyRef: vehicle.journeyRef
+      };
+    }
+
+    function clean(value) {
+      return String(value ?? '').trim();
+    }
+
+    function numberOrNull(value) {
+      const number = Number(value);
+      return Number.isFinite(number) ? number : null;
+    }
+
+    function normalizeDate(value) {
+      if (!value) return new Date().toISOString();
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
+    }
+
+    function newer(a, b) {
+      return (Date.parse(a || '') || 0) >= (Date.parse(b || '') || 0);
+    }
+
+    function slugify(value) {
+      return clean(value)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
     }
 
     function setLiveState(mode, text) {
@@ -568,44 +878,40 @@ button{cursor:pointer}
         .sort(vehicleSort);
     }
 
-    function validVisibleVehicles(vehicles) {
-      return vehicles.filter(isValidPosition);
-    }
-
     function isValidPosition(vehicle) {
       if (!Number.isFinite(vehicle.latitude) || !Number.isFinite(vehicle.longitude)) return false;
-      return LIVE_AREA.contains([vehicle.latitude, vehicle.longitude]);
+      return vehicle.latitude >= LIVE_AREA.south &&
+             vehicle.latitude <= LIVE_AREA.north &&
+             vehicle.longitude >= LIVE_AREA.west &&
+             vehicle.longitude <= LIVE_AREA.east;
     }
 
-    function render() {
-      const vehicles = visibleVehicles();
-      const positionedCount = validVisibleVehicles(vehicles).length;
-
-      els.summary.textContent = `${vehicles.length} live ${vehicles.length === 1 ? 'vehicle' : 'vehicles'}${state.route ? ` on route ${state.route}` : ''}${state.showFavouritesOnly ? ' • favourites' : ''}${positionedCount !== vehicles.length ? ` • ${positionedCount} on map` : ''}`;
-
-      renderList(vehicles);
-      renderMarkers(vehicles);
-      renderSelectedCard();
+    function validVehicles(vehicles) {
+      return vehicles.filter(isValidPosition);
     }
 
     function updateRoutes() {
       const current = state.route;
-      const routes = [...new Set(
-        state.vehicles
-          .map(vehicle => (vehicle.route || '').trim())
-          .filter(Boolean)
-      )].sort((a, b) => collator.compare(a, b));
+      const routes = [...new Set(state.vehicles.map(v => String(v.route || '').trim()).filter(Boolean))]
+        .sort((a,b) => collator.compare(a,b));
 
       els.routeFilter.innerHTML = '<option value="">All routes</option>' + routes
         .map(route => `<option value="${escapeAttr(route)}">${escapeHtml(route)}</option>`)
         .join('');
 
-      if (routes.includes(current)) {
-        els.routeFilter.value = current;
-      } else {
+      if (routes.includes(current)) els.routeFilter.value = current;
+      else {
         state.route = '';
         els.routeFilter.value = '';
       }
+    }
+
+    function render() {
+      const vehicles = visibleVehicles();
+      els.summary.textContent = `${vehicles.length} live ${vehicles.length === 1 ? 'vehicle' : 'vehicles'}${state.route ? ` on route ${state.route}` : ''}${state.showFavouritesOnly ? ' • favourites' : ''}`;
+      renderList(vehicles);
+      renderMarkers(vehicles);
+      renderSelectedCard();
     }
 
     function renderList(vehicles) {
@@ -615,36 +921,22 @@ button{cursor:pointer}
       }
 
       els.vehicleList.innerHTML = vehicles.map(vehicle => {
-        const title = publicVehicleTitle(vehicle);
-        const second = publicVehicleSubtitle(vehicle);
-        const destination = vehicle.destination ? `to ${vehicle.destination}` : (vehicle.direction || 'Live journey');
-        const favourite = state.user && state.favourites.has(favouriteKey(vehicle));
+        const active = state.selectedId === vehicle.id ? ' active' : '';
+        const unknown = vehicle.mapped ? '' : ' unknown';
+        const favourite = state.favourites.has(favouriteKey(vehicle));
+        const dest = vehicle.destination ? `to ${vehicle.destination}` : 'Live journey';
 
         return `
-          <div
-            class="vehicle-card ${vehicle.mapped ? '' : 'unknown'} ${state.selectedId === vehicle.id ? 'active' : ''}"
-            data-card="${escapeAttr(vehicle.id)}"
-            role="button"
-            tabindex="0"
-          >
+          <div class="vehicle-card${unknown}${active}" data-card="${escapeAttr(vehicle.id)}" role="button" tabindex="0">
             <span class="route-badge">${escapeHtml(vehicle.route || '—')}</span>
-
             <span class="vehicle-main">
-              <span class="vehicle-name">${escapeHtml(title)}</span>
-              <span class="vehicle-meta">${escapeHtml(second)}</span>
-              <span class="vehicle-dest">${escapeHtml(destination)}</span>
+              <span class="vehicle-name">${escapeHtml(publicVehicleTitle(vehicle))}</span>
+              <span class="vehicle-meta">${escapeHtml(publicVehicleSubtitle(vehicle))}</span>
+              <span class="vehicle-dest">${escapeHtml(dest)}</span>
               <span class="vehicle-time">Updated ${escapeHtml(timeAgo(vehicle.recordedAt))}</span>
             </span>
-
-            <button
-              class="fav-btn ${favourite ? 'on' : ''}"
-              type="button"
-              data-fav="${escapeAttr(vehicle.id)}"
-              title="${state.user ? 'Favourite this vehicle' : 'Login to save favourites'}"
-              aria-label="${state.user ? 'Favourite this vehicle' : 'Login to save favourites'}"
-            >★</button>
-          </div>
-        `;
+            <button class="fav-btn ${favourite ? 'on' : ''}" type="button" data-fav="${escapeAttr(vehicle.id)}" aria-label="${state.user ? 'Favourite this vehicle' : 'Login to save favourites'}" title="${state.user ? 'Favourite this vehicle' : 'Login to save favourites'}">★</button>
+          </div>`;
       }).join('');
 
       els.vehicleList.querySelectorAll('[data-card]').forEach(card => {
@@ -652,7 +944,6 @@ button{cursor:pointer}
           if (event.target.closest('[data-fav]')) return;
           selectVehicle(card.dataset.card);
         };
-
         card.addEventListener('click', activate);
         card.addEventListener('keydown', event => {
           if (event.key === 'Enter' || event.key === ' ') {
@@ -672,115 +963,202 @@ button{cursor:pointer}
     }
 
     function renderMarkers(vehicles) {
-      const validVehicles = validVisibleVehicles(vehicles);
-      const ids = new Set(validVehicles.map(vehicle => vehicle.id));
+      if (!state.mapReady || !state.map) return;
 
-      for (const [id, marker] of state.markers) {
-        if (!ids.has(id)) {
-          map.removeLayer(marker);
+      const valid = validVehicles(vehicles);
+      const idsNow = new Set(valid.map(vehicle => vehicle.id));
+
+      for (const [id, entry] of state.markers) {
+        if (!idsNow.has(id)) {
+          if (entry.animationFrame) cancelAnimationFrame(entry.animationFrame);
+          entry.marker.remove();
           state.markers.delete(id);
         }
       }
 
-      for (const vehicle of validVehicles) {
-        let marker = state.markers.get(vehicle.id);
-        const icon = markerIcon(vehicle);
+      for (const vehicle of valid) {
+        const target = { lat: vehicle.latitude, lng: vehicle.longitude };
+        let entry = state.markers.get(vehicle.id);
 
-        if (!marker) {
-          marker = L.marker([vehicle.latitude, vehicle.longitude], {
-            icon,
-            keyboard: true,
-            riseOnHover: true,
-            title: `${vehicle.route || 'Bus'} • ${publicVehicleTitle(vehicle)}`
-          }).addTo(map);
+        if (!entry) {
+          const element = document.createElement('button');
+          element.type = 'button';
+          element.className = 'bus-map-marker';
+          element.setAttribute('aria-label', `${vehicle.route || 'Bus'} ${publicVehicleTitle(vehicle)}`);
+          updateMarkerElement(element, vehicle);
 
-          marker.on('click', () => selectVehicle(vehicle.id, false));
-          state.markers.set(vehicle.id, marker);
+          const marker = new maplibregl.Marker({ element, anchor: 'bottom' })
+            .setLngLat([target.lng, target.lat])
+            .addTo(state.map);
+
+          entry = {
+            marker,
+            element,
+            vehicle,
+            recordedAt: vehicle.recordedAt || '',
+            target,
+            animationFrame: null
+          };
+
+          element.addEventListener('click', event => {
+            event.stopPropagation();
+            selectVehicle(vehicle.id, false);
+          });
+
+          state.markers.set(vehicle.id, entry);
         } else {
-          marker.setLatLng([vehicle.latitude, vehicle.longitude]);
-          marker.setIcon(icon);
-        }
+          entry.vehicle = vehicle;
+          updateMarkerElement(entry.element, vehicle);
 
-        marker.bindPopup(popupHtml(vehicle), {
-          closeButton: false,
-          offset: [0, -2]
-        });
+          const positionChanged = !entry.target || distanceMetres(entry.target, target) >= 1;
+          if (positionChanged || entry.recordedAt !== (vehicle.recordedAt || '')) {
+            moveMarkerSmoothly(entry, target);
+            entry.recordedAt = vehicle.recordedAt || '';
+            entry.target = target;
+
+            if (state.followSelected && state.selectedId === vehicle.id) {
+              state.map.easeTo({
+                center: [target.lng, target.lat],
+                duration: 650,
+                essential: true
+              });
+            }
+          }
+        }
+      }
+
+      if (state.selectedId) {
+        const selected = valid.find(vehicle => vehicle.id === state.selectedId);
+        if (selected && state.infoOpenId === selected.id) openVehicleInfo(selected);
       }
     }
 
-    function markerIcon(vehicle) {
-      const selected = state.selectedId === vehicle.id ? ' selected' : '';
-      const unknown = vehicle.mapped ? '' : ' unknown';
-      const route = escapeHtml(vehicle.route || '—');
+    function updateMarkerElement(element, vehicle) {
+      element.textContent = String(vehicle.route || '—').slice(0, 6);
+      element.classList.toggle('unknown', vehicle.mapped !== true);
+      element.classList.toggle('selected', state.selectedId === vehicle.id);
+      element.title = `${vehicle.route || 'Bus'} • ${publicVehicleTitle(vehicle)}`;
+      element.setAttribute('aria-label', `${vehicle.route || 'Bus'} ${publicVehicleTitle(vehicle)}`);
+    }
 
-      return L.divIcon({
-        className: 'bus-marker-wrap',
-        html: `
-          <div class="bus-pin${unknown}${selected}">
-            <svg class="bus-symbol" viewBox="0 0 24 24" aria-hidden="true">
-              <path fill="currentColor" d="M6 2h12a3 3 0 0 1 3 3v11a3 3 0 0 1-2 2.83V21a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-2H8v2a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-2.17A3 3 0 0 1 3 16V5a3 3 0 0 1 3-3Zm0 3v5h12V5H6Zm1.5 8A1.5 1.5 0 1 0 9 14.5 1.5 1.5 0 0 0 7.5 13Zm9 0a1.5 1.5 0 1 0 1.5 1.5 1.5 1.5 0 0 0-1.5-1.5Z"/>
-            </svg>
-            <span>${route}</span>
-          </div>
-        `,
-        iconSize: [54, 44],
-        iconAnchor: [27, 42],
-        popupAnchor: [0, -39]
-      });
+    function moveMarkerSmoothly(entry, target) {
+      const current = entry.marker.getLngLat();
+      if (!current) {
+        entry.marker.setLngLat([target.lng, target.lat]);
+        return;
+      }
+
+      const start = { lat: current.lat, lng: current.lng };
+      const distance = distanceMetres(start, target);
+
+      // If a ticket machine jumps to another bus or the feed has a bad point,
+      // move immediately instead of animating a marker across the county.
+      if (!Number.isFinite(distance) || distance > 5000 || distance < 2) {
+        entry.marker.setLngLat([target.lng, target.lat]);
+        return;
+      }
+
+      if (entry.animationFrame) cancelAnimationFrame(entry.animationFrame);
+      const started = performance.now();
+      const duration = Math.min(2200, Math.max(850, distance * 2.2));
+
+      const frame = now => {
+        const progress = Math.min(1, (now - started) / duration);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const lng = start.lng + (target.lng - start.lng) * eased;
+        const lat = start.lat + (target.lat - start.lat) * eased;
+        entry.marker.setLngLat([lng, lat]);
+
+        if (state.popup && state.infoOpenId === entry.vehicle.id) {
+          state.popup.setLngLat([lng, lat]);
+        }
+
+        if (progress < 1) entry.animationFrame = requestAnimationFrame(frame);
+        else entry.animationFrame = null;
+      };
+
+      entry.animationFrame = requestAnimationFrame(frame);
+    }
+
+    function distanceMetres(a, b) {
+      const toRad = value => value * Math.PI / 180;
+      const earth = 6371000;
+      const dLat = toRad(b.lat - a.lat);
+      const dLng = toRad(b.lng - a.lng);
+      const lat1 = toRad(a.lat);
+      const lat2 = toRad(b.lat);
+      const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
+      return 2 * earth * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
     }
 
     function popupHtml(vehicle) {
       const rows = [];
-
       if (vehicle.mapped && vehicle.vehicleType) rows.push(vehicle.vehicleType);
       if (vehicle.mapped && vehicle.livery) rows.push(vehicle.livery);
       if (vehicle.destination) rows.push(`To ${vehicle.destination}`);
 
-      return `
-        <div class="popup">
-          <div class="popup-top">
-            <span class="popup-route ${vehicle.mapped ? '' : 'unknown'}">${escapeHtml(vehicle.route || '—')}</span>
-            <span class="popup-title">${escapeHtml(publicVehicleTitle(vehicle))}</span>
-          </div>
-          ${rows.map(row => `<div class="popup-row">${escapeHtml(row)}</div>`).join('')}
-          <div class="popup-muted">Updated ${escapeHtml(timeAgo(vehicle.recordedAt))}</div>
+      return `<div class="popup">
+        <div class="popup-top">
+          <span class="popup-route ${vehicle.mapped ? '' : 'unknown'}">${escapeHtml(vehicle.route || '—')}</span>
+          <span class="popup-title">${escapeHtml(publicVehicleTitle(vehicle))}</span>
         </div>
-      `;
+        ${rows.map(row => `<div class="popup-row">${escapeHtml(row)}</div>`).join('')}
+        <div class="popup-muted">Updated ${escapeHtml(timeAgo(vehicle.recordedAt))}</div>
+      </div>`;
+    }
+
+    function openVehicleInfo(vehicle) {
+      if (!state.mapReady || !state.map) return;
+      const entry = state.markers.get(vehicle.id);
+      if (!entry) return;
+
+      if (state.popup) state.popup.remove();
+
+      const lngLat = entry.marker.getLngLat();
+      state.popup = new maplibregl.Popup({
+        offset: 28,
+        closeButton: true,
+        closeOnClick: false,
+        maxWidth: '320px'
+      })
+        .setLngLat([lngLat.lng, lngLat.lat])
+        .setHTML(popupHtml(vehicle))
+        .addTo(state.map);
+
+      state.infoOpenId = vehicle.id;
+      state.popup.on('close', () => {
+        state.infoOpenId = null;
+        state.popup = null;
+      });
     }
 
     function selectVehicle(id, pan = true) {
       state.selectedId = id;
+      state.followSelected = true;
       const vehicle = visibleVehicles().find(item => item.id === id);
-
       if (!vehicle) return;
 
       renderList(visibleVehicles());
       renderMarkers(visibleVehicles());
       renderSelectedCard();
 
-      const marker = state.markers.get(id);
-
-      if (marker && pan) {
-        const targetZoom = Math.max(map.getZoom(), 14);
-        map.flyTo(marker.getLatLng(), targetZoom, {
-          animate: true,
-          duration: .55
-        });
-      }
-
-      if (marker) marker.openPopup();
-
-      if (window.innerWidth <= 760 && !state.panelCollapsed) {
-        state.panelCollapsed = true;
-        els.trackerPanel.classList.add('collapsed');
-        els.panelToggle.textContent = 'Show vehicle list';
-        els.panelToggle.setAttribute('aria-expanded', 'false');
+      const entry = state.markers.get(id);
+      if (entry && state.mapReady) {
+        const lngLat = entry.marker.getLngLat();
+        if (pan) {
+          state.map.easeTo({
+            center: [lngLat.lng, lngLat.lat],
+            zoom: Math.max(state.map.getZoom(), 14),
+            duration: 700,
+            essential: true
+          });
+        }
+        openVehicleInfo(vehicle);
       }
     }
 
     function renderSelectedCard() {
       const vehicle = visibleVehicles().find(item => item.id === state.selectedId);
-
       if (!vehicle) {
         hideSelectedCard();
         return;
@@ -799,30 +1177,37 @@ button{cursor:pointer}
       els.selectedCard.classList.remove('show');
     }
 
-    function fitToVehicles(vehicles, animate = true) {
-      const points = validVisibleVehicles(vehicles)
-        .map(vehicle => [vehicle.latitude, vehicle.longitude]);
+    function fitToVehicles(vehicles) {
+      if (!state.mapReady || !state.map) return;
+      const points = validVehicles(vehicles);
 
       if (!points.length) {
-        map.setView(DEFAULT_CENTER, DEFAULT_ZOOM, { animate });
-        return;
-      }
-
-      if (points.length === 1) {
-        map.flyTo(points[0], 14, {
-          animate,
-          duration: animate ? .55 : 0
+        state.map.easeTo({
+          center: [DEFAULT_CENTER.lng, DEFAULT_CENTER.lat],
+          zoom: DEFAULT_ZOOM,
+          duration: 500,
+          essential: true
         });
         return;
       }
 
-      const mobile = window.innerWidth <= 760;
+      if (points.length === 1) {
+        state.map.easeTo({
+          center: [points[0].longitude, points[0].latitude],
+          zoom: 14,
+          duration: 600,
+          essential: true
+        });
+        return;
+      }
 
-      map.fitBounds(points, {
-        paddingTopLeft: mobile ? [26, 74] : [44, 44],
-        paddingBottomRight: mobile ? [26, 230] : [44, 44],
+      const bounds = new maplibregl.LngLatBounds();
+      points.forEach(vehicle => bounds.extend([vehicle.longitude, vehicle.latitude]));
+      state.map.fitBounds(bounds, {
+        padding: { top: 55, right: 55, bottom: 55, left: 55 },
         maxZoom: 13,
-        animate
+        duration: 700,
+        essential: true
       });
     }
 
@@ -833,22 +1218,39 @@ button{cursor:pointer}
           vehicle.registration
         ].filter(Boolean).join(' • ') || 'Mapped vehicle';
       }
-
       return `Tracker ${vehicle.machineLabel || vehicle.machineId || 'Unknown'}`;
     }
 
     function publicVehicleSubtitle(vehicle) {
-      if (vehicle.mapped) {
-        return vehicle.vehicleType || vehicle.livery || 'Vehicle details added';
-      }
-
+      if (vehicle.mapped) return vehicle.vehicleType || vehicle.livery || 'Vehicle details added';
       return 'Vehicle details not added yet';
+    }
+
+    function favouriteKey(vehicle) {
+      return vehicle.mapped
+        ? `bus:${vehicle.fleetNumber || vehicle.registration || vehicle.id}`
+        : `machine:${vehicle.machineId || vehicle.id}`;
+    }
+
+    function vehicleSort(a,b) {
+      if (a.mapped !== b.mapped) return a.mapped ? -1 : 1;
+      return collator.compare(a.fleetNumber || a.registration || a.machineId || '', b.fleetNumber || b.registration || b.machineId || '');
+    }
+
+    function timeAgo(iso) {
+      const time = Date.parse(iso || '');
+      if (!time) return 'just now';
+      const seconds = Math.max(0, Math.round((Date.now() - time) / 1000));
+      if (seconds < 10) return 'just now';
+      if (seconds < 60) return `${seconds}s ago`;
+      const minutes = Math.round(seconds / 60);
+      if (minutes < 60) return `${minutes}m ago`;
+      return new Date(time).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
     }
 
     function setAuthMode(mode) {
       state.authMode = mode;
       const register = mode === 'register';
-
       els.loginTab.classList.toggle('active', !register);
       els.registerTab.classList.toggle('active', register);
       els.nameField.style.display = register ? 'block' : 'none';
@@ -866,57 +1268,28 @@ button{cursor:pointer}
       els.authMessage.textContent = '';
     }
 
-    function favouriteKey(vehicle) {
-      return vehicle.mapped
-        ? `bus:${vehicle.fleetNumber || vehicle.registration || vehicle.id}`
-        : `machine:${vehicle.machineId || vehicle.id}`;
-    }
-
-    function vehicleSort(a, b) {
-      if (a.mapped !== b.mapped) return a.mapped ? -1 : 1;
-
-      return collator.compare(
-        a.fleetNumber || a.registration || a.machineId || '',
-        b.fleetNumber || b.registration || b.machineId || ''
-      );
-    }
-
-    function timeAgo(iso) {
-      const time = Date.parse(iso || '');
-      if (!time) return 'just now';
-
-      const seconds = Math.max(0, Math.round((Date.now() - time) / 1000));
-      if (seconds < 10) return 'just now';
-      if (seconds < 60) return `${seconds}s ago`;
-
-      const minutes = Math.round(seconds / 60);
-      if (minutes < 60) return `${minutes}m ago`;
-
-      return new Date(time).toLocaleTimeString('en-GB', {
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    }
-
     function friendlyAuthError(error) {
       const code = error?.code || '';
-
       if (code.includes('invalid-credential')) return 'Incorrect email or password.';
       if (code.includes('email-already-in-use')) return 'That email already has an account.';
       if (code.includes('weak-password')) return 'Use a stronger password.';
       if (code.includes('invalid-email')) return 'Enter a valid email address.';
       if (code.includes('too-many-requests')) return 'Too many attempts. Try again later.';
-
       return error?.message || 'Something went wrong.';
+    }
+
+    function showMapStatus(message) {
+      els.mapStatus.textContent = message;
+      els.mapStatus.classList.add('show');
+    }
+
+    function hideMapStatus() {
+      els.mapStatus.classList.remove('show');
     }
 
     function escapeHtml(value) {
       return String(value ?? '').replace(/[&<>'"]/g, character => ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        "'": '&#39;',
-        '"': '&quot;'
+        '&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'
       }[character]));
     }
 
@@ -924,16 +1297,8 @@ button{cursor:pointer}
       return escapeHtml(value);
     }
 
-    const resizeObserver = new ResizeObserver(() => {
-      map.invalidateSize({ pan: false });
-    });
-    resizeObserver.observe(document.querySelector('.map-stage'));
-
-    window.addEventListener('resize', () => {
-      map.invalidateSize({ pan: false });
-    });
-
     setAuthMode('login');
+    initialiseMap();
     loadLive();
   </script>
 </body>

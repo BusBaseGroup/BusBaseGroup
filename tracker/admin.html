@@ -68,8 +68,8 @@
       appId: "1:380602561765:web:5bf01fc6d7982dc950500c"
     };
 
-    // CHANGE THIS after deploying the Cloudflare Worker.
-    const API_BASE = 'https://YOUR-WORKER.workers.dev';
+    // Direct BusTimes live feed. No separate backend URL is required for this test version.
+    const BUSTIMES_LIVE_URL = 'https://bustimes.org/vehicles.json?operator=LYNX';
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
@@ -130,17 +130,93 @@
       if(!verifiedAdmin)return;
       els.refreshAll.disabled=true;
       try{
-        const token = await auth.currentUser.getIdToken();
-        const [mappingSnap, liveResponse] = await Promise.all([getDocs(collection(db,'vehicles')), fetch(`${API_BASE}/api/admin-vehicles`,{cache:'no-store',headers:{'Authorization':`Bearer ${token}`}})]);
-        const liveData = await liveResponse.json();
-        if(!liveResponse.ok || !liveData.ok) throw new Error(liveData.error || `HTTP ${liveResponse.status}`);
+        const [mappingSnap, liveResponse] = await Promise.all([
+          getDocs(collection(db,'vehicles')),
+          fetch(BUSTIMES_LIVE_URL,{cache:'no-store',mode:'cors',headers:{'Accept':'application/json'}})
+        ]);
+
+        if(!liveResponse.ok) throw new Error(`BusTimes returned HTTP ${liveResponse.status}.`);
+        const payload = await liveResponse.json();
+        if(!Array.isArray(payload)) throw new Error('BusTimes returned an unexpected live-data format.');
+
         mappings = mappingSnap.docs.map(d => ({machineId:d.id,...d.data()}));
-        liveVehicles = Array.isArray(liveData.vehicles) ? liveData.vehicles : [];
+
+        const seen = new Map();
+        for(const item of payload){
+          const vehicle = parseBusTimesVehicle(item);
+          if(!vehicle) continue;
+          const previous = seen.get(vehicle.machineId);
+          if(!previous || newer(vehicle.recordedAt,previous.recordedAt)) seen.set(vehicle.machineId,vehicle);
+        }
+        liveVehicles = [...seen.values()];
+
         mappings.sort((a,b)=>collator.compare(a.fleetNumber||a.registration||a.machineId,b.fleetNumber||b.registration||b.machineId));
         renderUnknown(); renderMappings();
-      }catch(error){console.error(error);alert(error.message || 'Could not refresh data.');}
+      }catch(error){
+        console.error(error);
+        const message = /Failed to fetch|CORS|NetworkError/i.test(String(error?.message || error))
+          ? 'Your browser blocked the direct BusTimes feed. This test version only works if BusTimes allows cross-site requests.'
+          : (error.message || 'Could not refresh data.');
+        alert(message);
+      }
       finally{els.refreshAll.disabled=false;}
     }
+
+    function parseBusTimesVehicle(item){
+      if(!item || typeof item!=='object') return null;
+      const coordinates = Array.isArray(item.coordinates)
+        ? item.coordinates
+        : Array.isArray(item.location?.coordinates)
+          ? item.location.coordinates
+          : null;
+      if(!coordinates || coordinates.length<2) return null;
+
+      const longitude=Number(coordinates[0]);
+      const latitude=Number(coordinates[1]);
+      if(!Number.isFinite(latitude)||!Number.isFinite(longitude)) return null;
+
+      const vehicleInfo=item.vehicle&&typeof item.vehicle==='object'?item.vehicle:{};
+      const machineId=vehicleKeyFromBusTimes(vehicleInfo,item);
+      if(!machineId)return null;
+      const service=item.service&&typeof item.service==='object'?item.service:{};
+
+      return {
+        machineId,
+        machineLabel:machineLabelFromBusTimes(vehicleInfo,machineId),
+        route:clean(service.line_name??item.route_name??item.line_name??item.route??''),
+        destination:clean(item.destination??item.destination_name??item.headsign??item.trip?.headsign??''),
+        latitude,
+        longitude,
+        recordedAt:normalizeDate(item.datetime??item.recorded_at??item.recordedAt??item.timestamp??item.time)
+      };
+    }
+
+    function vehicleKeyFromBusTimes(vehicleInfo,item){
+      const url=clean(vehicleInfo.url);
+      if(url){
+        const bits=url.split('/').filter(Boolean);
+        const slug=bits[bits.length-1]||'';
+        if(slug)return slug.slice(0,180);
+      }
+      const explicit=clean(item.vehicle_id??item.vehicleId??vehicleInfo.id??'');
+      if(explicit)return `bt-${explicit}`.slice(0,180);
+      const name=clean(vehicleInfo.name);
+      return name?`bt-${slugify(name)}`.slice(0,180):'';
+    }
+
+    function machineLabelFromBusTimes(vehicleInfo,machineId){
+      const name=clean(vehicleInfo.name);
+      if(name.includes(' - ')){
+        const first=clean(name.split(' - ')[0]);
+        if(first)return first;
+      }
+      return machineId;
+    }
+
+    function clean(value){return String(value??'').trim();}
+    function normalizeDate(value){if(!value)return new Date().toISOString();const d=new Date(value);return Number.isNaN(d.getTime())?new Date().toISOString():d.toISOString();}
+    function newer(a,b){return(Date.parse(a||'')||0)>=(Date.parse(b||'')||0);}
+    function slugify(value){return clean(value).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');}
 
     function renderUnknown(){
       const mappedIds = new Set(mappings.map(m=>m.machineId));
