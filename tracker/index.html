@@ -2,282 +2,482 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#15181d">
-  <title>Bus Tracker</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <title>BusBase Live Tracker</title>
 
   <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css">
   <script src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js"></script>
 
   <style>
     :root{
-      --bg:#f4f5f7;
-      --panel:#fff;
-      --ink:#17191d;
-      --muted:#667085;
-      --line:#e4e7ec;
-      --brand:#d71920;
-      --brand-dark:#aa1117;
-      --header:#171a20;
-      --unknown:#4b5563;
-      --good:#16803c;
-      --bad:#c62828;
-      --amber:#b77900;
-      --sidebar:360px;
-      --shadow:0 10px 30px rgba(15,23,42,.14);
+      --navy:#152a42;
+      --navy-2:#203d5d;
+      --blue:#1769aa;
+      --blue-hover:#0e568f;
+      --red:#d71920;
+      --green:#178447;
+      --amber:#a66500;
+      --ink:#202b36;
+      --muted:#697786;
+      --faint:#8d99a6;
+      --border:#d9e0e6;
+      --border-soft:#e9edf1;
+      --paper:#ffffff;
+      --soft:#f5f7f8;
+      --soft-blue:#eef5fb;
+      --map-bg:#dfe5e9;
+      --sidebar:390px;
+      --shadow:0 3px 12px rgba(20,42,66,.12);
+      --vehicle-accent:#d71920;
+      --vehicle-accent-text:#fff;
     }
 
     *{box-sizing:border-box}
-    html,body{margin:0;width:100%;height:100%;}
+    html,body{margin:0;width:100%;height:100%}
     body{
-      height:100vh;
-      height:100dvh;
-      overflow:hidden;
-      display:grid;
-      grid-template-rows:60px minmax(0,1fr);
-      background:var(--bg);
-      color:var(--ink);
-      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      height:100vh;height:100dvh;overflow:hidden;
+      display:grid;grid-template-rows:52px minmax(0,1fr);
+      background:var(--paper);color:var(--ink);
+      font-family:Arial,Helvetica,sans-serif;
+      font-size:14px;
     }
-    button,input,select{font:inherit}
+    button,input,select,textarea{font:inherit}
     button{cursor:pointer}
-    a{color:inherit}
-
-    .topbar{
-      min-width:0;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:14px;
-      padding:0 14px;
-      background:var(--header);
-      color:#fff;
-      border-bottom:3px solid var(--brand);
-      z-index:1000;
-    }
-    .brand{min-width:0;display:flex;align-items:center;gap:10px}
-    .brand-mark{width:34px;height:34px;display:grid;place-items:center;border-radius:8px;background:var(--brand);font-weight:950}
-    .brand-copy{min-width:0}
-    .brand-title{font-size:15px;font-weight:900;line-height:1.05}
-    .brand-sub{margin-top:3px;color:#bdc4ce;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .top-actions{display:flex;align-items:center;gap:7px;flex:0 0 auto}
-    .top-btn{min-height:36px;border:1px solid #343b47;border-radius:8px;background:#20252e;color:#fff;padding:0 11px;font-size:12px;font-weight:800}
-    .top-btn:hover{background:#2b313c}
-    .top-btn.admin{display:none;align-items:center;text-decoration:none;background:var(--brand);border-color:var(--brand)}
-    .top-btn.admin:hover{background:var(--brand-dark)}
-
-    .app-main{
-      min-width:0;
-      min-height:0;
-      display:grid;
-      grid-template-columns:var(--sidebar) minmax(0,1fr);
-      background:#dce2e8;
+    a{color:var(--blue)}
+    button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+      outline:3px solid rgba(23,105,170,.22);outline-offset:1px
     }
 
-    .vehicle-pane{
-      min-width:0;
-      min-height:0;
-      display:flex;
-      flex-direction:column;
-      background:var(--panel);
-      border-right:1px solid var(--line);
-      overflow:hidden;
-      z-index:2;
+    /* BusTimes-inspired, but distinct BusBase header */
+    .site-head{
+      z-index:1200;display:flex;align-items:center;justify-content:space-between;gap:14px;
+      min-width:0;padding:0 14px;background:#fff;border-bottom:1px solid #cfd7de;
+      box-shadow:0 1px 0 rgba(0,0,0,.02)
     }
-    .vehicle-head{flex:0 0 auto;padding:15px 14px 12px;border-bottom:1px solid var(--line);background:#fff}
-    .vehicle-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-    .vehicle-title-row h1{margin:0;font-size:18px;line-height:1.15;letter-spacing:-.025em}
-    .summary{margin-top:4px;color:var(--muted);font-size:12px}
-    .live-pill{display:inline-flex;align-items:center;gap:6px;min-height:28px;padding:0 9px;border:1px solid #cbead4;border-radius:999px;background:#f4fbf6;color:#12642f;font-size:10.5px;font-weight:850;white-space:nowrap}
-    .live-pill.loading{border-color:#e1e5ea;background:#f8f9fa;color:#667085}
-    .live-pill.error{border-color:#f4c9c9;background:#fff4f4;color:#9f1d1d}
-    .live-dot{width:7px;height:7px;border-radius:50%;background:var(--good)}
-    .live-pill.loading .live-dot{background:#98a2b3}
-    .live-pill.error .live-dot{background:var(--bad)}
+    .head-left,.head-right{display:flex;align-items:center;gap:12px;min-width:0}
+    .brand{
+      display:flex;align-items:center;gap:8px;color:var(--navy);
+      text-decoration:none;font-size:18px;font-weight:700;white-space:nowrap
+    }
+    .brand-mark{
+      width:29px;height:29px;border-radius:4px;display:grid;place-items:center;
+      background:var(--navy);color:#fff;font-size:15px;font-weight:800
+    }
+    .head-nav{display:flex;align-items:stretch;height:52px}
+    .head-nav a,.head-nav button{
+      height:52px;border:0;border-bottom:3px solid transparent;background:transparent;
+      padding:0 10px;color:#506273;text-decoration:none;font-weight:700;font-size:13px
+    }
+    .head-nav a:hover,.head-nav button:hover{color:var(--blue);background:#f7f9fa}
+    .head-nav .active{color:var(--navy);border-bottom-color:var(--red)}
+    .account-btn,.admin-link{
+      min-height:34px;padding:0 10px;border:1px solid #cbd4dc;border-radius:4px;
+      background:#fff;color:#31465a;text-decoration:none;font-size:12px;font-weight:700;
+      display:inline-flex;align-items:center;justify-content:center
+    }
+    .account-btn:hover,.admin-link:hover{background:#f5f7f8}
+    .admin-link{display:none;color:#fff;background:var(--navy);border-color:var(--navy)}
+    .admin-link:hover{background:var(--navy-2)}
 
-    .filters{margin-top:12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px}
-    .route-select,.refresh-btn{min-height:40px;border:1px solid #d5d9df;border-radius:8px;background:#fff;color:var(--ink);outline:none}
-    .route-select{width:100%;padding:0 10px}
-    .refresh-btn{padding:0 12px;font-size:12px;font-weight:850}
-    .route-select:focus,.refresh-btn:focus-visible,.map-tool:focus-visible,.top-btn:focus-visible,.fav-btn:focus-visible,.close:focus-visible,.tab:focus-visible,.primary:focus-visible,.secondary:focus-visible{outline:3px solid rgba(215,25,32,.15);outline-offset:1px}
-    .refresh-btn:hover{background:#f7f8fa}
+    .app{
+      position:relative;min-width:0;min-height:0;
+      display:grid;grid-template-columns:var(--sidebar) minmax(0,1fr)
+    }
 
-    .list-scroll{min-height:0;flex:1 1 auto;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#cdd2d9 transparent}
-    .vehicle-list{padding:7px}
-    .vehicle-card{width:100%;display:grid;grid-template-columns:46px minmax(0,1fr) 34px;gap:9px;align-items:start;padding:9px;border:1px solid transparent;border-radius:9px;background:transparent;text-align:left;color:inherit;transition:background .12s,border-color .12s}
-    .vehicle-card+.vehicle-card{margin-top:2px}
-    .vehicle-card:hover{background:#f5f6f8}
-    .vehicle-card.active{background:#fff3f3;border-color:#f3c7c9}
-    .route-badge{min-width:44px;height:36px;padding:0 5px;border-radius:7px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:950;line-height:1}
-    .vehicle-card.unknown .route-badge{background:var(--unknown)}
-    .vehicle-main{min-width:0}
-    .vehicle-name,.vehicle-meta,.vehicle-dest,.vehicle-time{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .vehicle-name{font-size:13.5px;font-weight:900;color:#101828}
-    .vehicle-meta{margin-top:2px;color:var(--muted);font-size:11.5px}
-    .vehicle-dest{margin-top:5px;color:#344054;font-size:11.5px}
-    .vehicle-time{margin-top:3px;color:#98a2b3;font-size:10.5px}
-    .fav-btn{width:34px;height:34px;border:0;border-radius:8px;background:transparent;color:#b4bbc5;font-size:19px;line-height:1}
-    .fav-btn:hover{background:#eaedf1}
-    .fav-btn.on{color:var(--amber)}
-    .empty{padding:32px 18px;text-align:center;color:var(--muted);font-size:12.5px;line-height:1.55}
+    .side{
+      min-width:0;min-height:0;display:flex;flex-direction:column;
+      background:#fff;border-right:1px solid #cfd7de;z-index:4
+    }
+    .tracker-view,.vehicle-view{min-height:0;display:flex;flex:1;flex-direction:column}
+    .vehicle-view{display:none}
+    body.vehicle-mode .tracker-view{display:none}
+    body.vehicle-mode .vehicle-view{display:flex}
 
-    .map-pane{position:relative;min-width:0;min-height:0;overflow:hidden;background:#dce2e8}
-    #map{position:absolute;inset:0;width:100%;height:100%;background:#dce2e8}
+    .side-title{
+      padding:14px 14px 10px;border-bottom:1px solid var(--border-soft)
+    }
+    .eyebrow{
+      color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em
+    }
+    .title-row{
+      display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-top:3px
+    }
+    .title-row h1{margin:0;font-size:21px;color:var(--navy);line-height:1.15}
+    .summary{margin-top:4px;color:var(--muted);font-size:11.5px}
+    .live-pill{
+      display:inline-flex;align-items:center;gap:5px;padding:4px 7px;border:1px solid #b8dec8;
+      border-radius:999px;background:#f1faf5;color:#176a3b;font-size:10px;font-weight:700;white-space:nowrap
+    }
+    .live-pill.loading{border-color:#d8dee4;background:#f7f8f9;color:#697786}
+    .live-pill.error{border-color:#efcaca;background:#fff5f5;color:#9f2626}
+    .live-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
 
-    .map-tools{position:absolute;z-index:700;top:12px;right:12px;display:grid;gap:7px}
-    .map-tool{width:42px;height:42px;border:1px solid rgba(17,24,39,.13);border-radius:9px;background:#fff;color:#344054;display:grid;place-items:center;box-shadow:0 4px 14px rgba(15,23,42,.13)}
-    .map-tool:hover{background:#f8fafc;color:#111827}
-    .map-tool svg{width:20px;height:20px}
+    .filters{
+      padding:10px 14px 12px;border-bottom:1px solid var(--border-soft);
+      display:grid;grid-template-columns:1fr 126px;gap:7px
+    }
+    .search-wrap{grid-column:1/-1;position:relative}
+    .search-wrap svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);width:16px;color:#7c8995}
+    .search-wrap input,.route-select{
+      width:100%;height:37px;border:1px solid #cbd4dc;border-radius:4px;background:#fff;color:var(--ink)
+    }
+    .search-wrap input{padding:0 9px 0 31px}
+    .route-select{padding:0 8px}
+    .refresh{
+      height:37px;border:1px solid #cbd4dc;border-radius:4px;background:#f7f9fa;color:#34495e;font-weight:700;font-size:12px
+    }
+    .refresh:hover{background:#eef2f5}
 
-    .selected-card{position:absolute;z-index:700;left:12px;bottom:12px;width:min(380px,calc(100% - 24px));padding:13px;border:1px solid rgba(17,24,39,.11);border-radius:11px;background:#fff;box-shadow:var(--shadow);display:none}
-    .selected-card.show{display:block}
-    .selected-top{display:flex;align-items:flex-start;gap:9px}
-    .selected-route{min-width:45px;height:36px;padding:0 6px;border-radius:7px;background:var(--brand);color:#fff;display:grid;place-items:center;font-size:13px;font-weight:950}
-    .selected-route.unknown{background:var(--unknown)}
-    .selected-copy{min-width:0;flex:1}
-    .selected-title{font-size:13.5px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .selected-sub{margin-top:2px;color:var(--muted);font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .selected-dest{margin-top:8px;color:#344054;font-size:11.5px}
-    .selected-time{margin-top:4px;color:#98a2b3;font-size:10.5px}
-    .selected-close{width:30px;height:30px;flex:0 0 auto;border:0;border-radius:7px;background:#f1f3f5;color:#475467;font-size:17px;line-height:1}
+    .vehicle-list-scroll{min-height:0;overflow:auto;flex:1}
+    .vehicle-list{padding:0}
+    .vehicle-row{
+      width:100%;display:grid;grid-template-columns:52px minmax(0,1fr) 30px;gap:9px;
+      align-items:start;padding:10px 11px;border:0;border-bottom:1px solid var(--border-soft);
+      background:#fff;text-align:left;color:inherit
+    }
+    .vehicle-row:hover{background:#f8fafb}
+    .vehicle-row.selected{background:var(--soft-blue)}
+    .route-box{
+      min-width:48px;height:30px;padding:0 5px;border-radius:4px;display:grid;place-items:center;
+      background:var(--red);color:#fff;font-size:12px;font-weight:800;line-height:1
+    }
+    .vehicle-copy{min-width:0}
+    .vehicle-line{display:flex;align-items:baseline;gap:6px;min-width:0;flex-wrap:wrap}
+    .fleet-no{color:var(--navy);font-size:12px;font-weight:800}
+    .reg-link{
+      color:var(--blue);font-size:13px;font-weight:800;text-decoration:none;letter-spacing:.015em
+    }
+    .reg-link:hover{text-decoration:underline}
+    .unknown-link{font-weight:700}
+    .vehicle-meta,.vehicle-journey,.vehicle-gps{
+      margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+    }
+    .vehicle-meta{color:#637282;font-size:11px}
+    .vehicle-journey{color:#34495e;font-size:11.5px}
+    .vehicle-gps{color:#909aa5;font-size:10.5px}
+    .fav{
+      width:30px;height:30px;border:0;background:transparent;color:#bcc4cb;font-size:18px
+    }
+    .fav:hover{background:#eef2f5;border-radius:4px}
+    .fav.on{color:#b87900}
+    .empty{padding:26px 16px;color:var(--muted);font-size:12px;line-height:1.5;text-align:center}
 
-    .map-status{position:absolute;z-index:700;left:12px;top:12px;max-width:min(420px,calc(100% - 80px));display:none;padding:9px 11px;border:1px solid #f0c9c9;border-radius:8px;background:#fff7f7;color:#8f1f1f;box-shadow:0 4px 14px rgba(15,23,42,.10);font-size:11.5px;line-height:1.4}
+    .map-pane{position:relative;min-width:0;min-height:0;background:var(--map-bg)}
+    #map{position:absolute;inset:0}
+    .map-tools{position:absolute;z-index:6;right:10px;top:10px;display:grid;gap:6px}
+    .map-tool{
+      width:39px;height:39px;border:1px solid #bcc7d0;border-radius:4px;background:#fff;color:#40566b;
+      display:grid;place-items:center;box-shadow:var(--shadow)
+    }
+    .map-tool:hover{background:#f5f7f8}
+    .map-tool svg{width:19px;height:19px}
+    .map-status{
+      position:absolute;z-index:6;left:10px;top:10px;display:none;max-width:min(430px,calc(100% - 70px));
+      padding:8px 10px;border:1px solid #e8bcbc;border-radius:4px;background:#fff8f8;color:#942525;
+      box-shadow:var(--shadow);font-size:11px;line-height:1.4
+    }
     .map-status.show{display:block}
 
-    /* MapLibre/OpenFreeMap */
-    #map .maplibregl-canvas{outline:none}
-    #map .maplibregl-ctrl-group{border-radius:9px;box-shadow:0 4px 14px rgba(15,23,42,.13);overflow:hidden}
-    #map .maplibregl-ctrl-group button{width:38px;height:38px}
-    #map .maplibregl-ctrl-attrib{font-size:10px}
-    #map .maplibregl-popup-content{padding:12px 13px;border-radius:11px;box-shadow:0 12px 32px rgba(15,23,42,.18)}
-    #map .maplibregl-popup-close-button{width:30px;height:30px;border-radius:7px;font-size:18px;color:#667085}
-    #map .maplibregl-popup-close-button:hover{background:#f2f4f7}
-    .bus-map-marker{width:42px;height:42px;padding:0;border:3px solid #fff;border-radius:50%;background:var(--brand);color:#fff;display:grid;place-items:center;box-shadow:0 4px 12px rgba(15,23,42,.34);font:900 11px/1 Inter,ui-sans-serif,system-ui,sans-serif;white-space:nowrap;position:relative;transform:translateZ(0);overflow:visible}
-    .marker-route{position:relative;z-index:2;display:block;max-width:32px;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
-    .marker-arrow{position:absolute;z-index:3;left:50%;top:-13px;width:18px;height:18px;display:grid;place-items:center;transform-origin:50% 22px;color:inherit;font-size:13px;line-height:1;text-shadow:0 1px 2px rgba(0,0,0,.45);pointer-events:none}
-    .marker-arrow.hidden{display:none}
-    .bus-map-marker::after{content:"";position:absolute;left:50%;top:50%;width:5px;height:5px;border-radius:50%;background:currentColor;transform:translate(-50%,-50%);opacity:.20;pointer-events:none}
-    .bus-map-marker.unknown{background:var(--unknown)}
-    .bus-map-marker.selected{width:44px;height:44px;border-width:4px;box-shadow:0 6px 18px rgba(15,23,42,.42)}
-    .bus-map-marker:focus-visible{outline:3px solid rgba(215,25,32,.25);outline-offset:3px}
-    .popup{min-width:205px;padding-right:10px}
-    .popup-top{display:flex;align-items:center;gap:8px;margin-bottom:7px}
-    .popup-route{min-width:38px;height:28px;padding:0 7px;border-radius:6px;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:950;font-size:12px}
-    .popup-route.unknown{background:var(--unknown)}
-    .popup-title{font-weight:900;font-size:13px}
-    .popup-row{margin-top:5px;color:#475467;font-size:11.5px}
-    .popup-muted{margin-top:7px;color:#98a2b3;font-size:10.5px}
+    .selected-card{
+      position:absolute;z-index:6;left:10px;bottom:10px;display:none;width:min(370px,calc(100% - 20px));
+      border:1px solid #cbd4dc;border-radius:5px;background:#fff;box-shadow:var(--shadow)
+    }
+    .selected-card.show{display:block}
+    body.vehicle-mode .selected-card{display:none!important}
+    .selected-main{display:grid;grid-template-columns:47px minmax(0,1fr) 30px;gap:9px;padding:10px}
+    .selected-copy{min-width:0}
+    .selected-title{font-size:13px;font-weight:800;color:var(--navy)}
+    .selected-sub,.selected-dest,.selected-time{margin-top:3px;font-size:11px}
+    .selected-sub{color:var(--muted)}
+    .selected-dest{color:#34495e}
+    .selected-time{color:#929ca6}
+    .selected-close{width:29px;height:29px;border:0;border-radius:4px;background:#f0f3f5;color:#566879;font-size:18px}
+    .selected-link{
+      display:block;padding:8px 10px;border-top:1px solid var(--border-soft);color:var(--blue);
+      text-decoration:none;font-size:11.5px;font-weight:700
+    }
+    .selected-link:hover{background:#f7f9fa;text-decoration:underline}
 
-    .modal-backdrop{position:fixed;inset:0;z-index:3000;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(15,23,42,.52)}
-    .modal-backdrop.show{display:flex}
-    .modal{width:min(430px,100%);max-height:calc(100dvh - 32px);overflow:auto;border-radius:13px;background:#fff;box-shadow:0 25px 80px rgba(0,0,0,.28)}
-    .modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 16px;border-bottom:1px solid var(--line)}
-    .modal-head h2{margin:0;font-size:17px}
-    .close{width:34px;height:34px;border:0;border-radius:8px;background:#f1f3f5;color:#475467;font-size:20px}
-    .modal-body{padding:16px}
-    .tabs{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:4px;border-radius:9px;background:#f2f4f7}
-    .tab{min-height:38px;border:0;border-radius:7px;background:transparent;color:#667085;font-weight:800}
-    .tab.active{background:#fff;color:#101828;box-shadow:0 1px 3px rgba(15,23,42,.10)}
-    .field{margin-top:13px}
-    .field label{display:block;margin-bottom:6px;font-size:11.5px;font-weight:850}
-    .field input{width:100%;min-height:44px;border:1px solid #d0d5dd;border-radius:8px;padding:9px 10px;outline:none}
-    .field input:focus{border-color:#98a2b3;box-shadow:0 0 0 3px rgba(152,162,179,.15)}
-    .primary,.secondary{width:100%;min-height:43px;border-radius:8px;font-weight:850}
-    .primary{margin-top:14px;border:0;background:var(--brand);color:#fff}
-    .primary:hover{background:var(--brand-dark)}
-    .secondary{border:1px solid var(--line);background:#fff;color:#344054}
-    .link-btn{margin-top:10px;border:0;background:transparent;padding:0;color:#475467;font-size:11.5px;font-weight:750}
-    .auth-message{min-height:18px;margin-top:10px;color:var(--bad);font-size:11.5px}
+    #map .maplibregl-ctrl-group{border-radius:4px;overflow:hidden;box-shadow:var(--shadow)}
+    #map .maplibregl-ctrl-group button{width:36px;height:36px}
+    #map .maplibregl-popup-content{padding:10px 11px;border-radius:5px;box-shadow:0 7px 22px rgba(20,42,66,.18)}
+    #map .maplibregl-popup-close-button{width:28px;height:28px}
+    /* Live buses are drawn by MapLibre GeoJSON layers instead of HTML markers.
+       That keeps the centre of every marker locked to the actual GPS coordinate
+       at every zoom level and avoids fixed-size marker boxes shifting the visual
+       position when the map is zoomed out. */
+    .popup{min-width:210px;padding-right:9px}
+    .popup-head{display:flex;align-items:center;gap:7px}
+    .popup-route{min-width:39px;height:27px;padding:0 6px;border-radius:4px;display:grid;place-items:center;color:#fff;font-weight:800}
+    .popup-title{color:var(--navy);font-size:12px;font-weight:800}
+    .popup-row{margin-top:5px;color:#506273;font-size:11px}
+    .popup-open{display:inline-block;margin-top:8px;color:var(--blue);font-size:11px;font-weight:700;text-decoration:none}
+    .popup-open:hover{text-decoration:underline}
+
+    /* Built-in full-screen vehicle view */
+    .vehicle-head{
+      padding:12px 14px 10px;border-bottom:1px solid var(--border-soft)
+    }
+    .back-link{
+      display:inline-flex;align-items:center;gap:4px;border:0;background:transparent;padding:0;
+      color:var(--blue);font-weight:700;font-size:12px
+    }
+    .back-link:hover{text-decoration:underline}
+    .vehicle-hero{padding:12px 14px 14px;border-bottom:1px solid var(--border-soft)}
+    .vehicle-topline{display:flex;align-items:center;justify-content:space-between;gap:9px}
+    .vehicle-status{
+      display:inline-flex;align-items:center;gap:5px;color:#176a3b;font-size:10.5px;font-weight:700
+    }
+    .vehicle-status.off{color:#9f2626}
+    .vehicle-status .dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+    .detail-route{
+      min-width:48px;height:31px;padding:0 7px;border-radius:4px;display:grid;place-items:center;
+      background:var(--vehicle-accent);color:var(--vehicle-accent-text);font-size:12px;font-weight:800
+    }
+    .vehicle-hero h1{margin:10px 0 2px;color:var(--navy);font-size:24px;line-height:1.08}
+    .detail-reg{color:var(--blue);font-size:14px;font-weight:800;letter-spacing:.02em}
+    .now-box{
+      margin-top:11px;padding:9px 10px;border-left:4px solid var(--vehicle-accent);background:#f7f9fa
+    }
+    .now-box strong{display:block;color:#2d4053;font-size:12.5px}
+    .now-box span{display:block;margin-top:3px;color:var(--muted);font-size:11px;line-height:1.4}
+    .detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+    .detail-btn{
+      min-height:36px;border:1px solid #cbd4dc;border-radius:4px;background:#fff;color:#34495e;
+      font-size:11.5px;font-weight:700
+    }
+    .detail-btn:hover{background:#f5f7f8}
+    .detail-btn.primary-action{border-color:var(--navy);background:var(--navy);color:#fff}
+    .detail-btn.primary-action.active{border-color:var(--vehicle-accent);background:var(--vehicle-accent);color:var(--vehicle-accent-text)}
+    .detail-scroll{min-height:0;overflow:auto;flex:1}
+    .detail-section{border-bottom:1px solid var(--border-soft)}
+    .detail-section h2{
+      margin:0;padding:10px 14px 7px;color:#5f6e7b;font-size:10px;text-transform:uppercase;letter-spacing:.055em
+    }
+    .fact-table{width:100%;border-collapse:collapse}
+    .fact-table th,.fact-table td{padding:8px 14px;border-top:1px solid #f0f2f4;text-align:left;vertical-align:top}
+    .fact-table th{width:42%;color:#687786;font-size:11px;font-weight:400}
+    .fact-table td{color:#2d4053;font-size:11.5px;font-weight:700;overflow-wrap:anywhere}
+    .livery-value{display:flex;align-items:center;gap:6px}
+    .swatch{width:13px;height:13px;border-radius:50%;background:var(--vehicle-accent);border:1px solid rgba(0,0,0,.12);flex:0 0 auto}
+    .history-head{display:flex;align-items:center;justify-content:space-between;padding:10px 14px 7px}
+    .history-head h2{padding:0}
+    .history-count{color:#8c98a3;font-size:10px}
+    .journey-list{padding-bottom:8px}
+    .journey-row{
+      width:100%;display:grid;grid-template-columns:43px minmax(0,1fr);gap:8px;
+      padding:8px 14px;border:0;border-top:1px solid #f0f2f4;background:#fff;text-align:left
+    }
+    .journey-row:hover,.journey-row.active{background:#f4f8fb}
+    .journey-route{
+      min-width:39px;height:26px;padding:0 5px;border-radius:4px;display:grid;place-items:center;
+      background:var(--vehicle-accent);color:var(--vehicle-accent-text);font-size:10.5px;font-weight:800
+    }
+    .journey-copy{min-width:0}
+    .journey-dest{color:#2f4356;font-size:11.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .journey-time{margin-top:2px;color:#7b8894;font-size:10px;line-height:1.35}
+    .vehicle-map-card{
+      display:none;position:absolute;z-index:6;right:10px;bottom:10px;width:min(330px,calc(100% - 20px));
+      padding:9px 10px;border:1px solid #cbd4dc;border-radius:5px;background:#fff;box-shadow:var(--shadow)
+    }
+    body.vehicle-mode .vehicle-map-card{display:block}
+    .vehicle-map-card strong{display:block;color:var(--navy);font-size:11.5px}
+    .vehicle-map-card span{display:block;margin-top:3px;color:var(--muted);font-size:10.5px;line-height:1.4}
+
+    /* Modals */
+    .modal-bg{
+      position:fixed;inset:0;z-index:3000;display:none;align-items:center;justify-content:center;
+      padding:15px;background:rgba(20,42,66,.55)
+    }
+    .modal-bg.show{display:flex}
+    .modal{
+      width:min(560px,100%);max-height:calc(100dvh - 30px);overflow:auto;background:#fff;
+      border:1px solid #c8d1da;border-radius:6px;box-shadow:0 18px 60px rgba(0,0,0,.25)
+    }
+    .modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border)}
+    .modal-head h2{margin:0;color:var(--navy);font-size:17px}
+    .close{width:31px;height:31px;border:0;border-radius:4px;background:#edf1f4;color:#526579;font-size:18px}
+    .modal-body{padding:14px}
+    .tabs{display:flex;gap:0;margin-bottom:12px;border-bottom:1px solid var(--border)}
+    .tab{min-height:34px;border:0;border-bottom:3px solid transparent;background:transparent;padding:0 10px;color:#687786;font-weight:700}
+    .tab.active{color:var(--navy);border-bottom-color:var(--red)}
+    .field{margin-top:10px}
+    .field:first-child{margin-top:0}
+    .field label{display:block;margin-bottom:4px;color:#566676;font-size:11px;font-weight:700}
+    .field input,.field textarea{
+      width:100%;min-height:40px;border:1px solid #c7d1da;border-radius:4px;padding:8px 9px;background:#fff;color:var(--ink)
+    }
+    .field textarea{min-height:80px;resize:vertical}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px 10px}
+    .field.full{grid-column:1/-1}
+    .colour-row{display:grid;grid-template-columns:48px 1fr;gap:7px}
+    .colour-row input[type=color]{padding:3px}
+    .primary,.secondary{
+      min-height:38px;border:1px solid #c7d1da;border-radius:4px;padding:0 11px;font-weight:700
+    }
+    .primary{background:var(--navy);border-color:var(--navy);color:#fff}
+    .secondary{background:#fff;color:#34495e}
+    .modal-actions{display:flex;gap:7px;margin-top:12px}
+    .message{min-height:17px;margin-top:8px;color:#a52828;font-size:11px}
+    .success{color:#176a3b}
     .account-card{display:none}
     .account-card.show{display:block}
-    .signed-name{font-size:18px;font-weight:900}
-    .signed-email{margin-top:3px;color:var(--muted);font-size:12px}
-    .account-actions{display:grid;gap:8px;margin-top:15px}
-    .danger{color:var(--bad)}
+    .signed-name{color:var(--navy);font-size:18px;font-weight:800}
+    .signed-email{margin-top:3px;color:var(--muted);font-size:11px}
+    .account-actions{display:grid;gap:7px;margin-top:13px}
+    .link-button{margin-top:8px;border:0;background:transparent;padding:0;color:var(--blue);font-size:11px;font-weight:700}
 
-    @media (max-width:820px){
-      body{grid-template-rows:56px minmax(0,1fr)}
-      .topbar{padding:0 10px}
-      .brand-sub{display:none}
-      .brand-mark{width:32px;height:32px}
-      .top-btn{min-height:34px;padding:0 9px;max-width:155px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-      .app-main{grid-template-columns:1fr;grid-template-rows:minmax(0,58fr) minmax(0,42fr)}
-      .map-pane{grid-row:1;grid-column:1}
-      .vehicle-pane{grid-row:2;grid-column:1;border-right:0;border-top:1px solid var(--line)}
-      .vehicle-head{padding:10px 11px 9px}
-      .vehicle-title-row h1{font-size:16px}
-      .filters{margin-top:8px}
-      .route-select,.refresh-btn{min-height:38px}
-      .vehicle-list{padding:5px}
-      .vehicle-card{grid-template-columns:44px minmax(0,1fr) 32px;padding:8px}
-      .route-badge{min-width:42px;height:35px}
-      .fav-btn{width:32px;height:32px}
-      .map-tools{top:9px;right:9px}
-      .map-tool{width:40px;height:40px}
-      .selected-card{left:9px;right:9px;bottom:9px;width:auto}
-      .map-status{left:9px;top:9px}
+    @media(max-width:820px){
+      body{grid-template-rows:48px minmax(0,1fr)}
+      .site-head{height:48px;padding:0 9px}
+      .head-nav{display:none}
+      .brand{font-size:16px}.brand-mark{width:27px;height:27px}
+      .account-btn,.admin-link{min-height:32px;padding:0 8px}
+      .app{display:block}
+      .map-pane{position:absolute;inset:0}
+      .side{
+        position:absolute;z-index:8;left:7px;right:7px;bottom:7px;width:auto;height:44%;
+        min-height:240px;border:1px solid #bec8d1;border-radius:6px;overflow:hidden;box-shadow:0 5px 22px rgba(20,42,66,.18)
+      }
+      body.vehicle-mode .side{height:52%;min-height:300px}
+      .side-title{padding:10px 11px 8px}
+      .title-row h1{font-size:18px}
+      .filters{padding:8px 10px 9px}
+      .selected-card{left:7px;right:7px;bottom:calc(44% + 15px);width:auto}
+      .vehicle-map-card{right:7px;top:7px;bottom:auto;width:min(310px,calc(100% - 61px))}
+      .map-tools{top:7px;right:7px}
+      .map-status{top:7px;left:7px}
+      .detail-actions{grid-template-columns:1fr 1fr}
     }
-
-    @media (max-width:480px){
-      .top-actions{gap:5px}
-      .top-btn.admin{padding:0 8px}
-      .live-pill{padding:0 7px}
-      .vehicle-card{grid-template-columns:42px minmax(0,1fr) 30px;gap:7px}
-      .route-badge{min-width:40px;height:34px}
-    }
-
-    @media (max-height:650px) and (max-width:820px){
-      .app-main{grid-template-rows:minmax(0,52fr) minmax(0,48fr)}
+    @media(max-width:500px){
+      .head-right{gap:5px}
+      .brand span:last-child{display:none}
+      .side{height:47%}
+      body.vehicle-mode .side{height:56%}
+      .selected-card{bottom:calc(47% + 15px)}
+      .filters{grid-template-columns:1fr 105px}
+      .vehicle-row{grid-template-columns:47px minmax(0,1fr) 28px;padding:9px 8px}
+      .route-box{min-width:43px}
+      .vehicle-hero h1{font-size:21px}
+      .form-grid{grid-template-columns:1fr}
+      .field.full{grid-column:auto}
     }
   </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <div class="brand-mark">B</div>
-      <div class="brand-copy">
-        <div class="brand-title">Bus Tracker</div>
-        <div class="brand-sub">Live GPS vehicle positions</div>
-      </div>
+  <header class="site-head">
+    <div class="head-left">
+      <a class="brand" href="/tracker/" aria-label="BusBase tracker home">
+        <span class="brand-mark">B</span>
+        <span>BusBase</span>
+      </a>
+      <nav class="head-nav" aria-label="Tracker navigation">
+        <button class="active" type="button">Map</button>
+        <button id="vehiclesNavBtn" type="button">Vehicles</button>
+      </nav>
     </div>
-
-    <div class="top-actions">
-      <a id="adminLink" class="top-btn admin" href="admin.html">Admin</a>
-      <button id="accountBtn" class="top-btn" type="button">Login / Create account</button>
+    <div class="head-right">
+      <a id="adminLink" class="admin-link" href="/admin/">Admin</a>
+      <button id="accountBtn" class="account-btn" type="button">Login / Create account</button>
     </div>
   </header>
 
-  <main class="app-main">
-    <aside class="vehicle-pane" aria-label="Live vehicles">
-      <div class="vehicle-head">
-        <div class="vehicle-title-row">
-          <div>
-            <h1>Vehicles in service</h1>
-            <div id="summary" class="summary">Loading live buses…</div>
-          </div>
-          <div id="livePill" class="live-pill loading">
-            <span class="live-dot"></span>
-            <span id="livePillText">Loading</span>
+  <main class="app">
+    <aside class="side" aria-label="BusBase live vehicles">
+      <section class="tracker-view">
+        <div class="side-title">
+          <div class="eyebrow">Lynx Bus</div>
+          <div class="title-row">
+            <div>
+              <h1>Live vehicles</h1>
+              <div id="summary" class="summary">Loading live buses…</div>
+            </div>
+            <div id="livePill" class="live-pill loading"><span class="live-dot"></span><span id="livePillText">Loading</span></div>
           </div>
         </div>
 
         <div class="filters">
-          <select id="routeFilter" class="route-select" aria-label="Filter by route">
-            <option value="">All routes</option>
-          </select>
-          <button id="refreshBtn" class="refresh-btn" type="button">Refresh</button>
+          <label class="search-wrap">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="m21 19.6-5.2-5.2a7 7 0 1 0-1.4 1.4l5.2 5.2L21 19.6ZM5 10.5a5.5 5.5 0 1 1 11 0 5.5 5.5 0 0 1-11 0Z"/></svg>
+            <input id="vehicleSearch" type="search" placeholder="Search fleet, registration or route" autocomplete="off">
+          </label>
+          <select id="routeFilter" class="route-select" aria-label="Filter by route"><option value="">All routes</option></select>
+          <button id="refreshBtn" class="refresh" type="button">Refresh</button>
         </div>
-      </div>
 
-      <div class="list-scroll">
-        <div id="vehicleList" class="vehicle-list"></div>
-      </div>
+        <div class="vehicle-list-scroll">
+          <div id="vehicleList" class="vehicle-list"></div>
+        </div>
+      </section>
+
+      <section class="vehicle-view" aria-label="Vehicle details">
+        <div class="vehicle-head">
+          <button id="vehicleBack" class="back-link" type="button">‹ Back to live map</button>
+        </div>
+
+        <div class="vehicle-hero">
+          <div class="vehicle-topline">
+            <span id="detailStatus" class="vehicle-status"><span class="dot"></span><span id="detailStatusText">Loading</span></span>
+            <span id="detailRoute" class="detail-route">—</span>
+          </div>
+          <h1 id="detailTitle">Vehicle</h1>
+          <div id="detailReg" class="detail-reg"></div>
+
+          <div class="now-box">
+            <strong id="detailJourney">Current journey unavailable</strong>
+            <span id="detailJourneyMeta">Waiting for live data.</span>
+          </div>
+
+          <div class="detail-actions">
+            <button id="trackBtn" class="detail-btn primary-action" type="button">Track this bus</button>
+            <button id="suggestBtn" class="detail-btn" type="button">Suggest an edit</button>
+          </div>
+        </div>
+
+        <div class="detail-scroll">
+          <section class="detail-section">
+            <h2>Vehicle details</h2>
+            <table class="fact-table">
+              <tbody>
+                <tr><th>Fleet number</th><td id="factFleet">—</td></tr>
+                <tr><th>Registration</th><td id="factReg">—</td></tr>
+                <tr><th>Make</th><td id="factMake">—</td></tr>
+                <tr><th>Model</th><td id="factModel">—</td></tr>
+                <tr><th>Vehicle type</th><td id="factType">—</td></tr>
+                <tr><th>Year registered</th><td id="factYear">—</td></tr>
+                <tr><th>Livery / branding</th><td><span class="livery-value"><span class="swatch"></span><span id="factLivery">—</span></span></td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="detail-section">
+            <h2>Live journey</h2>
+            <table class="fact-table">
+              <tbody>
+                <tr><th>Route</th><td id="factRoute">—</td></tr>
+                <tr><th>Destination</th><td id="factDestination">—</td></tr>
+                <tr><th>Direction</th><td id="factDirection">—</td></tr>
+                <tr><th>Last GPS report</th><td id="factGps">—</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="detail-section">
+            <div class="history-head">
+              <h2>Previous journeys</h2>
+              <span id="historyCount" class="history-count"></span>
+            </div>
+            <div id="journeyList" class="journey-list"><div class="empty">No previous journeys recorded yet.</div></div>
+          </section>
+        </div>
+      </section>
     </aside>
 
     <section id="mapPane" class="map-pane" aria-label="Live bus map">
       <div id="map"></div>
 
-      <div class="map-tools" aria-label="Map controls">
+      <div class="map-tools">
         <button id="fitBtn" class="map-tool" type="button" title="Show all visible buses" aria-label="Show all visible buses">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 9V4h5v2H6v3H4Zm11-5h5v5h-2V6h-3V4ZM6 15v3h3v2H4v-5h2Zm12 0h2v5h-5v-2h3v-3ZM8 8h8v8H8V8Zm2 2v4h4v-4h-4Z"/></svg>
         </button>
@@ -289,63 +489,78 @@
       <div id="mapStatus" class="map-status"></div>
 
       <section id="selectedCard" class="selected-card" aria-live="polite">
-        <div class="selected-top">
-          <div id="selectedRoute" class="selected-route">—</div>
+        <div class="selected-main">
+          <div id="selectedRoute" class="route-box">—</div>
           <div class="selected-copy">
             <div id="selectedTitle" class="selected-title"></div>
             <div id="selectedSub" class="selected-sub"></div>
             <div id="selectedDest" class="selected-dest"></div>
             <div id="selectedTime" class="selected-time"></div>
           </div>
-          <button id="selectedClose" class="selected-close" type="button" aria-label="Close vehicle details">×</button>
+          <button id="selectedClose" class="selected-close" type="button" aria-label="Close">×</button>
         </div>
+        <a id="selectedView" class="selected-link" href="#">Vehicle details →</a>
+      </section>
+
+      <section class="vehicle-map-card">
+        <strong id="gpsTitle">Live GPS</strong>
+        <span id="gpsMeta">Waiting for this vehicle’s position.</span>
       </section>
     </section>
   </main>
 
-  <div id="accountModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
+  <div id="suggestModal" class="modal-bg" role="dialog" aria-modal="true" aria-labelledby="suggestTitle">
     <div class="modal">
-      <div class="modal-head">
-        <h2 id="accountTitle">Account</h2>
-        <button id="closeModal" class="close" type="button" aria-label="Close">×</button>
+      <div class="modal-head"><h2 id="suggestTitle">Suggest a vehicle edit</h2><button class="close" type="button" data-close="suggestModal">×</button></div>
+      <div class="modal-body">
+        <form id="suggestForm">
+          <div class="form-grid">
+            <div class="field"><label for="sFleet">Fleet number</label><input id="sFleet"></div>
+            <div class="field"><label for="sReg">Registration</label><input id="sReg" autocapitalize="characters"></div>
+            <div class="field"><label for="sMake">Make</label><input id="sMake"></div>
+            <div class="field"><label for="sModel">Model</label><input id="sModel"></div>
+            <div class="field"><label for="sType">Vehicle type</label><input id="sType"></div>
+            <div class="field"><label for="sYear">Year registered</label><input id="sYear" inputmode="numeric" maxlength="4"></div>
+            <div class="field full"><label for="sLivery">Livery / branding</label><input id="sLivery"></div>
+            <div class="field full">
+              <label>Livery colour on map</label>
+              <div class="colour-row"><input id="sColour" type="color" value="#D71920"><input id="sColourHex" value="#D71920" maxlength="7"></div>
+            </div>
+            <div class="field full"><label for="sReason">What is wrong or what has changed?</label><textarea id="sReason" required></textarea></div>
+            <div class="field full"><label for="sEvidence">Evidence / source link (optional)</label><input id="sEvidence" type="url" placeholder="https://..."></div>
+          </div>
+          <div class="modal-actions"><button class="primary" type="submit">Send suggestion</button><button class="secondary" type="button" data-close="suggestModal">Cancel</button></div>
+          <div id="suggestMessage" class="message"></div>
+        </form>
       </div>
+    </div>
+  </div>
 
+  <div id="accountModal" class="modal-bg" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
+    <div class="modal" style="width:min(430px,100%)">
+      <div class="modal-head"><h2 id="accountTitle">BusBase account</h2><button id="closeModal" class="close" type="button">×</button></div>
       <div class="modal-body">
         <div id="signedOutBox">
           <div class="tabs">
             <button id="loginTab" class="tab active" type="button">Login</button>
             <button id="registerTab" class="tab" type="button">Create account</button>
           </div>
-
           <form id="authForm">
-            <div id="nameField" class="field" style="display:none">
-              <label for="displayName">Name</label>
-              <input id="displayName" autocomplete="name">
-            </div>
-            <div class="field">
-              <label for="email">Email</label>
-              <input id="email" type="email" autocomplete="email" required>
-            </div>
-            <div class="field">
-              <label for="password">Password</label>
-              <input id="password" type="password" autocomplete="current-password" minlength="6" required>
-            </div>
-            <div id="confirmField" class="field" style="display:none">
-              <label for="confirmPassword">Confirm password</label>
-              <input id="confirmPassword" type="password" minlength="6">
-            </div>
-            <button id="authSubmit" class="primary" type="submit">Login</button>
-            <button id="forgotBtn" class="link-btn" type="button">Forgot password?</button>
-            <div id="authMessage" class="auth-message"></div>
+            <div id="nameField" class="field" style="display:none"><label for="displayName">Name</label><input id="displayName" autocomplete="name"></div>
+            <div class="field"><label for="email">Email</label><input id="email" type="email" autocomplete="email" required></div>
+            <div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" minlength="6" required></div>
+            <div id="confirmField" class="field" style="display:none"><label for="confirmPassword">Confirm password</label><input id="confirmPassword" type="password" minlength="6"></div>
+            <button id="authSubmit" class="primary" style="width:100%;margin-top:12px" type="submit">Login</button>
+            <button id="forgotBtn" class="link-button" type="button">Forgot password?</button>
+            <div id="authMessage" class="message"></div>
           </form>
         </div>
-
         <div id="signedInBox" class="account-card">
-          <div class="signed-name" id="signedName"></div>
-          <div class="signed-email" id="signedEmail"></div>
+          <div id="signedName" class="signed-name"></div>
+          <div id="signedEmail" class="signed-email"></div>
           <div class="account-actions">
             <button id="showFavsBtn" class="secondary" type="button">Show my favourites</button>
-            <button id="signOutBtn" class="secondary danger" type="button">Sign out</button>
+            <button id="signOutBtn" class="secondary" type="button">Sign out</button>
           </div>
         </div>
       </div>
@@ -355,1136 +570,1181 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
     import {
-      getAuth,
-      onAuthStateChanged,
-      signInWithEmailAndPassword,
-      createUserWithEmailAndPassword,
-      sendPasswordResetEmail,
-      signOut,
-      updateProfile
+      getAuth,onAuthStateChanged,signInWithEmailAndPassword,createUserWithEmailAndPassword,
+      sendPasswordResetEmail,signOut,updateProfile
     } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-auth.js";
     import {
-      getFirestore,
-      collection,
-      doc,
-      getDoc,
-      getDocs,
-      setDoc
+      getFirestore,collection,doc,getDoc,getDocs,setDoc,addDoc,query,orderBy,limit
     } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDKxl6hCqHsmv8SqVTDIZcQqLoNPVWpXsg",
-      authDomain: "busbase-bus-tracker.firebaseapp.com",
-      projectId: "busbase-bus-tracker",
-      storageBucket: "busbase-bus-tracker.firebasestorage.app",
-      messagingSenderId: "380602561765",
-      appId: "1:380602561765:web:5bf01fc6d7982dc950500c"
+    const firebaseConfig={
+      apiKey:"AIzaSyDKxl6hCqHsmv8SqVTDIZcQqLoNPVWpXsg",
+      authDomain:"busbase-bus-tracker.firebaseapp.com",
+      projectId:"busbase-bus-tracker",
+      storageBucket:"busbase-bus-tracker.firebasestorage.app",
+      messagingSenderId:"380602561765",
+      appId:"1:380602561765:web:5bf01fc6d7982dc950500c"
     };
 
-    // Direct BusTimes live feed. No separate API_BASE or API key is needed.
-    const BUSTIMES_LIVE_URL = 'https://bustimes.org/vehicles.json?operator=LYNX';
+    const BUSTIMES_LIVE_URL='https://bustimes.org/vehicles.json?operator=LYNX';
+    const MAP_STYLE='https://tiles.openfreemap.org/styles/liberty';
+    const REFRESH_MS=7000;
+    const MAPPING_REFRESH_MS=60000;
+    const STALE_POSITION_MS=4*60*1000;
+    const DEFAULT_CENTER={lat:52.7517,lng:0.3970};
+    const DEFAULT_ZOOM=10;
+    const LIVE_AREA={south:52.10,west:-1.00,north:53.30,east:1.80};
 
-    // No map API key is required. The map uses MapLibre + OpenFreeMap.
-    const MAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty';
+    const app=initializeApp(firebaseConfig);
+    const auth=getAuth(app);
+    const db=getFirestore(app);
+    const $=id=>document.getElementById(id);
 
-    // Check BusTimes frequently, but always display the newest RAW GPS point.
-    // We deliberately do NOT interpolate between points because straight-line animation
-    // can cut corners and make a bus look like it is driving through fields/buildings.
-    const REFRESH_MS = 7000;
-    const MAPPING_REFRESH_MS = 60000;
-    const STALE_POSITION_MS = 3 * 60 * 1000;
-    const MAX_ROAD_SNAP_METRES = 80;
-    const DEFAULT_CENTER = { lat: 52.7517, lng: 0.3970 };
-    const DEFAULT_ZOOM = 10;
-    const LIVE_AREA = { south: 52.10, west: -1.00, north: 53.30, east: 1.80 };
-
-    const firebaseApp = initializeApp(firebaseConfig);
-    const auth = getAuth(firebaseApp);
-    const db = getFirestore(firebaseApp);
-
-    const ids = [
-      'summary','routeFilter','refreshBtn','vehicleList','accountBtn','adminLink',
-      'accountModal','closeModal','signedOutBox','signedInBox','loginTab','registerTab',
-      'authForm','nameField','displayName','email','password','confirmField','confirmPassword',
-      'authSubmit','forgotBtn','authMessage','signedName','signedEmail','showFavsBtn','signOutBtn',
-      'fitBtn','mapRefreshBtn','livePill','livePillText','selectedCard','selectedRoute','selectedTitle',
-      'selectedSub','selectedDest','selectedTime','selectedClose','mapStatus','mapPane','map'
+    const ids=[
+      'vehiclesNavBtn','accountBtn','adminLink','summary','livePill','livePillText','vehicleSearch','routeFilter','refreshBtn','vehicleList',
+      'fitBtn','mapRefreshBtn','mapStatus','mapPane','map','selectedCard','selectedRoute','selectedTitle','selectedSub','selectedDest','selectedTime','selectedClose','selectedView',
+      'vehicleBack','detailStatus','detailStatusText','detailRoute','detailTitle','detailReg','detailJourney','detailJourneyMeta','trackBtn','suggestBtn',
+      'factFleet','factReg','factMake','factModel','factType','factYear','factLivery','factRoute','factDestination','factDirection','factGps','historyCount','journeyList','gpsTitle','gpsMeta',
+      'suggestModal','suggestForm','sFleet','sReg','sMake','sModel','sType','sYear','sLivery','sColour','sColourHex','sReason','sEvidence','suggestMessage',
+      'accountModal','closeModal','signedOutBox','signedInBox','loginTab','registerTab','authForm','nameField','displayName','email','password','confirmField','confirmPassword',
+      'authSubmit','forgotBtn','authMessage','signedName','signedEmail','showFavsBtn','signOutBtn'
     ];
-    const els = Object.fromEntries(ids.map(id => [id, document.getElementById(id)]));
+    const els=Object.fromEntries(ids.map(id=>[id,$(id)]));
 
-    const state = {
-      vehicles: [],
-      markers: new Map(),
-      route: '',
-      selectedId: null,
-      timer: null,
-      loadingLive: false,
-      firstGoodLoad: true,
-      user: null,
-      isAdmin: false,
-      favourites: new Set(),
-      showFavouritesOnly: false,
-      authMode: 'login',
-      map: null,
-      popup: null,
-      mapReady: false,
-      infoOpenId: null,
-      followSelected: false,
-      mappingCache: new Map(),
-      mappingLoadedAt: 0,
-      lastRawPositions: new Map(),
-      roadSnapTimer: null
+    const state={
+      vehicles:[],markers:new Map(),route:'',search:'',selectedId:null,
+      timer:null,loadingLive:false,firstGoodLoad:true,
+      user:null,isAdmin:false,favourites:new Set(),showFavouritesOnly:false,authMode:'login',
+      map:null,mapReady:false,popup:null,infoOpenId:null,followSelected:false,
+      mappingCache:new Map(),mappingLoadedAt:0,lastRawPositions:new Map(),
+      mode:'tracker',detailVehicleId:null,tracking:false,
+      history:[],journeys:[],selectedJourney:null,lastRecordedKey:'',pendingVehicleParam:new URLSearchParams(location.search).get('vehicle')||''
     };
 
-    const collator = new Intl.Collator('en-GB', { numeric: true, sensitivity: 'base' });
+    const collator=new Intl.Collator('en-GB',{numeric:true,sensitivity:'base'});
 
-    onAuthStateChanged(auth, async user => {
-      state.user = user;
-      state.isAdmin = false;
-      state.favourites = new Set();
+    initMap();
+    setAuthMode('login');
+    loadLive();
 
-      if (user) {
-        els.accountBtn.textContent = user.displayName || user.email || 'Account';
-        els.signedOutBox.style.display = 'none';
+    onAuthStateChanged(auth,async user=>{
+      state.user=user;
+      state.isAdmin=false;
+      state.favourites=new Set();
+
+      if(user){
+        els.accountBtn.textContent=user.displayName||user.email||'Account';
+        els.signedOutBox.style.display='none';
         els.signedInBox.classList.add('show');
-        els.signedName.textContent = user.displayName || 'My account';
-        els.signedEmail.textContent = user.email || '';
+        els.signedName.textContent=user.displayName||'My account';
+        els.signedEmail.textContent=user.email||'';
 
-        try {
-          // Check admin access separately so a problem loading the user's
-          // profile/favourites can never make the Admin button disappear.
-          let adminSnap = await getDoc(doc(db, 'admins', user.uid));
-          if (!adminSnap.exists()) {
-            // Backwards-compatible fallback in case the collection was created
-            // as "admin" (singular) during setup.
-            try {
-              adminSnap = await getDoc(doc(db, 'admin', user.uid));
-            } catch (_) {}
+        try{
+          let adminSnap=await getDoc(doc(db,'admins',user.uid));
+          if(!adminSnap.exists()){
+            try{adminSnap=await getDoc(doc(db,'admin',user.uid));}catch(_){}
           }
-          state.isAdmin = adminSnap.exists();
-          els.adminLink.style.display = state.isAdmin ? 'inline-flex' : 'none';
+          state.isAdmin=adminSnap.exists();
+          els.adminLink.style.display=state.isAdmin?'inline-flex':'none';
 
-          try {
-            const userSnap = await getDoc(doc(db, 'users', user.uid));
-            if (userSnap.exists()) {
-              const data = userSnap.data();
-              state.favourites = new Set(Array.isArray(data.favouriteVehicles) ? data.favouriteVehicles : []);
-            } else {
-              await setDoc(doc(db, 'users', user.uid), {
-                displayName: user.displayName || '',
-                email: user.email || '',
-                favouriteVehicles: []
-              }, { merge: true });
-            }
-          } catch (profileError) {
-            console.warn('Could not load favourites/profile:', profileError);
+          const userSnap=await getDoc(doc(db,'users',user.uid));
+          if(userSnap.exists()){
+            const data=userSnap.data()||{};
+            state.favourites=new Set(Array.isArray(data.favouriteVehicles)?data.favouriteVehicles:[]);
+          }else{
+            await setDoc(doc(db,'users',user.uid),{displayName:user.displayName||'',email:user.email||'',favouriteVehicles:[]},{merge:true});
           }
-        } catch (error) {
-          console.error('Could not verify admin access:', error);
-          // Keep the account usable even if Firestore has a temporary read issue.
-          els.adminLink.style.display = 'none';
-        }
-      } else {
-        els.accountBtn.textContent = 'Login / Create account';
-        els.signedOutBox.style.display = 'block';
+        }catch(error){console.warn('Account profile/admin check failed:',error);}
+      }else{
+        els.accountBtn.textContent='Login / Create account';
+        els.signedOutBox.style.display='block';
         els.signedInBox.classList.remove('show');
-        els.adminLink.style.display = 'none';
-        state.showFavouritesOnly = false;
+        els.adminLink.style.display='none';
+        state.showFavouritesOnly=false;
       }
 
-      render();
+      renderAll();
+      if(state.mode==='vehicle'&&user)recordHistoryPoint();
     });
 
-    els.accountBtn.addEventListener('click', () => els.accountModal.classList.add('show'));
-    els.closeModal.addEventListener('click', closeModal);
-    els.accountModal.addEventListener('click', event => {
-      if (event.target === els.accountModal) closeModal();
+    els.accountBtn.addEventListener('click',()=>openModal('accountModal'));
+    els.closeModal.addEventListener('click',()=>closeModal('accountModal'));
+    els.accountModal.addEventListener('click',e=>{if(e.target===els.accountModal)closeModal('accountModal')});
+    els.suggestModal.addEventListener('click',e=>{if(e.target===els.suggestModal)closeModal('suggestModal')});
+    document.querySelectorAll('[data-close]').forEach(button=>button.addEventListener('click',()=>closeModal(button.dataset.close)));
+
+    els.loginTab.addEventListener('click',()=>setAuthMode('login'));
+    els.registerTab.addEventListener('click',()=>setAuthMode('register'));
+
+    els.refreshBtn.addEventListener('click',()=>loadLive(true));
+    els.mapRefreshBtn.addEventListener('click',()=>loadLive(true));
+    els.fitBtn.addEventListener('click',()=>{
+      if(state.mode==='vehicle'){
+        const vehicle=getDetailVehicle();
+        if(vehicle)focusVehicle(vehicle,true);
+      }else fitToVehicles(visibleVehicles());
     });
-    els.loginTab.addEventListener('click', () => setAuthMode('login'));
-    els.registerTab.addEventListener('click', () => setAuthMode('register'));
 
-    els.refreshBtn.addEventListener('click', () => loadLive(true));
-    els.mapRefreshBtn.addEventListener('click', () => loadLive(true));
-    els.fitBtn.addEventListener('click', () => fitToVehicles(visibleVehicles()));
+    els.vehiclesNavBtn.addEventListener('click',()=>{
+      closeVehicleMode();
+      setTimeout(()=>document.querySelector('.vehicle-list-scroll')?.scrollTo({top:0,behavior:'smooth'}),0);
+    });
 
-    els.routeFilter.addEventListener('change', () => {
-      state.route = els.routeFilter.value;
-      state.selectedId = null;
-      state.followSelected = false;
-      state.infoOpenId = null;
-      hideSelectedCard();
-      if (state.popup) { state.popup.remove(); state.popup = null; }
-      render();
+    els.vehicleSearch.addEventListener('input',()=>{
+      state.search=els.vehicleSearch.value.trim().toLowerCase();
+      clearSelection();
+      renderAll();
+    });
+
+    els.routeFilter.addEventListener('change',()=>{
+      state.route=els.routeFilter.value;
+      clearSelection();
+      renderAll();
       fitToVehicles(visibleVehicles());
     });
 
-    els.selectedClose.addEventListener('click', () => {
-      state.selectedId = null;
-      state.followSelected = false;
-      state.infoOpenId = null;
-      hideSelectedCard();
-      if (state.popup) { state.popup.remove(); state.popup = null; }
-      renderList(visibleVehicles());
-      renderMarkers(visibleVehicles());
+    els.selectedClose.addEventListener('click',clearSelection);
+    els.vehicleBack.addEventListener('click',closeVehicleMode);
+
+    els.trackBtn.addEventListener('click',()=>{
+      const vehicle=getDetailVehicle();
+      if(!vehicle||!isValidPosition(vehicle))return;
+      state.tracking=!state.tracking;
+      els.trackBtn.classList.toggle('active',state.tracking);
+      els.trackBtn.textContent=state.tracking?'Tracking bus':'Track this bus';
+      if(state.tracking)focusVehicle(vehicle,true);
     });
 
-    els.showFavsBtn.addEventListener('click', () => {
-      state.showFavouritesOnly = !state.showFavouritesOnly;
-      els.showFavsBtn.textContent = state.showFavouritesOnly ? 'Show all vehicles' : 'Show my favourites';
-      closeModal();
-      state.selectedId = null;
-      state.followSelected = false;
-      state.infoOpenId = null;
-      hideSelectedCard();
-      if (state.popup) { state.popup.remove(); state.popup = null; }
-      render();
-      fitToVehicles(visibleVehicles());
+    els.suggestBtn.addEventListener('click',()=>{
+      const vehicle=getDetailVehicle();
+      if(!vehicle)return;
+      if(!state.user){
+        els.authMessage.textContent='Log in or create an account to suggest an edit.';
+        openModal('accountModal');
+        return;
+      }
+      prefillSuggestion(vehicle);
+      openModal('suggestModal');
     });
 
-    els.signOutBtn.addEventListener('click', async () => {
-      await signOut(auth);
-      closeModal();
-    });
+    els.sColour.addEventListener('input',()=>els.sColourHex.value=els.sColour.value.toUpperCase());
+    els.sColourHex.addEventListener('input',()=>{const colour=normaliseColour(els.sColourHex.value);if(colour)els.sColour.value=colour;});
 
-    els.authForm.addEventListener('submit', async event => {
+    document.addEventListener('click',event=>{
+      const openLink=event.target.closest('[data-open-vehicle]');
+      if(!openLink)return;
       event.preventDefault();
-      els.authMessage.textContent = '';
-      const email = els.email.value.trim();
-      const password = els.password.value;
+      const id=openLink.dataset.openVehicle;
+      if(id)openVehicleMode(id,true);
+    });
 
-      try {
-        if (state.authMode === 'register') {
-          const name = els.displayName.value.trim();
-          if (password !== els.confirmPassword.value) throw new Error('Passwords do not match.');
+    window.addEventListener('popstate',()=>{
+      const param=new URLSearchParams(location.search).get('vehicle')||'';
+      if(!param){
+        setVehicleModeState(null);
+      }else{
+        const vehicle=findVehicleByParam(param);
+        if(vehicle)setVehicleModeState(vehicle);
+        else state.pendingVehicleParam=param;
+      }
+    });
 
-          const credential = await createUserWithEmailAndPassword(auth, email, password);
-          if (name) await updateProfile(credential.user, { displayName: name });
+    els.showFavsBtn.addEventListener('click',()=>{
+      state.showFavouritesOnly=!state.showFavouritesOnly;
+      els.showFavsBtn.textContent=state.showFavouritesOnly?'Show all vehicles':'Show my favourites';
+      closeModal('accountModal');
+      clearSelection();
+      renderAll();
+      fitToVehicles(visibleVehicles());
+    });
 
-          await setDoc(doc(db, 'users', credential.user.uid), {
-            displayName: name,
-            email,
-            favouriteVehicles: []
-          }, { merge: true });
+    els.signOutBtn.addEventListener('click',async()=>{await signOut(auth);closeModal('accountModal')});
 
-          els.authMessage.style.color = 'var(--good)';
-          els.authMessage.textContent = 'Account created.';
-          setTimeout(closeModal, 500);
-        } else {
-          await signInWithEmailAndPassword(auth, email, password);
-          closeModal();
+    els.authForm.addEventListener('submit',async event=>{
+      event.preventDefault();
+      els.authMessage.className='message';
+      els.authMessage.textContent='';
+      try{
+        const email=els.email.value.trim();
+        const password=els.password.value;
+        if(state.authMode==='register'){
+          const name=els.displayName.value.trim();
+          if(password!==els.confirmPassword.value)throw new Error('Passwords do not match.');
+          const credential=await createUserWithEmailAndPassword(auth,email,password);
+          if(name)await updateProfile(credential.user,{displayName:name});
+          await setDoc(doc(db,'users',credential.user.uid),{displayName:name,email,favouriteVehicles:[]},{merge:true});
+          els.authMessage.className='message success';
+          els.authMessage.textContent='Account created.';
+        }else{
+          await signInWithEmailAndPassword(auth,email,password);
+          closeModal('accountModal');
         }
-      } catch (error) {
-        els.authMessage.style.color = 'var(--bad)';
-        els.authMessage.textContent = friendlyAuthError(error);
+      }catch(error){els.authMessage.textContent=friendlyAuthError(error);}
+    });
+
+    els.forgotBtn.addEventListener('click',async()=>{
+      const email=els.email.value.trim();
+      if(!email){els.authMessage.textContent='Enter your email address first.';return;}
+      try{
+        await sendPasswordResetEmail(auth,email);
+        els.authMessage.className='message success';
+        els.authMessage.textContent='Password reset email sent.';
+      }catch(error){els.authMessage.textContent=friendlyAuthError(error);}
+    });
+
+    els.suggestForm.addEventListener('submit',async event=>{
+      event.preventDefault();
+      const vehicle=getDetailVehicle();
+      if(!state.user||!vehicle)return;
+
+      const current=suggestionValues(vehicle);
+      const entered={
+        fleetNumber:clean(els.sFleet.value),
+        registration:clean(els.sReg.value).toUpperCase(),
+        make:clean(els.sMake.value),
+        model:clean(els.sModel.value),
+        vehicleType:clean(els.sType.value),
+        yearRegistered:clean(els.sYear.value),
+        livery:clean(els.sLivery.value),
+        liveryColour:normaliseColour(els.sColourHex.value||els.sColour.value)
+      };
+
+      const proposed={};
+      const changedFields=[];
+      for(const key of Object.keys(entered)){
+        if(normaliseSuggestionValue(key,current[key])!==normaliseSuggestionValue(key,entered[key])){
+          proposed[key]=entered[key];
+          changedFields.push(key);
+        }
+      }
+
+      els.suggestMessage.className='message';
+      els.suggestMessage.textContent='';
+      if(!changedFields.length){els.suggestMessage.textContent='Change at least one vehicle detail before sending.';return;}
+
+      try{
+        await addDoc(collection(db,'suggestions'),{
+          vehicleId:vehicle.machineId,
+          publicVehicle:vehicleUrlKey(vehicle),
+          current,
+          proposed,
+          changedFields,
+          reason:clean(els.sReason.value),
+          evidenceUrl:clean(els.sEvidence.value),
+          userId:state.user.uid,
+          userEmail:state.user.email||'',
+          userName:state.user.displayName||'',
+          status:'pending',
+          createdAt:new Date().toISOString()
+        });
+        els.suggestMessage.className='message success';
+        els.suggestMessage.textContent='Suggestion sent to BusBase admin for review.';
+        setTimeout(()=>closeModal('suggestModal'),750);
+      }catch(error){
+        console.error(error);
+        els.suggestMessage.textContent='Could not send the suggestion. Check the Firestore rules.';
       }
     });
 
-    els.forgotBtn.addEventListener('click', async () => {
-      const email = els.email.value.trim();
-      if (!email) {
-        els.authMessage.textContent = 'Enter your email address first.';
-        return;
-      }
-
-      try {
-        await sendPasswordResetEmail(auth, email);
-        els.authMessage.style.color = 'var(--good)';
-        els.authMessage.textContent = 'Password reset email sent.';
-      } catch (error) {
-        els.authMessage.style.color = 'var(--bad)';
-        els.authMessage.textContent = friendlyAuthError(error);
-      }
-    });
-
-    async function toggleFavourite(vehicle) {
-      if (!state.user) {
-        setAuthMode('login');
-        els.accountModal.classList.add('show');
-        return;
-      }
-
-      const key = favouriteKey(vehicle);
-      if (state.favourites.has(key)) state.favourites.delete(key);
-      else state.favourites.add(key);
-
-      await setDoc(doc(db, 'users', state.user.uid), {
-        favouriteVehicles: [...state.favourites]
-      }, { merge: true });
-      render();
-    }
-
-    async function initialiseMap() {
+    async function initMap(){
       showMapStatus('Loading map…');
-
-      try {
-        if (!window.maplibregl) {
-          throw new Error('Map library could not be loaded.');
-        }
-
-        state.map = new maplibregl.Map({
-          container: els.map,
-          style: MAP_STYLE,
-          center: [DEFAULT_CENTER.lng, DEFAULT_CENTER.lat],
-          zoom: DEFAULT_ZOOM,
-          minZoom: 7,
-          maxZoom: 19,
-          attributionControl: true
+      try{
+        if(!window.maplibregl)throw new Error('Map library could not be loaded.');
+        state.map=new maplibregl.Map({
+          container:'map',style:MAP_STYLE,
+          center:[DEFAULT_CENTER.lng,DEFAULT_CENTER.lat],zoom:DEFAULT_ZOOM,
+          minZoom:7,maxZoom:19,attributionControl:true
         });
+        state.map.addControl(new maplibregl.NavigationControl({showCompass:false}),'bottom-right');
+        state.map.addControl(new maplibregl.ScaleControl({maxWidth:110,unit:'metric'}),'bottom-left');
 
-        state.map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
-        state.map.addControl(new maplibregl.ScaleControl({ maxWidth: 110, unit: 'metric' }), 'bottom-left');
-
-        state.map.on('dragstart', () => {
-          state.followSelected = false;
-        });
-
-        state.map.on('load', () => {
-          state.mapReady = true;
+        state.map.on('load',()=>{
+          state.mapReady=true;
+          installLiveVehicleLayers();
           hideMapStatus();
-          renderMarkers(visibleVehicles());
-          scheduleRoadSnapRefresh();
-
-          if (state.firstGoodLoad && validVehicles(state.vehicles).length) {
+          renderMarkers(mapVehicles());
+          if(state.firstGoodLoad&&validVehicles(state.vehicles).length){
             fitToVehicles(state.vehicles);
-            state.firstGoodLoad = false;
+            state.firstGoodLoad=false;
           }
         });
 
-        state.map.on('moveend', scheduleRoadSnapRefresh);
-        state.map.on('idle', scheduleRoadSnapRefresh);
-
-        state.map.on('error', event => {
-          console.error('Map error:', event?.error || event);
+        state.map.on('dragstart',()=>{
+          if(state.mode==='vehicle'&&state.tracking){
+            state.tracking=false;
+            els.trackBtn.classList.remove('active');
+            els.trackBtn.textContent='Track this bus';
+          }
         });
 
-        const resizeMap = () => {
-          if (state.map) state.map.resize();
-        };
-
-        if ('ResizeObserver' in window) {
-          const observer = new ResizeObserver(() => resizeMap());
-          observer.observe(els.mapPane);
+        if('ResizeObserver'in window){
+          new ResizeObserver(()=>state.map?.resize()).observe(els.mapPane);
         }
-
-        window.addEventListener('resize', resizeMap, { passive: true });
-        window.addEventListener('orientationchange', () => setTimeout(resizeMap, 180), { passive: true });
-
-      } catch (error) {
+        window.addEventListener('resize',()=>state.map?.resize(),{passive:true});
+      }catch(error){
         console.error(error);
-        showMapStatus(error.message || 'Map could not be loaded.');
+        showMapStatus(error.message||'Map could not be loaded.');
       }
     }
 
-    async function loadLive(manual = false) {
-      if (state.loadingLive) return;
-      state.loadingLive = true;
+    async function loadLive(manual=false){
+      if(state.loadingLive)return;
+      state.loadingLive=true;
+      if(manual){els.refreshBtn.disabled=true;els.mapRefreshBtn.disabled=true;}
+      setLiveState('loading','Updating');
 
-      if (manual) {
-        els.refreshBtn.disabled = true;
-        els.mapRefreshBtn.disabled = true;
-      }
-
-      setLiveState('loading', 'Updating');
-
-      try {
-        const [response, mappings] = await Promise.all([
-          fetch(BUSTIMES_LIVE_URL, {
-            cache: 'no-store',
-            mode: 'cors',
-            headers: { 'Accept': 'application/json' }
-          }),
+      try{
+        const [response,mappings]=await Promise.all([
+          fetch(BUSTIMES_LIVE_URL,{cache:'no-store',mode:'cors',headers:{Accept:'application/json'}}),
           getVehicleMappings(manual)
         ]);
+        if(!response.ok)throw new Error(`BusTimes returned HTTP ${response.status}.`);
+        const payload=await response.json();
+        if(!Array.isArray(payload))throw new Error('BusTimes returned an unexpected live-data format.');
 
-        if (!response.ok) {
-          throw new Error(`BusTimes returned HTTP ${response.status}.`);
+        const seen=new Map();
+        for(const item of payload){
+          const raw=parseBusTimesVehicle(item);
+          if(!raw)continue;
+          const previous=seen.get(raw.machineId);
+          if(!previous||newer(raw.recordedAt,previous.recordedAt))seen.set(raw.machineId,raw);
         }
 
-        const payload = await response.json();
-        if (!Array.isArray(payload)) {
-          throw new Error('BusTimes returned an unexpected live-data format.');
-        }
+        state.vehicles=[...seen.values()].map(applyHeadingFallback).map(raw=>toPublicVehicle(raw,mappings.get(raw.machineId)));
+        updateRoutes();
+        renderAll();
+        setLiveState('live','Live');
 
-        const seen = new Map();
-        for (const item of payload) {
-          const raw = parseBusTimesVehicle(item);
-          if (!raw) continue;
-          const previous = seen.get(raw.machineId);
-          if (!previous || newer(raw.recordedAt, previous.recordedAt)) {
-            seen.set(raw.machineId, raw);
+        if(state.pendingVehicleParam){
+          const match=findVehicleByParam(state.pendingVehicleParam);
+          if(match){
+            const pending=state.pendingVehicleParam;
+            state.pendingVehicleParam='';
+            setVehicleModeState(match);
+            if(!new URLSearchParams(location.search).get('vehicle')){
+              history.replaceState({},'',trackerUrl(pending));
+            }
           }
         }
 
-        const rawVehicles = [...seen.values()].map(raw => applyHeadingFallback(raw));
-        state.vehicles = rawVehicles.map(raw =>
-          toPublicVehicle(raw, mappings.get(raw.machineId))
-        );
-
-        updateRoutes();
-        render();
-        setLiveState('live', 'Live');
-
-        if (state.firstGoodLoad && state.mapReady && validVehicles(state.vehicles).length) {
+        if(state.mode==='vehicle'){
+          const detail=getDetailVehicle();
+          if(detail&&state.tracking)focusVehicle(detail,false);
+          if(state.user&&detail)recordHistoryPoint();
+        }else if(state.firstGoodLoad&&state.mapReady&&validVehicles(state.vehicles).length){
           fitToVehicles(state.vehicles);
-          state.firstGoodLoad = false;
+          state.firstGoodLoad=false;
         }
-      } catch (error) {
+      }catch(error){
         console.error(error);
-        setLiveState('error', 'Offline');
-        if (!state.vehicles.length) {
-          const message = /Failed to fetch|CORS|NetworkError/i.test(String(error?.message || error))
-            ? 'Your browser blocked the direct BusTimes live feed. This direct version needs BusTimes to allow cross-site requests.'
-            : (error.message || 'Could not load live vehicles.');
-          els.vehicleList.innerHTML = `<div class="empty">${escapeHtml(message)}</div>`;
-          els.summary.textContent = 'Live data unavailable';
+        setLiveState('error','Offline');
+        if(!state.vehicles.length){
+          els.vehicleList.innerHTML=`<div class="empty">${escapeHtml(error.message||'Could not load live vehicles.')}</div>`;
+          els.summary.textContent='Live data unavailable';
         }
-      } finally {
-        state.loadingLive = false;
-        els.refreshBtn.disabled = false;
-        els.mapRefreshBtn.disabled = false;
+      }finally{
+        state.loadingLive=false;
+        els.refreshBtn.disabled=false;
+        els.mapRefreshBtn.disabled=false;
         clearTimeout(state.timer);
-        state.timer = setTimeout(loadLive, REFRESH_MS);
+        state.timer=setTimeout(loadLive,REFRESH_MS);
       }
     }
 
-    async function getVehicleMappings(force = false) {
-      const now = Date.now();
-      if (!force && state.mappingCache.size && now - state.mappingLoadedAt < MAPPING_REFRESH_MS) {
-        return state.mappingCache;
-      }
-
-      const snap = await getDocs(collection(db, 'vehicles'));
-      const map = new Map();
-      snap.forEach(document => map.set(document.id, document.data() || {}));
-      state.mappingCache = map;
-      state.mappingLoadedAt = now;
+    async function getVehicleMappings(force=false){
+      const now=Date.now();
+      if(!force&&state.mappingCache.size&&now-state.mappingLoadedAt<MAPPING_REFRESH_MS)return state.mappingCache;
+      const snap=await getDocs(collection(db,'vehicles'));
+      const map=new Map();
+      snap.forEach(document=>map.set(document.id,document.data()||{}));
+      state.mappingCache=map;
+      state.mappingLoadedAt=now;
       return map;
     }
 
-    function parseBusTimesVehicle(item) {
-      if (!item || typeof item !== 'object') return null;
+    function renderAll(){
+      if(state.mode==='vehicle')renderVehicleDetail();
+      else renderTracker();
+      renderMarkers(mapVehicles());
+    }
 
-      const coordinates = Array.isArray(item.coordinates)
-        ? item.coordinates
-        : Array.isArray(item.location?.coordinates)
-          ? item.location.coordinates
-          : null;
+    function renderTracker(){
+      const vehicles=visibleVehicles();
+      els.summary.textContent=`${vehicles.length} live ${vehicles.length===1?'vehicle':'vehicles'}${state.route?` on route ${state.route}`:''}${state.search?' • filtered':''}${state.showFavouritesOnly?' • favourites':''}`;
+      renderVehicleList(vehicles);
+      renderSelectedCard();
+    }
 
-      if (!coordinates || coordinates.length < 2) return null;
+    function renderVehicleList(vehicles){
+      if(!vehicles.length){els.vehicleList.innerHTML='<div class="empty">No live vehicles match this filter.</div>';return;}
 
-      const longitude = Number(coordinates[0]);
-      const latitude = Number(coordinates[1]);
-      if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+      els.vehicleList.innerHTML=vehicles.map(vehicle=>{
+        const selected=state.selectedId===vehicle.id?' selected':'';
+        const colour=markerColour(vehicle);
+        const text=contrastText(colour);
+        const regText=vehicle.registration||vehicle.machineLabel||'Unknown vehicle';
+        return `<div class="vehicle-row${selected}" data-row="${escapeAttr(vehicle.id)}" role="button" tabindex="0">
+          <span class="route-box" style="background:${escapeAttr(colour)};color:${escapeAttr(text)}">${escapeHtml(vehicle.route||'—')}</span>
+          <span class="vehicle-copy">
+            <span class="vehicle-line">
+              ${vehicle.fleetNumber?`<span class="fleet-no">${escapeHtml(vehicle.fleetNumber)}</span>`:''}
+              <a class="reg-link ${vehicle.registration?'':'unknown-link'}" href="${escapeAttr(trackerUrl(vehicleUrlKey(vehicle)))}" data-open-vehicle="${escapeAttr(vehicle.id)}">${escapeHtml(regText)}</a>
+            </span>
+            <span class="vehicle-meta">${escapeHtml(vehicleDescription(vehicle))}</span>
+            <span class="vehicle-journey">${escapeHtml(vehicle.destination?`Route ${vehicle.route||'—'} to ${vehicle.destination}`:`Route ${vehicle.route||'—'} • live journey`)}</span>
+            <span class="vehicle-gps">${escapeHtml(headingText(vehicle))} • GPS ${escapeHtml(timeAgo(vehicle.recordedAt))}</span>
+          </span>
+          <button class="fav ${state.favourites.has(favouriteKey(vehicle))?'on':''}" data-fav="${escapeAttr(vehicle.id)}" type="button" aria-label="Favourite vehicle">★</button>
+        </div>`;
+      }).join('');
 
-      const vehicleInfo = item.vehicle && typeof item.vehicle === 'object' ? item.vehicle : {};
-      const machineId = vehicleKeyFromBusTimes(vehicleInfo, item);
-      if (!machineId) return null;
+      els.vehicleList.querySelectorAll('[data-row]').forEach(row=>{
+        const activate=event=>{
+          if(event.target.closest('[data-fav],[data-open-vehicle]'))return;
+          selectVehicle(row.dataset.row,true);
+        };
+        row.addEventListener('click',activate);
+        row.addEventListener('keydown',event=>{
+          if(event.key==='Enter'||event.key===' '){event.preventDefault();activate(event);}
+        });
+      });
 
-      const service = item.service && typeof item.service === 'object' ? item.service : {};
+      els.vehicleList.querySelectorAll('[data-fav]').forEach(button=>button.addEventListener('click',event=>{
+        event.stopPropagation();
+        const vehicle=vehicles.find(v=>v.id===button.dataset.fav);
+        if(vehicle)toggleFavourite(vehicle);
+      }));
+    }
 
-      return {
-        machineId,
-        machineLabel: machineLabelFromBusTimes(vehicleInfo, machineId),
-        route: clean(service.line_name ?? item.route_name ?? item.line_name ?? item.route ?? ''),
-        lineRef: clean(item.service_id ?? service.id ?? service.url ?? ''),
-        direction: clean(item.direction_name ?? item.direction_text ?? ''),
-        origin: clean(item.origin ?? item.origin_name ?? ''),
-        destination: clean(item.destination ?? item.destination_name ?? item.headsign ?? item.trip?.headsign ?? ''),
-        destinationRef: clean(item.destination_ref ?? ''),
-        latitude,
-        longitude,
-        bearing: numberOrNull(item.direction ?? item.bearing ?? item.heading),
-        recordedAt: normalizeDate(item.datetime ?? item.recorded_at ?? item.recordedAt ?? item.timestamp ?? item.time),
-        journeyRef: clean(item.journey_id ?? item.journeyRef ?? item.trip_id ?? '')
+    function renderVehicleDetail(){
+      const vehicle=getDetailVehicle();
+      if(!vehicle){
+        els.detailTitle.textContent='Vehicle not found';
+        els.detailReg.textContent='';
+        return;
+      }
+
+      const colour=markerColour(vehicle);
+      const text=contrastText(colour);
+      document.documentElement.style.setProperty('--vehicle-accent',colour);
+      document.documentElement.style.setProperty('--vehicle-accent-text',text);
+
+      const live=isFreshPosition(vehicle)&&isValidPosition(vehicle);
+      els.detailStatus.className=`vehicle-status${live?'':' off'}`;
+      els.detailStatusText.textContent=live?'Live':'Not live';
+      els.detailRoute.textContent=vehicle.route||'—';
+      els.detailRoute.style.background=colour;
+      els.detailRoute.style.color=text;
+
+      els.detailTitle.textContent=vehicle.fleetNumber?`Fleet ${vehicle.fleetNumber}`:(vehicle.registration||vehicle.machineLabel||'Vehicle');
+      els.detailReg.textContent=vehicle.registration||'';
+      els.detailJourney.textContent=live
+        ? (vehicle.destination?`Route ${vehicle.route||'—'} to ${vehicle.destination}`:`Route ${vehicle.route||'—'} in service`)
+        : 'Not currently reporting live';
+      els.detailJourneyMeta.textContent=live
+        ? `${headingText(vehicle)} • GPS ${timeAgo(vehicle.recordedAt)}`
+        : 'The vehicle may be out of service, switched off, or not currently tracking.';
+
+      els.factFleet.textContent=vehicle.fleetNumber||'—';
+      els.factReg.textContent=vehicle.registration||'—';
+      els.factMake.textContent=vehicle.make||'—';
+      els.factModel.textContent=vehicle.model||'—';
+      els.factType.textContent=vehicle.vehicleType||'—';
+      els.factYear.textContent=vehicle.yearRegistered||'—';
+      els.factLivery.textContent=vehicle.livery||'—';
+      els.factRoute.textContent=vehicle.route||'—';
+      els.factDestination.textContent=vehicle.destination||'—';
+      els.factDirection.textContent=headingText(vehicle);
+      els.factGps.textContent=vehicle.recordedAt?timeAgo(vehicle.recordedAt):'—';
+
+      els.gpsTitle.textContent=live?'Live GPS':'No live GPS';
+      els.gpsMeta.textContent=live
+        ? `${vehicle.registration||vehicle.fleetNumber||'Vehicle'} • ${headingText(vehicle)} • updated ${timeAgo(vehicle.recordedAt)}`
+        : 'No current position is available for this vehicle.';
+
+      els.trackBtn.disabled=!live;
+      if(!live){
+        state.tracking=false;
+        els.trackBtn.classList.remove('active');
+        els.trackBtn.textContent='Track this bus';
+      }
+    }
+
+    function mapVehicles(){
+      if(state.mode==='vehicle'){
+        const vehicle=getDetailVehicle();
+        return vehicle?[vehicle]:[];
+      }
+      return visibleVehicles();
+    }
+
+    function installLiveVehicleLayers(){
+      if(!state.mapReady||!state.map)return;
+      if(state.map.getSource('live-vehicles'))return;
+
+      state.map.addSource('live-vehicles',{
+        type:'geojson',
+        data:{type:'FeatureCollection',features:[]}
+      });
+
+      // Selected bus halo. It stays centred on the coordinate and is only an outline.
+      state.map.addLayer({
+        id:'live-vehicles-selected',
+        type:'circle',
+        source:'live-vehicles',
+        filter:['==',['get','selected'],true],
+        paint:{
+          'circle-radius':['interpolate',['linear'],['zoom'],7,7,10,8,13,11,18,14],
+          'circle-color':'rgba(255,255,255,0)',
+          'circle-stroke-color':'#17395c',
+          'circle-stroke-width':['interpolate',['linear'],['zoom'],7,1.5,13,2.5,18,3],
+          'circle-opacity':1
+        }
+      });
+
+      // The actual live position. At wide zooms this is deliberately a small dot.
+      // Fixed-size DOM markers were the reason the old map looked displaced/messy.
+      state.map.addLayer({
+        id:'live-vehicles-circle',
+        type:'circle',
+        source:'live-vehicles',
+        paint:{
+          'circle-radius':['interpolate',['linear'],['zoom'],7,3.5,9,4.25,11,5.25,13,7,16,9,19,10],
+          'circle-color':['get','colour'],
+          'circle-stroke-color':'#ffffff',
+          'circle-stroke-width':['interpolate',['linear'],['zoom'],7,1,11,1.35,15,2,19,2.25],
+          'circle-opacity':0.98
+        }
+      });
+
+      // Route number only appears once the map is close enough for it to be useful.
+      state.map.addLayer({
+        id:'live-vehicles-route',
+        type:'symbol',
+        source:'live-vehicles',
+        minzoom:11.5,
+        layout:{
+          'text-field':['get','routeLabel'],
+          'text-size':['interpolate',['linear'],['zoom'],11.5,8,14,9.5,17,11],
+          'text-font':['Open Sans Bold','Arial Unicode MS Bold'],
+          'text-anchor':'center',
+          'text-allow-overlap':true,
+          'text-ignore-placement':true
+        },
+        paint:{
+          'text-color':['get','textColour'],
+          'text-halo-color':['get','colour'],
+          'text-halo-width':0.4
+        }
+      });
+
+      // Direction arrow is intentionally hidden at wide zooms. Showing a large arrow
+      // on every bus while zoomed out was another major source of visual clutter.
+      state.map.addLayer({
+        id:'live-vehicles-arrow',
+        type:'symbol',
+        source:'live-vehicles',
+        minzoom:13,
+        layout:{
+          'text-field':['get','arrow'],
+          'text-size':['interpolate',['linear'],['zoom'],13,9,16,11,19,13],
+          'text-font':['Open Sans Bold','Arial Unicode MS Bold'],
+          'text-rotate':['get','bearing'],
+          'text-rotation-alignment':'map',
+          'text-offset':[0,-1.55],
+          'text-allow-overlap':true,
+          'text-ignore-placement':true
+        },
+        paint:{
+          'text-color':['get','colour'],
+          'text-halo-color':'#ffffff',
+          'text-halo-width':1.25
+        }
+      });
+
+      const interactiveLayers=['live-vehicles-circle'];
+      const handleVehicleClick=event=>{
+        const feature=event.features&&event.features[0];
+        const id=String(feature?.properties?.vehicleId||'');
+        if(!id)return;
+        const vehicle=state.vehicles.find(v=>v.id===id);
+        if(!vehicle)return;
+        if(state.mode==='vehicle')focusVehicle(vehicle,true);
+        else selectVehicle(vehicle.id,false);
+      };
+
+      for(const layerId of interactiveLayers){
+        state.map.on('click',layerId,handleVehicleClick);
+        state.map.on('mouseenter',layerId,()=>{state.map.getCanvas().style.cursor='pointer';});
+        state.map.on('mouseleave',layerId,()=>{state.map.getCanvas().style.cursor='';});
+      }
+    }
+
+    function renderMarkers(vehicles){
+      if(!state.mapReady||!state.map)return;
+      installLiveVehicleLayers();
+      const source=state.map.getSource('live-vehicles');
+      if(!source)return;
+
+      // Remove any legacy HTML markers if this file was hot-reloaded over an older build.
+      for(const [,entry] of state.markers){
+        try{entry.marker?.remove();}catch(_){}
+      }
+      state.markers.clear();
+
+      const valid=validVehicles(vehicles);
+      const features=valid.map(vehicle=>{
+        const colour=markerColour(vehicle);
+        const bearing=numberOrNull(vehicle.bearing);
+        return {
+          type:'Feature',
+          id:vehicle.id,
+          geometry:{
+            type:'Point',
+            // MapLibre receives the exact latest longitude/latitude. No road snap,
+            // interpolation, pixel offset or estimated position is applied here.
+            coordinates:[Number(vehicle.longitude),Number(vehicle.latitude)]
+          },
+          properties:{
+            vehicleId:vehicle.id,
+            routeLabel:String(vehicle.route||'—').slice(0,5),
+            colour,
+            textColour:contrastText(colour),
+            selected:state.mode==='vehicle'||state.selectedId===vehicle.id,
+            bearing:bearing==null?0:((bearing%360)+360)%360,
+            arrow:bearing==null?'':'▲'
+          }
+        };
+      });
+
+      source.setData({type:'FeatureCollection',features});
+
+      if(state.mode==='vehicle'&&state.tracking){
+        const vehicle=valid.find(v=>v.id===state.detailVehicleId);
+        if(vehicle){
+          state.map.easeTo({
+            center:[vehicle.longitude,vehicle.latitude],
+            duration:250,
+            essential:true
+          });
+        }
+      }
+    }
+
+    function selectVehicle(id,pan=true){
+      state.selectedId=id;
+      state.followSelected=true;
+      const vehicle=visibleVehicles().find(v=>v.id===id);
+      if(!vehicle)return;
+      renderTracker();
+      renderMarkers(mapVehicles());
+      if(pan&&isValidPosition(vehicle))state.map?.easeTo({center:[vehicle.longitude,vehicle.latitude],zoom:Math.max(state.map.getZoom(),14),duration:600,essential:true});
+      openPopup(vehicle);
+    }
+
+    function openPopup(vehicle){
+      if(!state.mapReady||!state.map||!isValidPosition(vehicle))return;
+      if(state.popup)state.popup.remove();
+      state.popup=new maplibregl.Popup({offset:24,closeButton:true,closeOnClick:false,maxWidth:'310px'})
+        .setLngLat([vehicle.longitude,vehicle.latitude])
+        .setHTML(popupHtml(vehicle))
+        .addTo(state.map);
+      state.infoOpenId=vehicle.id;
+      state.popup.on('close',()=>{state.popup=null;state.infoOpenId=null;});
+    }
+
+    function popupHtml(vehicle){
+      const colour=markerColour(vehicle);
+      return `<div class="popup">
+        <div class="popup-head">
+          <span class="popup-route" style="background:${escapeAttr(colour)};color:${escapeAttr(contrastText(colour))}">${escapeHtml(vehicle.route||'—')}</span>
+          <span class="popup-title">${escapeHtml(publicVehicleTitle(vehicle))}</span>
+        </div>
+        <div class="popup-row">${escapeHtml(vehicleDescription(vehicle))}</div>
+        ${vehicle.destination?`<div class="popup-row">To ${escapeHtml(vehicle.destination)}</div>`:''}
+        <div class="popup-row">${escapeHtml(headingText(vehicle))} • ${escapeHtml(timeAgo(vehicle.recordedAt))}</div>
+        <a class="popup-open" href="${escapeAttr(trackerUrl(vehicleUrlKey(vehicle)))}" data-open-vehicle="${escapeAttr(vehicle.id)}">Vehicle details →</a>
+      </div>`;
+    }
+
+    function renderSelectedCard(){
+      if(state.mode==='vehicle'){hideSelectedCard();return;}
+      const vehicle=visibleVehicles().find(v=>v.id===state.selectedId);
+      if(!vehicle){hideSelectedCard();return;}
+      const colour=markerColour(vehicle);
+      els.selectedRoute.textContent=vehicle.route||'—';
+      els.selectedRoute.style.background=colour;
+      els.selectedRoute.style.color=contrastText(colour);
+      els.selectedTitle.textContent=publicVehicleTitle(vehicle);
+      els.selectedSub.textContent=vehicleDescription(vehicle);
+      els.selectedDest.textContent=vehicle.destination?`To ${vehicle.destination} • ${headingText(vehicle)}`:headingText(vehicle);
+      els.selectedTime.textContent=`GPS ${timeAgo(vehicle.recordedAt)}`;
+      els.selectedView.href=trackerUrl(vehicleUrlKey(vehicle));
+      els.selectedView.dataset.openVehicle=vehicle.id;
+      els.selectedCard.classList.add('show');
+    }
+
+    function hideSelectedCard(){els.selectedCard.classList.remove('show')}
+
+    function clearSelection(){
+      state.selectedId=null;
+      state.followSelected=false;
+      hideSelectedCard();
+      if(state.popup){state.popup.remove();state.popup=null;}
+      renderAll();
+    }
+
+    function openVehicleMode(id,push=true){
+      const vehicle=state.vehicles.find(v=>v.id===id);
+      if(!vehicle)return;
+      if(push)history.pushState({},'',trackerUrl(vehicleUrlKey(vehicle)));
+      setVehicleModeState(vehicle);
+    }
+
+    function setVehicleModeState(vehicle){
+      if(!vehicle){
+        state.mode='tracker';
+        state.detailVehicleId=null;
+        state.tracking=false;
+        state.selectedJourney=null;
+        state.history=[];
+        state.journeys=[];
+        document.body.classList.remove('vehicle-mode');
+        removeHistoryLayer();
+        if(state.popup){state.popup.remove();state.popup=null;}
+        renderAll();
+        setTimeout(()=>state.map?.resize(),0);
+        return;
+      }
+
+      state.mode='vehicle';
+      state.detailVehicleId=vehicle.id;
+      state.selectedId=vehicle.id;
+      state.tracking=false;
+      state.selectedJourney=null;
+      document.body.classList.add('vehicle-mode');
+      if(state.popup){state.popup.remove();state.popup=null;}
+      renderAll();
+      loadHistory(vehicle);
+      focusVehicle(vehicle,true);
+      setTimeout(()=>state.map?.resize(),0);
+    }
+
+    function closeVehicleMode(){
+      const url=new URL(location.href);
+      url.searchParams.delete('vehicle');
+      history.pushState({},'',url.pathname+(url.searchParams.toString()?`?${url.searchParams}`:''));
+      setVehicleModeState(null);
+    }
+
+    function focusVehicle(vehicle,animate=true){
+      if(!state.mapReady||!state.map||!isValidPosition(vehicle))return;
+      state.map.easeTo({
+        center:[vehicle.longitude,vehicle.latitude],
+        zoom:Math.max(state.map.getZoom(),14),
+        duration:animate?550:0,
+        essential:true
+      });
+    }
+
+    async function loadHistory(vehicle){
+      state.history=[];
+      state.journeys=[];
+      state.selectedJourney=null;
+      els.historyCount.textContent='';
+      els.journeyList.innerHTML='<div class="empty">Loading previous journeys…</div>';
+      try{
+        const q=query(collection(db,'journeyHistory',vehicle.machineId,'points'),orderBy('recordedAt','desc'),limit(500));
+        const snap=await getDocs(q);
+        state.history=snap.docs.map(d=>({id:d.id,...d.data()})).filter(p=>Number.isFinite(Number(p.latitude))&&Number.isFinite(Number(p.longitude)));
+        state.journeys=groupJourneys(state.history);
+        renderHistory();
+      }catch(error){
+        console.warn('Journey history unavailable:',error);
+        els.journeyList.innerHTML='<div class="empty">Journey history could not be loaded. Check the Firestore rules.</div>';
+      }
+    }
+
+    function groupJourneys(points){
+      const ordered=[...points].sort((a,b)=>(Date.parse(a.recordedAt||'')||0)-(Date.parse(b.recordedAt||'')||0));
+      const groups=[];
+      let current=null;
+      for(const point of ordered){
+        const time=Date.parse(point.recordedAt||'')||0;
+        const key=clean(point.journeyRef)||`${clean(point.route)}|${clean(point.destination)}`;
+        const gap=current&&current.lastTime?time-current.lastTime:0;
+        const same=current&&current.key===key&&gap<45*60*1000;
+        if(!same){
+          current={key,route:clean(point.route),destination:clean(point.destination),journeyRef:clean(point.journeyRef),points:[],firstTime:time,lastTime:time};
+          groups.push(current);
+        }
+        current.points.push(point);
+        current.lastTime=time;
+      }
+      return groups.reverse();
+    }
+
+    function renderHistory(){
+      els.historyCount.textContent=state.journeys.length?`${state.journeys.length} recorded`:'';
+      if(!state.journeys.length){
+        els.journeyList.innerHTML='<div class="empty">No previous journeys have been recorded by BusBase yet.</div>';
+        return;
+      }
+      els.journeyList.innerHTML=state.journeys.slice(0,30).map((journey,index)=>`
+        <button class="journey-row${state.selectedJourney===index?' active':''}" data-journey="${index}" type="button">
+          <span class="journey-route">${escapeHtml(journey.route||'—')}</span>
+          <span class="journey-copy">
+            <span class="journey-dest">${escapeHtml(journey.destination?`to ${journey.destination}`:'Journey')}</span>
+            <span class="journey-time">${escapeHtml(formatJourneyDate(journey.firstTime,journey.lastTime))} • ${journey.points.length} GPS ${journey.points.length===1?'point':'points'}</span>
+          </span>
+        </button>`).join('');
+
+      els.journeyList.querySelectorAll('[data-journey]').forEach(button=>button.addEventListener('click',()=>{
+        const index=Number(button.dataset.journey);
+        state.selectedJourney=state.selectedJourney===index?null:index;
+        renderHistory();
+        drawSelectedJourney(true);
+      }));
+    }
+
+    function drawSelectedJourney(fit=false){
+      removeHistoryLayer();
+      if(!state.mapReady||state.selectedJourney==null)return;
+      const journey=state.journeys[state.selectedJourney];
+      if(!journey||journey.points.length<2)return;
+
+      const coords=journey.points.map(p=>[Number(p.longitude),Number(p.latitude)]);
+      state.map.addSource('history',{type:'geojson',data:{type:'Feature',geometry:{type:'LineString',coordinates:coords}}});
+      const beforeLive=state.map.getLayer('live-vehicles-selected')?'live-vehicles-selected':undefined;
+      state.map.addLayer({id:'history-outline',type:'line',source:'history',paint:{'line-color':'#fff','line-width':7,'line-opacity':.9}},beforeLive);
+      state.map.addLayer({id:'history-line',type:'line',source:'history',paint:{'line-color':markerColour(getDetailVehicle()||{}),'line-width':4,'line-opacity':.92}},beforeLive);
+      if(fit){
+        const bounds=coords.reduce((b,c)=>b.extend(c),new maplibregl.LngLatBounds(coords[0],coords[0]));
+        state.map.fitBounds(bounds,{padding:55,maxZoom:15,duration:550});
+      }
+    }
+
+    function removeHistoryLayer(){
+      if(!state.mapReady||!state.map)return;
+      for(const id of ['history-line','history-outline'])if(state.map.getLayer(id))state.map.removeLayer(id);
+      if(state.map.getSource('history'))state.map.removeSource('history');
+    }
+
+    async function recordHistoryPoint(){
+      const vehicle=getDetailVehicle();
+      if(!state.user||!vehicle||!isValidPosition(vehicle)||!isFreshPosition(vehicle))return;
+      const minute=Math.floor((Date.parse(vehicle.recordedAt||'')||Date.now())/60000);
+      const key=`${state.user.uid}_${minute}`;
+      if(state.lastRecordedKey===key)return;
+      state.lastRecordedKey=key;
+      try{
+        await setDoc(doc(db,'journeyHistory',vehicle.machineId,'points',key),{
+          route:clean(vehicle.route),
+          destination:clean(vehicle.destination),
+          journeyRef:clean(vehicle.journeyRef),
+          latitude:Number(vehicle.latitude),
+          longitude:Number(vehicle.longitude),
+          bearing:numberOrNull(vehicle.bearing),
+          recordedAt:vehicle.recordedAt||new Date().toISOString(),
+          reporterUid:state.user.uid
+        },{merge:true});
+      }catch(error){console.warn('Could not record history point:',error);}
+    }
+
+    async function toggleFavourite(vehicle){
+      if(!state.user){
+        els.authMessage.textContent='Log in to save favourite vehicles.';
+        openModal('accountModal');
+        return;
+      }
+      const key=favouriteKey(vehicle);
+      if(state.favourites.has(key))state.favourites.delete(key);
+      else state.favourites.add(key);
+      await setDoc(doc(db,'users',state.user.uid),{favouriteVehicles:[...state.favourites]},{merge:true});
+      renderAll();
+    }
+
+    function prefillSuggestion(vehicle){
+      const current=suggestionValues(vehicle);
+      els.sFleet.value=current.fleetNumber;
+      els.sReg.value=current.registration;
+      els.sMake.value=current.make;
+      els.sModel.value=current.model;
+      els.sType.value=current.vehicleType;
+      els.sYear.value=current.yearRegistered;
+      els.sLivery.value=current.livery;
+      const colour=current.liveryColour||'#D71920';
+      els.sColour.value=colour;
+      els.sColourHex.value=colour;
+      els.sReason.value='';
+      els.sEvidence.value='';
+      els.suggestMessage.textContent='';
+    }
+
+    function suggestionValues(vehicle){
+      return{
+        fleetNumber:clean(vehicle.fleetNumber),
+        registration:clean(vehicle.registration).toUpperCase(),
+        make:clean(vehicle.make),
+        model:clean(vehicle.model),
+        vehicleType:clean(vehicle.vehicleType),
+        yearRegistered:clean(vehicle.yearRegistered),
+        livery:clean(vehicle.livery),
+        liveryColour:normaliseColour(vehicle.liveryColour)
       };
     }
 
-    function vehicleKeyFromBusTimes(vehicleInfo, item) {
-      const url = clean(vehicleInfo.url);
-      if (url) {
-        const bits = url.split('/').filter(Boolean);
-        const slug = bits[bits.length - 1] || '';
-        if (slug) return slug.slice(0, 180);
-      }
-
-      const explicit = clean(item.vehicle_id ?? item.vehicleId ?? vehicleInfo.id ?? '');
-      if (explicit) return `bt-${explicit}`.slice(0, 180);
-
-      const name = clean(vehicleInfo.name);
-      return name ? `bt-${slugify(name)}`.slice(0, 180) : '';
+    function normaliseSuggestionValue(key,value){
+      const text=clean(value);
+      if(key==='registration')return text.toUpperCase();
+      if(key==='liveryColour')return normaliseColour(text);
+      return text;
     }
 
-    function machineLabelFromBusTimes(vehicleInfo, machineId) {
-      const name = clean(vehicleInfo.name);
-      if (name.includes(' - ')) {
-        const first = clean(name.split(' - ')[0]);
-        if (first) return first;
+    function visibleVehicles(){
+      const q=state.search;
+      return state.vehicles
+        .filter(v=>!state.route||v.route===state.route)
+        .filter(v=>!q||[
+          v.fleetNumber,v.registration,v.vehicleType,v.make,v.model,v.livery,v.route,v.destination,v.machineLabel,v.machineId
+        ].some(value=>String(value||'').toLowerCase().includes(q)))
+        .filter(v=>!state.showFavouritesOnly||state.favourites.has(favouriteKey(v)))
+        .sort(vehicleSort);
+    }
+
+    function updateRoutes(){
+      const current=state.route;
+      const routes=[...new Set(state.vehicles.map(v=>clean(v.route)).filter(Boolean))].sort((a,b)=>collator.compare(a,b));
+      els.routeFilter.innerHTML='<option value="">All routes</option>'+routes.map(route=>`<option value="${escapeAttr(route)}">${escapeHtml(route)}</option>`).join('');
+      if(routes.includes(current))els.routeFilter.value=current;
+      else{state.route='';els.routeFilter.value='';}
+    }
+
+    function getDetailVehicle(){return state.vehicles.find(v=>v.id===state.detailVehicleId)||null}
+
+    function findVehicleByParam(param){
+      const decoded=clean(param);
+      return state.vehicles.find(v=>vehicleUrlKey(v)===decoded||v.machineId===decoded||slugify(v.registration)===slugify(decoded)||slugify(v.fleetNumber)===slugify(decoded))||null;
+    }
+
+    function trackerUrl(key){
+      const url=new URL(location.href);
+      url.pathname=url.pathname.replace(/vehicle\.html$/i,'').replace(/\/+$/,'/') || '/tracker/';
+      url.search='';
+      url.hash='';
+      if(key)url.searchParams.set('vehicle',key);
+      return url.pathname+(url.searchParams.toString()?`?${url.searchParams}`:'');
+    }
+
+    function vehicleUrlKey(vehicle){
+      if(vehicle.fleetNumber)return`fleet-${slugify(vehicle.fleetNumber)}`;
+      if(vehicle.registration)return`reg-${slugify(vehicle.registration)}`;
+      return`tracker-${slugify(vehicle.machineId||vehicle.id)}`;
+    }
+
+    function fitToVehicles(vehicles){
+      if(!state.mapReady||!state.map)return;
+      const points=validVehicles(vehicles);
+      if(!points.length){
+        state.map.easeTo({center:[DEFAULT_CENTER.lng,DEFAULT_CENTER.lat],zoom:DEFAULT_ZOOM,duration:450,essential:true});
+        return;
+      }
+      if(points.length===1){focusVehicle(points[0],true);return;}
+      const bounds=new maplibregl.LngLatBounds();
+      points.forEach(v=>bounds.extend([v.longitude,v.latitude]));
+      state.map.fitBounds(bounds,{padding:{top:45,right:45,bottom:45,left:45},maxZoom:13,duration:550,essential:true});
+    }
+
+    function parseBusTimesVehicle(item){
+      if(!item||typeof item!=='object')return null;
+      const coords=Array.isArray(item.coordinates)?item.coordinates:Array.isArray(item.location?.coordinates)?item.location.coordinates:null;
+      if(!coords||coords.length<2)return null;
+      const longitude=Number(coords[0]),latitude=Number(coords[1]);
+      if(!Number.isFinite(latitude)||!Number.isFinite(longitude))return null;
+      const vi=item.vehicle&&typeof item.vehicle==='object'?item.vehicle:{};
+      const machineId=vehicleKeyFromBusTimes(vi,item);
+      if(!machineId)return null;
+      const service=item.service&&typeof item.service==='object'?item.service:{};
+      return{
+        machineId,machineLabel:machineLabelFromBusTimes(vi,machineId),
+        route:clean(service.line_name??item.route_name??item.line_name??item.route??''),
+        lineRef:clean(item.service_id??service.id??service.url??''),
+        direction:clean(item.direction_name??item.direction_text??''),
+        origin:clean(item.origin??item.origin_name??''),
+        destination:clean(item.destination??item.destination_name??item.headsign??item.trip?.headsign??''),
+        latitude,longitude,bearing:numberOrNull(item.direction??item.bearing??item.heading),
+        recordedAt:normalizeDate(item.datetime??item.recorded_at??item.recordedAt??item.timestamp??item.time),
+        journeyRef:clean(item.journey_id??item.journeyRef??item.trip_id??'')
+      };
+    }
+
+    function vehicleKeyFromBusTimes(vi,item){
+      const url=clean(vi.url);
+      if(url){
+        const bits=url.split('/').filter(Boolean);
+        const slug=bits[bits.length-1]||'';
+        if(slug)return slug.slice(0,180);
+      }
+      const explicit=clean(item.vehicle_id??item.vehicleId??vi.id??'');
+      if(explicit)return`bt-${explicit}`.slice(0,180);
+      const name=clean(vi.name);
+      return name?`bt-${slugify(name)}`.slice(0,180):'';
+    }
+
+    function machineLabelFromBusTimes(vi,machineId){
+      const name=clean(vi.name);
+      if(name.includes(' - ')){
+        const first=clean(name.split(' - ')[0]);
+        if(first)return first;
       }
       return machineId;
     }
 
-    function toPublicVehicle(vehicle, mapping) {
-      if (mapping) {
-        return {
-          id: `mapped:${vehicle.machineId}`,
-          mapped: true,
-          fleetNumber: clean(mapping.fleetNumber),
-          registration: clean(mapping.registration),
-          vehicleType: clean(mapping.vehicleType),
-          livery: clean(mapping.livery),
-          liveryColour: normaliseColour(mapping.liveryColour),
-          route: vehicle.route,
-          lineRef: vehicle.lineRef,
-          direction: vehicle.direction,
-          origin: vehicle.origin,
-          destination: vehicle.destination,
-          destinationRef: vehicle.destinationRef,
-          latitude: vehicle.latitude,
-          longitude: vehicle.longitude,
-          bearing: vehicle.bearing,
-          recordedAt: vehicle.recordedAt,
-          journeyRef: vehicle.journeyRef
-        };
-      }
-
-      return {
-        id: `machine:${vehicle.machineId}`,
-        mapped: false,
-        machineId: vehicle.machineId,
-        machineLabel: vehicle.machineLabel,
-        liveryColour: '',
-        route: vehicle.route,
-        lineRef: vehicle.lineRef,
-        direction: vehicle.direction,
-        origin: vehicle.origin,
-        destination: vehicle.destination,
-        destinationRef: vehicle.destinationRef,
-        latitude: vehicle.latitude,
-        longitude: vehicle.longitude,
-        bearing: vehicle.bearing,
-        recordedAt: vehicle.recordedAt,
-        journeyRef: vehicle.journeyRef
+    function toPublicVehicle(raw,mapping){
+      const m=mapping||{};
+      return{
+        id:`vehicle:${raw.machineId}`,
+        machineId:raw.machineId,
+        machineLabel:raw.machineLabel,
+        mapped:Boolean(mapping),
+        fleetNumber:clean(m.fleetNumber),
+        registration:clean(m.registration),
+        make:clean(m.make),
+        model:clean(m.model),
+        vehicleType:clean(m.vehicleType),
+        yearRegistered:clean(m.yearRegistered),
+        livery:clean(m.livery),
+        liveryColour:normaliseColour(m.liveryColour),
+        route:raw.route,lineRef:raw.lineRef,direction:raw.direction,origin:raw.origin,destination:raw.destination,
+        latitude:raw.latitude,longitude:raw.longitude,bearing:raw.bearing,recordedAt:raw.recordedAt,journeyRef:raw.journeyRef
       };
     }
 
-    function applyHeadingFallback(vehicle) {
-      const previous = state.lastRawPositions.get(vehicle.machineId);
-      let bearing = numberOrNull(vehicle.bearing);
-
-      if (bearing == null && previous) {
-        const moved = distanceMetres(
-          { lat: previous.latitude, lng: previous.longitude },
-          { lat: vehicle.latitude, lng: vehicle.longitude }
-        );
-        if (moved >= 6 && newer(vehicle.recordedAt, previous.recordedAt)) {
-          bearing = calculateBearing(
-            previous.latitude, previous.longitude,
-            vehicle.latitude, vehicle.longitude
-          );
+    function applyHeadingFallback(vehicle){
+      const previous=state.lastRawPositions.get(vehicle.machineId);
+      let bearing=numberOrNull(vehicle.bearing);
+      if(bearing==null&&previous){
+        const moved=distanceMetres({lat:previous.latitude,lng:previous.longitude},{lat:vehicle.latitude,lng:vehicle.longitude});
+        if(moved>=6&&newer(vehicle.recordedAt,previous.recordedAt)){
+          bearing=calculateBearing(previous.latitude,previous.longitude,vehicle.latitude,vehicle.longitude);
         }
       }
-
-      state.lastRawPositions.set(vehicle.machineId, {
-        latitude: vehicle.latitude,
-        longitude: vehicle.longitude,
-        recordedAt: vehicle.recordedAt
-      });
-
-      vehicle.bearing = bearing;
-      vehicle.direction = vehicle.direction || bearingToCompass(bearing);
+      state.lastRawPositions.set(vehicle.machineId,{latitude:vehicle.latitude,longitude:vehicle.longitude,recordedAt:vehicle.recordedAt});
+      vehicle.bearing=bearing;
+      vehicle.direction=vehicle.direction||bearingToCompass(bearing);
       return vehicle;
     }
 
-    function calculateBearing(lat1, lng1, lat2, lng2) {
-      const toRad = value => value * Math.PI / 180;
-      const toDeg = value => value * 180 / Math.PI;
-      const phi1 = toRad(lat1);
-      const phi2 = toRad(lat2);
-      const dLng = toRad(lng2 - lng1);
-      const y = Math.sin(dLng) * Math.cos(phi2);
-      const x = Math.cos(phi1) * Math.sin(phi2) -
-                Math.sin(phi1) * Math.cos(phi2) * Math.cos(dLng);
-      return (toDeg(Math.atan2(y, x)) + 360) % 360;
+    function calculateBearing(lat1,lng1,lat2,lng2){
+      const r=v=>v*Math.PI/180,d=v=>v*180/Math.PI;
+      const p1=r(lat1),p2=r(lat2),dl=r(lng2-lng1);
+      const y=Math.sin(dl)*Math.cos(p2);
+      const x=Math.cos(p1)*Math.sin(p2)-Math.sin(p1)*Math.cos(p2)*Math.cos(dl);
+      return(d(Math.atan2(y,x))+360)%360;
     }
 
-    function bearingToCompass(bearing) {
-      if (!Number.isFinite(Number(bearing))) return '';
-      const points = ['N','NE','E','SE','S','SW','W','NW'];
-      return points[Math.round(((Number(bearing) % 360) + 360) % 360 / 45) % 8];
+    function distanceMetres(a,b){
+      const r=v=>v*Math.PI/180,R=6371000;
+      const dLat=r(b.lat-a.lat),dLng=r(b.lng-a.lng),lat1=r(a.lat),lat2=r(b.lat);
+      const h=Math.sin(dLat/2)**2+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2;
+      return 2*R*Math.atan2(Math.sqrt(h),Math.sqrt(1-h));
     }
 
-    function headingText(vehicle) {
-      const bearing = numberOrNull(vehicle.bearing);
-      const compass = vehicle.direction || bearingToCompass(bearing);
-      if (bearing == null) return compass ? `Heading ${compass}` : 'Direction unavailable';
-      return `Heading ${compass || bearingToCompass(bearing)} • ${Math.round(((bearing % 360) + 360) % 360)}°`;
+    function isValidPosition(v){
+      return Number.isFinite(v.latitude)&&Number.isFinite(v.longitude)&&
+        v.latitude>=LIVE_AREA.south&&v.latitude<=LIVE_AREA.north&&v.longitude>=LIVE_AREA.west&&v.longitude<=LIVE_AREA.east;
+    }
+    function isFreshPosition(v){
+      const t=Date.parse(v?.recordedAt||'');
+      return !t||Date.now()-t<=STALE_POSITION_MS;
+    }
+    function validVehicles(list){return list.filter(v=>isValidPosition(v)&&isFreshPosition(v))}
+
+    function markerColour(v){return v?.liveryColour||'#D71920'}
+    function vehicleDescription(v){return [v.make,v.model].filter(Boolean).join(' ')||v.vehicleType||v.livery||'Vehicle details not added yet'}
+    function publicVehicleTitle(v){return [v.fleetNumber?`Fleet ${v.fleetNumber}`:'',v.registration||''].filter(Boolean).join(' • ')||`Tracker ${v.machineLabel||v.machineId||'Unknown'}`}
+    function favouriteKey(v){return`bus:${v.fleetNumber||v.registration||v.machineId}`}
+    function vehicleSort(a,b){return collator.compare(a.fleetNumber||a.registration||a.machineId||'',b.fleetNumber||b.registration||b.machineId||'')}
+    function headingText(v){
+      const bearing=numberOrNull(v?.bearing),comp=clean(v?.direction)||bearingToCompass(bearing);
+      if(bearing==null)return comp?`Heading ${comp}`:'Direction unavailable';
+      return`Heading ${comp||bearingToCompass(bearing)} • ${Math.round(((bearing%360)+360)%360)}°`;
+    }
+    function bearingToCompass(b){
+      if(!Number.isFinite(Number(b)))return'';
+      const p=['N','NE','E','SE','S','SW','W','NW'];
+      return p[Math.round((((Number(b)%360)+360)%360)/45)%8];
     }
 
-    function normaliseColour(value) {
-      const colour = clean(value);
-      if (/^#[0-9a-f]{6}$/i.test(colour)) return colour.toUpperCase();
-      if (/^#[0-9a-f]{3}$/i.test(colour)) {
-        return ('#' + colour.slice(1).split('').map(ch => ch + ch).join('')).toUpperCase();
-      }
-      return '';
+    function setLiveState(mode,text){
+      els.livePill.className=`live-pill${mode==='loading'?' loading':mode==='error'?' error':''}`;
+      els.livePillText.textContent=text;
+    }
+    function showMapStatus(text){els.mapStatus.textContent=text;els.mapStatus.classList.add('show')}
+    function hideMapStatus(){els.mapStatus.classList.remove('show')}
+
+    function setAuthMode(mode){
+      state.authMode=mode;
+      const register=mode==='register';
+      els.loginTab.classList.toggle('active',!register);
+      els.registerTab.classList.toggle('active',register);
+      els.nameField.style.display=register?'block':'none';
+      els.confirmField.style.display=register?'block':'none';
+      els.confirmPassword.required=register;
+      els.displayName.required=register;
+      els.authSubmit.textContent=register?'Create account':'Login';
+      els.forgotBtn.style.display=register?'none':'inline-block';
+      els.authMessage.textContent='';
+    }
+    function openModal(id){$(id)?.classList.add('show')}
+    function closeModal(id){$(id)?.classList.remove('show')}
+
+    function friendlyAuthError(error){
+      const code=error?.code||'';
+      if(code.includes('invalid-credential'))return'Incorrect email or password.';
+      if(code.includes('email-already-in-use'))return'That email already has an account.';
+      if(code.includes('weak-password'))return'Use a stronger password.';
+      if(code.includes('invalid-email'))return'Enter a valid email address.';
+      if(code.includes('too-many-requests'))return'Too many attempts. Try again later.';
+      return error?.message||'Something went wrong.';
     }
 
-    function markerColour(vehicle) {
-      return vehicle.mapped && vehicle.liveryColour ? vehicle.liveryColour : (vehicle.mapped ? '#D71920' : '#4B5563');
+    function formatJourneyDate(a,b){
+      if(!a)return'Unknown time';
+      const start=new Date(a),end=new Date(b||a);
+      const date=start.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+      return`${date} • ${start.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}–${end.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}`;
     }
-
-    function contrastText(hex) {
-      const colour = normaliseColour(hex) || '#D71920';
-      const r = parseInt(colour.slice(1,3),16);
-      const g = parseInt(colour.slice(3,5),16);
-      const b = parseInt(colour.slice(5,7),16);
-      return (0.299*r + 0.587*g + 0.114*b) > 160 ? '#111827' : '#FFFFFF';
+    function timeAgo(iso){
+      const t=Date.parse(iso||'');
+      if(!t)return'time unavailable';
+      const s=Math.max(0,Math.round((Date.now()-t)/1000));
+      if(s<10)return'just now';
+      if(s<60)return`${s}s ago`;
+      const m=Math.round(s/60);
+      if(m<60)return`${m}m ago`;
+      const h=Math.round(m/60);
+      if(h<24)return`${h}h ago`;
+      return new Date(t).toLocaleDateString('en-GB',{day:'numeric',month:'short'});
     }
-
-    function clean(value) {
-      return String(value ?? '').trim();
+    function newer(a,b){return(Date.parse(a||'')||0)>=(Date.parse(b||'')||0)}
+    function normalizeDate(v){if(!v)return'';const d=new Date(v);return Number.isNaN(d.getTime())?'':d.toISOString()}
+    function clean(v){return String(v??'').trim()}
+    function numberOrNull(v){const n=Number(v);return Number.isFinite(n)?n:null}
+    function slugify(v){return clean(v).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')}
+    function normaliseColour(v){
+      const c=clean(v);
+      if(/^#[0-9a-f]{6}$/i.test(c))return c.toUpperCase();
+      if(/^#[0-9a-f]{3}$/i.test(c))return('#'+c.slice(1).split('').map(x=>x+x).join('')).toUpperCase();
+      return'';
     }
-
-    function numberOrNull(value) {
-      const number = Number(value);
-      return Number.isFinite(number) ? number : null;
+    function contrastText(hex){
+      const c=normaliseColour(hex)||'#D71920';
+      const r=parseInt(c.slice(1,3),16),g=parseInt(c.slice(3,5),16),b=parseInt(c.slice(5,7),16);
+      return(.299*r+.587*g+.114*b)>160?'#17212b':'#fff';
     }
-
-    function normalizeDate(value) {
-      if (!value) return '';
-      const date = new Date(value);
-      return Number.isNaN(date.getTime()) ? '' : date.toISOString();
-    }
-
-    function isFreshPosition(vehicle) {
-      if (!vehicle.recordedAt) return true;
-      const time = Date.parse(vehicle.recordedAt);
-      if (!Number.isFinite(time)) return true;
-      return Date.now() - time <= STALE_POSITION_MS;
-    }
-
-    function newer(a, b) {
-      return (Date.parse(a || '') || 0) >= (Date.parse(b || '') || 0);
-    }
-
-    function slugify(value) {
-      return clean(value)
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-+|-+$/g, '');
-    }
-
-    function setLiveState(mode, text) {
-      els.livePill.className = `live-pill${mode === 'loading' ? ' loading' : mode === 'error' ? ' error' : ''}`;
-      els.livePillText.textContent = text;
-    }
-
-    function visibleVehicles() {
-      return state.vehicles
-        .filter(vehicle => !state.route || vehicle.route === state.route)
-        .filter(vehicle => !state.showFavouritesOnly || state.favourites.has(favouriteKey(vehicle)))
-        .sort(vehicleSort);
-    }
-
-    function isValidPosition(vehicle) {
-      if (!Number.isFinite(vehicle.latitude) || !Number.isFinite(vehicle.longitude)) return false;
-      return vehicle.latitude >= LIVE_AREA.south &&
-             vehicle.latitude <= LIVE_AREA.north &&
-             vehicle.longitude >= LIVE_AREA.west &&
-             vehicle.longitude <= LIVE_AREA.east;
-    }
-
-    function validVehicles(vehicles) {
-      return vehicles.filter(vehicle => isValidPosition(vehicle) && isFreshPosition(vehicle));
-    }
-
-    function updateRoutes() {
-      const current = state.route;
-      const routes = [...new Set(state.vehicles.map(v => String(v.route || '').trim()).filter(Boolean))]
-        .sort((a,b) => collator.compare(a,b));
-
-      els.routeFilter.innerHTML = '<option value="">All routes</option>' + routes
-        .map(route => `<option value="${escapeAttr(route)}">${escapeHtml(route)}</option>`)
-        .join('');
-
-      if (routes.includes(current)) els.routeFilter.value = current;
-      else {
-        state.route = '';
-        els.routeFilter.value = '';
-      }
-    }
-
-    function render() {
-      const vehicles = visibleVehicles();
-      els.summary.textContent = `${vehicles.length} live ${vehicles.length === 1 ? 'vehicle' : 'vehicles'}${state.route ? ` on route ${state.route}` : ''}${state.showFavouritesOnly ? ' • favourites' : ''}`;
-      renderList(vehicles);
-      renderMarkers(vehicles);
-      renderSelectedCard();
-    }
-
-    function renderList(vehicles) {
-      if (!vehicles.length) {
-        els.vehicleList.innerHTML = '<div class="empty">No live vehicles match this filter.</div>';
-        return;
-      }
-
-      els.vehicleList.innerHTML = vehicles.map(vehicle => {
-        const active = state.selectedId === vehicle.id ? ' active' : '';
-        const unknown = vehicle.mapped ? '' : ' unknown';
-        const favourite = state.favourites.has(favouriteKey(vehicle));
-        const dest = vehicle.destination ? `to ${vehicle.destination}` : 'Live journey';
-        const colour = markerColour(vehicle);
-        const textColour = contrastText(colour);
-
-        return `
-          <div class="vehicle-card${unknown}${active}" data-card="${escapeAttr(vehicle.id)}" role="button" tabindex="0">
-            <span class="route-badge" style="background:${escapeAttr(colour)};color:${escapeAttr(textColour)}">${escapeHtml(vehicle.route || '—')}</span>
-            <span class="vehicle-main">
-              <span class="vehicle-name">${escapeHtml(publicVehicleTitle(vehicle))}</span>
-              <span class="vehicle-meta">${escapeHtml(publicVehicleSubtitle(vehicle))}</span>
-              <span class="vehicle-dest">${escapeHtml(dest)} • ${escapeHtml(headingText(vehicle))}</span>
-              <span class="vehicle-time">GPS ${escapeHtml(timeAgo(vehicle.recordedAt))}</span>
-            </span>
-            <button class="fav-btn ${favourite ? 'on' : ''}" type="button" data-fav="${escapeAttr(vehicle.id)}" aria-label="${state.user ? 'Favourite this vehicle' : 'Login to save favourites'}" title="${state.user ? 'Favourite this vehicle' : 'Login to save favourites'}">★</button>
-          </div>`;
-      }).join('');
-
-      els.vehicleList.querySelectorAll('[data-card]').forEach(card => {
-        const activate = event => {
-          if (event.target.closest('[data-fav]')) return;
-          selectVehicle(card.dataset.card);
-        };
-        card.addEventListener('click', activate);
-        card.addEventListener('keydown', event => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            activate(event);
-          }
-        });
-      });
-
-      els.vehicleList.querySelectorAll('[data-fav]').forEach(button => {
-        button.addEventListener('click', event => {
-          event.stopPropagation();
-          const vehicle = vehicles.find(item => item.id === button.dataset.fav);
-          if (vehicle) toggleFavourite(vehicle);
-        });
-      });
-    }
-
-    function renderMarkers(vehicles) {
-      if (!state.mapReady || !state.map) return;
-
-      const valid = validVehicles(vehicles);
-      const idsNow = new Set(valid.map(vehicle => vehicle.id));
-
-      for (const [id, entry] of state.markers) {
-        if (!idsNow.has(id)) {
-          if (entry.animationFrame) cancelAnimationFrame(entry.animationFrame);
-          entry.marker.remove();
-          state.markers.delete(id);
-        }
-      }
-
-      for (const vehicle of valid) {
-        const rawTarget = { lat: vehicle.latitude, lng: vehicle.longitude };
-        const target = getRoadSnappedPosition(vehicle, rawTarget);
-        let entry = state.markers.get(vehicle.id);
-
-        if (!entry) {
-          const element = document.createElement('button');
-          element.type = 'button';
-          element.className = 'bus-map-marker';
-          element.setAttribute('aria-label', `${vehicle.route || 'Bus'} ${publicVehicleTitle(vehicle)}`);
-          updateMarkerElement(element, vehicle);
-
-          // Anchor the CENTRE of the marker to the GPS coordinate.
-          // This prevents the marker graphic itself from appearing several pixels
-          // south of the real point, which was happening with the old pin tip.
-          const marker = new maplibregl.Marker({ element, anchor: 'center' })
-            .setLngLat([target.lng, target.lat])
-            .addTo(state.map);
-
-          entry = {
-            marker,
-            element,
-            vehicle,
-            recordedAt: vehicle.recordedAt || '',
-            target,
-            animationFrame: null
-          };
-
-          element.addEventListener('click', event => {
-            event.stopPropagation();
-            selectVehicle(vehicle.id, false);
-          });
-
-          state.markers.set(vehicle.id, entry);
-        } else {
-          entry.vehicle = vehicle;
-          updateMarkerElement(entry.element, vehicle);
-
-          const positionChanged = !entry.target || distanceMetres(entry.target, target) >= 0.5;
-          if (positionChanged || entry.recordedAt !== (vehicle.recordedAt || '')) {
-            setMarkerToExactGps(entry, target);
-            entry.recordedAt = vehicle.recordedAt || '';
-            entry.target = target;
-
-            if (state.followSelected && state.selectedId === vehicle.id) {
-              state.map.easeTo({
-                center: [target.lng, target.lat],
-                duration: 280,
-                essential: true
-              });
-            }
-          }
-        }
-      }
-
-      if (state.selectedId) {
-        const selected = valid.find(vehicle => vehicle.id === state.selectedId);
-        if (selected && state.infoOpenId === selected.id) openVehicleInfo(selected);
-      }
-    }
-
-    function updateMarkerElement(element, vehicle) {
-      const colour = markerColour(vehicle);
-      const textColour = contrastText(colour);
-      const bearing = numberOrNull(vehicle.bearing);
-      const rotation = bearing == null ? 0 : ((bearing % 360) + 360) % 360;
-
-      element.innerHTML = `
-        <span class="marker-arrow${bearing == null ? ' hidden' : ''}" style="transform:translateX(-50%) rotate(${rotation}deg)">▲</span>
-        <span class="marker-route">${escapeHtml(String(vehicle.route || '—').slice(0, 6))}</span>`;
-      element.style.background = colour;
-      element.style.color = textColour;
-      element.classList.toggle('unknown', vehicle.mapped !== true);
-      element.classList.toggle('selected', state.selectedId === vehicle.id);
-      element.title = `${vehicle.route || 'Bus'} • ${publicVehicleTitle(vehicle)} • ${headingText(vehicle)}`;
-      element.setAttribute('aria-label', `${vehicle.route || 'Bus'} ${publicVehicleTitle(vehicle)} ${headingText(vehicle)}`);
-    }
-
-    function scheduleRoadSnapRefresh() {
-      clearTimeout(state.roadSnapTimer);
-      state.roadSnapTimer = setTimeout(refreshRoadSnapping, 120);
-    }
-
-    function refreshRoadSnapping() {
-      if (!state.mapReady || !state.map) return;
-      for (const entry of state.markers.values()) {
-        const vehicle = entry.vehicle;
-        const rawTarget = { lat: vehicle.latitude, lng: vehicle.longitude };
-        const target = getRoadSnappedPosition(vehicle, rawTarget);
-        setMarkerToExactGps(entry, target);
-        entry.target = target;
-      }
-    }
-
-    function getRoadSnappedPosition(vehicle, rawTarget) {
-      if (!state.mapReady || !state.map || state.map.getZoom() < 11.5) return rawTarget;
-
-      try {
-        const rawPoint = state.map.project([rawTarget.lng, rawTarget.lat]);
-        const radius = 34;
-        const features = state.map.queryRenderedFeatures([
-          [rawPoint.x - radius, rawPoint.y - radius],
-          [rawPoint.x + radius, rawPoint.y + radius]
-        ]);
-
-        let best = null;
-        let bestDistance = Infinity;
-        const wantedBearing = numberOrNull(vehicle.bearing);
-
-        for (const feature of features) {
-          const layerId = String(feature.layer?.id || '').toLowerCase();
-          if (!/(road|street|transport|motorway|trunk|primary|secondary|tertiary|residential|path)/.test(layerId)) continue;
-          if (/(label|name|symbol|boundary|water)/.test(layerId)) continue;
-          const geometry = feature.geometry;
-          if (!geometry || !['LineString','MultiLineString'].includes(geometry.type)) continue;
-
-          const lines = geometry.type === 'LineString' ? [geometry.coordinates] : geometry.coordinates;
-          for (const line of lines) {
-            for (let i = 1; i < line.length; i++) {
-              const aLngLat = line[i - 1];
-              const bLngLat = line[i];
-              if (!Array.isArray(aLngLat) || !Array.isArray(bLngLat)) continue;
-              const a = state.map.project(aLngLat);
-              const b = state.map.project(bLngLat);
-              const nearest = nearestPointOnSegment(rawPoint, a, b);
-              const snapped = state.map.unproject([nearest.x, nearest.y]);
-              const geoDistance = distanceMetres(rawTarget, { lat: snapped.lat, lng: snapped.lng });
-              if (geoDistance > MAX_ROAD_SNAP_METRES || geoDistance >= bestDistance) continue;
-
-              if (wantedBearing != null) {
-                const segmentBearing = calculateBearing(aLngLat[1], aLngLat[0], bLngLat[1], bLngLat[0]);
-                const alignment = Math.min(angleDifference(wantedBearing, segmentBearing), angleDifference(wantedBearing, (segmentBearing + 180) % 360));
-                if (alignment > 75) continue;
-              }
-
-              bestDistance = geoDistance;
-              best = { lat: snapped.lat, lng: snapped.lng };
-            }
-          }
-        }
-
-        return best || rawTarget;
-      } catch (_) {
-        return rawTarget;
-      }
-    }
-
-    function nearestPointOnSegment(p, a, b) {
-      const dx = b.x - a.x;
-      const dy = b.y - a.y;
-      const lengthSq = dx * dx + dy * dy;
-      if (!lengthSq) return { x: a.x, y: a.y };
-      const t = Math.max(0, Math.min(1, ((p.x - a.x) * dx + (p.y - a.y) * dy) / lengthSq));
-      return { x: a.x + t * dx, y: a.y + t * dy };
-    }
-
-    function angleDifference(a, b) {
-      const d = Math.abs((((a - b) % 360) + 540) % 360 - 180);
-      return d;
-    }
-
-    function setMarkerToExactGps(entry, target) {
-      // Use the exact latest BusTimes coordinate immediately.
-      // Never estimate/extrapolate or draw a straight line between old/new points.
-      if (entry.animationFrame) {
-        cancelAnimationFrame(entry.animationFrame);
-        entry.animationFrame = null;
-      }
-
-      entry.marker.setLngLat([target.lng, target.lat]);
-
-      if (state.popup && state.infoOpenId === entry.vehicle.id) {
-        state.popup.setLngLat([target.lng, target.lat]);
-      }
-    }
-
-    function distanceMetres(a, b) {
-      const toRad = value => value * Math.PI / 180;
-      const earth = 6371000;
-      const dLat = toRad(b.lat - a.lat);
-      const dLng = toRad(b.lng - a.lng);
-      const lat1 = toRad(a.lat);
-      const lat2 = toRad(b.lat);
-      const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
-      return 2 * earth * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
-    }
-
-    function popupHtml(vehicle) {
-      const rows = [];
-      if (vehicle.mapped && vehicle.vehicleType) rows.push(vehicle.vehicleType);
-      if (vehicle.mapped && vehicle.livery) rows.push(vehicle.livery);
-      if (vehicle.destination) rows.push(`To ${vehicle.destination}`);
-      rows.push(headingText(vehicle));
-
-      return `<div class="popup">
-        <div class="popup-top">
-          <span class="popup-route ${vehicle.mapped ? '' : 'unknown'}" style="background:${escapeAttr(markerColour(vehicle))};color:${escapeAttr(contrastText(markerColour(vehicle)))}">${escapeHtml(vehicle.route || '—')}</span>
-          <span class="popup-title">${escapeHtml(publicVehicleTitle(vehicle))}</span>
-        </div>
-        ${rows.map(row => `<div class="popup-row">${escapeHtml(row)}</div>`).join('')}
-        <div class="popup-muted">GPS ${escapeHtml(timeAgo(vehicle.recordedAt))}</div>
-      </div>`;
-    }
-
-    function openVehicleInfo(vehicle) {
-      if (!state.mapReady || !state.map) return;
-      const entry = state.markers.get(vehicle.id);
-      if (!entry) return;
-
-      if (state.popup) state.popup.remove();
-
-      const lngLat = entry.marker.getLngLat();
-      state.popup = new maplibregl.Popup({
-        offset: 28,
-        closeButton: true,
-        closeOnClick: false,
-        maxWidth: '320px'
-      })
-        .setLngLat([lngLat.lng, lngLat.lat])
-        .setHTML(popupHtml(vehicle))
-        .addTo(state.map);
-
-      state.infoOpenId = vehicle.id;
-      state.popup.on('close', () => {
-        state.infoOpenId = null;
-        state.popup = null;
-      });
-    }
-
-    function selectVehicle(id, pan = true) {
-      state.selectedId = id;
-      state.followSelected = true;
-      const vehicle = visibleVehicles().find(item => item.id === id);
-      if (!vehicle) return;
-
-      renderList(visibleVehicles());
-      renderMarkers(visibleVehicles());
-      renderSelectedCard();
-
-      const entry = state.markers.get(id);
-      if (entry && state.mapReady) {
-        const lngLat = entry.marker.getLngLat();
-        if (pan) {
-          state.map.easeTo({
-            center: [lngLat.lng, lngLat.lat],
-            zoom: Math.max(state.map.getZoom(), 14),
-            duration: 700,
-            essential: true
-          });
-        }
-        openVehicleInfo(vehicle);
-      }
-    }
-
-    function renderSelectedCard() {
-      const vehicle = visibleVehicles().find(item => item.id === state.selectedId);
-      if (!vehicle) {
-        hideSelectedCard();
-        return;
-      }
-
-      els.selectedRoute.textContent = vehicle.route || '—';
-      els.selectedRoute.classList.toggle('unknown', !vehicle.mapped);
-      els.selectedRoute.style.background = markerColour(vehicle);
-      els.selectedRoute.style.color = contrastText(markerColour(vehicle));
-      els.selectedTitle.textContent = publicVehicleTitle(vehicle);
-      els.selectedSub.textContent = publicVehicleSubtitle(vehicle);
-      els.selectedDest.textContent = `${vehicle.destination ? `Service to ${vehicle.destination}` : 'Live journey'} • ${headingText(vehicle)}`;
-      els.selectedTime.textContent = `GPS ${timeAgo(vehicle.recordedAt)}`;
-      els.selectedCard.classList.add('show');
-    }
-
-    function hideSelectedCard() {
-      els.selectedCard.classList.remove('show');
-    }
-
-    function fitToVehicles(vehicles) {
-      if (!state.mapReady || !state.map) return;
-      const points = validVehicles(vehicles);
-
-      if (!points.length) {
-        state.map.easeTo({
-          center: [DEFAULT_CENTER.lng, DEFAULT_CENTER.lat],
-          zoom: DEFAULT_ZOOM,
-          duration: 500,
-          essential: true
-        });
-        return;
-      }
-
-      if (points.length === 1) {
-        state.map.easeTo({
-          center: [points[0].longitude, points[0].latitude],
-          zoom: 14,
-          duration: 600,
-          essential: true
-        });
-        return;
-      }
-
-      const bounds = new maplibregl.LngLatBounds();
-      points.forEach(vehicle => bounds.extend([vehicle.longitude, vehicle.latitude]));
-      state.map.fitBounds(bounds, {
-        padding: { top: 55, right: 55, bottom: 55, left: 55 },
-        maxZoom: 13,
-        duration: 700,
-        essential: true
-      });
-    }
-
-    function publicVehicleTitle(vehicle) {
-      if (vehicle.mapped) {
-        return [
-          vehicle.fleetNumber ? `Fleet ${vehicle.fleetNumber}` : '',
-          vehicle.registration
-        ].filter(Boolean).join(' • ') || 'Mapped vehicle';
-      }
-      return `Tracker ${vehicle.machineLabel || vehicle.machineId || 'Unknown'}`;
-    }
-
-    function publicVehicleSubtitle(vehicle) {
-      if (vehicle.mapped) return vehicle.vehicleType || vehicle.livery || 'Vehicle details added';
-      return 'Vehicle details not added yet';
-    }
-
-    function favouriteKey(vehicle) {
-      return vehicle.mapped
-        ? `bus:${vehicle.fleetNumber || vehicle.registration || vehicle.id}`
-        : `machine:${vehicle.machineId || vehicle.id}`;
-    }
-
-    function vehicleSort(a,b) {
-      if (a.mapped !== b.mapped) return a.mapped ? -1 : 1;
-      return collator.compare(a.fleetNumber || a.registration || a.machineId || '', b.fleetNumber || b.registration || b.machineId || '');
-    }
-
-    function timeAgo(iso) {
-      const time = Date.parse(iso || '');
-      if (!time) return 'time unavailable';
-      const seconds = Math.max(0, Math.round((Date.now() - time) / 1000));
-      if (seconds < 10) return 'just now';
-      if (seconds < 60) return `${seconds}s ago`;
-      const minutes = Math.round(seconds / 60);
-      if (minutes < 60) return `${minutes}m ago`;
-      return new Date(time).toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
-    }
-
-    function setAuthMode(mode) {
-      state.authMode = mode;
-      const register = mode === 'register';
-      els.loginTab.classList.toggle('active', !register);
-      els.registerTab.classList.toggle('active', register);
-      els.nameField.style.display = register ? 'block' : 'none';
-      els.confirmField.style.display = register ? 'block' : 'none';
-      els.confirmPassword.required = register;
-      els.displayName.required = register;
-      els.authSubmit.textContent = register ? 'Create account' : 'Login';
-      els.forgotBtn.style.display = register ? 'none' : 'inline-block';
-      els.password.autocomplete = register ? 'new-password' : 'current-password';
-      els.authMessage.textContent = '';
-    }
-
-    function closeModal() {
-      els.accountModal.classList.remove('show');
-      els.authMessage.textContent = '';
-    }
-
-    function friendlyAuthError(error) {
-      const code = error?.code || '';
-      if (code.includes('invalid-credential')) return 'Incorrect email or password.';
-      if (code.includes('email-already-in-use')) return 'That email already has an account.';
-      if (code.includes('weak-password')) return 'Use a stronger password.';
-      if (code.includes('invalid-email')) return 'Enter a valid email address.';
-      if (code.includes('too-many-requests')) return 'Too many attempts. Try again later.';
-      return error?.message || 'Something went wrong.';
-    }
-
-    function showMapStatus(message) {
-      els.mapStatus.textContent = message;
-      els.mapStatus.classList.add('show');
-    }
-
-    function hideMapStatus() {
-      els.mapStatus.classList.remove('show');
-    }
-
-    function escapeHtml(value) {
-      return String(value ?? '').replace(/[&<>'"]/g, character => ({
-        '&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'
-      }[character]));
-    }
-
-    function escapeAttr(value) {
-      return escapeHtml(value);
-    }
-
-    setAuthMode('login');
-    initialiseMap();
-    loadLive();
+    function escapeHtml(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+    function escapeAttr(v){return escapeHtml(v)}
   </script>
 </body>
 </html>

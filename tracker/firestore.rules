@@ -13,8 +13,7 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read, create, update, delete:
-        if signedIn() && request.auth.uid == userId;
+      allow read, write: if signedIn() && request.auth.uid == userId;
     }
 
     match /vehicles/{vehicleId} {
@@ -25,6 +24,38 @@ service cloud.firestore {
     match /admins/{userId} {
       allow read: if signedIn() && request.auth.uid == userId;
       allow write: if false;
+    }
+
+    match /suggestions/{suggestionId} {
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.vehicleId is string
+        && request.resource.data.proposed is map
+        && request.resource.data.reason is string
+        && request.resource.data.status == 'pending';
+
+      allow read: if isAdmin()
+        || (signedIn() && resource.data.userId == request.auth.uid);
+
+      allow update, delete: if isAdmin();
+    }
+
+    match /journeyHistory/{vehicleId}/points/{pointId} {
+      allow read: if true;
+
+      allow create: if signedIn()
+        && request.resource.data.reporterUid == request.auth.uid
+        && request.resource.data.route is string
+        && request.resource.data.destination is string
+        && request.resource.data.recordedAt is string
+        && request.resource.data.latitude is number
+        && request.resource.data.longitude is number;
+
+      allow update: if signedIn()
+        && resource.data.reporterUid == request.auth.uid
+        && request.resource.data.reporterUid == request.auth.uid;
+
+      allow delete: if isAdmin();
     }
   }
 }
