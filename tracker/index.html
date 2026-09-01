@@ -284,6 +284,58 @@
     .journey-copy{min-width:0}
     .journey-dest{color:#2f4356;font-size:11.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .journey-time{margin-top:2px;color:#7b8894;font-size:10px;line-height:1.35}
+
+    /* Live stop sequence / stop departure board */
+    .stop-sequence{padding:0 0 8px}
+    .stop-row{
+      width:100%;display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:8px;align-items:center;
+      min-height:45px;padding:7px 14px;border:0;border-top:1px solid #f0f2f4;background:#fff;text-align:left;color:inherit
+    }
+    button.stop-row{cursor:pointer}
+    button.stop-row:hover,button.stop-row:focus-visible{background:#f4f8fb;outline:none}
+    .stop-step{color:#758493;font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.035em}
+    .stop-step.current{color:#176a3b}.stop-step.next{color:var(--blue)}
+    .stop-main{min-width:0}
+    .stop-name{display:block;color:#2f4356;font-size:11.5px;font-weight:700;line-height:1.3}
+    .stop-meta{display:block;margin-top:2px;color:#7b8894;font-size:9.8px;line-height:1.3}
+    .stop-time{color:#2d4053;font-size:11px;font-weight:800;white-space:nowrap}
+    .stop-time.live{color:#176a3b}
+    .stop-chevron{color:#9aa6b2;font-size:14px;margin-left:3px}
+    .stop-empty{padding:11px 14px;border-top:1px solid #f0f2f4;color:#7b8894;font-size:10.5px;line-height:1.45}
+
+    .popup-stops{margin-top:8px;border-top:1px solid #e5e9ed}
+    .popup-stops-title{padding:7px 0 3px;color:#71808e;font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+    .popup-stop{
+      display:grid;grid-template-columns:38px minmax(0,1fr) auto;gap:6px;align-items:center;width:100%;
+      padding:5px 2px;border:0;border-top:1px solid #f0f2f4;background:transparent;text-align:left;color:inherit
+    }
+    button.popup-stop{cursor:pointer}
+    button.popup-stop:hover,button.popup-stop:focus-visible{background:#f5f8fa;outline:none}
+    .popup-stop-step{color:#7b8894;font-size:8.5px;font-weight:800;text-transform:uppercase}
+    .popup-stop-step.current{color:#176a3b}.popup-stop-step.next{color:var(--blue)}
+    .popup-stop-name{min-width:0;color:#34495e;font-size:10.5px;font-weight:700;line-height:1.2}
+    .popup-stop-time{color:#536577;font-size:9.5px;font-weight:800;white-space:nowrap}
+    .popup-stop-loading{padding:6px 0 1px;color:#7b8894;font-size:9.5px}
+
+    .stop-board-head{padding:0 0 10px;border-bottom:1px solid var(--border-soft)}
+    .stop-board-code{margin-top:3px;color:#7b8894;font-size:10.5px}
+    .departure-list{margin:0 -14px}
+    .departure-row{
+      display:grid;grid-template-columns:50px minmax(0,1fr) auto;gap:9px;align-items:center;min-height:48px;
+      padding:8px 14px;border-bottom:1px solid #edf0f2;color:inherit;text-decoration:none
+    }
+    button.departure-row{width:100%;border:0;background:#fff;text-align:left;cursor:pointer}
+    button.departure-row:hover,button.departure-row:focus-visible{background:#f4f8fb;outline:none}
+    .departure-route{min-width:42px;height:28px;padding:0 6px;border-radius:4px;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:11px;font-weight:800}
+    .departure-main{min-width:0}
+    .departure-dest{display:block;color:#2f4356;font-size:11.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .departure-vehicle{display:block;margin-top:2px;color:#7b8894;font-size:9.8px}
+    .departure-times{text-align:right}
+    .departure-expected{display:block;color:#2d4053;font-size:11.5px;font-weight:800}
+    .departure-scheduled{display:block;margin-top:2px;color:#8a96a1;font-size:9px}
+    .stop-board-footer{display:flex;justify-content:flex-end;padding-top:11px}
+    .stop-board-link{color:var(--blue);font-size:10.5px;font-weight:700;text-decoration:none}
+    .stop-board-note{padding:12px 0;color:#7b8894;font-size:10.5px;line-height:1.45}
     .vehicle-map-card{
       display:none;position:absolute;z-index:6;right:10px;bottom:10px;width:min(330px,calc(100% - 20px));
       padding:9px 10px;border:1px solid #cbd4dc;border-radius:5px;background:#fff;box-shadow:var(--shadow)
@@ -465,9 +517,18 @@
                 <tr><th>Route</th><td id="factRoute">—</td></tr>
                 <tr><th>Destination</th><td id="factDestination">—</td></tr>
                 <tr><th>Direction</th><td id="factDirection">—</td></tr>
+                <tr><th>Running</th><td><span id="factRunning" class="popup-running unknown">Running time unavailable</span></td></tr>
                 <tr><th>Last GPS report</th><td id="factGps">—</td></tr>
               </tbody>
             </table>
+          </section>
+
+          <section class="detail-section">
+            <div class="history-head">
+              <h2>Current &amp; upcoming stops</h2>
+              <span id="stopSequenceStatus" class="history-count"></span>
+            </div>
+            <div id="upcomingStops" class="stop-sequence"><div class="stop-empty">Loading current and upcoming stops…</div></div>
           </section>
 
           <section class="detail-section">
@@ -502,6 +563,7 @@
             <div id="selectedTitle" class="selected-title"></div>
             <div id="selectedSub" class="selected-sub"></div>
             <div id="selectedDest" class="selected-dest"></div>
+            <div id="selectedRunning" class="popup-running unknown">Running time unavailable</div>
             <div id="selectedTime" class="selected-time"></div>
           </div>
           <button id="selectedClose" class="selected-close" type="button" aria-label="Close">×</button>
@@ -515,6 +577,23 @@
       </section>
     </section>
   </main>
+
+  <div id="stopModal" class="modal-bg" role="dialog" aria-modal="true" aria-labelledby="stopTitle">
+    <div class="modal" style="width:min(590px,100%)">
+      <div class="modal-head">
+        <div>
+          <h2 id="stopTitle">Bus stop</h2>
+          <div id="stopCode" class="stop-board-code"></div>
+        </div>
+        <button class="close" type="button" data-close="stopModal" aria-label="Close stop departures">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="stop-board-head">Upcoming buses</div>
+        <div id="stopDepartures" class="departure-list"><div class="stop-board-note">Loading upcoming buses…</div></div>
+        <div class="stop-board-footer"><a id="stopBustimesLink" class="stop-board-link" href="#" target="_blank" rel="noopener">View full stop on BusTimes ↗</a></div>
+      </div>
+    </div>
+  </div>
 
   <div id="suggestModal" class="modal-bg" role="dialog" aria-modal="true" aria-labelledby="suggestTitle">
     <div class="modal">
@@ -609,9 +688,10 @@
 
     const ids=[
       'vehiclesNavBtn','accountBtn','adminLink','summary','livePill','livePillText','vehicleSearch','routeFilter','refreshBtn','vehicleList',
-      'fitBtn','mapRefreshBtn','mapStatus','mapPane','map','selectedCard','selectedRoute','selectedTitle','selectedSub','selectedDest','selectedTime','selectedClose','selectedView',
+      'fitBtn','mapRefreshBtn','mapStatus','mapPane','map','selectedCard','selectedRoute','selectedTitle','selectedSub','selectedDest','selectedRunning','selectedTime','selectedClose','selectedView',
       'vehicleBack','detailStatus','detailStatusText','detailRoute','detailTitle','detailReg','detailJourney','detailJourneyMeta','trackBtn','suggestBtn',
-      'factFleet','factReg','factMake','factModel','factType','factYear','factLivery','factRoute','factDestination','factDirection','factGps','historyCount','journeyList','gpsTitle','gpsMeta',
+      'factFleet','factReg','factMake','factModel','factType','factYear','factLivery','factRoute','factDestination','factDirection','factRunning','factGps','stopSequenceStatus','upcomingStops','historyCount','journeyList','gpsTitle','gpsMeta',
+      'stopModal','stopTitle','stopCode','stopDepartures','stopBustimesLink',
       'suggestModal','suggestForm','sFleet','sReg','sMake','sModel','sType','sYear','sLivery','sColour','sColourHex','sReason','sEvidence','suggestMessage',
       'accountModal','closeModal','signedOutBox','signedInBox','loginTab','registerTab','authForm','nameField','displayName','email','password','confirmField','confirmPassword',
       'authSubmit','forgotBtn','authMessage','signedName','signedEmail','showFavsBtn','signOutBtn'
@@ -624,6 +704,7 @@
       user:null,isAdmin:false,favourites:new Set(),showFavouritesOnly:false,authMode:'login',
       map:null,mapReady:false,popup:null,infoOpenId:null,followSelected:false,
       mappingCache:new Map(),mappingLoadedAt:0,lastRawPositions:new Map(),
+      journeyDetailsCache:new Map(),journeyContextCache:new Map(),stopDepartureCache:new Map(),activeStop:null,stopBoardTimer:null,
       mode:'tracker',detailVehicleId:null,tracking:false,
       history:[],journeys:[],selectedJourney:null,lastRecordedKey:'',pendingVehicleParam:new URLSearchParams(location.search).get('vehicle')||''
     };
@@ -738,6 +819,18 @@
     els.sColourHex.addEventListener('input',()=>{const colour=normaliseColour(els.sColourHex.value);if(colour)els.sColour.value=colour;});
 
     document.addEventListener('click',event=>{
+      const stopLink=event.target.closest('[data-stop-atco]');
+      if(stopLink){
+        event.preventDefault();
+        const atco=clean(stopLink.dataset.stopAtco);
+        if(atco)openStopBoard({
+          atco,
+          name:clean(stopLink.dataset.stopName)||'Bus stop',
+          route:clean(stopLink.dataset.stopRoute)||'',
+          sourceVehicleId:clean(stopLink.dataset.sourceVehicle)||''
+        });
+        return;
+      }
       const openLink=event.target.closest('[data-open-vehicle]');
       if(!openLink)return;
       event.preventDefault();
@@ -917,7 +1010,14 @@
           if(!previous||newer(raw.recordedAt,previous.recordedAt))seen.set(raw.machineId,raw);
         }
 
-        state.vehicles=[...seen.values()].map(applyHeadingFallback).map(raw=>toPublicVehicle(raw,mappings.get(raw.machineId)));
+        const previousVehicles=new Map(state.vehicles.map(v=>[v.machineId,v]));
+        state.vehicles=[...seen.values()].map(applyHeadingFallback).map(raw=>{
+          const vehicle=toPublicVehicle(raw,mappings.get(raw.machineId));
+          const previous=previousVehicles.get(vehicle.machineId);
+          if(vehicle.runningSeconds==null&&previous?.runningSeconds!=null)vehicle.runningSeconds=previous.runningSeconds;
+          hydrateJourneyContext(vehicle);
+          return vehicle;
+        });
         updateRoutes();
         renderAll();
         setLiveState('live','Live');
@@ -937,6 +1037,10 @@
         if(state.mode==='vehicle'){
           const detail=getDetailVehicle();
           if(detail&&state.tracking)focusVehicle(detail,false);
+          if(detail){
+            const cached=state.journeyContextCache.get(detail.machineId);
+            if(!cached||Date.now()-cached.fetchedAt>20000)refreshJourneyContext(detail,false);
+          }
           if(state.user&&detail)recordHistoryPoint();
         }else if(state.firstGoodLoad&&state.mapReady&&validVehicles(state.vehicles).length){
           fitToVehicles(state.vehicles);
@@ -1062,7 +1166,11 @@
       els.factRoute.textContent=vehicle.route||'—';
       els.factDestination.textContent=vehicle.destination||'—';
       els.factDirection.textContent=headingText(vehicle);
+      const detailRunning=runningStatus(vehicle);
+      els.factRunning.className=`popup-running ${detailRunning.className}`;
+      els.factRunning.textContent=detailRunning.text;
       els.factGps.textContent=vehicle.recordedAt?timeAgo(vehicle.recordedAt):'—';
+      renderDetailStops(vehicle);
 
       els.gpsTitle.textContent=live?'Live GPS':'No live GPS';
       els.gpsMeta.textContent=live
@@ -1259,7 +1367,7 @@
       state.infoOpenId=vehicle.id;
       state.popup.on('close',()=>{state.popup=null;state.infoOpenId=null;});
       bindPopupVehicleLink();
-      refreshPopupRunning(vehicle);
+      refreshJourneyContext(vehicle,true);
     }
 
     function bindPopupVehicleLink(){
@@ -1276,7 +1384,7 @@
     }
 
     async function refreshPopupRunning(vehicle){
-      if(!vehicle||!vehicle.busTimesVehicleId||numberOrNull(vehicle.runningSeconds)!=null)return;
+      if(!vehicle||!vehicle.busTimesVehicleId)return;
       try{
         const response=await fetch(`https://bustimes.org/vehicles.json?id=${encodeURIComponent(vehicle.busTimesVehicleId)}`,{
           cache:'no-store',mode:'cors',headers:{Accept:'application/json'}
@@ -1294,6 +1402,8 @@
           state.popup.setHTML(popupHtml(vehicle));
           bindPopupVehicleLink();
         }
+        if(state.selectedId===vehicle.id)renderSelectedCard();
+        if(state.detailVehicleId===vehicle.id)renderVehicleDetail();
       }catch(error){
         console.debug('Could not refresh running status:',error);
       }
@@ -1309,6 +1419,7 @@
         <div class="popup-row">${escapeHtml(vehicleDescription(vehicle))}</div>
         ${vehicle.destination?`<div class="popup-row">To ${escapeHtml(vehicle.destination)}</div>`:''}
         <div class="popup-running ${escapeAttr(runningStatus(vehicle).className)}">${escapeHtml(runningStatus(vehicle).text)}</div>
+        ${popupStopsHtml(vehicle)}
         <div class="popup-row">${escapeHtml(headingText(vehicle))} • GPS ${escapeHtml(timeAgo(vehicle.recordedAt))}</div>
         <a class="popup-open" href="${escapeAttr(trackerUrl(vehicleUrlKey(vehicle)))}" data-open-vehicle="${escapeAttr(vehicle.id)}">Vehicle details →</a>
       </div>`;
@@ -1325,6 +1436,9 @@
       els.selectedTitle.textContent=publicVehicleTitle(vehicle);
       els.selectedSub.textContent=vehicleDescription(vehicle);
       els.selectedDest.textContent=vehicle.destination?`To ${vehicle.destination} • ${headingText(vehicle)}`:headingText(vehicle);
+      const selectedRunning=runningStatus(vehicle);
+      els.selectedRunning.className=`popup-running ${selectedRunning.className}`;
+      els.selectedRunning.textContent=selectedRunning.text;
       els.selectedTime.textContent=`GPS ${timeAgo(vehicle.recordedAt)}`;
       els.selectedView.href=trackerUrl(vehicleUrlKey(vehicle));
       els.selectedView.dataset.openVehicle=vehicle.id;
@@ -1372,6 +1486,7 @@
       document.body.classList.add('vehicle-mode');
       if(state.popup){state.popup.remove();state.popup=null;}
       renderAll();
+      refreshJourneyContext(vehicle,true);
       loadHistory(vehicle);
       focusVehicle(vehicle,true);
       setTimeout(()=>state.map?.resize(),0);
@@ -1622,7 +1737,8 @@
         destination:clean(item.destination??item.destination_name??item.headsign??item.trip?.headsign??''),
         latitude,longitude,bearing:numberOrNull(item.direction??item.bearing??item.heading),
         recordedAt:normalizeDate(item.datetime??item.recorded_at??item.recordedAt??item.timestamp??item.time),
-        journeyRef:clean(item.journey_id??item.journeyRef??item.trip_id??''),
+        journeyRef:clean(item.journey_id??item.journeyRef??item.vehicle_journey_id??item.vehicleJourneyId??''),
+        tripRef:clean(item.trip_id??item.trip?.id??''),
         runningSeconds:extractRunningSeconds(item)
       };
     }
@@ -1722,13 +1838,466 @@
       return diff;
     }
 
+    function hydrateJourneyContext(vehicle){
+      const cached=state.journeyContextCache.get(vehicle.machineId);
+      if(!cached||Date.now()-cached.fetchedAt>90000)return vehicle;
+      vehicle.journeyRef=vehicle.journeyRef||cached.journeyId||'';
+      vehicle.upcomingStops=Array.isArray(cached.upcomingStops)?cached.upcomingStops:[];
+      if(cached.runningSeconds!=null)vehicle.runningSeconds=cached.runningSeconds;
+      return vehicle;
+    }
+
+    async function refreshJourneyContext(vehicle,force=false){
+      if(!vehicle)return null;
+      try{
+        const details=await fetchJourneyDetails(vehicle,force);
+        const context=buildJourneyContext(vehicle,details);
+        if(!context)return null;
+        vehicle.journeyRef=context.journeyId||vehicle.journeyRef||'';
+        vehicle.upcomingStops=context.upcomingStops;
+        if(context.runningSeconds!=null)vehicle.runningSeconds=context.runningSeconds;
+        state.journeyContextCache.set(vehicle.machineId,{...context,fetchedAt:Date.now()});
+        const stateVehicle=state.vehicles.find(v=>v.id===vehicle.id);
+        if(stateVehicle&&stateVehicle!==vehicle){
+          stateVehicle.journeyRef=vehicle.journeyRef;
+          stateVehicle.upcomingStops=vehicle.upcomingStops;
+          if(vehicle.runningSeconds!=null)stateVehicle.runningSeconds=vehicle.runningSeconds;
+        }
+        if(state.popup&&state.infoOpenId===vehicle.id){
+          state.popup.setHTML(popupHtml(vehicle));
+          bindPopupVehicleLink();
+        }
+        if(state.selectedId===vehicle.id)renderSelectedCard();
+        if(state.detailVehicleId===vehicle.id)renderVehicleDetail();
+        return context;
+      }catch(error){
+        console.debug('Could not load exact journey stops:',error);
+        // Keep the existing single-vehicle delay request as a fallback.
+        await refreshPopupRunning(vehicle);
+        if(state.detailVehicleId===vehicle.id)renderDetailStops(vehicle,true);
+        return null;
+      }
+    }
+
+    async function fetchJourneyDetails(vehicle,force=false){
+      let journeyId=clean(vehicle.journeyRef);
+      if(!journeyId)journeyId=await resolveVehicleJourneyId(vehicle);
+      if(!journeyId)throw new Error('No BusTimes vehicle journey ID is available for this bus.');
+      vehicle.journeyRef=journeyId;
+      const cached=state.journeyDetailsCache.get(journeyId);
+      if(!force&&cached&&Date.now()-cached.fetchedAt<20000)return cached.data;
+      const response=await fetch(`https://bustimes.org/api/vehiclejourneys/${encodeURIComponent(journeyId)}/details/`,{
+        cache:'no-store',mode:'cors',headers:{Accept:'application/json'}
+      });
+      if(!response.ok){
+        // A provider may put a trip ID in the bulk feed. Resolve the real vehicle journey and retry once.
+        const resolved=await resolveVehicleJourneyId(vehicle,true);
+        if(resolved&&resolved!==journeyId){
+          vehicle.journeyRef=resolved;
+          return fetchJourneyDetails(vehicle,true);
+        }
+        throw new Error(`BusTimes journey details returned HTTP ${response.status}.`);
+      }
+      const data=await response.json();
+      state.journeyDetailsCache.set(journeyId,{data,fetchedAt:Date.now()});
+      return data;
+    }
+
+    async function resolveVehicleJourneyId(vehicle,force=false){
+      if(!vehicle?.busTimesVehicleId)return clean(vehicle?.journeyRef);
+      const cacheKey=`resolve:${vehicle.busTimesVehicleId}:${ukDate(vehicle.recordedAt||Date.now())}`;
+      const cached=state.journeyDetailsCache.get(cacheKey);
+      if(!force&&cached&&Date.now()-cached.fetchedAt<60000)return cached.data||'';
+      const date=ukDate(vehicle.recordedAt||Date.now());
+      const url=`https://bustimes.org/api/vehiclejourneys/?vehicle=${encodeURIComponent(vehicle.busTimesVehicleId)}&date=${encodeURIComponent(date)}`;
+      const response=await fetch(url,{cache:'no-store',mode:'cors',headers:{Accept:'application/json'}});
+      if(!response.ok)return '';
+      const payload=await response.json();
+      const rows=Array.isArray(payload)?payload:(Array.isArray(payload?.results)?payload.results:[]);
+      if(!rows.length)return '';
+      const target=Date.parse(vehicle.recordedAt||'')||Date.now();
+      const route=clean(vehicle.route).toLowerCase();
+      const dest=clean(vehicle.destination).toLowerCase();
+      const scored=rows.map(row=>{
+        const rowRoute=clean(row.route_name??row.route??'').toLowerCase();
+        const rowDest=clean(row.destination??'').toLowerCase();
+        const when=Date.parse(row.datetime??row.date??'')||target;
+        let score=Math.abs(when-target)/60000;
+        if(route&&rowRoute===route)score-=240;
+        if(dest&&rowDest&&rowDest===dest)score-=120;
+        else if(dest&&rowDest&&(rowDest.includes(dest)||dest.includes(rowDest)))score-=60;
+        return{row,score};
+      }).sort((a,b)=>a.score-b.score);
+      const id=clean(scored[0]?.row?.id);
+      if(id)state.journeyDetailsCache.set(cacheKey,{data:id,fetchedAt:Date.now()});
+      return id;
+    }
+
+    function buildJourneyContext(vehicle,details){
+      const rawTimes=journeyTimes(details);
+      if(!rawTimes.length)return null;
+      const serviceDate=clean(details?.date??details?.trip?.date??ukDate(vehicle.recordedAt||Date.now()));
+      const stops=rawTimes.map((entry,index)=>normaliseJourneyStop(entry,index,serviceDate,vehicle)).filter(Boolean);
+      if(!stops.length)return null;
+      const current=findCurrentStop(vehicle,stops);
+      const start=Math.max(0,Math.min(stops.length,current.index));
+      const upcoming=stops.slice(start,start+7).map((stop,i)=>({
+        ...stop,
+        step:i===0?(current.atStop?'Current':'Next'):'Then',
+        atStop:i===0&&current.atStop
+      }));
+      // Work out the most trustworthy running time we can.
+      // 1) Current/next stop live expected time.
+      // 2) Most recent stop the bus has actually departed.
+      // 3) BusTimes' explicit delay/deviation value.
+      // 4) Delay carried over from the live vehicle feed.
+      // Never turn a missing value into zero/"On time".
+      let exactDelay=null;
+      const reference=stops[start];
+
+      if(reference?.expectedMs!=null&&reference?.scheduledMs!=null){
+        exactDelay=Math.round((reference.expectedMs-reference.scheduledMs)/1000);
+      }
+
+      if(exactDelay==null){
+        for(let i=Math.min(start,stops.length-1);i>=0;i--){
+          const passed=stops[i];
+          if(passed?.actualMs!=null&&passed?.scheduledMs!=null){
+            exactDelay=Math.round((passed.actualMs-passed.scheduledMs)/1000);
+            break;
+          }
+        }
+      }
+
+      if(exactDelay==null){
+        const detailDelay=extractRunningSeconds(details);
+        if(detailDelay!=null)exactDelay=detailDelay;
+      }
+
+      if(exactDelay==null){
+        const existing=numberOrNull(vehicle.runningSeconds);
+        if(existing!=null)exactDelay=existing;
+      }
+
+      // Last-resort live estimate while physically at a stop. This is only used
+      // when BusTimes has supplied no expected/actual/deviation value at all.
+      // Restrict it to a close GPS match so we don't claim a bus is early/late
+      // merely because it is travelling between two stops.
+      if(exactDelay==null&&current.atStop&&reference?.scheduledMs!=null){
+        const observed=Date.parse(vehicle.recordedAt||'')||Date.now();
+        const diff=Math.round((observed-reference.scheduledMs)/1000);
+        if(Math.abs(diff)<=30*60)exactDelay=diff;
+      }
+
+      return{
+        journeyId:clean(details?.id??details?.vehicle_journey?.id??vehicle.journeyRef),
+        currentIndex:start,
+        upcomingStops:upcoming,
+        runningSeconds:exactDelay
+      };
+    }
+
+    function journeyTimes(details){
+      // Current BusTimes details responses normally expose trip.times, but keep
+      // this tolerant of alternate/nested response shapes so the stops don't
+      // disappear if the API wrapper changes.
+      const candidates=[
+        details?.trip?.times,
+        details?.trip?.stops,
+        details?.times,
+        details?.stops,
+        details?.vehicle_journey?.trip?.times,
+        details?.vehicleJourney?.trip?.times,
+        details?.data?.trip?.times,
+        details?.results?.[0]?.trip?.times
+      ];
+      for(const value of candidates){
+        if(Array.isArray(value)&&value.length)return value;
+      }
+
+      // Last-resort recursive search for an array of stop-time objects.
+      const seen=new Set();
+      const queue=[details];
+      while(queue.length){
+        const value=queue.shift();
+        if(!value||typeof value!=='object'||seen.has(value))continue;
+        seen.add(value);
+        if(Array.isArray(value)){
+          if(value.length&&value.some(item=>item&&typeof item==='object'&&(
+            item.stop||item.stop_id||item.atco_code||
+            item.aimed_departure_time||item.aimed_arrival_time||
+            item.scheduled_departure_time||item.scheduled_arrival_time
+          )))return value;
+          value.forEach(item=>queue.push(item));
+        }else{
+          Object.values(value).forEach(item=>queue.push(item));
+        }
+      }
+      return[];
+    }
+
+    function normaliseJourneyStop(entry,index,serviceDate,vehicle){
+      if(!entry||typeof entry!=='object')return null;
+      const wrapper=entry.stop_time&&typeof entry.stop_time==='object'?entry.stop_time:
+        (entry.stopTime&&typeof entry.stopTime==='object'?entry.stopTime:entry);
+      const stop=wrapper.stop&&typeof wrapper.stop==='object'?wrapper.stop:
+        (entry.stop&&typeof entry.stop==='object'?entry.stop:{});
+      const atco=clean(
+        stop.atco_code??stop.atcoCode??stop.naptan_code??
+        wrapper.atco_code??wrapper.atcoCode??wrapper.stop_code??wrapper.stop_id??
+        entry.atco_code??entry.stop_code??entry.stop_id??''
+      );
+      const name=clean(
+        stop.name??stop.long_name??stop.common_name??
+        wrapper.name??wrapper.stop_name??wrapper.common_name??
+        entry.name??entry.stop_name??entry.common_name??''
+      )||`Stop ${index+1}`;
+      const location=stop.location??wrapper.location??entry.location??null;
+      const coords=Array.isArray(location?.coordinates)?location.coordinates:Array.isArray(location)?location:null;
+      let longitude=null,latitude=null;
+      if(coords?.length>=2){longitude=Number(coords[0]);latitude=Number(coords[1]);}
+      else{
+        longitude=numberOrNull(stop.longitude??stop.lon??wrapper.longitude??wrapper.lon??entry.longitude??entry.lon);
+        latitude=numberOrNull(stop.latitude??stop.lat??wrapper.latitude??wrapper.lat??entry.latitude??entry.lat);
+      }
+      const scheduledRaw=
+        wrapper.aimed_departure_time??wrapper.aimed_arrival_time??
+        wrapper.scheduled_departure_time??wrapper.scheduled_arrival_time??
+        wrapper.aimedDepartureTime??wrapper.aimedArrivalTime??
+        wrapper.scheduledDepartureTime??wrapper.scheduledArrivalTime??
+        wrapper.departure_time??wrapper.arrival_time??wrapper.time??'';
+      const expectedRaw=
+        wrapper.expected_departure_time??wrapper.expected_arrival_time??
+        wrapper.expectedDepartureTime??wrapper.expectedArrivalTime??
+        wrapper.live_departure_time??wrapper.live_arrival_time??
+        wrapper.predicted_departure_time??wrapper.predicted_arrival_time??'';
+      const actualRaw=
+        wrapper.actual_departure_time??wrapper.actual_arrival_time??
+        wrapper.actualDepartureTime??wrapper.actualArrivalTime??'';
+      const scheduledMs=parseJourneyTime(scheduledRaw,serviceDate);
+      let expectedMs=parseJourneyTime(expectedRaw,serviceDate);
+      const actualMs=parseJourneyTime(actualRaw,serviceDate);
+      if(expectedMs==null&&scheduledMs!=null&&numberOrNull(vehicle.runningSeconds)!=null)expectedMs=scheduledMs+Number(vehicle.runningSeconds)*1000;
+      return{
+        index,atco,name,latitude,longitude,
+        scheduledMs,expectedMs,actualMs,
+        scheduledText:formatClock(scheduledMs)||clockText(scheduledRaw),
+        expectedText:formatClock(expectedMs)||clockText(expectedRaw),
+        pickUp:(wrapper.pick_up??wrapper.pickUp)!==false,
+        setDown:(wrapper.set_down??wrapper.setDown)!==false
+      };
+    }
+
+    function findCurrentStop(vehicle,stops){
+      const target=Date.parse(vehicle.recordedAt||'')||Date.now();
+      let lastDeparted=-1;
+      stops.forEach((stop,i)=>{if(stop.actualMs!=null&&stop.actualMs<=target+90000)lastDeparted=i;});
+      let nearestIndex=-1,nearestDistance=Infinity;
+      if(isValidPosition(vehicle)){
+        const floor=Math.max(0,lastDeparted);
+        for(let i=floor;i<stops.length;i++){
+          const stop=stops[i];
+          if(!Number.isFinite(stop.latitude)||!Number.isFinite(stop.longitude))continue;
+          const d=distanceMetres({lat:vehicle.latitude,lng:vehicle.longitude},{lat:stop.latitude,lng:stop.longitude});
+          if(d<nearestDistance){nearestDistance=d;nearestIndex=i;}
+        }
+      }
+      // BusTimes itself uses a 100 m proximity rule when it infers actual stop departures.
+      if(nearestIndex>=0&&nearestDistance<=100&&nearestIndex>=lastDeparted){
+        return{index:nearestIndex,atStop:true,distance:nearestDistance};
+      }
+      if(lastDeparted>=0&&lastDeparted<stops.length-1)return{index:lastDeparted+1,atStop:false,distance:nearestDistance};
+      const future=stops.findIndex(stop=>{
+        const due=stop.expectedMs??stop.scheduledMs;
+        return due!=null&&due>=target-45000;
+      });
+      if(future>=0)return{index:future,atStop:false,distance:nearestDistance};
+      return{index:Math.max(0,Math.min(stops.length-1,nearestIndex>=0?nearestIndex:0)),atStop:false,distance:nearestDistance};
+    }
+
+    function renderDetailStops(vehicle,failed=false){
+      if(!els.upcomingStops)return;
+      const stops=Array.isArray(vehicle?.upcomingStops)?vehicle.upcomingStops:[];
+      if(!stops.length){
+        els.stopSequenceStatus.textContent='';
+        els.upcomingStops.innerHTML=`<div class="stop-empty">${failed?'Live stop sequence is temporarily unavailable.':'Loading the exact live journey stops…'}</div>`;
+        return;
+      }
+      els.stopSequenceStatus.textContent=`${stops.length} shown`;
+      els.upcomingStops.innerHTML=stops.map(stop=>stopRowHtml(stop,vehicle)).join('');
+    }
+
+    function stopRowHtml(stop,vehicle){
+      const clickable=Boolean(stop.atco);
+      const tag=clickable?'button':'div';
+      const attrs=clickable?` type="button" data-stop-atco="${escapeAttr(stop.atco)}" data-stop-name="${escapeAttr(stop.name)}" data-stop-route="${escapeAttr(vehicle.route||'')}" data-source-vehicle="${escapeAttr(vehicle.id)}"`:'';
+      const time=stop.expectedText||stop.scheduledText||'—';
+      const scheduled=stop.expectedText&&stop.scheduledText&&stop.expectedText!==stop.scheduledText?`Scheduled ${stop.scheduledText}`:(stop.atco||'');
+      const cls=String(stop.step||'Then').toLowerCase();
+      return `<${tag} class="stop-row"${attrs}><span class="stop-step ${escapeAttr(cls)}">${escapeHtml(stop.step||'Then')}</span><span class="stop-main"><span class="stop-name">${escapeHtml(stop.name)}</span><span class="stop-meta">${escapeHtml(scheduled)}</span></span><span class="stop-time ${stop.expectedText?'live':''}">${escapeHtml(time)}${clickable?'<span class="stop-chevron">›</span>':''}</span></${tag}>`;
+    }
+
+    function popupStopsHtml(vehicle){
+      const stops=Array.isArray(vehicle?.upcomingStops)?vehicle.upcomingStops.slice(0,5):[];
+      if(!stops.length)return'<div class="popup-stops"><div class="popup-stops-title">Next stops</div><div class="popup-stop-loading">Loading current and upcoming stops…</div></div>';
+      return `<div class="popup-stops"><div class="popup-stops-title">Current & next stops</div>${stops.map(stop=>{
+        const clickable=Boolean(stop.atco),tag=clickable?'button':'div';
+        const attrs=clickable?` type="button" data-stop-atco="${escapeAttr(stop.atco)}" data-stop-name="${escapeAttr(stop.name)}" data-stop-route="${escapeAttr(vehicle.route||'')}" data-source-vehicle="${escapeAttr(vehicle.id)}"`:'';
+        const cls=String(stop.step||'Then').toLowerCase();
+        return `<${tag} class="popup-stop"${attrs}><span class="popup-stop-step ${escapeAttr(cls)}">${escapeHtml(stop.step||'Then')}</span><span class="popup-stop-name">${escapeHtml(stop.name)}</span><span class="popup-stop-time">${escapeHtml(stop.expectedText||stop.scheduledText||'—')}</span></${tag}>`;
+      }).join('')}</div>`;
+    }
+
+    async function openStopBoard(stop){
+      state.activeStop=stop;
+      clearTimeout(state.stopBoardTimer);
+      els.stopTitle.textContent=stop.name||'Bus stop';
+      els.stopCode.textContent=stop.atco||'';
+      els.stopBustimesLink.href=`https://bustimes.org/stops/${encodeURIComponent(stop.atco)}`;
+      els.stopDepartures.innerHTML='<div class="stop-board-note">Loading upcoming buses…</div>';
+      openModal('stopModal');
+      await loadStopDepartures(stop,true);
+      state.stopBoardTimer=setTimeout(()=>{
+        if(state.activeStop?.atco===stop.atco&&els.stopModal.classList.contains('show'))loadStopDepartures(stop,true);
+      },30000);
+    }
+
+    async function loadStopDepartures(stop,force=false){
+      const key=stop.atco;
+      const cached=state.stopDepartureCache.get(key);
+      if(!force&&cached&&Date.now()-cached.fetchedAt<20000){renderStopDepartures(cached.rows,cached.source);return;}
+      let rows=[];
+      let source='BusBase live vehicles';
+      try{
+        // BusTimes uses this endpoint for the live departure fragment on a stop page.
+        const response=await fetch(`https://bustimes.org/stops/${encodeURIComponent(stop.atco)}/departures`,{
+          cache:'no-store',mode:'cors',headers:{Accept:'text/html'}
+        });
+        if(response.ok){
+          const html=await response.text();
+          rows=parseBusTimesDepartureHtml(html);
+          if(rows.length)source='BusTimes live stop board';
+        }
+      }catch(error){console.debug('Direct BusTimes stop board unavailable, using live tracker fallback:',error);}
+      if(!rows.length)rows=await liveDeparturesForStop(stop.atco);
+      state.stopDepartureCache.set(key,{rows,source,fetchedAt:Date.now()});
+      if(state.activeStop?.atco===stop.atco)renderStopDepartures(rows,source);
+    }
+
+    function parseBusTimesDepartureHtml(html){
+      try{
+        const doc=new DOMParser().parseFromString(html,'text/html');
+        const table=doc.querySelector('table');
+        if(!table)return[];
+        const headers=[...table.querySelectorAll('thead th')].map(th=>clean(th.textContent).toLowerCase());
+        const rows=[];
+        for(const tr of table.querySelectorAll('tbody tr, tr')){
+          if(tr.closest('thead'))continue;
+          const cells=[...tr.querySelectorAll('td')].map(td=>clean(td.textContent));
+          if(cells.length<2)continue;
+          const route=cells[0];
+          const destination=cells[1];
+          if(!route||!destination)continue;
+          let scheduled='',expected='';
+          if(headers.length){
+            headers.forEach((h,i)=>{
+              if(h.includes('sched'))scheduled=cells[i]||scheduled;
+              if(h.includes('expect'))expected=cells[i]||expected;
+            });
+          }
+          if(!expected)expected=cells[cells.length-1]||'';
+          const vehicleMatch=destination.match(/\b([A-Z]{1,2}\d{2}\s?[A-Z]{3}|[A-Z]{2}\d{2}\s?[A-Z]{3})\b/i);
+          rows.push({route,destination,scheduled,expected,vehicle:vehicleMatch?.[1]||'',vehicleId:''});
+          if(rows.length>=12)break;
+        }
+        return rows;
+      }catch(_){return[];}
+    }
+
+    async function liveDeparturesForStop(atco){
+      const vehicles=validVehicles(state.vehicles).slice(0,30);
+      const stale=vehicles.filter(v=>{
+        const cached=state.journeyContextCache.get(v.machineId);
+        return !cached||Date.now()-cached.fetchedAt>45000;
+      });
+      // Fetch in small batches so opening a stop doesn't hammer BusTimes.
+      for(let i=0;i<stale.length;i+=6){
+        await Promise.allSettled(stale.slice(i,i+6).map(v=>refreshJourneyContext(v,false)));
+      }
+      const rows=[];
+      for(const vehicle of vehicles){
+        hydrateJourneyContext(vehicle);
+        const stop=(vehicle.upcomingStops||[]).find(s=>s.atco===atco);
+        if(!stop)continue;
+        rows.push({
+          route:vehicle.route||'—',destination:vehicle.destination||'Live journey',
+          scheduled:stop.scheduledText||'',expected:stop.expectedText||stop.scheduledText||'',
+          vehicle:vehicle.registration||vehicle.fleetNumber||'',vehicleId:vehicle.id,
+          sortMs:stop.expectedMs??stop.scheduledMs??Number.MAX_SAFE_INTEGER
+        });
+      }
+      rows.sort((a,b)=>(a.sortMs||0)-(b.sortMs||0));
+      return rows.slice(0,12);
+    }
+
+    function renderStopDepartures(rows,source=''){
+      if(!Array.isArray(rows)||!rows.length){
+        els.stopDepartures.innerHTML='<div class="stop-board-note">No upcoming live buses could be found for this stop right now. Use “View full stop on BusTimes” for the full scheduled board.</div>';
+        return;
+      }
+      els.stopDepartures.innerHTML=rows.map(row=>{
+        const clickable=Boolean(row.vehicleId);
+        const tag=clickable?'button':'div';
+        const attrs=clickable?` type="button" data-open-vehicle="${escapeAttr(row.vehicleId)}"`:'';
+        const sched=row.scheduled&&row.expected&&row.scheduled!==row.expected?`Scheduled ${row.scheduled}`:'';
+        return `<${tag} class="departure-row"${attrs}><span class="departure-route">${escapeHtml(row.route||'—')}</span><span class="departure-main"><span class="departure-dest">${escapeHtml(row.destination||'—')}</span><span class="departure-vehicle">${escapeHtml([row.vehicle,source].filter(Boolean).join(' • '))}</span></span><span class="departure-times"><span class="departure-expected">${escapeHtml(row.expected||row.scheduled||'—')}</span>${sched?`<span class="departure-scheduled">${escapeHtml(sched)}</span>`:''}</span></${tag}>`;
+      }).join('');
+    }
+
+    function parseJourneyTime(value,date){
+      if(value==null||value==='')return null;
+      if(typeof value==='number'&&Number.isFinite(value))return value>1e12?value:value*1000;
+      const text=String(value).trim();
+      const direct=Date.parse(text);
+      if(Number.isFinite(direct))return direct;
+      const m=text.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+      if(!m)return null;
+      const base=clean(date)||ukDate(Date.now());
+      const parsed=Date.parse(`${base}T${String(m[1]).padStart(2,'0')}:${m[2]}:${m[3]||'00'}`);
+      return Number.isFinite(parsed)?parsed:null;
+    }
+
+    function formatClock(ms){
+      if(!Number.isFinite(ms))return'';
+      return new Date(ms).toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    }
+
+    function clockText(value){
+      const m=String(value??'').match(/(\d{1,2}:\d{2})/);
+      return m?m[1]:'';
+    }
+
+    function ukDate(value){
+      const date=value instanceof Date?value:new Date(value);
+      const safe=Number.isNaN(date.getTime())?new Date():date;
+      const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/London',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(safe);
+      const get=type=>parts.find(p=>p.type===type)?.value||'';
+      return`${get('year')}-${get('month')}-${get('day')}`;
+    }
+
     function runningStatus(vehicle){
       const seconds=numberOrNull(vehicle?.runningSeconds);
       if(seconds==null)return{className:'unknown',text:'Running time unavailable'};
-      const abs=Math.abs(seconds);
-      if(abs<60)return{className:'ontime',text:'On time'};
+      const rounded=Math.round(seconds);
+      const abs=Math.abs(rounded);
+      if(abs<=20)return{className:'ontime',text:'On time'};
+      if(abs<60){
+        return rounded>0
+          ?{className:'late',text:`${abs} sec${abs===1?'':'s'} late`}
+          :{className:'early',text:`${abs} sec${abs===1?'':'s'} early`};
+      }
       const minutes=Math.max(1,Math.round(abs/60));
-      return seconds>0
+      return rounded>0
         ?{className:'late',text:`${minutes} min${minutes===1?'':'s'} late`}
         :{className:'early',text:`${minutes} min${minutes===1?'':'s'} early`};
     }
@@ -1772,8 +2341,8 @@
         livery:clean(m.livery),
         liveryColour:normaliseColour(m.liveryColour),
         route:raw.route,lineRef:raw.lineRef,direction:raw.direction,origin:raw.origin,destination:raw.destination,
-        latitude:raw.latitude,longitude:raw.longitude,bearing:raw.bearing,recordedAt:raw.recordedAt,journeyRef:raw.journeyRef,
-        runningSeconds:raw.runningSeconds
+        latitude:raw.latitude,longitude:raw.longitude,bearing:raw.bearing,recordedAt:raw.recordedAt,journeyRef:raw.journeyRef,tripRef:raw.tripRef,
+        runningSeconds:raw.runningSeconds,upcomingStops:[]
       };
     }
 
@@ -1854,7 +2423,10 @@
       els.authMessage.textContent='';
     }
     function openModal(id){$(id)?.classList.add('show')}
-    function closeModal(id){$(id)?.classList.remove('show')}
+    function closeModal(id){
+      $(id)?.classList.remove('show');
+      if(id==='stopModal'){clearTimeout(state.stopBoardTimer);state.stopBoardTimer=null;state.activeStop=null;}
+    }
 
     function firestoreErrorMessage(error,prefix){
       const code=String(error?.code||'');
