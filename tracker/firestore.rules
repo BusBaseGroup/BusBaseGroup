@@ -13,7 +13,8 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read, write: if signedIn() && request.auth.uid == userId;
+      allow read, create, update: if signedIn() && request.auth.uid == userId;
+      allow delete: if signedIn() && request.auth.uid == userId;
     }
 
     match /vehicles/{vehicleId} {
@@ -26,12 +27,12 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Signed-in users can submit an edit for themselves. Only admins can
+    // approve/reject or otherwise modify an existing suggestion.
     match /suggestions/{suggestionId} {
       allow create: if signedIn()
         && request.resource.data.userId == request.auth.uid
         && request.resource.data.vehicleId is string
-        && request.resource.data.proposed is map
-        && request.resource.data.reason is string
         && request.resource.data.status == 'pending';
 
       allow read: if isAdmin()
@@ -40,16 +41,14 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    // Public read lets every visitor see the previous-journey traces. A
+    // signed-in visitor may contribute GPS points, but can only create/update
+    // documents carrying their own reporter UID.
     match /journeyHistory/{vehicleId}/points/{pointId} {
       allow read: if true;
 
       allow create: if signedIn()
-        && request.resource.data.reporterUid == request.auth.uid
-        && request.resource.data.route is string
-        && request.resource.data.destination is string
-        && request.resource.data.recordedAt is string
-        && request.resource.data.latitude is number
-        && request.resource.data.longitude is number;
+        && request.resource.data.reporterUid == request.auth.uid;
 
       allow update: if signedIn()
         && resource.data.reporterUid == request.auth.uid
