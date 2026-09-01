@@ -219,7 +219,7 @@
     .popup-running.late{background:#fff0ed;color:#b42318}
     .popup-running.early{background:#fff5df;color:#9a6700}
     .popup-running.unknown{background:#eef2f6;color:#667085}
-    .popup-open{display:inline-block;margin-top:8px;color:var(--blue);font-size:11px;font-weight:700;text-decoration:none}
+    .popup-open{display:inline-block;margin-top:8px;color:var(--blue);font-size:11px;font-weight:700;text-decoration:none}.popup-screen{margin-left:12px}
     .popup-open:hover{text-decoration:underline}
 
     /* Built-in full-screen vehicle view */
@@ -249,7 +249,7 @@
     }
     .now-box strong{display:block;color:#2d4053;font-size:12.5px}
     .now-box span{display:block;margin-top:3px;color:var(--muted);font-size:11px;line-height:1.4}
-    .detail-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+    .detail-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:10px}
     .detail-btn{
       min-height:36px;border:1px solid #cbd4dc;border-radius:4px;background:#fff;color:#34495e;
       font-size:11.5px;font-weight:700
@@ -343,6 +343,119 @@
     body.vehicle-mode .vehicle-map-card{display:block}
     .vehicle-map-card strong{display:block;color:var(--navy);font-size:11.5px}
     .vehicle-map-card span{display:block;margin-top:3px;color:var(--muted);font-size:10.5px;line-height:1.4}
+
+
+    /* Full-screen passenger next-stop display */
+    .passenger-action{background:#eef5fb;border-color:#a9c4dc;color:#17395c}
+    .passenger-display{
+      position:fixed;inset:0;z-index:10000;display:none;
+      grid-template-rows:auto minmax(0,1fr) auto;
+      overflow:hidden;background:#071b2d;color:#fff;
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
+    }
+    .passenger-display.show{display:grid}
+    .passenger-top{
+      min-width:0;display:flex;align-items:center;justify-content:space-between;gap:24px;
+      padding:24px 34px;border-bottom:1px solid rgba(255,255,255,.14);
+      background:linear-gradient(180deg,#0b2945 0%,#09223a 100%)
+    }
+    .passenger-vehicle{min-width:0}
+    .passenger-brand{
+      margin-bottom:7px;color:#8fb5d5;font-size:12px;font-weight:800;
+      letter-spacing:.08em;text-transform:uppercase
+    }
+    .passenger-vehicle strong{
+      display:block;max-width:min(70vw,900px);font-size:clamp(22px,3vw,40px);
+      line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+    }
+    .passenger-vehicle span{
+      display:block;margin-top:7px;color:#c7d7e5;font-size:clamp(12px,1.35vw,18px);
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+    }
+    .passenger-top-right{display:flex;align-items:center;gap:14px;flex:0 0 auto}
+    .passenger-running{
+      display:inline-flex;align-items:center;justify-content:center;min-height:42px;
+      padding:0 15px;border-radius:6px;background:#31475b;color:#fff;
+      font-size:clamp(12px,1.2vw,17px);font-weight:900;white-space:nowrap
+    }
+    .passenger-running.early{background:#166534}
+    .passenger-running.late{background:#b42318}
+    .passenger-running.ontime{background:#2563a4}
+    .passenger-running.unknown{background:#40556a}
+    .passenger-close{
+      width:46px;height:46px;border:1px solid rgba(255,255,255,.22);border-radius:7px;
+      background:rgba(255,255,255,.08);color:#fff;font-size:27px;line-height:1
+    }
+    .passenger-main{
+      min-width:0;min-height:0;display:flex;flex-direction:column;align-items:center;
+      justify-content:center;text-align:center;padding:36px clamp(20px,6vw,92px)
+    }
+    .passenger-state-label{
+      color:#8fb5d5;font-size:clamp(16px,2vw,30px);font-weight:900;
+      letter-spacing:.08em;text-transform:uppercase
+    }
+    .passenger-primary{
+      width:100%;margin-top:12px;font-size:clamp(46px,8.2vw,126px);
+      line-height:.98;font-weight:950;letter-spacing:-.045em;text-wrap:balance
+    }
+    .passenger-secondary{
+      min-height:34px;margin-top:20px;color:#c7d7e5;
+      font-size:clamp(17px,2.1vw,31px);font-weight:650;line-height:1.25
+    }
+    .passenger-following{
+      display:flex;align-items:center;justify-content:center;gap:10px 18px;flex-wrap:wrap;
+      margin-top:28px;color:#9eb8ce;font-size:clamp(13px,1.45vw,20px)
+    }
+    .passenger-following span{
+      display:inline-flex;align-items:center;gap:8px;padding:8px 12px;
+      border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.045)
+    }
+    .passenger-following b{color:#dce9f3}
+    .passenger-main.last-stop .passenger-state-label,
+    .passenger-main.not-in-service .passenger-state-label{display:none}
+    .passenger-main.last-stop .passenger-primary,
+    .passenger-main.not-in-service .passenger-primary{
+      max-width:1200px;font-size:clamp(48px,7.5vw,112px);line-height:1.02;text-transform:none
+    }
+    .passenger-main.last-stop .passenger-secondary{
+      color:#fff;font-size:clamp(26px,3.6vw,52px);font-weight:800
+    }
+    .passenger-main.not-in-service .passenger-secondary{display:none}
+    .passenger-bottom{
+      display:flex;align-items:flex-end;justify-content:space-between;gap:24px;
+      padding:22px 34px 25px;border-top:1px solid rgba(255,255,255,.14);
+      background:#061725
+    }
+    .passenger-route-area{min-width:0;display:flex;align-items:center;gap:16px}
+    .passenger-route{
+      min-width:82px;height:62px;padding:0 15px;border-radius:7px;background:#d71920;color:#fff;
+      display:grid;place-items:center;font-size:clamp(27px,3vw,45px);font-weight:950;line-height:1
+    }
+    .passenger-route-destination{
+      min-width:0;max-width:52vw;color:#dce9f3;font-size:clamp(17px,2vw,29px);
+      font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+    }
+    .passenger-time-area{text-align:right;flex:0 0 auto}
+    .passenger-time-area strong{
+      display:block;font-size:clamp(34px,4vw,58px);line-height:.9;font-weight:900;font-variant-numeric:tabular-nums
+    }
+    .passenger-time-area span{
+      display:block;margin-top:9px;color:#9eb8ce;font-size:clamp(12px,1.3vw,18px);font-weight:700
+    }
+    body.passenger-open{overflow:hidden}
+    @media(max-width:700px){
+      .passenger-top{padding:17px 18px;gap:12px}
+      .passenger-brand{font-size:9px}
+      .passenger-vehicle strong{max-width:58vw}
+      .passenger-vehicle span{max-width:60vw}
+      .passenger-running{display:none}
+      .passenger-close{width:42px;height:42px}
+      .passenger-main{padding:26px 18px}
+      .passenger-following{margin-top:20px}
+      .passenger-bottom{padding:17px 18px 20px}
+      .passenger-route{min-width:62px;height:52px;padding:0 10px}
+      .passenger-route-destination{max-width:45vw}
+    }
 
     /* Modals */
     .modal-bg{
@@ -490,6 +603,7 @@
 
           <div class="detail-actions">
             <button id="trackBtn" class="detail-btn primary-action" type="button">Track this bus</button>
+            <button id="passengerBtn" class="detail-btn passenger-action" type="button">Next stop screen</button>
             <button id="suggestBtn" class="detail-btn" type="button">Suggest an edit</button>
           </div>
         </div>
@@ -577,6 +691,38 @@
       </section>
     </section>
   </main>
+
+  <section id="passengerDisplay" class="passenger-display" aria-label="Passenger next stop screen" aria-hidden="true">
+    <header class="passenger-top">
+      <div class="passenger-vehicle">
+        <div class="passenger-brand">BusBase live passenger information</div>
+        <strong id="passengerVehicleTitle">Vehicle</strong>
+        <span id="passengerVehicleMeta">Loading vehicle details…</span>
+      </div>
+      <div class="passenger-top-right">
+        <span id="passengerRunning" class="passenger-running unknown">Running time unavailable</span>
+        <button id="passengerClose" class="passenger-close" type="button" aria-label="Close next stop screen">×</button>
+      </div>
+    </header>
+
+    <main id="passengerMain" class="passenger-main">
+      <div id="passengerStateLabel" class="passenger-state-label">Next stop</div>
+      <div id="passengerPrimary" class="passenger-primary">Loading live journey…</div>
+      <div id="passengerSecondary" class="passenger-secondary"></div>
+      <div id="passengerFollowing" class="passenger-following"></div>
+    </main>
+
+    <footer class="passenger-bottom">
+      <div class="passenger-route-area">
+        <span id="passengerRoute" class="passenger-route">—</span>
+        <span id="passengerDestination" class="passenger-route-destination">Waiting for route</span>
+      </div>
+      <div class="passenger-time-area">
+        <strong id="passengerClock">--:--</strong>
+        <span id="passengerDate">—</span>
+      </div>
+    </footer>
+  </section>
 
   <div id="stopModal" class="modal-bg" role="dialog" aria-modal="true" aria-labelledby="stopTitle">
     <div class="modal" style="width:min(590px,100%)">
@@ -689,7 +835,8 @@
     const ids=[
       'vehiclesNavBtn','accountBtn','adminLink','summary','livePill','livePillText','vehicleSearch','routeFilter','refreshBtn','vehicleList',
       'fitBtn','mapRefreshBtn','mapStatus','mapPane','map','selectedCard','selectedRoute','selectedTitle','selectedSub','selectedDest','selectedRunning','selectedTime','selectedClose','selectedView',
-      'vehicleBack','detailStatus','detailStatusText','detailRoute','detailTitle','detailReg','detailJourney','detailJourneyMeta','trackBtn','suggestBtn',
+      'vehicleBack','detailStatus','detailStatusText','detailRoute','detailTitle','detailReg','detailJourney','detailJourneyMeta','trackBtn','passengerBtn','suggestBtn',
+      'passengerDisplay','passengerClose','passengerVehicleTitle','passengerVehicleMeta','passengerRunning','passengerMain','passengerStateLabel','passengerPrimary','passengerSecondary','passengerFollowing','passengerRoute','passengerDestination','passengerClock','passengerDate',
       'factFleet','factReg','factMake','factModel','factType','factYear','factLivery','factRoute','factDestination','factDirection','factRunning','factGps','stopSequenceStatus','upcomingStops','historyCount','journeyList','gpsTitle','gpsMeta',
       'stopModal','stopTitle','stopCode','stopDepartures','stopBustimesLink',
       'suggestModal','suggestForm','sFleet','sReg','sMake','sModel','sType','sYear','sLivery','sColour','sColourHex','sReason','sEvidence','suggestMessage',
@@ -706,6 +853,7 @@
       mappingCache:new Map(),mappingLoadedAt:0,lastRawPositions:new Map(),
       journeyDetailsCache:new Map(),journeyContextCache:new Map(),stopDepartureCache:new Map(),activeStop:null,stopBoardTimer:null,
       mode:'tracker',detailVehicleId:null,tracking:false,
+      passengerOpen:false,passengerMachineId:'',passengerSnapshot:null,passengerJourneyKey:'',
       history:[],journeys:[],selectedJourney:null,lastRecordedKey:'',pendingVehicleParam:new URLSearchParams(location.search).get('vehicle')||''
     };
 
@@ -803,6 +951,16 @@
       if(state.tracking)focusVehicle(vehicle,true);
     });
 
+    els.passengerBtn.addEventListener('click',()=>{
+      const vehicle=getDetailVehicle();
+      if(vehicle)openPassengerDisplay(vehicle);
+    });
+
+    els.passengerClose.addEventListener('click',closePassengerDisplay);
+    document.addEventListener('keydown',event=>{
+      if(event.key==='Escape'&&state.passengerOpen)closePassengerDisplay();
+    });
+
     els.suggestBtn.addEventListener('click',()=>{
       const vehicle=getDetailVehicle();
       if(!vehicle)return;
@@ -829,6 +987,13 @@
           route:clean(stopLink.dataset.stopRoute)||'',
           sourceVehicleId:clean(stopLink.dataset.sourceVehicle)||''
         });
+        return;
+      }
+      const passengerLink=event.target.closest('[data-open-passenger]');
+      if(passengerLink){
+        event.preventDefault();
+        const vehicle=state.vehicles.find(v=>v.id===passengerLink.dataset.openPassenger);
+        if(vehicle)openPassengerDisplay(vehicle);
         return;
       }
       const openLink=event.target.closest('[data-open-vehicle]');
@@ -1014,8 +1179,21 @@
         state.vehicles=[...seen.values()].map(applyHeadingFallback).map(raw=>{
           const vehicle=toPublicVehicle(raw,mappings.get(raw.machineId));
           const previous=previousVehicles.get(vehicle.machineId);
-          if(vehicle.runningSeconds==null&&previous?.runningSeconds!=null)vehicle.runningSeconds=previous.runningSeconds;
-          hydrateJourneyContext(vehicle);
+          const journeyChanged=Boolean(previous)&&(
+            clean(previous.route)!==clean(vehicle.route)||
+            clean(previous.destination)!==clean(vehicle.destination)||
+            (clean(previous.journeyRef)&&clean(vehicle.journeyRef)&&clean(previous.journeyRef)!==clean(vehicle.journeyRef))
+          );
+
+          if(journeyChanged){
+            // A new route/journey must never inherit the previous route's stops or delay.
+            state.journeyContextCache.delete(vehicle.machineId);
+            vehicle.upcomingStops=[];
+            vehicle.journeyContext=null;
+          }else{
+            if(vehicle.runningSeconds==null&&previous?.runningSeconds!=null)vehicle.runningSeconds=previous.runningSeconds;
+            hydrateJourneyContext(vehicle);
+          }
           return vehicle;
         });
         updateRoutes();
@@ -1039,10 +1217,46 @@
           if(detail&&state.tracking)focusVehicle(detail,false);
           if(detail){
             const cached=state.journeyContextCache.get(detail.machineId);
-            if(!cached||Date.now()-cached.fetchedAt>20000)refreshJourneyContext(detail,false);
+            // Refresh the open vehicle every live cycle. This keeps the stop sequence
+            // and early/late figure moving instead of leaving a stale "On time" value.
+            if(!cached||Date.now()-cached.fetchedAt>6000)refreshJourneyContext(detail,true);
           }
           if(state.user&&detail)recordHistoryPoint();
-        }else if(state.firstGoodLoad&&state.mapReady&&validVehicles(state.vehicles).length){
+        }
+
+        // A selected popup also gets fresh running data every live cycle.
+        // In vehicle mode the same bus is already refreshed above.
+        if(state.selectedId&&state.mode!=='vehicle'){
+          const selected=state.vehicles.find(v=>v.id===state.selectedId);
+          if(selected){
+            const cached=state.journeyContextCache.get(selected.machineId);
+            if(!cached||Date.now()-cached.fetchedAt>6000)refreshJourneyContext(selected,true);
+          }
+        }
+
+        // The passenger display is bound to the tracking/machine ID, so if this
+        // vehicle disappears between journeys it shows NIS, then automatically
+        // picks up the next route when the same bus starts reporting again.
+        if(state.passengerOpen){
+          const passengerLive=state.vehicles.find(v=>v.machineId===state.passengerMachineId);
+          if(passengerLive){
+            const routeKey=[passengerLive.route,passengerLive.destination,passengerLive.journeyRef].map(clean).join('|');
+            const cached=state.journeyContextCache.get(passengerLive.machineId);
+            const alreadyHandledByVehicleMode=
+              state.mode==='vehicle'&&state.detailVehicleId===passengerLive.id;
+            if(!alreadyHandledByVehicleMode&&(
+              routeKey!==state.passengerJourneyKey||!cached||Date.now()-cached.fetchedAt>6000
+            )){
+              state.passengerJourneyKey=routeKey;
+              refreshJourneyContext(passengerLive,true);
+            }else{
+              state.passengerJourneyKey=routeKey;
+            }
+          }
+          updatePassengerDisplay();
+        }
+
+        if(state.mode!=='vehicle'&&state.firstGoodLoad&&state.mapReady&&validVehicles(state.vehicles).length){
           fitToVehicles(state.vehicles);
           state.firstGoodLoad=false;
         }
@@ -1077,6 +1291,8 @@
       if(state.mode==='vehicle')renderVehicleDetail();
       else renderTracker();
       renderMarkers(mapVehicles());
+
+      if(state.passengerOpen)updatePassengerDisplay();
     }
 
     function renderTracker(){
@@ -1126,6 +1342,144 @@
         if(vehicle)toggleFavourite(vehicle);
       }));
     }
+
+    function openPassengerDisplay(vehicle){
+      if(!vehicle)return;
+      state.passengerOpen=true;
+      state.passengerMachineId=vehicle.machineId;
+      state.passengerSnapshot={...vehicle};
+      state.passengerJourneyKey=[vehicle.route,vehicle.destination,vehicle.journeyRef].map(clean).join('|');
+      document.body.classList.add('passenger-open');
+      els.passengerDisplay.classList.add('show');
+      els.passengerDisplay.setAttribute('aria-hidden','false');
+      updatePassengerDisplay();
+      updatePassengerClock();
+      refreshJourneyContext(vehicle,true);
+
+      // Use browser fullscreen where supported, while keeping the fixed overlay
+      // as a complete fallback on iPhone/Safari and other browsers.
+      const request=els.passengerDisplay.requestFullscreen||els.passengerDisplay.webkitRequestFullscreen;
+      try{request?.call(els.passengerDisplay);}catch(_){}
+    }
+
+    function closePassengerDisplay(){
+      state.passengerOpen=false;
+      document.body.classList.remove('passenger-open');
+      els.passengerDisplay.classList.remove('show');
+      els.passengerDisplay.setAttribute('aria-hidden','true');
+      const exit=document.exitFullscreen||document.webkitExitFullscreen;
+      try{
+        if(document.fullscreenElement||document.webkitFullscreenElement)exit?.call(document);
+      }catch(_){}
+    }
+
+    function passengerLiveVehicle(){
+      if(!state.passengerMachineId)return null;
+      return state.vehicles.find(v=>v.machineId===state.passengerMachineId)||null;
+    }
+
+    function passengerVehicleForDetails(){
+      const live=passengerLiveVehicle();
+      if(live){
+        state.passengerSnapshot={...(state.passengerSnapshot||{}),...live};
+        return live;
+      }
+      return state.passengerSnapshot;
+    }
+
+    function isVehicleInService(vehicle){
+      if(!vehicle||!isFreshPosition(vehicle)||!isValidPosition(vehicle))return false;
+      const route=clean(vehicle.route);
+      if(!route)return false;
+      return !/^(nis|not\s*in\s*service|out\s*of\s*service|garage|depot|0)$/i.test(route);
+    }
+
+    function updatePassengerDisplay(){
+      if(!state.passengerOpen)return;
+      const live=passengerLiveVehicle();
+      const vehicle=passengerVehicleForDetails();
+      if(!vehicle)return;
+
+      const vehicleTitle=vehicle.fleetNumber
+        ? `Fleet ${vehicle.fleetNumber}${vehicle.registration?` · ${vehicle.registration}`:''}`
+        : (vehicle.registration||vehicle.machineLabel||'Vehicle');
+      els.passengerVehicleTitle.textContent=vehicleTitle;
+      els.passengerVehicleMeta.textContent=[
+        [vehicle.make,vehicle.model].filter(Boolean).join(' ')||vehicle.vehicleType||'',
+        vehicle.livery||''
+      ].filter(Boolean).join(' · ')||'Live BusBase vehicle';
+
+      const active=isVehicleInService(live);
+      const running=active?runningStatus(live):{className:'unknown',text:'Not in service'};
+      els.passengerRunning.className=`passenger-running ${running.className}`;
+      els.passengerRunning.textContent=running.text;
+
+      const route=active?clean(live.route):'—';
+      els.passengerRoute.textContent=route||'—';
+      els.passengerRoute.style.background=active?markerColour(live):'#40556a';
+      els.passengerRoute.style.color=active?contrastText(markerColour(live)):'#fff';
+      els.passengerDestination.textContent=active
+        ? (live.destination?`to ${live.destination}`:'In service')
+        : 'Not in service';
+
+      els.passengerMain.className='passenger-main';
+      els.passengerFollowing.innerHTML='';
+
+      if(!active){
+        els.passengerMain.classList.add('not-in-service');
+        els.passengerStateLabel.textContent='';
+        els.passengerPrimary.textContent='This bus is not in service';
+        els.passengerSecondary.textContent='';
+        return;
+      }
+
+      const context=state.journeyContextCache.get(live.machineId)||live.journeyContext||null;
+      const stops=Array.isArray(live.upcomingStops)?live.upcomingStops:[];
+      const first=stops[0]||null;
+
+      if(context?.isLastStop){
+        els.passengerMain.classList.add('last-stop');
+        els.passengerStateLabel.textContent='';
+        els.passengerPrimary.textContent='This is the last stop,';
+        els.passengerSecondary.textContent='Please leave the bus';
+        return;
+      }
+
+      if(!first){
+        els.passengerStateLabel.textContent='Next stop';
+        els.passengerPrimary.textContent='Loading next stop…';
+        els.passengerSecondary.textContent=live.destination?`Route ${live.route} to ${live.destination}`:`Route ${live.route}`;
+        return;
+      }
+
+      const atStop=first.step==='Current'||first.atStop===true||context?.currentAtStop===true;
+      els.passengerStateLabel.textContent=atStop?'This stop':'Next stop';
+      els.passengerPrimary.textContent=first.name||'Next stop';
+      const time=first.expectedText||first.scheduledText||'';
+      const scheduled=first.expectedText&&first.scheduledText&&first.expectedText!==first.scheduledText
+        ? `Scheduled ${first.scheduledText}`
+        : '';
+      els.passengerSecondary.textContent=[time?`Due ${time}`:'',scheduled].filter(Boolean).join(' · ');
+
+      const following=stops.slice(1,4);
+      if(following.length){
+        els.passengerFollowing.innerHTML=following.map((stop,index)=>{
+          const due=stop.expectedText||stop.scheduledText||'';
+          return `<span><b>${index===0?'Then':'After'}</b> ${escapeHtml(stop.name||'Stop')}${due?` · ${escapeHtml(due)}`:''}</span>`;
+        }).join('');
+      }
+    }
+
+    function updatePassengerClock(){
+      if(!els.passengerClock||!els.passengerDate)return;
+      const now=new Date();
+      els.passengerClock.textContent=now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+      els.passengerDate.textContent=now.toLocaleDateString('en-GB',{
+        weekday:'long',day:'numeric',month:'long',year:'numeric'
+      });
+    }
+
+    setInterval(updatePassengerClock,1000);
 
     function renderVehicleDetail(){
       const vehicle=getDetailVehicle();
@@ -1422,6 +1776,7 @@
         ${popupStopsHtml(vehicle)}
         <div class="popup-row">${escapeHtml(headingText(vehicle))} • GPS ${escapeHtml(timeAgo(vehicle.recordedAt))}</div>
         <a class="popup-open" href="${escapeAttr(trackerUrl(vehicleUrlKey(vehicle)))}" data-open-vehicle="${escapeAttr(vehicle.id)}">Vehicle details →</a>
+        <a class="popup-open popup-screen" href="#" data-open-passenger="${escapeAttr(vehicle.id)}">Next stop screen →</a>
       </div>`;
     }
 
@@ -1843,6 +2198,7 @@
       if(!cached||Date.now()-cached.fetchedAt>90000)return vehicle;
       vehicle.journeyRef=vehicle.journeyRef||cached.journeyId||'';
       vehicle.upcomingStops=Array.isArray(cached.upcomingStops)?cached.upcomingStops:[];
+      vehicle.journeyContext=cached;
       if(cached.runningSeconds!=null)vehicle.runningSeconds=cached.runningSeconds;
       return vehicle;
     }
@@ -1855,12 +2211,14 @@
         if(!context)return null;
         vehicle.journeyRef=context.journeyId||vehicle.journeyRef||'';
         vehicle.upcomingStops=context.upcomingStops;
+        vehicle.journeyContext=context;
         if(context.runningSeconds!=null)vehicle.runningSeconds=context.runningSeconds;
         state.journeyContextCache.set(vehicle.machineId,{...context,fetchedAt:Date.now()});
         const stateVehicle=state.vehicles.find(v=>v.id===vehicle.id);
         if(stateVehicle&&stateVehicle!==vehicle){
           stateVehicle.journeyRef=vehicle.journeyRef;
           stateVehicle.upcomingStops=vehicle.upcomingStops;
+          stateVehicle.journeyContext=context;
           if(vehicle.runningSeconds!=null)stateVehicle.runningSeconds=vehicle.runningSeconds;
         }
         if(state.popup&&state.infoOpenId===vehicle.id){
@@ -1869,6 +2227,7 @@
         }
         if(state.selectedId===vehicle.id)renderSelectedCard();
         if(state.detailVehicleId===vehicle.id)renderVehicleDetail();
+        if(state.passengerOpen&&state.passengerMachineId===vehicle.machineId)updatePassengerDisplay();
         return context;
       }catch(error){
         console.debug('Could not load exact journey stops:',error);
@@ -1946,55 +2305,115 @@
         step:i===0?(current.atStop?'Current':'Next'):'Then',
         atStop:i===0&&current.atStop
       }));
-      // Work out the most trustworthy running time we can.
-      // 1) Current/next stop live expected time.
-      // 2) Most recent stop the bus has actually departed.
-      // 3) BusTimes' explicit delay/deviation value.
-      // 4) Delay carried over from the live vehicle feed.
-      // Never turn a missing value into zero/"On time".
+      // Work out the most trustworthy running time available.
+      // Missing data stays UNKNOWN - it is never converted to zero.
       let exactDelay=null;
+      let runningSource='unknown';
       const reference=stops[start];
 
-      if(reference?.expectedMs!=null&&reference?.scheduledMs!=null){
+      // 1) BusTimes live expected time at the current/next stop.
+      if(reference?.hasLiveExpected&&reference?.expectedMs!=null&&reference?.scheduledMs!=null){
         exactDelay=Math.round((reference.expectedMs-reference.scheduledMs)/1000);
+        runningSource='expected-stop';
       }
 
+      // 2) The most recent stop with an actual recorded time.
       if(exactDelay==null){
         for(let i=Math.min(start,stops.length-1);i>=0;i--){
           const passed=stops[i];
-          if(passed?.actualMs!=null&&passed?.scheduledMs!=null){
+          if(passed?.hasActual&&passed?.actualMs!=null&&passed?.scheduledMs!=null){
             exactDelay=Math.round((passed.actualMs-passed.scheduledMs)/1000);
+            runningSource='actual-stop';
             break;
           }
         }
       }
 
+      // 3) BusTimes / source-feed explicit delay/deviation.
       if(exactDelay==null){
         const detailDelay=extractRunningSeconds(details);
-        if(detailDelay!=null)exactDelay=detailDelay;
+        if(detailDelay!=null){
+          exactDelay=detailDelay;
+          runningSource='live-delay';
+        }
       }
 
       if(exactDelay==null){
         const existing=numberOrNull(vehicle.runningSeconds);
-        if(existing!=null)exactDelay=existing;
+        if(existing!=null){
+          exactDelay=existing;
+          runningSource='vehicle-delay';
+        }
       }
 
-      // Last-resort live estimate while physically at a stop. This is only used
-      // when BusTimes has supplied no expected/actual/deviation value at all.
-      // Restrict it to a close GPS match so we don't claim a bus is early/late
-      // merely because it is travelling between two stops.
-      if(exactDelay==null&&current.atStop&&reference?.scheduledMs!=null){
-        const observed=Date.parse(vehicle.recordedAt||'')||Date.now();
-        const diff=Math.round((observed-reference.scheduledMs)/1000);
-        if(Math.abs(diff)<=30*60)exactDelay=diff;
+      // 4) GPS-vs-timetable estimate. Only used when no realtime delay exists.
+      // At a stop this is the GPS report time versus that stop's timetable.
+      // Between two timed stops it estimates timetable progress between them.
+      if(exactDelay==null){
+        const estimate=estimateJourneyRunningSeconds(vehicle,stops,current);
+        if(estimate!=null){
+          exactDelay=estimate;
+          runningSource='gps-estimate';
+        }
       }
+
+      const lastIndex=stops.length-1;
+      const lastStop=stops[lastIndex];
+      const atLastStop=start===lastIndex&&(
+        current.atStop||
+        (Number.isFinite(current.distance)&&current.distance<=180)||
+        (lastStop?.hasActual&&lastStop.actualMs!=null)
+      );
 
       return{
         journeyId:clean(details?.id??details?.vehicle_journey?.id??vehicle.journeyRef),
         currentIndex:start,
+        currentAtStop:Boolean(current.atStop),
+        totalStops:stops.length,
+        isLastStop:atLastStop,
+        lastStopName:lastStop?.name||'',
         upcomingStops:upcoming,
-        runningSeconds:exactDelay
+        runningSeconds:exactDelay,
+        runningSource
       };
+    }
+
+    function estimateJourneyRunningSeconds(vehicle,stops,current){
+      const observed=Date.parse(vehicle?.recordedAt||'')||Date.now();
+      const index=Math.max(0,Math.min(stops.length-1,Number(current?.index)||0));
+      const here=stops[index];
+
+      if(current?.atStop&&here?.scheduledMs!=null){
+        const seconds=Math.round((observed-here.scheduledMs)/1000);
+        return Math.abs(seconds)<=45*60?seconds:null;
+      }
+
+      if(index<=0)return null;
+      const prev=stops[index-1];
+      const next=stops[index];
+      if(
+        prev?.scheduledMs==null||next?.scheduledMs==null||
+        !Number.isFinite(prev.latitude)||!Number.isFinite(prev.longitude)||
+        !Number.isFinite(next.latitude)||!Number.isFinite(next.longitude)||
+        !isValidPosition(vehicle)
+      )return null;
+
+      const bus={lat:vehicle.latitude,lng:vehicle.longitude};
+      const a={lat:prev.latitude,lng:prev.longitude};
+      const b={lat:next.latitude,lng:next.longitude};
+      const dAB=distanceMetres(a,b);
+      const dA=distanceMetres(a,bus);
+      const dB=distanceMetres(bus,b);
+
+      if(!Number.isFinite(dAB)||dAB<20||!Number.isFinite(dA)||!Number.isFinite(dB))return null;
+      // Reject clearly off-route GPS where the two-leg distance is implausibly
+      // longer than the direct distance between these consecutive stops.
+      if((dA+dB)>(dAB*3+650))return null;
+
+      const fraction=Math.max(0,Math.min(1,dA/Math.max(1,dA+dB)));
+      const scheduledAtPosition=prev.scheduledMs+(next.scheduledMs-prev.scheduledMs)*fraction;
+      const seconds=Math.round((observed-scheduledAtPosition)/1000);
+      return Math.abs(seconds)<=45*60?seconds:null;
     }
 
     function journeyTimes(details){
@@ -2075,12 +2494,13 @@
         wrapper.actual_departure_time??wrapper.actual_arrival_time??
         wrapper.actualDepartureTime??wrapper.actualArrivalTime??'';
       const scheduledMs=parseJourneyTime(scheduledRaw,serviceDate);
-      let expectedMs=parseJourneyTime(expectedRaw,serviceDate);
+      const expectedMs=parseJourneyTime(expectedRaw,serviceDate);
       const actualMs=parseJourneyTime(actualRaw,serviceDate);
-      if(expectedMs==null&&scheduledMs!=null&&numberOrNull(vehicle.runningSeconds)!=null)expectedMs=scheduledMs+Number(vehicle.runningSeconds)*1000;
       return{
         index,atco,name,latitude,longitude,
         scheduledMs,expectedMs,actualMs,
+        hasLiveExpected:expectedMs!=null,
+        hasActual:actualMs!=null,
         scheduledText:formatClock(scheduledMs)||clockText(scheduledRaw),
         expectedText:formatClock(expectedMs)||clockText(expectedRaw),
         pickUp:(wrapper.pick_up??wrapper.pickUp)!==false,
@@ -2342,7 +2762,7 @@
         liveryColour:normaliseColour(m.liveryColour),
         route:raw.route,lineRef:raw.lineRef,direction:raw.direction,origin:raw.origin,destination:raw.destination,
         latitude:raw.latitude,longitude:raw.longitude,bearing:raw.bearing,recordedAt:raw.recordedAt,journeyRef:raw.journeyRef,tripRef:raw.tripRef,
-        runningSeconds:raw.runningSeconds,upcomingStops:[]
+        runningSeconds:raw.runningSeconds,upcomingStops:[],journeyContext:null
       };
     }
 
@@ -2466,7 +2886,12 @@
     function newer(a,b){return(Date.parse(a||'')||0)>=(Date.parse(b||'')||0)}
     function normalizeDate(v){if(!v)return'';const d=new Date(v);return Number.isNaN(d.getTime())?'':d.toISOString()}
     function clean(v){return String(v??'').trim()}
-    function numberOrNull(v){const n=Number(v);return Number.isFinite(n)?n:null}
+    function numberOrNull(v){
+      if(v==null)return null;
+      if(typeof v==='string'&&!v.trim())return null;
+      const n=Number(v);
+      return Number.isFinite(n)?n:null;
+    }
     function slugify(v){return clean(v).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')}
     function normaliseColour(v){
       const c=clean(v);
