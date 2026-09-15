@@ -1,6 +1,5 @@
 {
-  "_comment": "Professional announcement bank plus Lamsey Lane route 35 diversion warning. Main passenger screen announces exactly when Next stop / This stop state changes.",
-  "version": "direct-professional-mp3-v3",
+  "mode": "professional-ai-mp3-only",
   "announcements": {
     "text:Next stop, Hunstanton Tesco.": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/4dbdce9c-72bc-42b0-8cc5-a00b18449909.mp3",
     "text:This stop, Tesco.": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/a9a7bb1c-ed77-4bfe-a3cb-03422bd2e53c.mp3",
@@ -189,6 +188,5 @@
     "text:Next stop, Poplar Ave.": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/710d64c0-7693-4f91-b3ec-58098351c317.mp3",
     "text:This stop, Poplar Avenue.": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/c269b627-c090-49e9-8e7c-dce15f1f1d69.mp3",
     "text:This stop, Poplar Ave.": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/c269b627-c090-49e9-8e7c-dce15f1f1d69.mp3"
-  },
-  "_source": "The authoritative runtime bank is /tracker/admin/announcement-bank.js. This JSON is a compatibility copy only."
+  }
 }

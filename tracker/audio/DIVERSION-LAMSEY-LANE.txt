@@ -1,0 +1,13 @@
+Lamsey Lane diversion announcement
+=================================
+
+Applies to routes 34, 35 and 36.
+
+Passenger warning:
+“This bus is on diversion. Please speak to the driver.”
+
+Trigger points while the passenger display is showing THIS STOP:
+- Inbound towards King’s Lynn: Heacham Bottom Farm and Poplar Ave / Poplar Avenue.
+- Outbound away from King’s Lynn: Heacham Bottom Farm only.
+
+For route 36, outbound includes journeys showing Hunstanton, Wells-next-the-Sea or Fakenham as the destination.

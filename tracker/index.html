@@ -718,7 +718,7 @@
       </div>
       <div class="passenger-top-right">
         <span id="passengerRunning" class="passenger-running unknown">Running time unavailable</span>
-        <button id="passengerAnnounceToggle" class="passenger-sound-btn" type="button" aria-pressed="false" title="Turn professional recorded announcements on or off">🔇 Professional announcements off</button>
+        <button id="passengerAnnounceToggle" class="passenger-sound-btn" type="button" aria-pressed="false" title="Turn professional AI recorded announcements on or off">🔇 Professional announcements off</button>
         <button id="passengerReplay" class="passenger-sound-btn" type="button" title="Replay the current announcement">Replay</button>
         <button id="passengerClose" class="passenger-close" type="button" aria-label="Close next stop screen">×</button>
       </div>
@@ -819,6 +819,8 @@
     </div>
   </div>
 
+  <script src="./admin/announcement-bank.js?v=20260915-ai-only"></script>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
     import {
@@ -846,7 +848,10 @@
     const DEFAULT_CENTER={lat:52.7517,lng:0.3970};
     const DEFAULT_ZOOM=10;
     const LIVE_AREA={south:52.10,west:-1.00,north:53.30,east:1.80};
-    const PROFESSIONAL_ANNOUNCEMENTS={"text:Next stop, Hunstanton Tesco.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/4dbdce9c-72bc-42b0-8cc5-a00b18449909.mp3","text:This stop, Tesco.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/a9a7bb1c-ed77-4bfe-a3cb-03422bd2e53c.mp3","text:Next stop, Travel Hub. Alight here for Hunstanton beach and the Norfolk Coast Path.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/f5db04c1-73f0-4e7c-ad79-7ccb364f6cb3.mp3","text:This stop, Travel Hub.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/f50ca0ae-ddf4-418a-8b08-a0a3b30b1218.mp3","text:Next stop, King's Lynn Transport Interchange.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/18d00bb3-a712-4b6b-84e5-23a6db00450c.mp3","text:This stop, Transport Interchange.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/cc44b27c-7366-4189-8897-363e063e1be4.mp3","text:Next stop, Gaywood Tesco.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/13f51f09-4d5a-4ed7-a36b-1dd717069b4c.mp3","text:Next stop, Queen Elizabeth Hospital Bus Shelter. Alight here for Queen Elizabeth Hospital.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/76586d58-2726-49ab-b020-ae5f4cd525c2.mp3","text:This stop, Queen Elizabeth Hospital Bus Shelter.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/aa7aef83-cde5-46da-bedc-de9d2df2f3cb.mp3","text:Next stop, Dersingham Manor Road.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/90a0da85-5542-44ef-9f02-2cc49d0d03ef.mp3","text:This stop, Manor Road.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/aa41ea14-9b61-4b6f-a109-6cb82eeb7a77.mp3","text:Next stop, Viceroy Close.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/ef0e9f88-2ffd-4c49-8291-52f8d1d75322.mp3","text:This stop, Viceroy Close.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/fb4b62d5-f12d-4cdb-b627-4bf05337f383.mp3","text:Next stop, Snettisham Memorial Hall.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/afcd6f5f-943a-41af-9b79-d67c2a24517f.mp3","text:This stop, Memorial Hall.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/179b214e-9e3e-46c4-8cc6-0493a06f0cf5.mp3","text:Next stop, Heacham Norfolk Lavender.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/46ddd6ee-11c6-452b-a746-ab1bed7c6f44.mp3","text:This stop, Norfolk Lavender.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/e114ec82-0a0c-41c6-8781-e0a03a390a30.mp3","text:Next stop, Ringstead Road.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/0d032c19-e6e0-4cdb-a028-1e28e3c3ede5.mp3","text:This stop, Ringstead Road.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/2ed78a6e-ac62-4a08-8b5e-e4a3a036dc5e.mp3","text:Next stop, Fox and Hound.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/281398af-e8b2-46ba-9812-09176fa06a1d.mp3","text:This stop, Fox and Hound.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/efedd45d-7006-4769-a507-97f5fdaa1af3.mp3","text:Next stop, Hunstanton Tudor Crescent.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/69802c26-de0d-4523-b0e9-4e3eb10fed9b.mp3","text:This stop, Tudor Crescent.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/276a89d9-979d-4376-802e-f22d989ef01d.mp3","text:Next stop, Tesco.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/4fcd0351-2839-4dfd-af19-acb1d0b8c8c7.mp3","text:Next stop, South Wootton Church.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/56628c34-d1eb-452b-8bbf-ec2cdfc99f08.mp3","text:This stop, Church.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/fcddd372-0d11-47da-bbb5-c18bf3847dd8.mp3","text:Next stop, Castle Rising.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/0919894c-65d1-483b-94f2-93ebcefa4c0a.mp3","text:This stop, Castle Rising.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/1590b3b0-5eb3-4004-970d-55bdec19c8d4.mp3","text:Next stop, Sandringham Visitor Centre.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/d9fc5bb1-32ee-4a7c-9159-7f4fbdaabd41.mp3","text:This stop, Visitor Centre.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/08ded8d9-f3a8-4e2c-b875-db4954247851.mp3","text:Next stop, Heacham Fox and Hound.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/2ca7e41a-6af1-4d6f-a987-61e6d13d073c.mp3","text:Next stop, Hunstanton Travel Hub. Alight here for Hunstanton beach and the Norfolk Coast Path.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/47337e73-5fce-4815-bc26-458294bd74c7.mp3","text:Next stop, Old Hunstanton Lighthouse.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/fb5b09d2-ae7c-4813-9087-4d4e243dcd56.mp3","text:This stop, Lighthouse.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/6b109cfb-0136-4f90-ab43-5bb6fe990cf2.mp3","text:Next stop, Holme-next-the-Sea.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/50001787-2136-4eea-aae5-c6b517d6a532.mp3","text:This stop, Holme-next-the-Sea.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/22d9e6e6-eac5-4d23-b969-8e75c466778d.mp3","text:Next stop, Thornham Church.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/b4b197e4-9208-4aa4-997a-651fcc4eed7f.mp3","text:This stop, R S P B.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/9a6b9eed-27dc-4146-9f1a-6f6bb6a3f758.mp3","text:Next stop, Brancaster Ship Hotel.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/6a42b733-a1b0-4da4-918d-cfe5b8a9f953.mp3","text:This stop, Ship Hotel.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/4a3d75e6-c20d-4326-922d-8672c07d915f.mp3","text:Next stop, Brancaster Staithe.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/be42f7fc-d620-427a-b897-960bde1da2e6.mp3","text:This stop, Brancaster Staithe.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/7da6df89-5eaf-45a1-a43b-7fdb08ded8db.mp3","text:Next stop, Burnham Deepdale.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/309c0777-0636-4ac7-8d3d-17fc2a92a068.mp3","text:This stop, Burnham Deepdale.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/764b9595-dad7-463c-bc32-2c17a1908632.mp3","text:Next stop, Burnham Market Green.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/8667a351-45b5-4166-84a0-03973c764781.mp3","text:This stop, Green.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/b89d269d-ccfa-465d-b2e7-c1542aeb436d.mp3","text:Next stop, Wells-next-the-Sea The Buttlands.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/b18ded7b-b256-4773-93c1-0d87513c53c3.mp3","text:This stop, The Buttlands.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/b3daf1c0-3d8b-4598-b6b2-7da902cade46.mp3","text:Next stop, Wells Quay.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/dfc5aab3-3710-4f7f-b964-1e61101487e4.mp3","text:This stop, Wells Quay.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/e099c6bb-a7fd-436f-86ab-00efa8a2450c.mp3","text:Next stop, Walsingham Primary School.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/71ba54ee-12fa-4461-b512-cfe4a0b7e313.mp3","text:This stop, Primary School.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/d56a4ebb-0cab-403e-a056-094908d4dcf0.mp3","text:Next stop, Little Walsingham Shrine.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/77eb6e4d-10ec-4d3a-a4ee-4d060f1408e4.mp3","text:This stop, Shrine.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/b744db8a-8797-4c05-a2c9-cb48336ad758.mp3","text:Next stop, Fakenham Oak Street.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/3517060d-cfbd-4c08-af73-c6d5219aafd4.mp3","text:This stop, Oak Street.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/89fc5e58-0288-496f-b5bc-b0b211369d1e.mp3","text:Next stop, Sandringham Visitor Centre. Alight here for Sandringham Visitor Centre.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/b4d6dac4-da13-4bc1-af98-48a44d06a71b.mp3","text:Next stop, Titchwell R S P B. Alight here for R S P B Titchwell Marsh and the Norfolk Coast Path.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/808eb4f3-06c4-4e3b-90d7-6ebf6421a80a.mp3","text:Next stop, Brancaster Staithe. Alight here for the Norfolk Coast Path.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/5e91ae55-9540-447a-b5d0-6b166c856864.mp3","text:Next stop, Burnham Deepdale. Alight here for the Norfolk Coast Path.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/b1b5baf4-1643-43ba-8a1e-b6d67ccaeca1.mp3","text:Next stop, Little Walsingham Shrine. Alight here for the Shrine of Our Lady of Walsingham.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/9a8e0aa9-7bb5-4301-8667-5b89306e28bd.mp3","text:Next stop, Anmer Crossroads.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/a8d346cb-0984-4e8b-8375-77727bd914b0.mp3","text:Next stop, Bircham Newton.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/924e313f-3743-4a14-985d-5de81033354b.mp3","text:Next stop, Bus Station.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/9637c2c0-88f4-4825-b69b-98b9ec689e86.mp3","text:Next stop, Clenchwarton.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/e35d0268-a92f-4289-b4e1-08f107ede65d.mp3","text:Next stop, College.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/3002c335-43db-4943-9c14-607000239799.mp3","text:Next stop, Docking Market Place.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/cd376b0d-cf8a-4a0e-924a-263a28f5f1e0.mp3","text:Next stop, Downham Market Tesco.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/26b9aabd-81d3-4783-8378-1264b15ae796.mp3","text:Next stop, East Walton.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/9b2215a0-a9c6-44f3-a67b-4c5925e7a959.mp3","text:Next stop, Fairstead Centre.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/3936ba21-df34-43c6-b151-dbb318aac9ed.mp3","text:Next stop, Flitcham Abbey Road.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/a806b20d-b5e9-499c-958a-71077c22c765.mp3","text:Next stop, Gayton Crown.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/b4955c67-0cb3-4f5b-b95e-a4e25a90d876.mp3","text:Next stop, Great Bircham.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/804516cd-ff5f-4fb3-9b78-2188ed6c11de.mp3","text:Next stop, Great Massingham Green.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/c59f1329-34f2-4fa8-8fe5-7538212dbeb0.mp3","text:Next stop, Grimston Church.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/e595685b-e4e7-472f-b148-bcbbdaf76eb7.mp3","text:Next stop, Hardwick Retail Park.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/4f07a78e-ed28-4b1f-8978-096a6ba5f2bb.mp3","text:Next stop, Hardwick Tesco.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/4cb2e820-e9fe-4787-acc7-59f0e98c0bca.mp3","text:Next stop, High Street.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/a3c97bb0-9d70-4729-a581-f67fe79dfe4e.mp3","text:Next stop, Hillington Ffolkes Arms.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/c26c029d-3de3-4ccc-9dab-651429b07e5e.mp3","text:Next stop, Industrial Estate.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/9adccf80-9c8d-460a-9cb0-cc78ee5bef48.mp3","text:Next stop, King William.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/eb763136-46b5-4577-b2b0-e010960b738b.mp3","text:Next stop, Library.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/6d2e5fe7-1c84-462a-9fa8-795b9eb74e5a.mp3","text:Next stop, Little Massingham.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/a11b0679-c5ce-42f2-830a-e9c1c21733e0.mp3","text:Next stop, Loke Road.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/bc3f6241-f898-4656-9e86-74f290791f4d.mp3","text:Next stop, Marham Village.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/b874642f-f30a-4e54-aefe-abc1cd1a8423.mp3","text:Next stop, Nar Ouse Way.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/c2e4ba97-5c7b-4cca-ae7d-72d38b37e1ba.mp3","text:Next stop, Narborough.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/7a7b39ae-919a-4136-9ac6-466e625937d8.mp3","text:Next stop, North Lynn Bergen Way.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/251c9772-5c5d-48a1-bdad-d818e5062ab7.mp3","text:Next stop, Pott Row.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/cbb58711-0c95-4022-b52d-1762d4c19863.mp3","text:Next stop, RAF Main Gate.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/01ba4d6a-8d94-4fc9-8eba-e4b02c19aaa0.mp3","text:Next stop, Railway Station. Alight here for Downham Market railway station.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/aa75a1d1-934c-4a04-a7db-6be4236de9db.mp3","text:Next stop, Railway Station. Alight here for King's Lynn railway station.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/76b66f5d-be56-4604-89b4-ae0036bb0ab8.mp3","text:Next stop, Reffley Lane.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/4ed83c1d-2828-41b7-8409-4a5d1631dc5f.mp3","text:Next stop, Rougham.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/17b861cd-c558-4f7c-907a-8edb6efced34.mp3","text:Next stop, Rudham.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/1b2d5b72-57ba-4820-82fc-4055830dd100.mp3","text:Next stop, Sculthorpe.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/166a1166-ae44-43fa-b358-3e16290f47c4.mp3","text:Next stop, Sedgeford Jarvie Close.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/7a989d08-3dbc-4d85-a406-b321727d8456.mp3","text:Next stop, Sedgeford Magazine Close.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/9311e7ab-9408-48b0-ab51-a87e37069118.mp3","text:Next stop, Setchey.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/0a8e5572-f35c-4f8d-a51c-bc705f7db00a.mp3","text:Next stop, Shops.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/d29b2b16-5e31-4f6b-ac98-fb62e619f4e2.mp3","text:Next stop, South Raynham.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/598117ad-bb91-440d-8ae6-a9735ef4f237.mp3","text:Next stop, South Wootton Tesco.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/791f7afb-9a59-42a8-a84a-a811c5f6ef1a.mp3","text:Next stop, Southgates.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/fc3801b0-7748-4331-9886-4c28c5da6de8.mp3","text:Next stop, Springwood High School.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/f66c6675-b293-4281-bd4d-95678f7f536c.mp3","text:Next stop, Stanhoe.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/089b83df-ed04-40fa-b354-b3a1b4050034.mp3","text:Next stop, Stowbridge.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/29f91948-db29-43bc-b638-0e2710773e3b.mp3","text:Next stop, Swaffham Market Place.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/1eaedb26-b3a3-404c-8d2a-c0336d22a4b8.mp3","text:Next stop, Tattersett.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/204c3b0f-64ab-4970-aad1-6a30274bb12d.mp3","text:Next stop, Tennyson Avenue.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/8561f58f-646a-4cdc-ad84-90b7e85b1255.mp3","text:Next stop, Terrington St Clement.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/c167cbc6-cdb9-4973-9dc8-4e44df8a6d52.mp3","text:Next stop, The Walks.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/b9f2777b-d5a7-40e4-8ef7-1823a0ecaaf9.mp3","text:Next stop, Tottenhill.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/a889f50d-9724-48ac-bcf5-6ef14ac67ecf.mp3","text:Next stop, Walpole Cross Keys.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/79c564ed-7c0b-4103-9165-85da871d9b96.mp3","text:Next stop, Walpole St Peter.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/1d257013-8030-4673-9979-2408b991349b.mp3","text:Next stop, Walsoken.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/5767884e-6294-48b7-a829-ee2854c6a514.mp3","text:Next stop, Watlington Station.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/2b3b6218-10b9-439e-aecc-3e9694687ce8.mp3","text:Next stop, Weasenham.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/175eb714-87a1-44a8-909f-68c8f1fd84ac.mp3","text:Next stop, West Lynn Ferry. Alight here for the West Lynn ferry.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/1221867a-ed63-4582-a7e1-b16a19f23cbc.mp3","text:Next stop, West Newton.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/78d608fb-684d-4f3d-8653-a286b18e6c8e.mp3","text:Next stop, West Raynham.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/e773d59c-2aaf-49cb-9d46-58f98d8aaf34.mp3","text:Next stop, West Winch.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/8f814c21-ff6e-4e68-a502-74f77d0dc241.mp3","text:Next stop, Wisbech Horsefair.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/bd1ba359-3102-4de5-a846-201cfc77405d.mp3","text:Next stop, Wootton Road.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/f4d5ffe6-bf6e-4dc0-a4e7-f1cd256f8844.mp3","text:This stop, Abbey Road.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/7d7c933b-8a5a-48f4-ab95-808746c19b40.mp3","text:This stop, Anmer Crossroads.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/229f49c9-6db9-4dbe-8a4a-74720639e1ca.mp3","text:This stop, Bergen Way.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/0b40c68a-89b9-42ba-9219-225ef3344c6b.mp3","text:This stop, Bircham Newton.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/6d665eb1-669e-4746-83ab-1798cdc6f44a.mp3","text:This stop, Bus Station.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/a192e525-e7a3-47d7-919a-e433159b095f.mp3","text:This stop, Centre.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/b5746214-f62b-4bde-9a57-4b9cee9e872f.mp3","text:This stop, Clenchwarton.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/86c174fd-00ef-44aa-9f55-939c998ad4fd.mp3","text:This stop, College.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/728a4455-aba0-4259-899b-686bf7579bae.mp3","text:This stop, Crown.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/e247c110-27b9-4bad-8e8a-009cc7a29411.mp3","text:This stop, East Walton.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/d471ccee-15ec-45f6-9522-be996347bd11.mp3","text:This stop, Ffolkes Arms.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/6aa2df06-9c42-4050-8a13-80daf5efea02.mp3","text:This stop, Great Bircham.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/4855297f-7e57-40f3-902e-ec1a54a59bce.mp3","text:This stop, Hardwick Retail Park.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/d1e60950-025f-495c-9075-cc1a088eaf54.mp3","text:This stop, Hardwick Tesco.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/58d08db7-b013-4075-832a-57c777f6d764.mp3","text:This stop, High Street.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/4deae923-4e40-4838-b613-8ac3fca1d56d.mp3","text:This stop, Horsefair.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/1a1be297-7218-4258-be4f-cd1dbabd1c44.mp3","text:This stop, Industrial Estate.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/9d6f87e1-e249-46ff-9405-1f652a977815.mp3","text:This stop, Jarvie Close.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/6a1e6697-03c8-4f61-b4e8-0ea163341d52.mp3","text:This stop, King William.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/5a5c91fa-7d60-44c1-bbfc-4093a5a59e4c.mp3","text:This stop, Library.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/9065625f-8bb3-4ebc-b764-21027d54f90e.mp3","text:This stop, Little Massingham.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/1ea27f23-392c-482e-86ec-64929c974918.mp3","text:This stop, Loke Road.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/80e4338f-985b-4cab-ab3f-a19de306d772.mp3","text:This stop, Magazine Close.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/ca0b36a1-8046-4885-8b02-15d5732b0eb6.mp3","text:This stop, Market Place.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/e22ec5ad-b03b-4a05-be33-cc7f59de1bfa.mp3","text:This stop, Nar Ouse Way.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/24ec9b4a-ae7a-4f48-aa10-8a8f2ed42d2e.mp3","text:This stop, Narborough.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/c62d649f-bd55-4bac-898c-0615650c9292.mp3","text:This stop, Pott Row.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/80320adc-9ce3-49c3-b97d-b297c21d94d2.mp3","text:This stop, RAF Main Gate.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/c7917ec5-5f9c-46a8-9243-b5edda922f96.mp3","text:This stop, Railway Station.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/f840cbfb-be00-4e18-b3b7-a7f7aceb6955.mp3","text:This stop, Reffley Lane.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/26a4ad88-e6b1-4ffe-901e-313fb6a404b8.mp3","text:This stop, Rougham.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/0eb4c5ed-79c4-4e95-825b-07a0b8788c93.mp3","text:This stop, Rudham.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/9e53dee5-9284-4ecf-ba24-3f9694f24964.mp3","text:This stop, Sculthorpe.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/a5c02bfa-11a7-4926-964c-ad20df3d8205.mp3","text:This stop, Setchey.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/7f9a0b93-c14b-43f0-b557-6363467ebab2.mp3","text:This stop, Shops.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/ceaee01a-435c-4edd-8925-5fab8133df65.mp3","text:This stop, South Raynham.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/ea329feb-93de-43c5-828f-bb2c3c3f5862.mp3","text:This stop, Southgates.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/3d51b7ac-ca67-4845-9f64-9ade4af8927b.mp3","text:This stop, Springwood High School.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/1e14c39f-76e3-4c06-83f2-2a0c50a1ef2f.mp3","text:This stop, Stanhoe.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/8f54b782-cfcf-4172-8148-7aba4223c906.mp3","text:This stop, Station.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/facd2f31-8561-4062-99df-fb4c991015e9.mp3","text:This stop, Stowbridge.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/21f10d58-e57b-4304-bf2a-1453b8232273.mp3","text:This stop, Tattersett.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/52567a6e-f469-496e-8ab5-91f323d29cd2.mp3","text:This stop, Tennyson Avenue.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/7a0b1425-ad0b-4e1e-b3c7-4f10d83066de.mp3","text:This stop, Terrington St Clement.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/0c90e443-0eb3-4e1d-bf88-8d6df4601cff.mp3","text:This stop, The Walks.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/703957d8-51b0-4db3-8149-b5d69624bc33.mp3","text:This stop, Tottenhill.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/07e8dbfb-560b-4960-a144-5bbcc19c0b4e.mp3","text:This stop, Village.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/394e4434-2efb-4e5c-964e-febf20aa8232.mp3","text:This stop, Walpole Cross Keys.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/33ddcfd8-003f-43c5-b200-f26c6724d4d2.mp3","text:This stop, Walpole St Peter.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/092dc8e9-d3fa-4b6d-b3a3-b6d82b5e1ff8.mp3","text:This stop, Walsoken.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/03781c2e-aa76-4504-a63f-fc390ab7a688.mp3","text:This stop, Weasenham.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/3f64b62c-73c9-4e75-b691-430f9593bdf7.mp3","text:This stop, West Lynn Ferry.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/79cb7e89-b00a-452b-a28d-564f08b97bbe.mp3","text:This stop, West Newton.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/a897ae4d-db60-4c25-bb03-0c171ffb1d0c.mp3","text:This stop, West Raynham.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/a92dfa95-2b68-447e-8d5d-eca4c4e4059e.mp3","text:This stop, West Winch.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/6dcf6b18-3428-48f7-8ae4-7d3d2e8183f7.mp3","text:This stop, Wootton Road.":"https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/ac2be7df-fa22-4922-bfd4-fa77fdd83cc6.mp3"};
+    const PROFESSIONAL_ANNOUNCEMENTS=window.BUSBASE_AI_ANNOUNCEMENTS||{};
+    if(!Object.keys(PROFESSIONAL_ANNOUNCEMENTS).length){
+      console.error('BusBase AI announcement bank did not load from /tracker/admin/announcement-bank.js');
+    }
     const LAMSEY_LANE_DIVERSION_MESSAGE='This bus is on diversion. Please speak to the driver.';
     const LAMSEY_LANE_DIVERSION_AUDIO='https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/b9a91154-80e3-42af-a71d-1eeddc26e48a.mp3';
     const HEACHAM_BOTTOM_FARM_NEXT_AUDIO='https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/7dcea1a5-39ae-43b1-be29-1df6c4b1884e.mp3';
@@ -854,14 +859,6 @@
     const HEACHAM_POPLAR_NEXT_AUDIO='https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/710d64c0-7693-4f91-b3ec-58098351c317.mp3';
     const HEACHAM_POPLAR_THIS_AUDIO='https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/c269b627-c090-49e9-8e7c-dce15f1f1d69.mp3';
 
-    PROFESSIONAL_ANNOUNCEMENTS[`text:${LAMSEY_LANE_DIVERSION_MESSAGE}`]=LAMSEY_LANE_DIVERSION_AUDIO;
-    PROFESSIONAL_ANNOUNCEMENTS['text:Next stop, Heacham Bottom Farm.']=HEACHAM_BOTTOM_FARM_NEXT_AUDIO;
-    PROFESSIONAL_ANNOUNCEMENTS['text:Next stop, Bottom Farm.']=HEACHAM_BOTTOM_FARM_NEXT_AUDIO;
-    PROFESSIONAL_ANNOUNCEMENTS['text:This stop, Bottom Farm.']=HEACHAM_BOTTOM_FARM_THIS_AUDIO;
-    PROFESSIONAL_ANNOUNCEMENTS['text:Next stop, Poplar Avenue.']=HEACHAM_POPLAR_NEXT_AUDIO;
-    PROFESSIONAL_ANNOUNCEMENTS['text:Next stop, Poplar Ave.']=HEACHAM_POPLAR_NEXT_AUDIO;
-    PROFESSIONAL_ANNOUNCEMENTS['text:This stop, Poplar Avenue.']=HEACHAM_POPLAR_THIS_AUDIO;
-    PROFESSIONAL_ANNOUNCEMENTS['text:This stop, Poplar Ave.']=HEACHAM_POPLAR_THIS_AUDIO;
 
     const professionalAudioCache=new Map();
     const professionalNormalisedIndex=new Map();
@@ -912,12 +909,13 @@
       return url;
     }
 
-    // One persistent media element is used for the entire passenger session.
-    // It is unlocked by the driver's click on the Next stop screen / sound toggle,
-    // so later GPS-driven stop changes are allowed to play automatically.
+    const professionalPlaybackFailures=new Set();
+
+    // Browser speech synthesis intentionally disabled: professional AI recordings only.
+
     const ANNOUNCEMENT_UNLOCK_AUDIO='data:audio/wav;base64,UklGRmQGAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YUAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
 
-    const ANNOUNCEMENT_PREF_KEY='busbase-professional-announcements';
+    const ANNOUNCEMENT_PREF_KEY='busbase-professional-announcements-v2';
 
     const app=initializeApp(firebaseConfig);
     const auth=getAuth(app);
@@ -946,7 +944,7 @@
       journeyDetailsCache:new Map(),journeyContextCache:new Map(),stopDepartureCache:new Map(),activeStop:null,stopBoardTimer:null,
       mode:'tracker',detailVehicleId:null,tracking:false,
       passengerOpen:false,passengerMachineId:'',passengerSnapshot:null,passengerJourneyKey:'',
-      announcementsEnabled:localStorage.getItem(ANNOUNCEMENT_PREF_KEY)==='on',recordedVoiceManifest:null,recordedVoiceManifestPromise:null,
+      announcementsEnabled:localStorage.getItem(ANNOUNCEMENT_PREF_KEY)!=='off',recordedVoiceManifest:null,recordedVoiceManifestPromise:null,
       announcementLastKey:'',announcementLastText:'',announcementLastAudioKey:'',announcementRouteKey:'',
       announcementStopKey:'',announcementArrivalKey:'',announcementModeKey:'',announcementScreenKey:'',announcementDiversionKey:'',announcementAudio:null,
       announcementPlayer:null,announcementPlayerUnlocked:false,announcementPendingKey:'',
@@ -1539,31 +1537,17 @@
       if(!els.passengerAnnounceToggle)return;
       els.passengerAnnounceToggle.classList.toggle('active',state.announcementsEnabled);
       els.passengerAnnounceToggle.setAttribute('aria-pressed',String(state.announcementsEnabled));
-      els.passengerAnnounceToggle.textContent=state.announcementsEnabled?'🔊 Professional announcements on':'🔇 Professional announcements off';
-      els.passengerAnnounceToggle.title=state.announcementsEnabled?'Professional neural announcements are enabled':'Professional neural announcements are disabled';
+      els.passengerAnnounceToggle.textContent=state.announcementsEnabled?'🔊 Professional AI announcements on':'🔇 Professional AI announcements off';
+      els.passengerAnnounceToggle.title=state.announcementsEnabled?'Announcements are enabled — AI MP3s loaded from the admin announcement bank':'Announcements are disabled';
       if(els.passengerReplay)els.passengerReplay.disabled=!state.announcementsEnabled;
     }
 
 
     async function loadRecordedVoiceManifest(){
       if(state.recordedVoiceManifest)return state.recordedVoiceManifest;
-      if(state.recordedVoiceManifestPromise)return state.recordedVoiceManifestPromise;
-      state.recordedVoiceManifestPromise=(async()=>{
-        const embedded={announcements:{...PROFESSIONAL_ANNOUNCEMENTS}};
-        try{
-          const response=await fetch('./audio/manifest.json',{cache:'no-store'});
-          if(response.ok){
-            const data=await response.json();
-            const extra=data?.announcements&&typeof data.announcements==='object'?data.announcements:{};
-            embedded.announcements={...embedded.announcements,...extra};
-          }
-        }catch(error){
-          console.debug('External voice manifest unavailable; using embedded professional voice bank:',error);
-        }
-        state.recordedVoiceManifest=embedded;
-        return embedded;
-      })();
-      return state.recordedVoiceManifestPromise;
+      const adminBank=window.BUSBASE_AI_ANNOUNCEMENTS||{};
+      state.recordedVoiceManifest={announcements:adminBank,source:'admin/announcement-bank.js',mode:'professional-ai-mp3-only'};
+      return state.recordedVoiceManifest;
     }
 
     function ensureAnnouncementPlayer(){
@@ -1634,28 +1618,59 @@
 
     async function playRecordedAnnouncement(text,key,{force=false}={}){
       if(!state.announcementsEnabled||!state.passengerOpen)return false;
+      if(!Object.keys(PROFESSIONAL_ANNOUNCEMENTS).length){
+        console.error('AI-only announcement bank is unavailable; browser voice is intentionally disabled.');
+        return false;
+      }
       if(!force&&key&&state.announcementLastAudioKey===key)return true;
       const message=clean(text);
       if(!message)return false;
-      try{
-        const src=getProfessionalAudioUrl(message);
-        const audio=ensureAnnouncementPlayer();
-        audio.pause();
-        audio.src=src;
-        audio.currentTime=0;
-        audio.volume=1;
-        const playPromise=audio.play();
-        if(playPromise&&typeof playPromise.then==='function')await playPromise;
-        state.announcementPlayerUnlocked=true;
-        if(key)state.announcementLastAudioKey=key;
-        state.announcementLastKey=key||state.announcementLastKey;
-        state.announcementLastText=message;
-        return true;
-      }catch(error){
-        console.error('Professional announcement failed:',error);
-        // Do NOT mark the stop as announced. The live refresh will retry it.
-        return false;
+
+      let src='';
+      try{src=getProfessionalAudioUrl(message);}catch(error){console.warn(error.message||error);}
+
+      // Try the professional recording first unless this exact URL already failed.
+      if(src&&!professionalPlaybackFailures.has(src)){
+        try{
+          const audio=ensureAnnouncementPlayer();
+          audio.pause();
+          audio.src=src;
+          audio.currentTime=0;
+          audio.volume=1;
+          const started=new Promise((resolve,reject)=>{
+            let settled=false;
+            const cleanup=()=>{
+              audio.removeEventListener('playing',onPlaying);
+              audio.removeEventListener('canplay',onCanPlay);
+              audio.removeEventListener('error',onError);
+              clearTimeout(timer);
+            };
+            const done=ok=>{if(settled)return;settled=true;cleanup();ok?resolve():reject(new Error('Professional audio failed to start'));};
+            const onPlaying=()=>done(true);
+            const onCanPlay=()=>{};
+            const onError=()=>done(false);
+            const timer=setTimeout(()=>done(false),4500);
+            audio.addEventListener('playing',onPlaying,{once:true});
+            audio.addEventListener('canplay',onCanPlay,{once:true});
+            audio.addEventListener('error',onError,{once:true});
+          });
+          const playPromise=audio.play();
+          if(playPromise&&typeof playPromise.catch==='function')playPromise.catch(()=>{});
+          await started;
+          state.announcementPlayerUnlocked=true;
+          if(key)state.announcementLastAudioKey=key;
+          state.announcementLastKey=key||state.announcementLastKey;
+          state.announcementLastText=message;
+          return true;
+        }catch(error){
+          // AI-only build: never switch to the browser/system voice.
+          // Do not permanently blacklist the clip; retry it on the next live refresh.
+          console.warn('Professional AI MP3 failed to start; will retry:',error);
+        }
       }
+
+      // AI-only build: no browser speech synthesis fallback.
+      return false;
     }
 
     async function speakAnnouncement(text,key,{force=false}={}){
@@ -1669,7 +1684,7 @@
       if(key&&state.announcementPendingKey===key)state.announcementPendingKey='';
       if(!played){
         state.announcementLastText=message;
-        console.error('Professional MP3 announcement could not be played; it will retry on the next live refresh:',message);
+        console.error('Professional AI announcement could not be played; it will retry on the next live refresh:',message);
       }
       return played;
     }
@@ -1789,24 +1804,34 @@
       return label?`This stop, ${label}.`:'';
     }
 
-    function route35DirectionForDiversion(live){
-      if(clean(live?.route)!=='35')return '';
+    function lamseyLaneDirection(live){
+      const route=clean(live?.route);
+      if(!['34','35','36'].includes(route))return '';
+
       const destination=clean(live?.destination).toLowerCase().replace(/[’‘`]/g,"'");
+
+      // Through Heacham, inbound means heading towards King's Lynn.
       if(/king'?s\s+lynn|kings\s+lynn/.test(destination))return 'inbound';
-      if(/hunstanton/.test(destination))return 'outbound';
+
+      // Outbound means heading away from King's Lynn via Heacham. Route 36
+      // may show Hunstanton, Wells-next-the-Sea or Fakenham as its destination.
+      if(/hunstanton|wells(?:-next-the-sea)?|fakenham|burnham|walsingham/.test(destination))return 'outbound';
+
       return '';
     }
 
     function lamseyLaneDiversionApplies(live,stop,atStop){
-      if(!atStop||clean(live?.route)!=='35'||!stop)return false;
+      const route=clean(live?.route);
+      if(!atStop||!['34','35','36'].includes(route)||!stop)return false;
+
       const name=`${clean(stop.name)} ${clean(stop.locality)}`.toLowerCase();
       const isBottomFarm=/bottom\s+farm/.test(name);
       const isPoplar=/poplar\s+(?:ave|avenue)/.test(name);
-      const direction=route35DirectionForDiversion(live);
+      const direction=lamseyLaneDirection(live);
 
-      // Current Lamsey Lane diversion:
-      // inbound to King's Lynn -> Bottom Farm + Poplar Avenue
-      // outbound to Hunstanton -> Bottom Farm only
+      // Current Lamsey Lane diversion on routes 34, 35 and 36:
+      // inbound towards King's Lynn -> Bottom Farm + Poplar Avenue
+      // outbound away from King's Lynn -> Bottom Farm only
       if(direction==='inbound')return isBottomFarm||isPoplar;
       if(direction==='outbound')return isBottomFarm;
       return false;
