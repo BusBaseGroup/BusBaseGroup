@@ -1,18 +1,9 @@
-BusBase AI announcement architecture
-===================================
+BusBase shared AI announcement bank
 
-Single source of truth:
-  /tracker/admin/announcement-bank.js
+announcement-bank.js is the single playback engine and recording bank for both:
+- /tracker/index.html
+- /tracker/admin/index.html
 
-Both pages load that file:
-  /tracker/index.html             (live passenger Next Stop screen)
-  /tracker/admin/index.html       (admin announcement demo)
-
-Rules:
-- AI-generated professional MP3s only.
-- NO Web Speech API / speechSynthesis / browser voice.
-- NO device voice fallback.
-- If an AI clip is missing or cannot play, the code reports/retries it rather than speaking with the browser.
-- Lamsey Lane diversion warning applies to routes 34, 35 and 36 using the same bank.
-
-To replace an AI clip later, update its URL once in announcement-bank.js. Both the admin demo and live passenger screen will then use the new clip.
+Voice profile: clear — the same AI voice used for Poplar Avenue.
+There is no browser/system speech synthesis fallback.
+The live tracker resolves its live BusTimes stop against the route/stop metadata stored here, then plays the exact same Next stop / This stop text and MP3 used by the admin demo.

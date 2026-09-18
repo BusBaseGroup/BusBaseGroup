@@ -345,133 +345,180 @@
     .vehicle-map-card span{display:block;margin-top:3px;color:var(--muted);font-size:10.5px;line-height:1.4}
 
 
-    /* Full-screen passenger next-stop display */
+    /* Full-screen passenger next-stop display — designed for real passenger use */
     .passenger-action{background:#eef5fb;border-color:#a9c4dc;color:#17395c}
     .passenger-display{
       position:fixed;inset:0;z-index:10000;display:none;
-      grid-template-rows:auto minmax(0,1fr) auto;
-      overflow:hidden;background:#071b2d;color:#fff;
-      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
+      grid-template-rows:auto minmax(0,1fr) auto;overflow:hidden;
+      background:
+        radial-gradient(circle at 75% 20%,rgba(23,93,143,.20),transparent 30%),
+        linear-gradient(145deg,#06131f 0%,#071b2d 52%,#091f31 100%);
+      color:#fff;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
     }
     .passenger-display.show{display:grid}
+    .passenger-display::before{
+      content:"";position:absolute;inset:0 0 auto;height:5px;z-index:2;
+      background:linear-gradient(90deg,#f5c842 0 36%,#fff 36% 38%,#2c83bc 38% 100%)
+    }
     .passenger-top{
-      min-width:0;display:flex;align-items:center;justify-content:space-between;gap:24px;
-      padding:24px 34px;border-bottom:1px solid rgba(255,255,255,.14);
-      background:linear-gradient(180deg,#0b2945 0%,#09223a 100%)
+      position:relative;z-index:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:20px;
+      padding:20px 30px 18px;border-bottom:1px solid rgba(255,255,255,.12);
+      background:rgba(4,18,30,.82);backdrop-filter:blur(16px)
     }
     .passenger-vehicle{min-width:0}
     .passenger-brand{
-      margin-bottom:7px;color:#8fb5d5;font-size:12px;font-weight:800;
-      letter-spacing:.08em;text-transform:uppercase
+      display:inline-flex;align-items:center;gap:8px;margin-bottom:6px;color:#f5c842;
+      font-size:12px;font-weight:950;letter-spacing:.11em;text-transform:uppercase
+    }
+    .passenger-brand::before{
+      content:"B";display:grid;place-items:center;width:24px;height:24px;border-radius:6px;
+      background:#f5c842;color:#071b2d;font-size:14px;letter-spacing:0
     }
     .passenger-vehicle strong{
-      display:block;max-width:min(70vw,900px);font-size:clamp(22px,3vw,40px);
-      line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+      display:block;max-width:min(60vw,850px);font-size:clamp(18px,2.2vw,31px);
+      line-height:1.08;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
     }
     .passenger-vehicle span{
-      display:block;margin-top:7px;color:#c7d7e5;font-size:clamp(12px,1.35vw,18px);
+      display:block;margin-top:5px;color:#9fb4c7;font-size:clamp(11px,1.1vw,15px);
       white-space:nowrap;overflow:hidden;text-overflow:ellipsis
     }
-    .passenger-top-right{display:flex;align-items:center;gap:14px;flex:0 0 auto}
+    .passenger-top-right{display:flex;align-items:center;gap:9px;flex:0 0 auto}
     .passenger-running{
-      display:inline-flex;align-items:center;justify-content:center;min-height:42px;
-      padding:0 15px;border-radius:6px;background:#31475b;color:#fff;
-      font-size:clamp(12px,1.2vw,17px);font-weight:900;white-space:nowrap
+      display:inline-flex;align-items:center;justify-content:center;min-height:40px;
+      padding:0 14px;border-radius:999px;background:#31475b;color:#fff;
+      font-size:clamp(11px,1vw,14px);font-weight:900;white-space:nowrap
     }
     .passenger-running.early{background:#166534}
     .passenger-running.late{background:#b42318}
     .passenger-running.ontime{background:#2563a4}
     .passenger-running.unknown{background:#40556a}
     .passenger-sound-btn{
-      min-height:42px;padding:0 13px;border:1px solid rgba(255,255,255,.22);border-radius:7px;
-      background:rgba(255,255,255,.07);color:#dce9f3;font:inherit;font-size:13px;font-weight:850;
+      min-height:40px;padding:0 12px;border:1px solid rgba(255,255,255,.18);border-radius:999px;
+      background:rgba(255,255,255,.07);color:#dce9f3;font:inherit;font-size:12px;font-weight:850;
       cursor:pointer;white-space:nowrap
     }
-    .passenger-sound-btn.active{background:#f2c94c;border-color:#f2c94c;color:#102235}
+    .passenger-sound-btn.active{background:#f5c842;border-color:#f5c842;color:#0b1b28}
     .passenger-sound-btn:hover{background:rgba(255,255,255,.13)}
-    .passenger-sound-btn.active:hover{background:#ffd862}
+    .passenger-sound-btn.active:hover{background:#ffdb63}
     .passenger-close{
-      width:46px;height:46px;border:1px solid rgba(255,255,255,.22);border-radius:7px;
-      background:rgba(255,255,255,.08);color:#fff;font-size:27px;line-height:1
+      width:42px;height:42px;border:1px solid rgba(255,255,255,.18);border-radius:50%;
+      background:rgba(255,255,255,.07);color:#fff;font-size:25px;line-height:1;cursor:pointer
     }
     .passenger-main{
-      min-width:0;min-height:0;display:flex;flex-direction:column;align-items:center;
-      justify-content:center;text-align:center;padding:36px clamp(20px,6vw,92px)
+      min-width:0;min-height:0;display:flex;flex-direction:column;align-items:stretch;
+      justify-content:center;padding:clamp(28px,4.5vw,68px) clamp(24px,6vw,94px);
+      position:relative
     }
     .passenger-state-label{
-      color:#8fb5d5;font-size:clamp(16px,2vw,30px);font-weight:900;
-      letter-spacing:.08em;text-transform:uppercase
+      align-self:flex-start;display:inline-flex;align-items:center;min-height:38px;padding:0 14px;border-radius:999px;
+      background:rgba(245,200,66,.13);border:1px solid rgba(245,200,66,.34);color:#f7d86f;
+      font-size:clamp(14px,1.6vw,23px);font-weight:950;letter-spacing:.09em;text-transform:uppercase
     }
     .passenger-primary{
-      width:100%;margin-top:12px;font-size:clamp(46px,8.2vw,126px);
-      line-height:.98;font-weight:950;letter-spacing:-.045em;text-wrap:balance
+      width:100%;max-width:1500px;margin-top:17px;font-size:clamp(52px,8.3vw,132px);
+      line-height:.93;font-weight:950;letter-spacing:-.052em;text-wrap:balance;text-align:left
     }
     .passenger-alight{
-      margin-top:22px;padding:10px 18px;border-radius:999px;background:#f2c94c;color:#102235;
-      font-size:clamp(17px,2vw,30px);font-weight:950;line-height:1.15
+      align-self:flex-start;margin-top:22px;padding:12px 18px;border-radius:12px;background:#f5c842;color:#102235;
+      font-size:clamp(17px,2vw,29px);font-weight:950;line-height:1.18
     }
     .passenger-alight[hidden]{display:none}
     .passenger-secondary{
-      min-height:34px;margin-top:15px;color:#c7d7e5;
-      font-size:clamp(17px,2.1vw,31px);font-weight:650;line-height:1.25
+      min-height:28px;margin-top:16px;color:#aebfd0;text-align:left;
+      font-size:clamp(16px,1.8vw,27px);font-weight:700;line-height:1.25
     }
+    .passenger-notice{
+      display:flex;align-items:center;gap:15px;margin-top:24px;padding:15px 18px;
+      border-radius:14px;border:1px solid rgba(255,255,255,.16);
+      background:#7c4b00;color:#fff;box-shadow:0 10px 30px rgba(0,0,0,.16)
+    }
+    .passenger-notice[hidden]{display:none}
+    .passenger-notice-icon{
+      flex:0 0 auto;display:grid;place-items:center;width:46px;height:46px;border-radius:50%;
+      background:rgba(255,255,255,.16);font-size:25px
+    }
+    .passenger-notice-copy{min-width:0}
+    .passenger-notice-title{
+      display:block;font-size:clamp(15px,1.6vw,22px);font-weight:950;letter-spacing:.025em
+    }
+    .passenger-notice-text{
+      display:block;margin-top:3px;font-size:clamp(14px,1.5vw,21px);font-weight:700;line-height:1.25
+    }
+    .passenger-notice.diversion{background:#8e261f}
+    .passenger-notice.passing{background:#805400}
     .passenger-following{
-      display:flex;align-items:center;justify-content:center;gap:10px 18px;flex-wrap:wrap;
-      margin-top:28px;color:#9eb8ce;font-size:clamp(13px,1.45vw,20px)
+      display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;
+      margin-top:clamp(24px,4vh,44px);color:#d9e4ed
+    }
+    .passenger-following::before{
+      content:"Coming up";grid-column:1/-1;color:#7895ad;font-size:12px;font-weight:950;
+      letter-spacing:.10em;text-transform:uppercase;margin-bottom:-2px
     }
     .passenger-following span{
-      display:inline-flex;align-items:center;gap:8px;padding:8px 12px;
-      border:1px solid rgba(255,255,255,.14);border-radius:999px;background:rgba(255,255,255,.045)
+      display:flex;flex-direction:column;align-items:flex-start;gap:5px;min-width:0;
+      padding:13px 15px;border:1px solid rgba(255,255,255,.12);border-radius:12px;
+      background:rgba(255,255,255,.045);font-size:clamp(13px,1.3vw,18px);
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis
     }
-    .passenger-following b{color:#dce9f3}
+    .passenger-following b{color:#7fa6c4;font-size:11px;letter-spacing:.07em;text-transform:uppercase}
     .passenger-main.last-stop .passenger-state-label,
     .passenger-main.not-in-service .passenger-state-label{display:none}
     .passenger-main.last-stop .passenger-alight,
     .passenger-main.not-in-service .passenger-alight{display:none}
     .passenger-main.last-stop .passenger-primary,
     .passenger-main.not-in-service .passenger-primary{
-      max-width:1200px;font-size:clamp(48px,7.5vw,112px);line-height:1.02;text-transform:none
+      max-width:1300px;font-size:clamp(48px,7.3vw,108px);line-height:1.01;text-transform:none
     }
     .passenger-main.last-stop .passenger-secondary{
-      color:#fff;font-size:clamp(26px,3.6vw,52px);font-weight:800
+      color:#fff;font-size:clamp(25px,3.4vw,48px);font-weight:800
     }
     .passenger-main.not-in-service .passenger-secondary{display:none}
     .passenger-bottom{
-      display:flex;align-items:flex-end;justify-content:space-between;gap:24px;
-      padding:22px 34px 25px;border-top:1px solid rgba(255,255,255,.14);
-      background:#061725
+      position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:24px;
+      padding:18px 30px 22px;border-top:1px solid rgba(255,255,255,.12);
+      background:rgba(3,14,24,.92)
     }
-    .passenger-route-area{min-width:0;display:flex;align-items:center;gap:16px}
+    .passenger-route-area{min-width:0;display:flex;align-items:center;gap:17px}
     .passenger-route{
-      min-width:82px;height:62px;padding:0 15px;border-radius:7px;background:#d71920;color:#fff;
-      display:grid;place-items:center;font-size:clamp(27px,3vw,45px);font-weight:950;line-height:1
+      min-width:88px;height:66px;padding:0 16px;border-radius:12px;background:#d71920;color:#fff;
+      display:grid;place-items:center;font-size:clamp(29px,3vw,45px);font-weight:950;line-height:1;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)
     }
     .passenger-route-destination{
-      min-width:0;max-width:52vw;color:#dce9f3;font-size:clamp(17px,2vw,29px);
-      font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+      min-width:0;max-width:58vw;color:#eef5fa;font-size:clamp(18px,2vw,29px);
+      font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis
+    }
+    .passenger-route-destination::before{
+      content:"Destination";display:block;margin-bottom:2px;color:#7895ad;
+      font-size:11px;font-weight:900;letter-spacing:.08em;text-transform:uppercase
     }
     .passenger-time-area{text-align:right;flex:0 0 auto}
     .passenger-time-area strong{
-      display:block;font-size:clamp(34px,4vw,58px);line-height:.9;font-weight:900;font-variant-numeric:tabular-nums
+      display:block;font-size:clamp(35px,4vw,58px);line-height:.9;font-weight:950;font-variant-numeric:tabular-nums
     }
     .passenger-time-area span{
-      display:block;margin-top:9px;color:#9eb8ce;font-size:clamp(12px,1.3vw,18px);font-weight:700
+      display:block;margin-top:8px;color:#8ca5b9;font-size:clamp(11px,1.2vw,16px);font-weight:750
     }
     body.passenger-open{overflow:hidden}
-    @media(max-width:700px){
-      .passenger-top{padding:17px 18px;gap:12px}
-      .passenger-brand{font-size:9px}
-      .passenger-vehicle strong{max-width:58vw}
-      .passenger-vehicle span{max-width:60vw}
+    @media(max-width:760px){
+      .passenger-top{padding:15px 16px 13px;gap:10px}
+      .passenger-brand{font-size:9px;margin-bottom:3px}
+      .passenger-brand::before{width:20px;height:20px;font-size:12px}
+      .passenger-vehicle strong{max-width:50vw;font-size:15px}
+      .passenger-vehicle span{display:none}
       .passenger-running{display:none}
-      .passenger-sound-btn{min-height:40px;padding:0 9px;font-size:11px}
+      .passenger-sound-btn{min-height:38px;padding:0 10px;font-size:10px}
       #passengerReplay{display:none}
-      .passenger-close{width:42px;height:42px}
-      .passenger-main{padding:26px 18px}
-      .passenger-following{margin-top:20px}
-      .passenger-bottom{padding:17px 18px 20px}
-      .passenger-route{min-width:62px;height:52px;padding:0 10px}
-      .passenger-route-destination{max-width:45vw}
+      .passenger-close{width:39px;height:39px}
+      .passenger-main{padding:24px 17px}
+      .passenger-primary{font-size:clamp(43px,12vw,72px)}
+      .passenger-notice{padding:12px 13px;gap:10px}
+      .passenger-notice-icon{width:38px;height:38px;font-size:20px}
+      .passenger-following{grid-template-columns:1fr;margin-top:22px}
+      .passenger-following span:nth-of-type(n+3){display:none}
+      .passenger-bottom{padding:14px 16px 17px}
+      .passenger-route{min-width:64px;height:54px;padding:0 11px;border-radius:9px}
+      .passenger-route-destination{max-width:49vw}
     }
 
     /* Modals */
@@ -729,6 +776,13 @@
       <div id="passengerPrimary" class="passenger-primary">Loading live journey…</div>
       <div id="passengerAlight" class="passenger-alight" hidden></div>
       <div id="passengerSecondary" class="passenger-secondary"></div>
+      <div id="passengerNotice" class="passenger-notice" hidden role="status" aria-live="polite">
+        <span id="passengerNoticeIcon" class="passenger-notice-icon" aria-hidden="true">⚠</span>
+        <span class="passenger-notice-copy">
+          <strong id="passengerNoticeTitle" class="passenger-notice-title"></strong>
+          <span id="passengerNoticeText" class="passenger-notice-text"></span>
+        </span>
+      </div>
       <div id="passengerFollowing" class="passenger-following"></div>
     </main>
 
@@ -819,7 +873,7 @@
     </div>
   </div>
 
-  <script src="./admin/announcement-bank.js?v=20260915-ai-only"></script>
+  <script src="./admin/announcement-bank.js?v=20260918-passenger-v3"></script>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
@@ -849,10 +903,12 @@
     const DEFAULT_ZOOM=10;
     const LIVE_AREA={south:52.10,west:-1.00,north:53.30,east:1.80};
     const PROFESSIONAL_ANNOUNCEMENTS=window.BUSBASE_AI_ANNOUNCEMENTS||{};
+    const SHARED_AI=window.BusBaseAI||null;
     if(!Object.keys(PROFESSIONAL_ANNOUNCEMENTS).length){
       console.error('BusBase AI announcement bank did not load from /tracker/admin/announcement-bank.js');
     }
     const LAMSEY_LANE_DIVERSION_MESSAGE='This bus is on diversion. Please speak to the driver.';
+    const WHITEWAY_BEAT_PAD_MESSAGE='This bus may wait until the oncoming bus passes safely.';
     const LAMSEY_LANE_DIVERSION_AUDIO='https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/b9a91154-80e3-42af-a71d-1eeddc26e48a.mp3';
     const HEACHAM_BOTTOM_FARM_NEXT_AUDIO='https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/7dcea1a5-39ae-43b1-be29-1df6c4b1884e.mp3';
     const HEACHAM_BOTTOM_FARM_THIS_AUDIO='https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/48bec65a-8c4b-4b81-aa23-267386336130.mp3';
@@ -882,31 +938,13 @@
     function getProfessionalAudioUrl(text){
       const message=String(text||'').trim();
       if(!message)throw new Error('No announcement text');
-      if(professionalAudioCache.has(message))return professionalAudioCache.get(message);
-
-      let url=PROFESSIONAL_ANNOUNCEMENTS[`text:${message}`]||PROFESSIONAL_ANNOUNCEMENTS[message]||'';
-      if(!url)url=professionalNormalisedIndex.get(normaliseAnnouncementLookup(message))||'';
-
-      // If the landmark wording differs slightly from the pre-recorded version,
-      // still play the professional stop-name recording rather than going silent.
-      if(!url&&/\.\s*Alight here for /i.test(message)){
-        const stopOnly=message.replace(/\s*Alight here for .*$/i,'').trim();
-        url=PROFESSIONAL_ANNOUNCEMENTS[`text:${stopOnly}`]||
-          professionalNormalisedIndex.get(normaliseAnnouncementLookup(stopOnly))||'';
+      if(window.BusBaseAI){
+        const shared=window.BusBaseAI.urlForText(message);
+        if(shared)return shared;
       }
-
-      if(!url){
-        const normalised=normaliseAnnouncementLookup(message);
-        if(/^next stop (heacham )?.*bottom farm/.test(normalised))url=HEACHAM_BOTTOM_FARM_NEXT_AUDIO;
-        else if(/^this stop .*bottom farm/.test(normalised))url=HEACHAM_BOTTOM_FARM_THIS_AUDIO;
-        else if(/^next stop .*poplar (ave|avenue)/.test(normalised))url=HEACHAM_POPLAR_NEXT_AUDIO;
-        else if(/^this stop .*poplar (ave|avenue)/.test(normalised))url=HEACHAM_POPLAR_THIS_AUDIO;
-        else if(normalised===normaliseAnnouncementLookup(LAMSEY_LANE_DIVERSION_MESSAGE))url=LAMSEY_LANE_DIVERSION_AUDIO;
-      }
-
-      if(!url)throw new Error(`Professional recording missing: ${message}`);
-      professionalAudioCache.set(message,url);
-      return url;
+      const direct=PROFESSIONAL_ANNOUNCEMENTS[`text:${message}`]||PROFESSIONAL_ANNOUNCEMENTS[message]||professionalNormalisedIndex.get(normaliseAnnouncementLookup(message))||'';
+      if(!direct)throw new Error(`Professional recording missing: ${message}`);
+      return direct;
     }
 
     const professionalPlaybackFailures=new Set();
@@ -926,7 +964,7 @@
       'vehiclesNavBtn','accountBtn','adminLink','summary','livePill','livePillText','vehicleSearch','routeFilter','refreshBtn','vehicleList',
       'fitBtn','mapRefreshBtn','mapStatus','mapPane','map','selectedCard','selectedRoute','selectedTitle','selectedSub','selectedDest','selectedRunning','selectedTime','selectedClose','selectedView',
       'vehicleBack','detailStatus','detailStatusText','detailRoute','detailTitle','detailReg','detailJourney','detailJourneyMeta','trackBtn','passengerBtn','suggestBtn',
-      'passengerDisplay','passengerClose','passengerAnnounceToggle','passengerReplay','passengerVehicleTitle','passengerVehicleMeta','passengerRunning','passengerMain','passengerStateLabel','passengerPrimary','passengerAlight','passengerSecondary','passengerFollowing','passengerRoute','passengerDestination','passengerClock','passengerDate',
+      'passengerDisplay','passengerClose','passengerAnnounceToggle','passengerReplay','passengerVehicleTitle','passengerVehicleMeta','passengerRunning','passengerMain','passengerStateLabel','passengerPrimary','passengerAlight','passengerSecondary','passengerNotice','passengerNoticeIcon','passengerNoticeTitle','passengerNoticeText','passengerFollowing','passengerRoute','passengerDestination','passengerClock','passengerDate',
       'factFleet','factReg','factMake','factModel','factType','factYear','factLivery','factRoute','factDestination','factDirection','factRunning','factGps','stopSequenceStatus','upcomingStops','historyCount','journeyList','gpsTitle','gpsMeta',
       'stopModal','stopTitle','stopCode','stopDepartures','stopBustimesLink',
       'suggestModal','suggestForm','sFleet','sReg','sMake','sModel','sType','sYear','sLivery','sColour','sColourHex','sReason','sEvidence','suggestMessage',
@@ -946,7 +984,7 @@
       passengerOpen:false,passengerMachineId:'',passengerSnapshot:null,passengerJourneyKey:'',
       announcementsEnabled:localStorage.getItem(ANNOUNCEMENT_PREF_KEY)!=='off',recordedVoiceManifest:null,recordedVoiceManifestPromise:null,
       announcementLastKey:'',announcementLastText:'',announcementLastAudioKey:'',announcementRouteKey:'',
-      announcementStopKey:'',announcementArrivalKey:'',announcementModeKey:'',announcementScreenKey:'',announcementDiversionKey:'',announcementAudio:null,
+      announcementStopKey:'',announcementArrivalKey:'',announcementModeKey:'',announcementScreenKey:'',announcementDiversionKey:'',announcementBeatPadKey:'',announcementAudio:null,
       announcementPlayer:null,announcementPlayerUnlocked:false,announcementPendingKey:'',
       history:[],journeys:[],selectedJourney:null,lastRecordedKey:'',pendingVehicleParam:new URLSearchParams(location.search).get('vehicle')||''
     };
@@ -1066,6 +1104,7 @@
         unlockAnnouncementPlayback();
         state.announcementScreenKey='';
         state.announcementDiversionKey='';
+        state.announcementBeatPadKey='';
         loadRecordedVoiceManifest();
         // Announce what is actually on the screen now, rather than replaying an
         // old stop from before announcements were switched off.
@@ -1481,6 +1520,7 @@
       state.announcementModeKey='';
       state.announcementScreenKey='';
       state.announcementDiversionKey='';
+      state.announcementBeatPadKey='';
       state.announcementPendingKey='';
       updateAnnouncementButtons();
       if(state.announcementsEnabled){
@@ -1537,8 +1577,8 @@
       if(!els.passengerAnnounceToggle)return;
       els.passengerAnnounceToggle.classList.toggle('active',state.announcementsEnabled);
       els.passengerAnnounceToggle.setAttribute('aria-pressed',String(state.announcementsEnabled));
-      els.passengerAnnounceToggle.textContent=state.announcementsEnabled?'🔊 Professional AI announcements on':'🔇 Professional AI announcements off';
-      els.passengerAnnounceToggle.title=state.announcementsEnabled?'Announcements are enabled — AI MP3s loaded from the admin announcement bank':'Announcements are disabled';
+      els.passengerAnnounceToggle.textContent=state.announcementsEnabled?'🔊 AI announcements on':'🔇 AI announcements off';
+      els.passengerAnnounceToggle.title=state.announcementsEnabled?'Professional clear AI announcements are enabled':'Announcements are disabled';
       if(els.passengerReplay)els.passengerReplay.disabled=!state.announcementsEnabled;
     }
 
@@ -1551,60 +1591,19 @@
     }
 
     function ensureAnnouncementPlayer(){
-      if(state.announcementPlayer)return state.announcementPlayer;
-      const audio=new Audio();
-      audio.preload='auto';
-      audio.playsInline=true;
-      audio.setAttribute('playsinline','');
-      state.announcementPlayer=audio;
-      state.announcementAudio=audio;
-      return audio;
+      if(window.BusBaseAI)return window.BusBaseAI.player;
+      throw new Error('Shared admin AI player did not load');
     }
 
     function unlockAnnouncementPlayback(){
-      if(!state.announcementsEnabled)return;
-      const audio=ensureAnnouncementPlayer();
-      if(state.announcementPlayerUnlocked)return;
-      try{
-        audio.pause();
-        audio.src=ANNOUNCEMENT_UNLOCK_AUDIO;
-        audio.currentTime=0;
-        audio.volume=0;
-        const unlockSrc=audio.src;
-        const promise=audio.play();
-        if(promise&&typeof promise.then==='function'){
-          promise.then(()=>{
-            // If a real stop announcement has already replaced the silent unlock
-            // clip, do not pause it when this promise resolves.
-            if(audio.src===unlockSrc){
-              audio.pause();
-              try{audio.currentTime=0;}catch(_){}
-            }
-            audio.volume=1;
-            state.announcementPlayerUnlocked=true;
-          }).catch(error=>{
-            audio.volume=1;
-            console.debug('Announcement player unlock needs another user tap:',error);
-          });
-        }else{
-          audio.pause();
-          audio.volume=1;
-          state.announcementPlayerUnlocked=true;
-        }
-      }catch(error){
-        audio.volume=1;
-        console.debug('Could not unlock announcement player:',error);
-      }
+      // No browser/system TTS and no silent unlock clip. The first real AI clip is
+      // started from the Next Stop / announcement-toggle click, then the same
+      // persistent admin player is reused for automatic stop changes.
+      return Boolean(window.BusBaseAI);
     }
 
     function stopAnnouncement(){
-      const audio=state.announcementPlayer||state.announcementAudio;
-      if(audio){
-        try{
-          audio.pause();
-          audio.currentTime=0;
-        }catch(_){}
-      }
+      if(window.BusBaseAI)window.BusBaseAI.stop();
       state.announcementPendingKey='';
     }
 
@@ -1618,59 +1617,20 @@
 
     async function playRecordedAnnouncement(text,key,{force=false}={}){
       if(!state.announcementsEnabled||!state.passengerOpen)return false;
-      if(!Object.keys(PROFESSIONAL_ANNOUNCEMENTS).length){
-        console.error('AI-only announcement bank is unavailable; browser voice is intentionally disabled.');
-        return false;
-      }
       if(!force&&key&&state.announcementLastAudioKey===key)return true;
       const message=clean(text);
       if(!message)return false;
-
-      let src='';
-      try{src=getProfessionalAudioUrl(message);}catch(error){console.warn(error.message||error);}
-
-      // Try the professional recording first unless this exact URL already failed.
-      if(src&&!professionalPlaybackFailures.has(src)){
-        try{
-          const audio=ensureAnnouncementPlayer();
-          audio.pause();
-          audio.src=src;
-          audio.currentTime=0;
-          audio.volume=1;
-          const started=new Promise((resolve,reject)=>{
-            let settled=false;
-            const cleanup=()=>{
-              audio.removeEventListener('playing',onPlaying);
-              audio.removeEventListener('canplay',onCanPlay);
-              audio.removeEventListener('error',onError);
-              clearTimeout(timer);
-            };
-            const done=ok=>{if(settled)return;settled=true;cleanup();ok?resolve():reject(new Error('Professional audio failed to start'));};
-            const onPlaying=()=>done(true);
-            const onCanPlay=()=>{};
-            const onError=()=>done(false);
-            const timer=setTimeout(()=>done(false),4500);
-            audio.addEventListener('playing',onPlaying,{once:true});
-            audio.addEventListener('canplay',onCanPlay,{once:true});
-            audio.addEventListener('error',onError,{once:true});
-          });
-          const playPromise=audio.play();
-          if(playPromise&&typeof playPromise.catch==='function')playPromise.catch(()=>{});
-          await started;
-          state.announcementPlayerUnlocked=true;
-          if(key)state.announcementLastAudioKey=key;
-          state.announcementLastKey=key||state.announcementLastKey;
-          state.announcementLastText=message;
-          return true;
-        }catch(error){
-          // AI-only build: never switch to the browser/system voice.
-          // Do not permanently blacklist the clip; retry it on the next live refresh.
-          console.warn('Professional AI MP3 failed to start; will retry:',error);
-        }
+      try{
+        if(!window.BusBaseAI)throw new Error('Shared admin AI player is unavailable');
+        await window.BusBaseAI.playText(message);
+        if(key)state.announcementLastAudioKey=key;
+        state.announcementLastKey=key||state.announcementLastKey;
+        state.announcementLastText=message;
+        return true;
+      }catch(error){
+        console.warn('Shared Poplar-voice AI recording failed; will retry:',error);
+        return false;
       }
-
-      // AI-only build: no browser speech synthesis fallback.
-      return false;
     }
 
     async function speakAnnouncement(text,key,{force=false}={}){
@@ -1837,6 +1797,34 @@
       return false;
     }
 
+    function whitewayBeatPadApplies(live,context,stops,atStop){
+      // Whiteway Road's single-track passing place is on route 36 between
+      // Burnham Deepdale and the Church Lane / Church Walk side of Burnham Market.
+      if(atStop||clean(live?.route)!=='36'||!context||!stops?.[0])return false;
+      const previous=`${clean(context.previousStopName)} ${clean(context.previousStopLocality)}`.toLowerCase();
+      const next=`${clean(stops[0]?.name)} ${clean(stops[0]?.locality)}`.toLowerCase();
+
+      const deepdale=text=>/deepdale/.test(text)&&(/lane|dalegate|market|burnham/.test(text));
+      const church=text=>/church\s+(?:lane|walk)/.test(text);
+      return (deepdale(previous)&&church(next))||(church(previous)&&deepdale(next));
+    }
+
+    function setPassengerNotice(type,title,text){
+      if(!els.passengerNotice)return;
+      if(!text){
+        els.passengerNotice.hidden=true;
+        els.passengerNotice.className='passenger-notice';
+        els.passengerNoticeTitle.textContent='';
+        els.passengerNoticeText.textContent='';
+        return;
+      }
+      els.passengerNotice.hidden=false;
+      els.passengerNotice.className=`passenger-notice ${type||''}`.trim();
+      els.passengerNoticeIcon.textContent=type==='diversion'?'↪':'⚠';
+      els.passengerNoticeTitle.textContent=title||'Passenger information';
+      els.passengerNoticeText.textContent=text;
+    }
+
     function processPassengerAnnouncements({live,active,context,stops,atStop}){
       if(!state.passengerOpen||!state.announcementsEnabled)return;
 
@@ -1865,7 +1853,7 @@
       if(context?.isLastStop){
         const key=`last:${routeKey}:${clean(context.lastStopName)}`;
         if(state.announcementModeKey!==key){
-          requestPassengerAnnouncement('This is the last stop. Please leave the bus.',key,'announcementModeKey');
+          requestPassengerAnnouncement('This is the last stop.',key,'announcementModeKey');
         }
         return;
       }
@@ -1884,8 +1872,9 @@
       const screenKey=`screen:${screenMode}:${routeKey}:${stopId}`;
       if(state.announcementScreenKey===screenKey)return;
 
+      const adminStop=window.BusBaseAI?.resolveStop(clean(live.route),clean(first.name),clean(first.locality));
       if(atStop){
-        const message=passengerArrivalAnnouncement(first);
+        const message=adminStop?.thisText||passengerArrivalAnnouncement(first);
         const diversion=lamseyLaneDiversionApplies(live,first,true);
         const diversionKey=diversion?`diversion:lamsey-lane:${routeKey}:${stopId}`:'';
         requestPassengerAnnouncement(message,screenKey,'announcementScreenKey',{
@@ -1894,7 +1883,14 @@
           afterSlot:'announcementDiversionKey'
         });
       }else{
-        requestPassengerAnnouncement(passengerNextStopAnnouncement(first),screenKey,'announcementScreenKey');
+        const message=adminStop?.nextText||passengerNextStopAnnouncement(first);
+        const beatPad=whitewayBeatPadApplies(live,context,stops,false);
+        const beatPadKey=beatPad?`whiteway-beat-pad:${routeKey}:${clean(context?.previousStopName)}:${stopId}`:'';
+        requestPassengerAnnouncement(message,screenKey,'announcementScreenKey',{
+          afterText:beatPad?WHITEWAY_BEAT_PAD_MESSAGE:'',
+          afterKey:beatPadKey,
+          afterSlot:'announcementBeatPadKey'
+        });
       }
     }
 
@@ -1930,6 +1926,7 @@
       els.passengerFollowing.innerHTML='';
       els.passengerAlight.hidden=true;
       els.passengerAlight.textContent='';
+      setPassengerNotice('','','');
 
       if(!active){
         els.passengerMain.classList.add('not-in-service');
@@ -1962,6 +1959,13 @@
       }
 
       const atStop=first.step==='Current'||first.atStop===true||context?.currentAtStop===true;
+      const diversionNotice=lamseyLaneDiversionApplies(live,first,atStop);
+      const beatPadNotice=whitewayBeatPadApplies(live,context,stops,atStop);
+      if(diversionNotice){
+        setPassengerNotice('diversion','Diversion in operation',LAMSEY_LANE_DIVERSION_MESSAGE);
+      }else if(beatPadNotice){
+        setPassengerNotice('passing','Passing place ahead',WHITEWAY_BEAT_PAD_MESSAGE);
+      }
       els.passengerStateLabel.textContent=atStop?'This stop':'Next stop';
       els.passengerPrimary.textContent=first.name||'Next stop';
       const passengerAlightFor=atStop?'':alightForStop(first);
@@ -2892,6 +2896,9 @@
         journeyId:clean(details?.id??details?.vehicle_journey?.id??vehicle.journeyRef),
         currentIndex:start,
         currentAtStop:Boolean(current.atStop),
+        previousStopName:start>0?(stops[start-1]?.name||''):'',
+        previousStopLocality:start>0?(stops[start-1]?.locality||''):'',
+        nextStopName:stops[start]?.name||'',
         totalStops:stops.length,
         isLastStop:atLastStop,
         lastStopName:lastStop?.name||'',

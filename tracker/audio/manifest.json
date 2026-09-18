@@ -188,7 +188,14 @@
     "text:Next stop, Poplar Avenue.": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/710d64c0-7693-4f91-b3ec-58098351c317.mp3",
     "text:Next stop, Poplar Ave.": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/710d64c0-7693-4f91-b3ec-58098351c317.mp3",
     "text:This stop, Poplar Avenue.": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/c269b627-c090-49e9-8e7c-dce15f1f1d69.mp3",
-    "text:This stop, Poplar Ave.": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/c269b627-c090-49e9-8e7c-dce15f1f1d69.mp3"
+    "text:This stop, Poplar Ave.": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/c269b627-c090-49e9-8e7c-dce15f1f1d69.mp3",
+    "text:This bus may wait until the oncoming bus passes safely.": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/ffa7f3c7-eeed-48f6-89e8-772c7ef9a484.mp3",
+    "text:This bus is not in service.": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/1256b5ff-1ad7-479b-895e-f8393d7fb4dd.mp3",
+    "text:This is the last stop.": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/9316d098-c191-4625-9efc-8f918c7d7b17.mp3",
+    "text:Next stop, Deepdale Lane.": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/2e6f70bf-7a32-4a85-82c1-c6e26351428a.mp3",
+    "text:This stop, Deepdale Lane.": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/3dded932-f005-493e-bf15-14d05bc81106.mp3",
+    "text:Next stop, Church Lane.": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/f333887a-6161-4ac5-9e31-948c7391965c.mp3",
+    "text:This stop, Church Lane.": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/56b4371d-3e61-4f45-8a01-b64e355f45c7.mp3"
   },
   "_source": "The authoritative runtime bank is /tracker/admin/announcement-bank.js. This JSON is a compatibility copy only."
 }
