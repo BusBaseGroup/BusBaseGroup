@@ -2428,5 +2428,18 @@
         "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/56b4371d-3e61-4f45-8a01-b64e355f45c7.mp3"
       }
     }
-  ]
+  ],
+  "special_messages": {
+    "lamsey_lane_diversion": {
+      "text": "Diversion in operation.",
+      "voice": "clear",
+      "url": "https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/e776e40e-0596-4a59-a024-96a015ef2bc7.mp3",
+      "routes": [
+        "34",
+        "35",
+        "36"
+      ],
+      "segment": "Bottom Farm ↔ Poplar Avenue"
+    }
+  }
 }

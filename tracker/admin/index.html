@@ -277,7 +277,7 @@
     els.stopAnnouncementDemo.addEventListener('click', stopAnnouncementDemo);
     els.playRouteDemo.addEventListener('click', playSelectedRouteDemo);
     els.demoWhitewayAlert.addEventListener('click',()=>playAnnouncementDemo('This bus may wait until the oncoming bus passes safely.','Whiteway Road passing place',els.demoWhitewayAlert));
-    els.demoLamseyAlert.addEventListener('click',()=>playAnnouncementDemo('This bus is on diversion. Please speak to the driver.','Lamsey Lane diversion',els.demoLamseyAlert));
+    els.demoLamseyAlert.addEventListener('click',()=>playAnnouncementDemo('Diversion in operation.','Lamsey Lane diversion',els.demoLamseyAlert));
     setupAnnouncementDemo();
     els.demoOnlyBtn.addEventListener('click', () => {
       document.body.classList.add('demo-only');

@@ -1,0 +1,10 @@
+BusBase Next Stop AI audio hard fix
+
+- Browser/system TTS: NOT USED
+- Voice: clear (same voice profile as Poplar Avenue)
+- Main page and admin share /tracker/admin/announcement-bank.js
+- Opening the Next Stop screen primes the shared audio element from the user click.
+- Every Next stop / This stop screen transition calls the admin stop bank directly.
+- Failed AI playback is not marked complete and retries on the next live refresh.
+- Routes 34/35/36: between Bottom Farm and Poplar Avenue in either direction, the screen shows Diversion in operation and the clear AI voice says “Diversion in operation.”
+- Whiteway Road passing-place warning is retained.

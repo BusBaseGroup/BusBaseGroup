@@ -873,7 +873,7 @@
     </div>
   </div>
 
-  <script src="./admin/announcement-bank.js?v=20260918-passenger-v3"></script>
+  <script src="./admin/announcement-bank.js?v=20260918-nextstop-hardfix"></script>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
@@ -907,9 +907,8 @@
     if(!Object.keys(PROFESSIONAL_ANNOUNCEMENTS).length){
       console.error('BusBase AI announcement bank did not load from /tracker/admin/announcement-bank.js');
     }
-    const LAMSEY_LANE_DIVERSION_MESSAGE='This bus is on diversion. Please speak to the driver.';
+    const LAMSEY_LANE_DIVERSION_MESSAGE='Diversion in operation.';
     const WHITEWAY_BEAT_PAD_MESSAGE='This bus may wait until the oncoming bus passes safely.';
-    const LAMSEY_LANE_DIVERSION_AUDIO='https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/b9a91154-80e3-42af-a71d-1eeddc26e48a.mp3';
     const HEACHAM_BOTTOM_FARM_NEXT_AUDIO='https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/7dcea1a5-39ae-43b1-be29-1df6c4b1884e.mp3';
     const HEACHAM_BOTTOM_FARM_THIS_AUDIO='https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/48bec65a-8c4b-4b81-aa23-267386336130.mp3';
     const HEACHAM_POPLAR_NEXT_AUDIO='https://storage.googleapis.com/adm--audio-playback--7d--public/mcp-preview/710d64c0-7693-4f91-b3ec-58098351c317.mp3';
@@ -953,7 +952,7 @@
 
     const ANNOUNCEMENT_UNLOCK_AUDIO='data:audio/wav;base64,UklGRmQGAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YUAGAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA';
 
-    const ANNOUNCEMENT_PREF_KEY='busbase-professional-announcements-v2';
+    const ANNOUNCEMENT_PREF_KEY='busbase-professional-announcements-v4';
 
     const app=initializeApp(firebaseConfig);
     const auth=getAuth(app);
@@ -1596,10 +1595,11 @@
     }
 
     function unlockAnnouncementPlayback(){
-      // No browser/system TTS and no silent unlock clip. The first real AI clip is
-      // started from the Next Stop / announcement-toggle click, then the same
-      // persistent admin player is reused for automatic stop changes.
-      return Boolean(window.BusBaseAI);
+      // Prime the exact same <audio> element used by the admin demo. This call is
+      // made directly from a user click, allowing later GPS stop changes to play
+      // the clear AI MP3s automatically. No browser/system voice is used.
+      if(!window.BusBaseAI)return false;
+      return window.BusBaseAI.unlock?.()!==false;
     }
 
     function stopAnnouncement(){
@@ -1647,6 +1647,48 @@
         console.error('Professional AI announcement could not be played; it will retry on the next live refresh:',message);
       }
       return played;
+    }
+
+
+    async function speakStopFromAdminBank(live,stop,mode,key,{force=false}={}){
+      if(!state.announcementsEnabled||!state.passengerOpen||!stop)return false;
+      if(!force&&key&&state.announcementLastKey===key)return true;
+      if(!force&&key&&state.announcementPendingKey===key)return false;
+      if(key)state.announcementPendingKey=key;
+      try{
+        if(!window.BusBaseAI)throw new Error('Shared admin AI player is unavailable');
+        const result=await window.BusBaseAI.playStop(clean(live?.route),clean(stop.name),clean(stop.locality),mode);
+        if(key){
+          state.announcementLastKey=key;
+          state.announcementLastAudioKey=key;
+        }
+        state.announcementLastText=result?.text||window.BusBaseAI.lastText||'';
+        return true;
+      }catch(error){
+        console.error('AI stop recording failed; it will retry on the next live refresh:',clean(live?.route),clean(stop.name),mode,error);
+        return false;
+      }finally{
+        if(key&&state.announcementPendingKey===key)state.announcementPendingKey='';
+      }
+    }
+
+    function requestPassengerStopAnnouncement(live,stop,mode,key,{afterText='',afterKey='',afterSlot='announcementDiversionKey'}={}){
+      if(!stop||!key)return;
+      if(state.announcementScreenKey===key||state.announcementPendingKey===key)return;
+      speakStopFromAdminBank(live,stop,mode,key).then(played=>{
+        if(played)state.announcementScreenKey=key;
+        if(!played||!afterText||!afterKey)return;
+        const playFollowUp=()=>{
+          if(!state.passengerOpen||!state.announcementsEnabled||state[afterSlot]===afterKey)return;
+          speakAnnouncement(afterText,afterKey,{force:true}).then(ok=>{if(ok)state[afterSlot]=afterKey;});
+        };
+        const audio=ensureAnnouncementPlayer();
+        const sourceAtStart=audio.currentSrc||audio.src;
+        if(audio.ended||audio.paused){setTimeout(playFollowUp,120);return;}
+        audio.addEventListener('ended',()=>{
+          if((audio.currentSrc||audio.src)===sourceAtStart)playFollowUp();
+        },{once:true});
+      });
     }
 
     function requestPassengerAnnouncement(text,key,slot,{afterText='',afterKey='',afterSlot='announcementDiversionKey'}={}){
@@ -1780,21 +1822,14 @@
       return '';
     }
 
-    function lamseyLaneDiversionApplies(live,stop,atStop){
-      const route=clean(live?.route);
-      if(!atStop||!['34','35','36'].includes(route)||!stop)return false;
-
-      const name=`${clean(stop.name)} ${clean(stop.locality)}`.toLowerCase();
-      const isBottomFarm=/bottom\s+farm/.test(name);
-      const isPoplar=/poplar\s+(?:ave|avenue)/.test(name);
-      const direction=lamseyLaneDirection(live);
-
-      // Current Lamsey Lane diversion on routes 34, 35 and 36:
-      // inbound towards King's Lynn -> Bottom Farm + Poplar Avenue
-      // outbound away from King's Lynn -> Bottom Farm only
-      if(direction==='inbound')return isBottomFarm||isPoplar;
-      if(direction==='outbound')return isBottomFarm;
-      return false;
+    function lamseyLaneDiversionSegmentApplies(live,context,stops,atStop){
+      if(atStop||!['34','35','36'].includes(clean(live?.route))||!context||!stops?.[0])return false;
+      const previous=`${clean(context.previousStopName)} ${clean(context.previousStopLocality)}`.toLowerCase();
+      const next=`${clean(stops[0]?.name)} ${clean(stops[0]?.locality)}`.toLowerCase();
+      const bottom=text=>/bottom\s+farm/.test(text);
+      const poplar=text=>/poplar\s+(?:ave|avenue)/.test(text);
+      // Current diversion applies on the road section itself in either direction.
+      return (bottom(previous)&&poplar(next))||(poplar(previous)&&bottom(next));
     }
 
     function whitewayBeatPadApplies(live,context,stops,atStop){
@@ -1874,23 +1909,34 @@
 
       const adminStop=window.BusBaseAI?.resolveStop(clean(live.route),clean(first.name),clean(first.locality));
       if(atStop){
-        const message=adminStop?.thisText||passengerArrivalAnnouncement(first);
-        const diversion=lamseyLaneDiversionApplies(live,first,true);
-        const diversionKey=diversion?`diversion:lamsey-lane:${routeKey}:${stopId}`:'';
-        requestPassengerAnnouncement(message,screenKey,'announcementScreenKey',{
-          afterText:diversion?LAMSEY_LANE_DIVERSION_MESSAGE:'',
-          afterKey:diversionKey,
-          afterSlot:'announcementDiversionKey'
-        });
+        if(adminStop){
+          requestPassengerStopAnnouncement(live,first,'this',screenKey);
+        }else{
+          // This should only happen for a newly-added live stop that has not yet
+          // been entered into the admin bank. It deliberately does NOT use browser TTS.
+          const message=passengerArrivalAnnouncement(first);
+          requestPassengerAnnouncement(message,screenKey,'announcementScreenKey');
+        }
       }else{
         const message=adminStop?.nextText||passengerNextStopAnnouncement(first);
-        const beatPad=whitewayBeatPadApplies(live,context,stops,false);
-        const beatPadKey=beatPad?`whiteway-beat-pad:${routeKey}:${clean(context?.previousStopName)}:${stopId}`:'';
-        requestPassengerAnnouncement(message,screenKey,'announcementScreenKey',{
-          afterText:beatPad?WHITEWAY_BEAT_PAD_MESSAGE:'',
-          afterKey:beatPadKey,
-          afterSlot:'announcementBeatPadKey'
-        });
+        const diversion=lamseyLaneDiversionSegmentApplies(live,context,stops,false);
+        const beatPad=!diversion&&whitewayBeatPadApplies(live,context,stops,false);
+        const followText=diversion?LAMSEY_LANE_DIVERSION_MESSAGE:(beatPad?WHITEWAY_BEAT_PAD_MESSAGE:'');
+        const followKey=diversion
+          ?`diversion:lamsey-lane:${routeKey}:${clean(context?.previousStopName)}:${stopId}`
+          :(beatPad?`whiteway-beat-pad:${routeKey}:${clean(context?.previousStopName)}:${stopId}`:'');
+        const opts={
+          afterText:followText,
+          afterKey:followKey,
+          afterSlot:diversion?'announcementDiversionKey':'announcementBeatPadKey'
+        };
+        if(adminStop){
+          requestPassengerStopAnnouncement(live,first,'next',screenKey,opts);
+        }else{
+          // AI-only fallback: generated text can play only if that exact phrase exists
+          // in the shared admin bank. Missing phrases are retried/reported, never spoken by the browser.
+          requestPassengerAnnouncement(message,screenKey,'announcementScreenKey',opts);
+        }
       }
     }
 
@@ -1959,10 +2005,10 @@
       }
 
       const atStop=first.step==='Current'||first.atStop===true||context?.currentAtStop===true;
-      const diversionNotice=lamseyLaneDiversionApplies(live,first,atStop);
-      const beatPadNotice=whitewayBeatPadApplies(live,context,stops,atStop);
+      const diversionNotice=lamseyLaneDiversionSegmentApplies(live,context,stops,atStop);
+      const beatPadNotice=!diversionNotice&&whitewayBeatPadApplies(live,context,stops,atStop);
       if(diversionNotice){
-        setPassengerNotice('diversion','Diversion in operation',LAMSEY_LANE_DIVERSION_MESSAGE);
+        setPassengerNotice('diversion','Diversion in operation','Bottom Farm ↔ Poplar Avenue');
       }else if(beatPadNotice){
         setPassengerNotice('passing','Passing place ahead',WHITEWAY_BEAT_PAD_MESSAGE);
       }
