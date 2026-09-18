@@ -1,0 +1,25 @@
+BusBase Every Stop AI fix
+=========================
+
+The previous build only had full recordings for the admin timing-point list.
+This build changes the live Next Stop screen so EVERY live stop is passed into
+the shared admin AI player.
+
+Playback order:
+1. Try a stored full clear-AI sentence if one exists.
+2. Otherwise play a fresh clear-AI "Next stop" / "This stop" prefix.
+3. Then play the dedicated clear-AI recording for the exact physical stop name.
+
+No browser/system text-to-speech is used.
+
+Routes 34, 35 and 36 have been expanded from timing points to their current
+physical stop-name bank, including intermediate stops such as Kettlewell Lane,
+Highgate School, Health Centre, Elvington Road, Pansey Drive, Station Road,
+Strickland Avenue, Bottom Farm, Collingwood Close, Fenside, Fengate,
+Jennings Close, College Drive, Poplar Avenue, Nourse Drive, Redgate Hill,
+Jolly Sailors, Dalegate Market, Church Walk and the other current Coastliner
+physical stop labels stored in the bank.
+
+Lamsey Lane: routes 34/35/36 show and play "Diversion in operation." while
+travelling Bottom Farm <-> Poplar Avenue.
+Whiteway Road: the passing-place passenger information remains enabled.

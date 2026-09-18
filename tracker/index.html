@@ -1576,7 +1576,7 @@
       if(!els.passengerAnnounceToggle)return;
       els.passengerAnnounceToggle.classList.toggle('active',state.announcementsEnabled);
       els.passengerAnnounceToggle.setAttribute('aria-pressed',String(state.announcementsEnabled));
-      els.passengerAnnounceToggle.textContent=state.announcementsEnabled?'🔊 AI announcements on':'🔇 AI announcements off';
+      els.passengerAnnounceToggle.textContent=state.announcementsEnabled?'🔊 Clear AI announcements on':'🔇 AI announcements off';
       els.passengerAnnounceToggle.title=state.announcementsEnabled?'Professional clear AI announcements are enabled':'Announcements are disabled';
       if(els.passengerReplay)els.passengerReplay.disabled=!state.announcementsEnabled;
     }
@@ -1907,18 +1907,13 @@
       const screenKey=`screen:${screenMode}:${routeKey}:${stopId}`;
       if(state.announcementScreenKey===screenKey)return;
 
-      const adminStop=window.BusBaseAI?.resolveStop(clean(live.route),clean(first.name),clean(first.locality));
+      // Always send the exact live BusTimes stop into the shared admin AI player.
+      // The player first tries the stored full phrase, then its clear-AI stop-name
+      // bank. This means intermediate physical stops are no longer skipped just
+      // because they were not one of the old timing points.
       if(atStop){
-        if(adminStop){
-          requestPassengerStopAnnouncement(live,first,'this',screenKey);
-        }else{
-          // This should only happen for a newly-added live stop that has not yet
-          // been entered into the admin bank. It deliberately does NOT use browser TTS.
-          const message=passengerArrivalAnnouncement(first);
-          requestPassengerAnnouncement(message,screenKey,'announcementScreenKey');
-        }
+        requestPassengerStopAnnouncement(live,first,'this',screenKey);
       }else{
-        const message=adminStop?.nextText||passengerNextStopAnnouncement(first);
         const diversion=lamseyLaneDiversionSegmentApplies(live,context,stops,false);
         const beatPad=!diversion&&whitewayBeatPadApplies(live,context,stops,false);
         const followText=diversion?LAMSEY_LANE_DIVERSION_MESSAGE:(beatPad?WHITEWAY_BEAT_PAD_MESSAGE:'');
@@ -1930,13 +1925,7 @@
           afterKey:followKey,
           afterSlot:diversion?'announcementDiversionKey':'announcementBeatPadKey'
         };
-        if(adminStop){
-          requestPassengerStopAnnouncement(live,first,'next',screenKey,opts);
-        }else{
-          // AI-only fallback: generated text can play only if that exact phrase exists
-          // in the shared admin bank. Missing phrases are retried/reported, never spoken by the browser.
-          requestPassengerAnnouncement(message,screenKey,'announcementScreenKey',opts);
-        }
+        requestPassengerStopAnnouncement(live,first,'next',screenKey,opts);
       }
     }
 
