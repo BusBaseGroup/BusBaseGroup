@@ -178,7 +178,7 @@
             <button id="stopAnnouncementDemo" class="btn btn-light" type="button">■ Stop audio</button>
           </div>
           <div style="margin-top:12px"><div id="announcementRouteTitle" class="announcement-route-title"></div><div id="announcementRouteMeta" class="announcement-route-meta"></div></div>
-          <div class="announcement-status" style="margin-top:10px;background:#f0f8f4;border-color:#b8dec8;color:#176a3b"><strong>Clear AI voice verified:</strong> 173/173 configured stops and 183/183 Next stop / This stop scripts are mapped to professional MP3 recordings in <code>/tracker/admin/announcement-bank.js</code>. This is the same clear voice profile used for Poplar Avenue. Browser/system voices are disabled.</div>
+          <div class="announcement-status" style="margin-top:10px;background:#f0f8f4;border-color:#b8dec8;color:#176a3b"><strong>Shared clear-AI bank:</strong> Lynx plus First Eastern Counties are using the same professional AI player stored in <code>/tracker/admin/announcement-bank.js</code>. First X1 physical stops and major First network hubs are included in this build. Browser/system voices are disabled.</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
             <button id="demoWhitewayAlert" class="btn btn-light" type="button">▶ Whiteway Road passing-place message</button>
             <button id="demoLamseyAlert" class="btn btn-light" type="button">▶ Lamsey Lane diversion message</button>
@@ -207,7 +207,10 @@
     };
 
     // Direct BusTimes live feed. No separate backend URL is required for this test version.
-    const BUSTIMES_LIVE_URL = 'https://bustimes.org/vehicles.json?operator=LYNX';
+    const BUSTIMES_LIVE_FEEDS = [
+      {code:'LYNX',name:'Lynx Bus',url:'https://bustimes.org/vehicles.json?operator=LYNX'},
+      {code:'FECS',name:'First Eastern Counties',url:'https://bustimes.org/vehicles.json?operator=FECS'}
+    ];
 
     const ANNOUNCEMENT_STOPS = window.BUSBASE_AI_STOPS || [];
 
@@ -316,25 +319,31 @@
       if(!verifiedAdmin)return;
       els.refreshAll.disabled=true;
       try{
-        const [mappingSnap, suggestionsSnap, liveResponse] = await Promise.all([
+        const [mappingSnap, suggestionsSnap, feedResults] = await Promise.all([
           getDocs(collection(db,'vehicles')),
           getDocs(collection(db,'suggestions')),
-          fetch(BUSTIMES_LIVE_URL,{cache:'no-store',mode:'cors',headers:{'Accept':'application/json'}})
+          Promise.allSettled(BUSTIMES_LIVE_FEEDS.map(async feed=>{
+            const response=await fetch(feed.url,{cache:'no-store',mode:'cors',headers:{'Accept':'application/json'}});
+            if(!response.ok)throw new Error(`${feed.name} returned HTTP ${response.status}.`);
+            const payload=await response.json();
+            if(!Array.isArray(payload))throw new Error(`${feed.name} returned an unexpected live-data format.`);
+            return{feed,payload};
+          }))
         ]);
-
-        if(!liveResponse.ok) throw new Error(`BusTimes returned HTTP ${liveResponse.status}.`);
-        const payload = await liveResponse.json();
-        if(!Array.isArray(payload)) throw new Error('BusTimes returned an unexpected live-data format.');
+        const livePayloads=feedResults.filter(r=>r.status==='fulfilled').map(r=>r.value);
+        if(!livePayloads.length)throw new Error('No BusTimes live operator feeds could be loaded.');
 
         mappings = mappingSnap.docs.map(d => ({machineId:d.id,...d.data()}));
         suggestions = suggestionsSnap.docs.map(d => ({id:d.id,...d.data()})).filter(s => (s.status || 'pending') === 'pending').sort((a,b)=>(Date.parse(b.createdAt||'')||0)-(Date.parse(a.createdAt||'')||0));
 
         const seen = new Map();
-        for(const item of payload){
-          const vehicle = parseBusTimesVehicle(item);
-          if(!vehicle) continue;
-          const previous = seen.get(vehicle.machineId);
-          if(!previous || newer(vehicle.recordedAt,previous.recordedAt)) seen.set(vehicle.machineId,vehicle);
+        for(const {feed,payload} of livePayloads){
+          for(const item of payload){
+            const vehicle = parseBusTimesVehicle(item,feed);
+            if(!vehicle) continue;
+            const previous = seen.get(vehicle.machineId);
+            if(!previous || newer(vehicle.recordedAt,previous.recordedAt)) seen.set(vehicle.machineId,vehicle);
+          }
         }
         liveVehicles = [...seen.values()];
 
@@ -350,7 +359,7 @@
       finally{els.refreshAll.disabled=false;}
     }
 
-    function parseBusTimesVehicle(item){
+    function parseBusTimesVehicle(item,feed={code:'LYNX',name:'Lynx Bus'}){
       if(!item || typeof item!=='object') return null;
       const coordinates = Array.isArray(item.coordinates)
         ? item.coordinates
@@ -364,13 +373,16 @@
       if(!Number.isFinite(latitude)||!Number.isFinite(longitude)) return null;
 
       const vehicleInfo=item.vehicle&&typeof item.vehicle==='object'?item.vehicle:{};
-      const machineId=vehicleKeyFromBusTimes(vehicleInfo,item);
-      if(!machineId)return null;
+      const sourceMachineId=vehicleKeyFromBusTimes(vehicleInfo,item);
+      if(!sourceMachineId)return null;
+      const machineId=feed.code==='LYNX'?sourceMachineId:`${feed.code}:${sourceMachineId}`;
       const service=item.service&&typeof item.service==='object'?item.service:{};
 
       return {
         machineId,
-        machineLabel:machineLabelFromBusTimes(vehicleInfo,machineId),
+        operatorCode:feed.code,
+        operatorName:feed.name,
+        machineLabel:machineLabelFromBusTimes(vehicleInfo,sourceMachineId),
         route:clean(service.line_name??item.route_name??item.line_name??item.route??''),
         destination:clean(item.destination??item.destination_name??item.headsign??item.trip?.headsign??''),
         latitude,
@@ -412,7 +424,7 @@
       const unknown = liveVehicles.filter(v=>!mappedIds.has(v.machineId)).sort((a,b)=>collator.compare(a.route||'',b.route||'') || collator.compare(a.machineId||'',b.machineId||''));
       els.unknownCount.textContent=`${unknown.length} live`;
       if(!unknown.length){els.unknownList.innerHTML='<div class="empty">Every live vehicle is already matched, or no vehicles are reporting.</div>';return;}
-      els.unknownList.innerHTML=unknown.map(v=>`<div class="unknown-row"><div><div class="unknown-title">Tracker ${escapeHtml(v.machineLabel || v.machineId)}</div><div class="unknown-meta">Route ${escapeHtml(v.route||'—')}${v.destination?` • to ${escapeHtml(v.destination)}`:''} • updated ${escapeHtml(timeAgo(v.recordedAt))}</div></div><button class="btn btn-primary mini" type="button" data-add="${escapeAttr(v.machineId)}">Add details</button></div>`).join('');
+      els.unknownList.innerHTML=unknown.map(v=>`<div class="unknown-row"><div><div class="unknown-title">Tracker ${escapeHtml(v.machineLabel || v.machineId)}</div><div class="unknown-meta">${escapeHtml(v.operatorName||v.operatorCode||'Operator')} • Route ${escapeHtml(v.route||'—')}${v.destination?` • to ${escapeHtml(v.destination)}`:''} • updated ${escapeHtml(timeAgo(v.recordedAt))}</div></div><button class="btn btn-primary mini" type="button" data-add="${escapeAttr(v.machineId)}">Add details</button></div>`).join('');
       els.unknownList.querySelectorAll('[data-add]').forEach(btn=>btn.addEventListener('click',()=>beginAdd(btn.dataset.add)));
     }
 
@@ -549,16 +561,21 @@
       }).join('');
       if(routes.includes('35'))els.announcementRoute.value='35';
       renderAnnouncementDemo();
-      renderAnnouncementDemo();updateAnnouncementCoverage();
+      updateAnnouncementCoverage();
     }
 
-    function hasAiAnnouncement(text){const message=String(text||'').trim();return Boolean(PROFESSIONAL_ANNOUNCEMENTS[`text:${message}`]||PROFESSIONAL_ANNOUNCEMENTS[message]);}
+    function hasAiAnnouncement(text){
+      const message=String(text||'').trim();
+      if(PROFESSIONAL_ANNOUNCEMENTS[`text:${message}`]||PROFESSIONAL_ANNOUNCEMENTS[message])return true;
+      const match=message.match(/^(?:Next stop|This stop),\s*(.+?)(?:\.\s*Alight here for .*)?\.?$/i);
+      return Boolean(match&&window.BusBaseAI?.pieceUrl?.(match[1].replace(/\.$/,'')));
+    }
 
     function updateAnnouncementCoverage(){
       const route=els.announcementRoute.value;
       const routeStops=ANNOUNCEMENT_STOPS.filter(stop=>stop.route===route);
       const scripts=[...new Set(routeStops.flatMap(stop=>[stop.nextText,stop.thisText]))];
-      els.announcementCoverage.textContent=`${scripts.length} AI clips • admin bank`;
+      els.announcementCoverage.textContent=`${routeStops.length} stops • clear AI bank`;
       els.announcementCoverage.style.background='#e9f7ee';
       els.announcementCoverage.style.color='#176a3b';
     }

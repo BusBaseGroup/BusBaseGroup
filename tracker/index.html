@@ -623,7 +623,7 @@
     <aside class="side" aria-label="BusBase live vehicles">
       <section class="tracker-view">
         <div class="side-title">
-          <div class="eyebrow">Lynx Bus</div>
+          <div class="eyebrow">Lynx Bus + First Eastern Counties</div>
           <div class="title-row">
             <div>
               <h1>Live vehicles</h1>
@@ -638,6 +638,11 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="m21 19.6-5.2-5.2a7 7 0 1 0-1.4 1.4l5.2 5.2L21 19.6ZM5 10.5a5.5 5.5 0 1 1 11 0 5.5 5.5 0 0 1-11 0Z"/></svg>
             <input id="vehicleSearch" type="search" placeholder="Search fleet, registration or route" autocomplete="off">
           </label>
+          <select id="operatorFilter" class="route-select" aria-label="Filter by operator">
+            <option value="">All operators</option>
+            <option value="LYNX">Lynx Bus</option>
+            <option value="FECS">First Eastern Counties</option>
+          </select>
           <select id="routeFilter" class="route-select" aria-label="Filter by route"><option value="">All routes</option></select>
           <button id="refreshBtn" class="refresh" type="button">Refresh</button>
         </div>
@@ -692,6 +697,7 @@
             <h2>Live journey</h2>
             <table class="fact-table">
               <tbody>
+                <tr><th>Operator</th><td id="factOperator">—</td></tr>
                 <tr><th>Route</th><td id="factRoute">—</td></tr>
                 <tr><th>Destination</th><td id="factDestination">—</td></tr>
                 <tr><th>Direction</th><td id="factDirection">—</td></tr>
@@ -894,14 +900,18 @@
       appId:"1:380602561765:web:5bf01fc6d7982dc950500c"
     };
 
-    const BUSTIMES_LIVE_URL='https://bustimes.org/vehicles.json?operator=LYNX';
+    const BUSTIMES_LIVE_FEEDS=[
+      {code:'LYNX',name:'Lynx Bus',url:'https://bustimes.org/vehicles.json?operator=LYNX',colour:'#D71920'},
+      {code:'FECS',name:'First Eastern Counties',url:'https://bustimes.org/vehicles.json?operator=FECS',colour:'#5B2C83'}
+    ];
+    const OPERATOR_INFO=Object.fromEntries(BUSTIMES_LIVE_FEEDS.map(feed=>[feed.code,feed]));
     const MAP_STYLE='https://tiles.openfreemap.org/styles/liberty';
     const REFRESH_MS=7000;
     const MAPPING_REFRESH_MS=60000;
     const STALE_POSITION_MS=4*60*1000;
-    const DEFAULT_CENTER={lat:52.7517,lng:0.3970};
+    const DEFAULT_CENTER={lat:52.72,lng:0.55};
     const DEFAULT_ZOOM=10;
-    const LIVE_AREA={south:52.10,west:-1.00,north:53.30,east:1.80};
+    const LIVE_AREA={south:51.65,west:-1.35,north:53.45,east:2.05};
     const PROFESSIONAL_ANNOUNCEMENTS=window.BUSBASE_AI_ANNOUNCEMENTS||{};
     const SHARED_AI=window.BusBaseAI||null;
     if(!Object.keys(PROFESSIONAL_ANNOUNCEMENTS).length){
@@ -960,11 +970,11 @@
     const $=id=>document.getElementById(id);
 
     const ids=[
-      'vehiclesNavBtn','accountBtn','adminLink','summary','livePill','livePillText','vehicleSearch','routeFilter','refreshBtn','vehicleList',
+      'vehiclesNavBtn','accountBtn','adminLink','summary','livePill','livePillText','vehicleSearch','operatorFilter','routeFilter','refreshBtn','vehicleList',
       'fitBtn','mapRefreshBtn','mapStatus','mapPane','map','selectedCard','selectedRoute','selectedTitle','selectedSub','selectedDest','selectedRunning','selectedTime','selectedClose','selectedView',
       'vehicleBack','detailStatus','detailStatusText','detailRoute','detailTitle','detailReg','detailJourney','detailJourneyMeta','trackBtn','passengerBtn','suggestBtn',
       'passengerDisplay','passengerClose','passengerAnnounceToggle','passengerReplay','passengerVehicleTitle','passengerVehicleMeta','passengerRunning','passengerMain','passengerStateLabel','passengerPrimary','passengerAlight','passengerSecondary','passengerNotice','passengerNoticeIcon','passengerNoticeTitle','passengerNoticeText','passengerFollowing','passengerRoute','passengerDestination','passengerClock','passengerDate',
-      'factFleet','factReg','factMake','factModel','factType','factYear','factLivery','factRoute','factDestination','factDirection','factRunning','factGps','stopSequenceStatus','upcomingStops','historyCount','journeyList','gpsTitle','gpsMeta',
+      'factFleet','factReg','factMake','factModel','factType','factYear','factLivery','factOperator','factRoute','factDestination','factDirection','factRunning','factGps','stopSequenceStatus','upcomingStops','historyCount','journeyList','gpsTitle','gpsMeta',
       'stopModal','stopTitle','stopCode','stopDepartures','stopBustimesLink',
       'suggestModal','suggestForm','sFleet','sReg','sMake','sModel','sType','sYear','sLivery','sColour','sColourHex','sReason','sEvidence','suggestMessage',
       'accountModal','closeModal','signedOutBox','signedInBox','loginTab','registerTab','authForm','nameField','displayName','email','password','confirmField','confirmPassword',
@@ -973,7 +983,7 @@
     const els=Object.fromEntries(ids.map(id=>[id,$(id)]));
 
     const state={
-      vehicles:[],markers:new Map(),route:'',search:'',selectedId:null,
+      vehicles:[],markers:new Map(),operator:'',route:'',search:'',selectedId:null,
       timer:null,loadingLive:false,firstGoodLoad:true,
       user:null,isAdmin:false,favourites:new Set(),showFavouritesOnly:false,authMode:'login',
       map:null,mapReady:false,popup:null,infoOpenId:null,followSelected:false,
@@ -1061,6 +1071,15 @@
       state.search=els.vehicleSearch.value.trim().toLowerCase();
       clearSelection();
       renderAll();
+    });
+
+    els.operatorFilter.addEventListener('change',()=>{
+      state.operator=els.operatorFilter.value;
+      state.route='';
+      clearSelection();
+      updateRoutes();
+      renderAll();
+      fitToVehicles(visibleVehicles());
     });
 
     els.routeFilter.addEventListener('change',()=>{
@@ -1321,20 +1340,28 @@
       setLiveState('loading','Updating');
 
       try{
-        const [response,mappings]=await Promise.all([
-          fetch(BUSTIMES_LIVE_URL,{cache:'no-store',mode:'cors',headers:{Accept:'application/json'}}),
+        const [feedResults,mappings]=await Promise.all([
+          Promise.allSettled(BUSTIMES_LIVE_FEEDS.map(async feed=>{
+            const response=await fetch(feed.url,{cache:'no-store',mode:'cors',headers:{Accept:'application/json'}});
+            if(!response.ok)throw new Error(`${feed.name} feed returned HTTP ${response.status}.`);
+            const payload=await response.json();
+            if(!Array.isArray(payload))throw new Error(`${feed.name} returned an unexpected live-data format.`);
+            return {feed,payload};
+          })),
           getVehicleMappings(manual)
         ]);
-        if(!response.ok)throw new Error(`BusTimes returned HTTP ${response.status}.`);
-        const payload=await response.json();
-        if(!Array.isArray(payload))throw new Error('BusTimes returned an unexpected live-data format.');
+        const goodFeeds=feedResults.filter(result=>result.status==='fulfilled').map(result=>result.value);
+        feedResults.filter(result=>result.status==='rejected').forEach(result=>console.warn('Live operator feed failed:',result.reason));
+        if(!goodFeeds.length)throw new Error('No live operator feeds could be loaded from BusTimes.');
 
         const seen=new Map();
-        for(const item of payload){
-          const raw=parseBusTimesVehicle(item);
-          if(!raw)continue;
-          const previous=seen.get(raw.machineId);
-          if(!previous||newer(raw.recordedAt,previous.recordedAt))seen.set(raw.machineId,raw);
+        for(const {feed,payload} of goodFeeds){
+          for(const item of payload){
+            const raw=parseBusTimesVehicle(item,feed);
+            if(!raw)continue;
+            const previous=seen.get(raw.machineId);
+            if(!previous||newer(raw.recordedAt,previous.recordedAt))seen.set(raw.machineId,raw);
+          }
         }
 
         const previousVehicles=new Map(state.vehicles.map(v=>[v.machineId,v]));
@@ -1459,7 +1486,7 @@
 
     function renderTracker(){
       const vehicles=visibleVehicles();
-      els.summary.textContent=`${vehicles.length} live ${vehicles.length===1?'vehicle':'vehicles'}${state.route?` on route ${state.route}`:''}${state.search?' • filtered':''}${state.showFavouritesOnly?' • favourites':''}`;
+      els.summary.textContent=`${vehicles.length} live ${vehicles.length===1?'vehicle':'vehicles'}${state.operator?` • ${operatorName(state.operator)}`:''}${state.route?` • route ${state.route}`:''}${state.search?' • filtered':''}${state.showFavouritesOnly?' • favourites':''}`;
       renderVehicleList(vehicles);
       renderSelectedCard();
     }
@@ -1479,7 +1506,7 @@
               ${vehicle.fleetNumber?`<span class="fleet-no">${escapeHtml(vehicle.fleetNumber)}</span>`:''}
               <a class="reg-link ${vehicle.registration?'':'unknown-link'}" href="${escapeAttr(trackerUrl(vehicleUrlKey(vehicle)))}" data-open-vehicle="${escapeAttr(vehicle.id)}">${escapeHtml(regText)}</a>
             </span>
-            <span class="vehicle-meta">${escapeHtml(vehicleDescription(vehicle))}</span>
+            <span class="vehicle-meta">${escapeHtml(operatorName(vehicle.operatorCode))} • ${escapeHtml(vehicleDescription(vehicle))}</span>
             <span class="vehicle-journey">${escapeHtml(vehicle.destination?`Route ${vehicle.route||'—'} to ${vehicle.destination}`:`Route ${vehicle.route||'—'} • live journey`)}</span>
             <span class="vehicle-gps">${escapeHtml(headingText(vehicle))} • GPS ${escapeHtml(timeAgo(vehicle.recordedAt))}</span>
           </span>
@@ -1657,7 +1684,7 @@
       if(key)state.announcementPendingKey=key;
       try{
         if(!window.BusBaseAI)throw new Error('Shared admin AI player is unavailable');
-        const result=await window.BusBaseAI.playStop(clean(live?.route),clean(stop.name),clean(stop.locality),mode);
+        const result=await window.BusBaseAI.playStop(clean(live?.route),clean(stop.name),clean(stop.locality),mode,{operatorCode:clean(live?.operatorCode)});
         if(key){
           state.announcementLastKey=key;
           state.announcementLastAudioKey=key;
@@ -1941,7 +1968,8 @@
       els.passengerVehicleTitle.textContent=vehicleTitle;
       els.passengerVehicleMeta.textContent=[
         [vehicle.make,vehicle.model].filter(Boolean).join(' ')||vehicle.vehicleType||'',
-        vehicle.livery||''
+        vehicle.livery||'',
+        operatorName(vehicle.operatorCode)
       ].filter(Boolean).join(' · ')||'Live BusBase vehicle';
 
       const active=isVehicleInService(live);
@@ -2070,6 +2098,7 @@
       els.factType.textContent=vehicle.vehicleType||'—';
       els.factYear.textContent=vehicle.yearRegistered||'—';
       els.factLivery.textContent=vehicle.livery||'—';
+      els.factOperator.textContent=operatorName(vehicle.operatorCode)||'—';
       els.factRoute.textContent=vehicle.route||'—';
       els.factDestination.textContent=vehicle.destination||'—';
       els.factDirection.textContent=headingText(vehicle);
@@ -2574,9 +2603,10 @@
     function visibleVehicles(){
       const q=state.search;
       return state.vehicles
+        .filter(v=>!state.operator||v.operatorCode===state.operator)
         .filter(v=>!state.route||v.route===state.route)
         .filter(v=>!q||[
-          v.fleetNumber,v.registration,v.vehicleType,v.make,v.model,v.livery,v.route,v.destination,v.machineLabel,v.machineId
+          v.fleetNumber,v.registration,v.vehicleType,v.make,v.model,v.livery,v.route,v.destination,v.machineLabel,v.machineId,operatorName(v.operatorCode)
         ].some(value=>String(value||'').toLowerCase().includes(q)))
         .filter(v=>!state.showFavouritesOnly||state.favourites.has(favouriteKey(v)))
         .sort(vehicleSort);
@@ -2584,7 +2614,7 @@
 
     function updateRoutes(){
       const current=state.route;
-      const routes=[...new Set(state.vehicles.map(v=>clean(v.route)).filter(Boolean))].sort((a,b)=>collator.compare(a,b));
+      const routes=[...new Set(state.vehicles.filter(v=>!state.operator||v.operatorCode===state.operator).map(v=>clean(v.route)).filter(Boolean))].sort((a,b)=>collator.compare(a,b));
       els.routeFilter.innerHTML='<option value="">All routes</option>'+routes.map(route=>`<option value="${escapeAttr(route)}">${escapeHtml(route)}</option>`).join('');
       if(routes.includes(current))els.routeFilter.value=current;
       else{state.route='';els.routeFilter.value='';}
@@ -2625,18 +2655,23 @@
       state.map.fitBounds(bounds,{padding:{top:45,right:45,bottom:45,left:45},maxZoom:13,duration:550,essential:true});
     }
 
-    function parseBusTimesVehicle(item){
+    function parseBusTimesVehicle(item,feed=OPERATOR_INFO.LYNX){
       if(!item||typeof item!=='object')return null;
       const coords=Array.isArray(item.coordinates)?item.coordinates:Array.isArray(item.location?.coordinates)?item.location.coordinates:null;
       if(!coords||coords.length<2)return null;
       const longitude=Number(coords[0]),latitude=Number(coords[1]);
       if(!Number.isFinite(latitude)||!Number.isFinite(longitude))return null;
       const vi=item.vehicle&&typeof item.vehicle==='object'?item.vehicle:{};
-      const machineId=vehicleKeyFromBusTimes(vi,item);
-      if(!machineId)return null;
+      const sourceMachineId=vehicleKeyFromBusTimes(vi,item);
+      if(!sourceMachineId)return null;
+      const operatorCode=clean(feed?.code)||'LYNX';
+      const machineId=operatorCode==='LYNX'?sourceMachineId:`${operatorCode}:${sourceMachineId}`;
+      const identity=vehicleIdentityFromBusTimes(vi);
       const service=item.service&&typeof item.service==='object'?item.service:{};
       return{
-        machineId,machineLabel:machineLabelFromBusTimes(vi,machineId),
+        machineId,sourceMachineId,machineLabel:machineLabelFromBusTimes(vi,sourceMachineId),
+        operatorCode,operatorName:clean(feed?.name)||operatorCode,operatorColour:clean(feed?.colour)||'#D71920',
+        fleetNumber:identity.fleetNumber,registration:identity.registration,
         busTimesVehicleId:clean(vi.id??item.vehicle_id??item.vehicleId??''),
         route:clean(service.line_name??item.route_name??item.line_name??item.route??''),
         lineRef:clean(item.service_id??service.id??service.url??''),
@@ -3317,6 +3352,22 @@
       return name?`bt-${slugify(name)}`.slice(0,180):'';
     }
 
+
+    function vehicleIdentityFromBusTimes(vi){
+      const name=clean(vi?.name);
+      let fleetNumber=clean(vi?.fleet_code??vi?.fleet_number??vi?.fleetNumber??vi?.code??'');
+      let registration=clean(vi?.registration??vi?.reg??vi?.licence_plate??vi?.license_plate??vi?.vehicle_registration??'').toUpperCase();
+      if(!fleetNumber&&name){
+        const first=clean(name.split(' - ')[0]);
+        if(/^\d{3,6}$/.test(first))fleetNumber=first;
+      }
+      if(!registration&&name){
+        const match=name.toUpperCase().match(/\b(?:[A-Z]{2}\d{2}\s?[A-Z]{3}|[A-Z]\d{1,3}\s?[A-Z]{3}|[A-Z]{1,3}\s?\d{1,4}|\d{1,4}\s?[A-Z]{1,3})\b/);
+        if(match)registration=match[0].replace(/\s+/g,' ').trim();
+      }
+      return{fleetNumber,registration};
+    }
+
     function machineLabelFromBusTimes(vi,machineId){
       const name=clean(vi.name);
       if(name.includes(' - ')){
@@ -3333,15 +3384,16 @@
         machineId:raw.machineId,
         machineLabel:raw.machineLabel,
         busTimesVehicleId:raw.busTimesVehicleId,
+        operatorCode:raw.operatorCode,operatorName:raw.operatorName,
         mapped:Boolean(mapping),
-        fleetNumber:clean(m.fleetNumber),
-        registration:clean(m.registration),
+        fleetNumber:clean(m.fleetNumber)||clean(raw.fleetNumber),
+        registration:clean(m.registration)||clean(raw.registration),
         make:clean(m.make),
         model:clean(m.model),
         vehicleType:clean(m.vehicleType),
         yearRegistered:clean(m.yearRegistered),
-        livery:clean(m.livery),
-        liveryColour:normaliseColour(m.liveryColour),
+        livery:clean(m.livery)||(raw.operatorCode==='FECS'?'First Bus':''),
+        liveryColour:normaliseColour(m.liveryColour)||normaliseColour(raw.operatorColour),
         route:raw.route,lineRef:raw.lineRef,direction:raw.direction,origin:raw.origin,destination:raw.destination,
         latitude:raw.latitude,longitude:raw.longitude,bearing:raw.bearing,recordedAt:raw.recordedAt,journeyRef:raw.journeyRef,tripRef:raw.tripRef,
         runningSeconds:raw.runningSeconds,upcomingStops:[],journeyContext:null
@@ -3388,10 +3440,11 @@
     }
     function validVehicles(list){return list.filter(v=>isValidPosition(v)&&isFreshPosition(v))}
 
-    function markerColour(v){return v?.liveryColour||'#D71920'}
+    function markerColour(v){return v?.liveryColour||OPERATOR_INFO[v?.operatorCode]?.colour||'#D71920'}
+    function operatorName(code){return OPERATOR_INFO[clean(code)]?.name||clean(code)||'Unknown operator'}
     function vehicleDescription(v){return [v.make,v.model].filter(Boolean).join(' ')||v.vehicleType||v.livery||'Vehicle details not added yet'}
     function publicVehicleTitle(v){return [v.fleetNumber?`Fleet ${v.fleetNumber}`:'',v.registration||''].filter(Boolean).join(' • ')||`Tracker ${v.machineLabel||v.machineId||'Unknown'}`}
-    function favouriteKey(v){return`bus:${v.fleetNumber||v.registration||v.machineId}`}
+    function favouriteKey(v){return`bus:${v.operatorCode||'BUS'}:${v.fleetNumber||v.registration||v.machineId}`}
     function vehicleSort(a,b){return collator.compare(a.fleetNumber||a.registration||a.machineId||'',b.fleetNumber||b.registration||b.machineId||'')}
     function headingText(v){
       const bearing=numberOrNull(v?.bearing),comp=clean(v?.direction)||bearingToCompass(bearing);
