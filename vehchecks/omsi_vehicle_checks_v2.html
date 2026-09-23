@@ -1,0 +1,1560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OMSI 2 Vehicle Checks</title>
+<style>
+  :root{
+    --bg:#0d1117;
+    --panel:#151b23;
+    --panel2:#1b2430;
+    --border:#2a3442;
+    --text:#eef3f8;
+    --muted:#9aa8b7;
+    --accent:#4da3ff;
+    --pass:#2dbd6e;
+    --fail:#ef5350;
+    --warn:#f3b73f;
+    --shadow:0 16px 40px rgba(0,0,0,.25);
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    background:
+      radial-gradient(circle at top right, rgba(77,163,255,.10), transparent 28rem),
+      var(--bg);
+    color:var(--text);
+    min-height:100vh;
+  }
+
+  button,select,input,textarea{font:inherit}
+
+  .topbar{
+    position:sticky;
+    top:0;
+    z-index:50;
+    background:rgba(13,17,23,.92);
+    backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--border);
+  }
+
+  .topbar-inner{
+    max-width:1200px;
+    margin:auto;
+    padding:14px 18px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    min-width:0;
+  }
+
+  .brand-icon{
+    width:42px;
+    height:42px;
+    border-radius:12px;
+    display:grid;
+    place-items:center;
+    background:linear-gradient(135deg,#2385ef,#58b0ff);
+    color:#08111b;
+    font-weight:900;
+    box-shadow:var(--shadow);
+  }
+
+  .brand h1{
+    font-size:18px;
+    margin:0;
+  }
+
+  .brand p{
+    margin:2px 0 0;
+    color:var(--muted);
+    font-size:12px;
+  }
+
+  .top-actions{
+    margin-left:auto;
+    display:flex;
+    gap:8px;
+  }
+
+  .btn{
+    border:1px solid var(--border);
+    background:var(--panel2);
+    color:var(--text);
+    padding:10px 13px;
+    border-radius:10px;
+    cursor:pointer;
+    transition:.15s ease;
+  }
+
+  .btn:hover{transform:translateY(-1px);border-color:#43536a}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#06101a;font-weight:800}
+  .btn.danger{background:#2b1719;border-color:#5a282c;color:#ffb4b4}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+
+  .wrap{
+    max-width:1200px;
+    margin:auto;
+    padding:24px 18px 60px;
+  }
+
+  .hero{
+    display:grid;
+    grid-template-columns:1.4fr .8fr;
+    gap:16px;
+    margin-bottom:18px;
+  }
+
+  .card{
+    background:linear-gradient(180deg,rgba(255,255,255,.02),transparent),var(--panel);
+    border:1px solid var(--border);
+    border-radius:16px;
+    box-shadow:var(--shadow);
+  }
+
+  .vehicle-card{padding:20px}
+  .vehicle-card h2{margin:0 0 5px;font-size:24px}
+  .vehicle-card p{margin:0;color:var(--muted)}
+
+  .vehicle-picker{
+    margin-top:18px;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+
+  label{
+    color:var(--muted);
+    font-size:12px;
+    font-weight:700;
+    display:block;
+    margin-bottom:6px;
+  }
+
+  select,input,textarea{
+    width:100%;
+    border:1px solid var(--border);
+    background:#0f151d;
+    color:var(--text);
+    border-radius:10px;
+    padding:11px 12px;
+    outline:none;
+  }
+
+  select:focus,input:focus,textarea:focus{border-color:var(--accent)}
+  textarea{resize:vertical;min-height:80px}
+
+  .summary-card{
+    padding:20px;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+  }
+
+  .summary-number{
+    font-size:40px;
+    font-weight:900;
+    line-height:1;
+  }
+
+  .summary-label{
+    color:var(--muted);
+    font-size:13px;
+    margin-top:7px;
+  }
+
+  .progress-track{
+    height:10px;
+    border-radius:999px;
+    overflow:hidden;
+    background:#0c1219;
+    border:1px solid var(--border);
+    margin:15px 0 12px;
+  }
+
+  .progress-fill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#278df0,#62b7ff);
+    transition:width .2s ease;
+  }
+
+  .summary-row{
+    display:flex;
+    gap:16px;
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  .summary-row b{color:var(--text)}
+
+  .details{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+    margin-bottom:18px;
+  }
+
+  .detail-card{
+    padding:14px;
+  }
+
+  .detail-value{
+    font-size:17px;
+    font-weight:800;
+    margin-top:3px;
+  }
+
+  .section{
+    margin-top:18px;
+  }
+
+  .section-head{
+    display:flex;
+    align-items:end;
+    justify-content:space-between;
+    gap:14px;
+    margin-bottom:10px;
+  }
+
+  .section-head h3{
+    margin:0;
+    font-size:18px;
+  }
+
+  .section-head p{
+    margin:4px 0 0;
+    color:var(--muted);
+    font-size:12px;
+  }
+
+  .checks{
+    display:grid;
+    gap:10px;
+  }
+
+  .check{
+    display:grid;
+    grid-template-columns:40px minmax(0,1fr) auto;
+    align-items:center;
+    gap:12px;
+    padding:14px;
+  }
+
+  .check-num{
+    width:34px;
+    height:34px;
+    border-radius:9px;
+    display:grid;
+    place-items:center;
+    background:#0f151d;
+    border:1px solid var(--border);
+    color:var(--muted);
+    font-weight:800;
+  }
+
+  .check-title{
+    font-weight:800;
+    margin-bottom:4px;
+  }
+
+  .check-help{
+    font-size:12px;
+    color:var(--muted);
+  }
+
+  .result-buttons{
+    display:flex;
+    gap:7px;
+  }
+
+  .result-btn{
+    min-width:70px;
+    border:1px solid var(--border);
+    background:#101720;
+    color:var(--muted);
+    padding:9px 10px;
+    border-radius:9px;
+    cursor:pointer;
+    font-weight:800;
+  }
+
+  .result-btn.pass.active{
+    color:#d9ffea;
+    border-color:var(--pass);
+    background:rgba(45,189,110,.14);
+  }
+
+  .result-btn.fail.active{
+    color:#ffdada;
+    border-color:var(--fail);
+    background:rgba(239,83,80,.14);
+  }
+
+  .result-btn.na.active{
+    color:#ffecc0;
+    border-color:var(--warn);
+    background:rgba(243,183,63,.12);
+  }
+
+  .notes-card{padding:16px;margin-top:18px}
+
+  .footer-actions{
+    display:flex;
+    gap:10px;
+    justify-content:flex-end;
+    flex-wrap:wrap;
+    margin-top:18px;
+  }
+
+  .empty{
+    text-align:center;
+    padding:50px 20px;
+    color:var(--muted);
+  }
+
+  .history{
+    margin-top:24px;
+  }
+
+  .history-list{
+    display:grid;
+    gap:10px;
+  }
+
+  .history-item{
+    padding:14px;
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:12px;
+  }
+
+  .history-item strong{display:block;margin-bottom:4px}
+  .history-meta{font-size:12px;color:var(--muted)}
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:5px 9px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:900;
+    height:max-content;
+  }
+  .badge.pass{background:rgba(45,189,110,.14);color:#aef0c9}
+  .badge.fail{background:rgba(239,83,80,.14);color:#ffb1b0}
+
+  .modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.72);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:18px;
+    z-index:100;
+  }
+
+  .modal.open{display:flex}
+
+  .modal-card{
+    width:min(680px,100%);
+    max-height:90vh;
+    overflow:auto;
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:18px;
+    box-shadow:0 30px 80px rgba(0,0,0,.5);
+    padding:20px;
+  }
+
+  .modal-card h2{margin-top:0}
+  .report-box{
+    background:#0f151d;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px;
+    white-space:pre-wrap;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:12px;
+    line-height:1.5;
+    color:#dbe6f1;
+  }
+
+
+  .history-item{align-items:center}
+
+  .history-side{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+
+  .history-action{
+    border:1px solid var(--border);
+    background:#101720;
+    color:var(--text);
+    padding:7px 9px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:12px;
+    font-weight:800;
+  }
+
+  .history-action:hover{border-color:#4b607a}
+
+  .report-preview{
+    background:#f4f7fb;
+    color:#17202b;
+    border-radius:14px;
+    overflow:hidden;
+    border:1px solid #d9e1ea;
+  }
+
+  .report-preview-head{
+    padding:22px;
+    background:#132235;
+    color:#fff;
+    display:flex;
+    justify-content:space-between;
+    gap:16px;
+    align-items:flex-start;
+  }
+
+  .report-preview-head h3{margin:0;font-size:22px}
+  .report-preview-head p{margin:5px 0 0;color:#b9c8d8;font-size:12px}
+
+  .report-status{
+    padding:7px 11px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:900;
+    white-space:nowrap;
+  }
+
+  .report-status.pass{background:#dff7e9;color:#14643a}
+  .report-status.fail{background:#fde4e4;color:#a72d2d}
+
+  .report-preview-body{padding:20px}
+
+  .report-meta-grid{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+    margin-bottom:18px;
+  }
+
+  .report-meta{
+    background:#fff;
+    border:1px solid #dce4ed;
+    border-radius:10px;
+    padding:11px 12px;
+  }
+
+  .report-meta span{
+    display:block;
+    color:#728092;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    font-size:9px;
+    font-weight:900;
+    margin-bottom:4px;
+  }
+
+  .report-meta strong{font-size:13px;color:#182231}
+
+  .report-group{
+    margin-top:16px;
+    background:#fff;
+    border:1px solid #dce4ed;
+    border-radius:11px;
+    overflow:hidden;
+  }
+
+  .report-group-title{
+    padding:10px 12px;
+    font-weight:900;
+    font-size:12px;
+    background:#eaf0f6;
+    color:#253447;
+  }
+
+  .report-row{
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:12px;
+    padding:9px 12px;
+    border-top:1px solid #edf1f5;
+    align-items:center;
+    font-size:12px;
+  }
+
+  .report-result{
+    min-width:62px;
+    text-align:center;
+    border-radius:999px;
+    padding:5px 8px;
+    font-size:10px;
+    font-weight:900;
+  }
+
+  .report-result.pass{background:#e0f7e9;color:#17663c}
+  .report-result.fail{background:#fee7e7;color:#a52a2a}
+  .report-result.na{background:#fff3d6;color:#76520c}
+  .report-result.unchecked{background:#eef1f4;color:#56616e}
+
+  .report-notes{
+    margin-top:16px;
+    background:#fff;
+    border:1px solid #dce4ed;
+    border-radius:11px;
+    padding:13px;
+    font-size:12px;
+    line-height:1.5;
+  }
+
+  .report-notes strong{display:block;margin-bottom:6px}
+
+  @media(max-width:520px){
+    .report-preview-head{flex-direction:column}
+    .report-meta-grid{grid-template-columns:1fr}
+    .history-side{justify-content:flex-start}
+  }
+
+  @media(max-width:820px){
+    .hero{grid-template-columns:1fr}
+    .details{grid-template-columns:1fr 1fr}
+    .vehicle-picker{grid-template-columns:1fr}
+    .check{grid-template-columns:36px 1fr}
+    .result-buttons{grid-column:2;flex-wrap:wrap}
+    .top-actions .hide-mobile{display:none}
+  }
+
+  @media(max-width:520px){
+    .details{grid-template-columns:1fr}
+    .summary-row{flex-wrap:wrap;gap:10px}
+    .result-btn{min-width:64px}
+    .brand p{display:none}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-icon">VC</div>
+      <div>
+        <h1>OMSI 2 Vehicle Checks</h1>
+        <p>Pre-service inspection system</p>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="btn hide-mobile" id="historyBtn">History</button>
+      <button class="btn danger" id="resetBtn">Reset</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="hero">
+    <section class="card vehicle-card">
+      <h2>Start a vehicle check</h2>
+      <p>Select the bus you are driving. The checklist changes depending on the vehicle.</p>
+
+      <div class="vehicle-picker">
+        <div>
+          <label for="vehicleSelect">Vehicle</label>
+          <select id="vehicleSelect">
+            <option value="">Choose a vehicle…</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="fleetInput">Fleet number / registration</label>
+          <input id="fleetInput" placeholder="e.g. 68 / YX76 KLM">
+        </div>
+
+        <div>
+          <label for="driverInput">Driver name</label>
+          <input id="driverInput" placeholder="Driver">
+        </div>
+
+        <div>
+          <label for="dutyInput">Duty / route</label>
+          <input id="dutyInput" placeholder="e.g. 36 / Duty 103">
+        </div>
+      </div>
+    </section>
+
+    <aside class="card summary-card">
+      <div class="summary-number" id="progressText">0%</div>
+      <div class="summary-label">check complete</div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="summary-row">
+        <span>Passed <b id="passedCount">0</b></span>
+        <span>Failed <b id="failedCount">0</b></span>
+        <span>Remaining <b id="remainingCount">0</b></span>
+      </div>
+    </aside>
+  </div>
+
+  <div class="details">
+    <div class="card detail-card">
+      <label>Vehicle type</label>
+      <div class="detail-value" id="vehicleType">—</div>
+    </div>
+    <div class="card detail-card">
+      <label>Manufacturer</label>
+      <div class="detail-value" id="manufacturer">—</div>
+    </div>
+    <div class="card detail-card">
+      <label>Fuel / power</label>
+      <div class="detail-value" id="powerType">—</div>
+    </div>
+    <div class="card detail-card">
+      <label>Check status</label>
+      <div class="detail-value" id="overallStatus">Not started</div>
+    </div>
+  </div>
+
+  <div id="checkArea">
+    <div class="card empty">
+      Select a vehicle above to load its checks.
+    </div>
+  </div>
+
+  <section class="card notes-card" id="notesArea" style="display:none">
+    <label for="notes">Defects / additional notes</label>
+    <textarea id="notes" placeholder="Record anything unusual, damage, warning lights, noises, or defects here…"></textarea>
+
+    <div class="footer-actions">
+      <button class="btn" id="saveBtn">Save progress</button>
+      <button class="btn primary" id="completeBtn">Complete check</button>
+    </div>
+  </section>
+
+  <section class="history" id="historySection" style="display:none">
+    <div class="section-head">
+      <div>
+        <h3>Completed checks</h3>
+        <p>Stored on this device.</p>
+      </div>
+      <button class="btn" id="clearHistoryBtn">Clear history</button>
+    </div>
+    <div class="history-list" id="historyList"></div>
+  </section>
+
+</main>
+
+<div class="modal" id="reportModal">
+  <div class="modal-card">
+    <h2>Vehicle check report</h2>
+    <div id="reportPreview"></div>
+    <div class="footer-actions">
+      <button class="btn" id="copyReportBtn">Copy text</button>
+      <button class="btn" id="downloadReportBtn">Download report</button>
+      <button class="btn primary" id="closeReportBtn">Done</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const vehicles = {
+  "e400mmc": {
+    name: "ADL Enviro400 MMC",
+    manufacturer: "Alexander Dennis",
+    power: "Diesel",
+    groups: [
+      {
+        title: "Exterior",
+        description: "Walk-around checks before entering service.",
+        checks: [
+          ["Bodywork condition", "Check panels, mirrors, windows and obvious damage."],
+          ["Tyres and wheels", "Check tyre condition, wheel nuts and visible damage."],
+          ["Headlights and marker lights", "Check front lighting and side marker lights."],
+          ["Rear lights and brake lights", "Confirm all rear lamps illuminate correctly."],
+          ["Destination displays", "Front, side and rear displays working and legible."],
+          ["Doors", "Check front and centre doors open and close correctly."],
+          ["Emergency exits", "Check emergency doors/windows are secure and accessible."]
+        ]
+      },
+      {
+        title: "Cab",
+        description: "Driver controls and warning systems.",
+        checks: [
+          ["Master switch and ignition", "Vehicle powers up normally."],
+          ["Dashboard warning lights", "No unexpected EML, ABS, brake, air or DPF warnings."],
+          ["Air pressure", "Air builds correctly and remains in the safe range."],
+          ["Parking brake", "Applies and releases correctly."],
+          ["Service brake", "Brake pedal feels normal and braking response is correct."],
+          ["Steering", "No excessive play or abnormal resistance."],
+          ["Horn", "Horn operates correctly."],
+          ["Wipers and washers", "Front wipers and screenwash operate."],
+          ["Cab mirrors", "Interior and exterior mirrors correctly positioned."],
+          ["CCTV monitor", "CCTV system powers on and cameras display."]
+        ]
+      },
+      {
+        title: "Saloon",
+        description: "Passenger area and upper deck.",
+        checks: [
+          ["Interior lighting", "Saloon and stairwell lights operate."],
+          ["Lower deck condition", "No loose objects, damage or hazards."],
+          ["Upper deck condition", "Walk upper deck and check seats/floor."],
+          ["Staircase", "Handrails, step edges and lighting secure."],
+          ["Bell pushes", "Stop request bells operate."],
+          ["Wheelchair ramp", "Ramp deploys and stows correctly."],
+          ["Wheelchair bay", "Area clear and restraint equipment present if fitted."],
+          ["Heating / ventilation", "System responds to controls."]
+        ]
+      }
+    ]
+  },
+
+  "e200mmc": {
+    name: "ADL Enviro200 MMC",
+    manufacturer: "Alexander Dennis",
+    power: "Diesel",
+    groups: [
+      {
+        title: "Exterior",
+        description: "Single-deck walk-around checks.",
+        checks: [
+          ["Bodywork and glass", "Check for fresh damage, cracked glass or loose panels."],
+          ["Tyres and wheels", "Inspect tyre condition and wheels."],
+          ["Exterior lights", "Headlights, indicators, brake and marker lights."],
+          ["Destination equipment", "Front, side and rear displays if fitted."],
+          ["Entrance door", "Door opens and closes correctly."],
+          ["Emergency exits", "Emergency exits are accessible and secure."]
+        ]
+      },
+      {
+        title: "Cab",
+        description: "Driver controls.",
+        checks: [
+          ["Dashboard self-test", "Dash completes startup normally."],
+          ["Warning lights", "No unexpected warning lamps remain illuminated."],
+          ["Brakes", "Parking and service brakes operate correctly."],
+          ["Steering", "Steering operates without excessive play."],
+          ["Horn", "Horn operates."],
+          ["Wipers / washers", "Wipers and washers operate."],
+          ["Mirrors", "Mirrors adjusted and undamaged."],
+          ["Ticket machine / cab equipment", "Equipment powers up if being simulated."]
+        ]
+      },
+      {
+        title: "Passenger area",
+        description: "Interior safety checks.",
+        checks: [
+          ["Saloon lighting", "Interior lighting operates."],
+          ["Floor and seats", "No hazards, loose seats or obstructions."],
+          ["Bell pushes", "Stop buttons operate."],
+          ["Wheelchair ramp", "Ramp operates correctly."],
+          ["Wheelchair area", "Area is clear and ready for use."]
+        ]
+      }
+    ]
+  },
+
+  "citaro": {
+    name: "Mercedes-Benz Citaro O530",
+    manufacturer: "Mercedes-Benz",
+    power: "Diesel",
+    groups: [
+      {
+        title: "Exterior",
+        description: "Citaro-specific external inspection.",
+        checks: [
+          ["Body panels and glazing", "Check for visible damage and cracked glass."],
+          ["Tyres and wheels", "Check all visible tyres and wheel condition."],
+          ["Exterior lighting", "Headlights, indicators, brake and marker lights."],
+          ["Destination displays", "Check destination displays are powered and readable."],
+          ["Front door", "Front door cycles correctly."],
+          ["Centre / rear door", "Additional passenger door operates correctly."],
+          ["Kneeling function", "Check kneeling system lowers and raises correctly."]
+        ]
+      },
+      {
+        title: "Cab",
+        description: "Driver controls and pneumatic systems.",
+        checks: [
+          ["Instrument cluster", "Startup sequence completes correctly."],
+          ["Warning messages", "No unexpected STOP or warning messages."],
+          ["Air pressure", "System builds and holds sufficient air pressure."],
+          ["Parking brake", "Parking brake applies and releases."],
+          ["Retarder", "Retarder operates when selected."],
+          ["Service brakes", "Braking response normal."],
+          ["Steering", "Steering free from abnormal play."],
+          ["Wipers and washers", "Front screen equipment works."],
+          ["Horn", "Horn operates correctly."]
+        ]
+      },
+      {
+        title: "Passenger area",
+        description: "Interior and accessibility.",
+        checks: [
+          ["Interior lights", "Saloon lighting works."],
+          ["Passenger seating", "Seats and grab poles secure."],
+          ["Bell pushes", "Stop request system works."],
+          ["Ramp", "Manual/electric ramp usable depending on model."],
+          ["Heating / ventilation", "Saloon HVAC responds correctly."]
+        ]
+      }
+    ]
+  },
+
+  "b9tl": {
+    name: "Volvo B9TL / Wright Gemini",
+    manufacturer: "Volvo / Wrightbus",
+    power: "Diesel",
+    groups: [
+      {
+        title: "Exterior",
+        description: "Double-deck external checks.",
+        checks: [
+          ["Bodywork", "Check body panels, glass and mirrors."],
+          ["Tyres and wheels", "Inspect all visible wheel positions."],
+          ["Exterior lighting", "Front, rear, indicator and marker lights."],
+          ["Destination displays", "Check front, side and rear displays."],
+          ["Front door", "Door cycles correctly."],
+          ["Emergency exits", "Emergency exit points accessible and secure."]
+        ]
+      },
+      {
+        title: "Cab",
+        description: "Volvo chassis controls.",
+        checks: [
+          ["Dashboard startup", "Dashboard powers up normally."],
+          ["Warning lamps", "No unexpected engine, brake or ABS warnings."],
+          ["Air pressure", "Air system reaches operating pressure."],
+          ["Parking brake", "Check operation and warning lamp."],
+          ["Service brake", "Normal pedal response."],
+          ["Gear selector", "D/N/R selector responds correctly."],
+          ["Steering", "No excessive movement or abnormal feel."],
+          ["Wipers and washers", "Check both functions."],
+          ["Horn", "Horn sounds correctly."]
+        ]
+      },
+      {
+        title: "Saloon",
+        description: "Passenger compartment.",
+        checks: [
+          ["Lower deck", "Seats, floor and handrails safe."],
+          ["Upper deck", "Seats, floor and handrails safe."],
+          ["Stairs", "Steps and rails unobstructed."],
+          ["Interior lighting", "Lighting works throughout."],
+          ["Bell pushes", "Stop request system operates."],
+          ["Wheelchair space", "Area clear and accessible."]
+        ]
+      }
+    ]
+  },
+
+  "streetdeck": {
+    name: "Wright StreetDeck",
+    manufacturer: "Wrightbus",
+    power: "Diesel / Micro-hybrid",
+    groups: [
+      {
+        title: "Exterior",
+        description: "StreetDeck external walk-round.",
+        checks: [
+          ["Bodywork and glazing", "Check for visible defects."],
+          ["Tyres and wheels", "Inspect tyre condition and wheel security."],
+          ["Exterior lights", "All legally required lights operating."],
+          ["Destination displays", "Front, side and rear displays working."],
+          ["Doors", "Front and centre doors operate."],
+          ["Emergency exits", "Emergency exit systems accessible."]
+        ]
+      },
+      {
+        title: "Driver area",
+        description: "StreetDeck cab checks.",
+        checks: [
+          ["Instrument display", "Display starts correctly."],
+          ["Warning messages", "No unplanned warning messages."],
+          ["Air pressure", "Air system builds normally."],
+          ["Parking brake", "Applies and releases correctly."],
+          ["Service brakes", "Normal response."],
+          ["Steering", "Normal movement and assistance."],
+          ["Wipers / screenwash", "Operate correctly."],
+          ["Horn", "Operates correctly."],
+          ["Cameras / mirrors", "Camera monitor and mirrors usable."]
+        ]
+      },
+      {
+        title: "Interior",
+        description: "Passenger safety checks.",
+        checks: [
+          ["Lower saloon", "Check seats and floor."],
+          ["Upper saloon", "Check seats and floor."],
+          ["Staircase", "Check steps and rails."],
+          ["Lighting", "Interior and stair lighting."],
+          ["Stop bells", "Bell pushes sound and display."],
+          ["Wheelchair ramp", "Ramp operates."],
+          ["USB ports", "Optional check for passenger USB power."]
+        ]
+      }
+    ]
+  }
+};
+
+let state = {
+  vehicleKey:"",
+  results:{},
+  notes:""
+};
+
+let activeReport = null;
+
+const vehicleSelect = document.getElementById("vehicleSelect");
+const fleetInput = document.getElementById("fleetInput");
+const driverInput = document.getElementById("driverInput");
+const dutyInput = document.getElementById("dutyInput");
+const checkArea = document.getElementById("checkArea");
+const notesArea = document.getElementById("notesArea");
+const notes = document.getElementById("notes");
+
+Object.entries(vehicles).forEach(([key,v])=>{
+  const o=document.createElement("option");
+  o.value=key;
+  o.textContent=v.name;
+  vehicleSelect.appendChild(o);
+});
+
+function getChecks(){
+  if(!state.vehicleKey || !vehicles[state.vehicleKey]) return [];
+  return vehicles[state.vehicleKey].groups.flatMap((group,gi)=>
+    group.checks.map((check,ci)=>({
+      id:`${gi}-${ci}`,
+      group:group.title,
+      title:check[0],
+      help:check[1]
+    }))
+  );
+}
+
+function renderVehicle(){
+  const key=vehicleSelect.value;
+  state.vehicleKey=key;
+  state.results={};
+  state.notes="";
+  notes.value="";
+
+  if(!key){
+    document.getElementById("vehicleType").textContent="—";
+    document.getElementById("manufacturer").textContent="—";
+    document.getElementById("powerType").textContent="—";
+    document.getElementById("overallStatus").textContent="Not started";
+    checkArea.innerHTML='<div class="card empty">Select a vehicle above to load its checks.</div>';
+    notesArea.style.display="none";
+    updateSummary();
+    saveDraft();
+    return;
+  }
+
+  const v=vehicles[key];
+  document.getElementById("vehicleType").textContent=v.name;
+  document.getElementById("manufacturer").textContent=v.manufacturer;
+  document.getElementById("powerType").textContent=v.power;
+  notesArea.style.display="block";
+
+  let html="";
+  let number=1;
+
+  v.groups.forEach((group,gi)=>{
+    html+=`
+      <section class="section">
+        <div class="section-head">
+          <div>
+            <h3>${escapeHtml(group.title)}</h3>
+            <p>${escapeHtml(group.description)}</p>
+          </div>
+        </div>
+        <div class="checks">
+    `;
+
+    group.checks.forEach((check,ci)=>{
+      const id=`${gi}-${ci}`;
+      html+=`
+        <div class="card check" data-id="${id}">
+          <div class="check-num">${number++}</div>
+          <div>
+            <div class="check-title">${escapeHtml(check[0])}</div>
+            <div class="check-help">${escapeHtml(check[1])}</div>
+          </div>
+          <div class="result-buttons">
+            <button class="result-btn pass" data-result="pass" data-id="${id}">PASS</button>
+            <button class="result-btn fail" data-result="fail" data-id="${id}">FAIL</button>
+            <button class="result-btn na" data-result="na" data-id="${id}">N/A</button>
+          </div>
+        </div>
+      `;
+    });
+
+    html+="</div></section>";
+  });
+
+  checkArea.innerHTML=html;
+
+  document.querySelectorAll(".result-btn").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const id=btn.dataset.id;
+      const result=btn.dataset.result;
+
+      if(state.results[id]===result){
+        delete state.results[id];
+      }else{
+        state.results[id]=result;
+      }
+
+      refreshButtons();
+      updateSummary();
+      saveDraft();
+    });
+  });
+
+  updateSummary();
+  saveDraft();
+}
+
+function refreshButtons(){
+  document.querySelectorAll(".result-btn").forEach(btn=>{
+    btn.classList.toggle("active",state.results[btn.dataset.id]===btn.dataset.result);
+  });
+}
+
+function updateSummary(){
+  const checks=getChecks();
+  const total=checks.length;
+  const done=checks.filter(c=>state.results[c.id]).length;
+  const passed=checks.filter(c=>state.results[c.id]==="pass").length;
+  const failed=checks.filter(c=>state.results[c.id]==="fail").length;
+  const percent=total?Math.round(done/total*100):0;
+
+  document.getElementById("progressText").textContent=percent+"%";
+  document.getElementById("progressFill").style.width=percent+"%";
+  document.getElementById("passedCount").textContent=passed;
+  document.getElementById("failedCount").textContent=failed;
+  document.getElementById("remainingCount").textContent=Math.max(total-done,0);
+
+  let status="Not started";
+  if(total && done===0) status="Not started";
+  else if(done<total) status="In progress";
+  else if(failed>0) status="Defects found";
+  else status="Passed";
+
+  const el=document.getElementById("overallStatus");
+  el.textContent=status;
+  el.style.color =
+    status==="Passed" ? "var(--pass)" :
+    status==="Defects found" ? "var(--fail)" :
+    status==="In progress" ? "var(--warn)" : "var(--text)";
+}
+
+function saveDraft(){
+  const draft={
+    state,
+    fleet:fleetInput.value,
+    driver:driverInput.value,
+    duty:dutyInput.value,
+    savedAt:new Date().toISOString()
+  };
+  localStorage.setItem("omsiVehicleCheckDraft",JSON.stringify(draft));
+}
+
+function loadDraft(){
+  try{
+    const draft=JSON.parse(localStorage.getItem("omsiVehicleCheckDraft"));
+    if(!draft) return;
+
+    fleetInput.value=draft.fleet||"";
+    driverInput.value=draft.driver||"";
+    dutyInput.value=draft.duty||"";
+
+    if(draft.state?.vehicleKey && vehicles[draft.state.vehicleKey]){
+      state=draft.state;
+      vehicleSelect.value=state.vehicleKey;
+      const keepResults={...state.results};
+      const keepNotes=state.notes||"";
+      renderVehicle();
+      state.results=keepResults;
+      state.notes=keepNotes;
+      notes.value=keepNotes;
+      refreshButtons();
+      updateSummary();
+    }
+  }catch(e){}
+}
+
+function completeCheck(){
+  const checks=getChecks();
+  if(!state.vehicleKey){
+    alert("Choose a vehicle first.");
+    return;
+  }
+
+  const incomplete=checks.filter(c=>!state.results[c.id]);
+  if(incomplete.length){
+    alert(`There are still ${incomplete.length} unchecked items.`);
+    return;
+  }
+
+  state.notes=notes.value.trim();
+
+  const failed=checks.filter(c=>state.results[c.id]==="fail");
+  const report={
+    id:Date.now(),
+    date:new Date().toISOString(),
+    vehicleKey:state.vehicleKey,
+    vehicleName:vehicles[state.vehicleKey].name,
+    fleet:fleetInput.value.trim(),
+    driver:driverInput.value.trim(),
+    duty:dutyInput.value.trim(),
+    results:{...state.results},
+    notes:state.notes,
+    failed:failed.map(x=>x.title),
+    overall:failed.length?"FAIL / DEFECTS FOUND":"PASS"
+  };
+
+  const history=getHistory();
+  history.unshift(report);
+  localStorage.setItem("omsiVehicleCheckHistory",JSON.stringify(history.slice(0,50)));
+
+  openReport(report);
+
+  localStorage.removeItem("omsiVehicleCheckDraft");
+  renderHistory();
+}
+
+function buildReport(report){
+  const v=vehicles[report.vehicleKey];
+  const checks=v.groups.flatMap((g,gi)=>g.checks.map((c,ci)=>({
+    id:`${gi}-${ci}`,
+    group:g.title,
+    title:c[0]
+  })));
+
+  const lines=[];
+  lines.push("OMSI 2 VEHICLE CHECK REPORT");
+  lines.push("----------------------------------------");
+  lines.push(`Date: ${new Date(report.date).toLocaleString()}`);
+  lines.push(`Vehicle: ${report.vehicleName}`);
+  lines.push(`Fleet / Reg: ${report.fleet || "Not entered"}`);
+  lines.push(`Driver: ${report.driver || "Not entered"}`);
+  lines.push(`Duty / Route: ${report.duty || "Not entered"}`);
+  lines.push(`Overall result: ${report.overall}`);
+  lines.push("");
+
+  let current="";
+  checks.forEach(c=>{
+    if(c.group!==current){
+      current=c.group;
+      lines.push(current.toUpperCase());
+    }
+    const r=report.results[c.id]||"unchecked";
+    lines.push(`[${r.toUpperCase()}] ${c.title}`);
+  });
+
+  lines.push("");
+  lines.push("NOTES");
+  lines.push(report.notes || "No additional notes.");
+
+  if(report.failed.length){
+    lines.push("");
+    lines.push("DEFECTS REQUIRING ATTENTION");
+    report.failed.forEach(x=>lines.push("- "+x));
+  }
+
+  return lines.join("\n");
+}
+
+
+function getReportChecks(report){
+  const v=vehicles[report.vehicleKey];
+  if(!v) return [];
+  return v.groups.flatMap((g,gi)=>g.checks.map((c,ci)=>({
+    id:`${gi}-${ci}`,
+    group:g.title,
+    title:c[0],
+    help:c[1]
+  })));
+}
+
+function resultText(result){
+  if(result==="pass") return "PASS";
+  if(result==="fail") return "FAIL";
+  if(result==="na") return "N/A";
+  return "UNCHECKED";
+}
+
+function buildReportPreview(report){
+  const checks=getReportChecks(report);
+  const grouped={};
+
+  checks.forEach(check=>{
+    if(!grouped[check.group]) grouped[check.group]=[];
+    grouped[check.group].push(check);
+  });
+
+  const failedCount=checks.filter(c=>report.results[c.id]==="fail").length;
+  const passCount=checks.filter(c=>report.results[c.id]==="pass").length;
+  const naCount=checks.filter(c=>report.results[c.id]==="na").length;
+
+  const groupsHtml=Object.entries(grouped).map(([group,items])=>`
+    <div class="report-group">
+      <div class="report-group-title">${escapeHtml(group)}</div>
+      ${items.map(item=>{
+        const result=report.results[item.id]||"unchecked";
+        return `
+          <div class="report-row">
+            <div>
+              <strong>${escapeHtml(item.title)}</strong>
+              <div style="color:#748294;margin-top:2px;font-size:10px">${escapeHtml(item.help||"")}</div>
+            </div>
+            <span class="report-result ${result}">${resultText(result)}</span>
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `).join("");
+
+  return `
+    <div class="report-preview">
+      <div class="report-preview-head">
+        <div>
+          <h3>OMSI 2 Vehicle Check</h3>
+          <p>Completed inspection report • Check #${report.id}</p>
+        </div>
+        <span class="report-status ${failedCount ? "fail":"pass"}">
+          ${failedCount ? "DEFECTS FOUND":"VEHICLE PASSED"}
+        </span>
+      </div>
+
+      <div class="report-preview-body">
+        <div class="report-meta-grid">
+          <div class="report-meta">
+            <span>Vehicle</span>
+            <strong>${escapeHtml(report.vehicleName)}</strong>
+          </div>
+          <div class="report-meta">
+            <span>Fleet / Registration</span>
+            <strong>${escapeHtml(report.fleet || "Not entered")}</strong>
+          </div>
+          <div class="report-meta">
+            <span>Driver</span>
+            <strong>${escapeHtml(report.driver || "Not entered")}</strong>
+          </div>
+          <div class="report-meta">
+            <span>Duty / Route</span>
+            <strong>${escapeHtml(report.duty || "Not entered")}</strong>
+          </div>
+          <div class="report-meta">
+            <span>Date & time</span>
+            <strong>${escapeHtml(new Date(report.date).toLocaleString())}</strong>
+          </div>
+          <div class="report-meta">
+            <span>Results</span>
+            <strong>${passCount} passed • ${failedCount} failed • ${naCount} N/A</strong>
+          </div>
+        </div>
+
+        ${groupsHtml}
+
+        <div class="report-notes">
+          <strong>Defects / additional notes</strong>
+          ${escapeHtml(report.notes || "No additional notes.").replaceAll("\n","<br>")}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function openReport(report){
+  activeReport=report;
+  document.getElementById("reportPreview").innerHTML=buildReportPreview(report);
+  document.getElementById("reportModal").classList.add("open");
+}
+
+function safeFilenamePart(value){
+  return String(value||"vehicle")
+    .trim()
+    .replace(/[\\/:*?"<>|]+/g,"-")
+    .replace(/\s+/g,"_")
+    .slice(0,60) || "vehicle";
+}
+
+function buildDownloadReport(report){
+  const checks=getReportChecks(report);
+  const grouped={};
+
+  checks.forEach(check=>{
+    if(!grouped[check.group]) grouped[check.group]=[];
+    grouped[check.group].push(check);
+  });
+
+  const failedCount=checks.filter(c=>report.results[c.id]==="fail").length;
+  const passCount=checks.filter(c=>report.results[c.id]==="pass").length;
+  const naCount=checks.filter(c=>report.results[c.id]==="na").length;
+
+  const groups=Object.entries(grouped).map(([group,items])=>`
+    <section class="group">
+      <h2>${escapeHtml(group)}</h2>
+      ${items.map(item=>{
+        const result=report.results[item.id]||"unchecked";
+        return `
+          <div class="row">
+            <div class="check-copy">
+              <strong>${escapeHtml(item.title)}</strong>
+              <small>${escapeHtml(item.help||"")}</small>
+            </div>
+            <span class="pill ${result}">${resultText(result)}</span>
+          </div>
+        `;
+      }).join("")}
+    </section>
+  `).join("");
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>OMSI 2 Vehicle Check - ${escapeHtml(report.fleet || report.vehicleName)}</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;background:#edf2f7;color:#182231;font-family:Arial,Helvetica,sans-serif}
+  .page{width:min(920px,calc(100% - 28px));margin:28px auto;background:white;box-shadow:0 18px 55px rgba(25,39,55,.14);border-radius:18px;overflow:hidden}
+  .head{background:#132235;color:white;padding:30px 34px;display:flex;justify-content:space-between;gap:20px;align-items:flex-start}
+  .head h1{margin:0;font-size:28px}.head p{margin:7px 0 0;color:#b9c8d8;font-size:13px}
+  .status{border-radius:999px;padding:8px 12px;font-size:11px;font-weight:900;white-space:nowrap}
+  .status.pass{background:#dff7e9;color:#14643a}.status.fail{background:#fde4e4;color:#a72d2d}
+  .content{padding:28px 34px 36px}
+  .meta{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+  .meta-box{border:1px solid #dce4ed;border-radius:11px;padding:13px}
+  .meta-box span{display:block;color:#748294;text-transform:uppercase;letter-spacing:.06em;font-size:9px;font-weight:900;margin-bottom:5px}
+  .meta-box strong{font-size:13px}
+  .group{border:1px solid #dce4ed;border-radius:12px;overflow:hidden;margin-top:16px;break-inside:avoid}
+  .group h2{margin:0;padding:11px 14px;background:#eaf0f6;color:#243447;font-size:13px}
+  .row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:14px;padding:11px 14px;border-top:1px solid #edf1f5}
+  .check-copy strong{font-size:12px;display:block}.check-copy small{display:block;color:#748294;font-size:10px;margin-top:3px;line-height:1.35}
+  .pill{min-width:65px;text-align:center;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:900}
+  .pill.pass{background:#e0f7e9;color:#17663c}.pill.fail{background:#fee7e7;color:#a52a2a}.pill.na{background:#fff3d6;color:#76520c}.pill.unchecked{background:#eef1f4;color:#56616e}
+  .notes{margin-top:18px;border:1px solid #dce4ed;border-radius:12px;padding:14px;line-height:1.5;font-size:12px}
+  .notes h2{font-size:13px;margin:0 0 7px}
+  .footer{margin-top:22px;display:flex;justify-content:space-between;gap:16px;color:#748294;font-size:10px;border-top:1px solid #e5eaf0;padding-top:13px}
+  .print{display:block;margin:0 auto 28px;border:0;background:#1976d2;color:white;padding:11px 17px;border-radius:9px;font-weight:800;cursor:pointer}
+  @media(max-width:700px){.head{flex-direction:column}.meta{grid-template-columns:1fr 1fr}.content{padding:20px}}
+  @media(max-width:480px){.meta{grid-template-columns:1fr}}
+  @media print{body{background:white}.page{width:100%;margin:0;box-shadow:none;border-radius:0}.print{display:none}}
+</style>
+</head>
+<body>
+  <main class="page">
+    <header class="head">
+      <div>
+        <h1>OMSI 2 Vehicle Check</h1>
+        <p>Completed inspection report • Check #${report.id}</p>
+      </div>
+      <span class="status ${failedCount ? "fail":"pass"}">${failedCount ? "DEFECTS FOUND":"VEHICLE PASSED"}</span>
+    </header>
+
+    <div class="content">
+      <section class="meta">
+        <div class="meta-box"><span>Vehicle</span><strong>${escapeHtml(report.vehicleName)}</strong></div>
+        <div class="meta-box"><span>Fleet / registration</span><strong>${escapeHtml(report.fleet || "Not entered")}</strong></div>
+        <div class="meta-box"><span>Driver</span><strong>${escapeHtml(report.driver || "Not entered")}</strong></div>
+        <div class="meta-box"><span>Duty / route</span><strong>${escapeHtml(report.duty || "Not entered")}</strong></div>
+        <div class="meta-box"><span>Date & time</span><strong>${escapeHtml(new Date(report.date).toLocaleString())}</strong></div>
+        <div class="meta-box"><span>Results</span><strong>${passCount} passed • ${failedCount} failed • ${naCount} N/A</strong></div>
+      </section>
+
+      ${groups}
+
+      <section class="notes">
+        <h2>Defects / additional notes</h2>
+        ${escapeHtml(report.notes || "No additional notes.").replaceAll("\n","<br>")}
+      </section>
+
+      <div class="footer">
+        <span>OMSI 2 Vehicle Checks</span>
+        <span>Saved report • ${escapeHtml(new Date(report.date).toLocaleString())}</span>
+      </div>
+    </div>
+  </main>
+  <button class="print" onclick="window.print()">Print / Save as PDF</button>
+</body>
+</html>`;
+}
+
+function downloadReport(report){
+  const reportHtml=buildDownloadReport(report);
+  const blob=new Blob([reportHtml],{type:"text/html;charset=utf-8"});
+  const url=URL.createObjectURL(blob);
+  const link=document.createElement("a");
+  const date=new Date(report.date);
+  const stamp=[
+    date.getFullYear(),
+    String(date.getMonth()+1).padStart(2,"0"),
+    String(date.getDate()).padStart(2,"0")
+  ].join("-");
+
+  link.href=url;
+  link.download=`OMSI2_Vehicle_Check_${safeFilenamePart(report.fleet || report.vehicleName)}_${stamp}.html`;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+function getHistory(){
+  try{
+    return JSON.parse(localStorage.getItem("omsiVehicleCheckHistory"))||[];
+  }catch(e){return []}
+}
+
+function renderHistory(){
+  const list=document.getElementById("historyList");
+  const history=getHistory();
+
+  if(!history.length){
+    list.innerHTML='<div class="card empty">No completed checks yet.</div>';
+    return;
+  }
+
+  list.innerHTML=history.map(item=>`
+    <div class="card history-item">
+      <div>
+        <strong>${escapeHtml(item.vehicleName)} ${item.fleet ? "• "+escapeHtml(item.fleet) : ""}</strong>
+        <div class="history-meta">
+          ${new Date(item.date).toLocaleString()}
+          ${item.driver ? " • "+escapeHtml(item.driver) : ""}
+          ${item.duty ? " • "+escapeHtml(item.duty) : ""}
+        </div>
+      </div>
+      <div class="history-side">
+        <span class="badge ${item.failed?.length ? "fail":"pass"}">
+          ${item.failed?.length ? "DEFECTS":"PASSED"}
+        </span>
+        <button class="history-action" data-history-view="${item.id}">View</button>
+        <button class="history-action" data-history-download="${item.id}">Download</button>
+      </div>
+    </div>
+  `).join("");
+
+  list.querySelectorAll("[data-history-view]").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const report=history.find(item=>String(item.id)===String(btn.dataset.historyView));
+      if(report) openReport(report);
+    });
+  });
+
+  list.querySelectorAll("[data-history-download]").forEach(btn=>{
+    btn.addEventListener("click",()=>{
+      const report=history.find(item=>String(item.id)===String(btn.dataset.historyDownload));
+      if(report) downloadReport(report);
+    });
+  });
+}
+
+function resetForm(){
+  if(!confirm("Reset the current vehicle check?")) return;
+  state={vehicleKey:"",results:{},notes:""};
+  vehicleSelect.value="";
+  fleetInput.value="";
+  driverInput.value="";
+  dutyInput.value="";
+  notes.value="";
+  localStorage.removeItem("omsiVehicleCheckDraft");
+  renderVehicle();
+}
+
+function escapeHtml(value){
+  return String(value??"")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+vehicleSelect.addEventListener("change",renderVehicle);
+[fleetInput,driverInput,dutyInput].forEach(el=>el.addEventListener("input",saveDraft));
+notes.addEventListener("input",()=>{
+  state.notes=notes.value;
+  saveDraft();
+});
+
+document.getElementById("saveBtn").addEventListener("click",()=>{
+  saveDraft();
+  const old=document.getElementById("saveBtn").textContent;
+  document.getElementById("saveBtn").textContent="Saved";
+  setTimeout(()=>document.getElementById("saveBtn").textContent=old,900);
+});
+
+document.getElementById("completeBtn").addEventListener("click",completeCheck);
+document.getElementById("resetBtn").addEventListener("click",resetForm);
+
+document.getElementById("historyBtn").addEventListener("click",()=>{
+  const section=document.getElementById("historySection");
+  section.style.display=section.style.display==="none"?"block":"none";
+  if(section.style.display==="block"){
+    renderHistory();
+    section.scrollIntoView({behavior:"smooth"});
+  }
+});
+
+document.getElementById("clearHistoryBtn").addEventListener("click",()=>{
+  if(confirm("Clear all completed check history on this device?")){
+    localStorage.removeItem("omsiVehicleCheckHistory");
+    renderHistory();
+  }
+});
+
+document.getElementById("closeReportBtn").addEventListener("click",()=>{
+  document.getElementById("reportModal").classList.remove("open");
+});
+
+document.getElementById("copyReportBtn").addEventListener("click",async()=>{
+  if(!activeReport) return;
+  const text=buildReport(activeReport);
+  try{
+    await navigator.clipboard.writeText(text);
+    document.getElementById("copyReportBtn").textContent="Copied";
+    setTimeout(()=>document.getElementById("copyReportBtn").textContent="Copy text",900);
+  }catch{
+    alert("Could not copy automatically.");
+  }
+});
+
+document.getElementById("downloadReportBtn").addEventListener("click",()=>{
+  if(activeReport) downloadReport(activeReport);
+});
+
+document.getElementById("reportModal").addEventListener("click",e=>{
+  if(e.target.id==="reportModal"){
+    e.currentTarget.classList.remove("open");
+  }
+});
+
+renderHistory();
+loadDraft();
+updateSummary();
+</script>
+</body>
+</html>
