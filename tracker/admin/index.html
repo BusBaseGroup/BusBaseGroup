@@ -172,25 +172,26 @@
         </div>
         <div class="panel-body">
           <div class="announcement-toolbar">
+            <label><span>Operator</span><select id="announcementOperator"><option value="LYNX">Lynx Bus</option><option value="FECS">First Eastern Counties</option></select></label>
             <label><span>Route</span><select id="announcementRoute"></select></label>
             <label><span>Find a stop</span><input id="announcementSearch" type="search" placeholder="Search stop or locality"></label>
             <button id="playRouteDemo" class="btn btn-primary" type="button">▶ Demo whole route</button>
             <button id="stopAnnouncementDemo" class="btn btn-light" type="button">■ Stop audio</button>
           </div>
           <div style="margin-top:12px"><div id="announcementRouteTitle" class="announcement-route-title"></div><div id="announcementRouteMeta" class="announcement-route-meta"></div></div>
-          <div class="announcement-status" style="margin-top:10px;background:#f0f8f4;border-color:#b8dec8;color:#176a3b"><strong>Shared clear-AI bank:</strong> Lynx plus First Eastern Counties are using the same professional AI player stored in <code>/tracker/admin/announcement-bank.js</code>. First X1 physical stops and major First network hubs are included in this build. Browser/system voices are disabled.</div>
+          <div class="announcement-status" style="margin-top:10px;background:#f0f8f4;border-color:#b8dec8;color:#176a3b"><strong>Shared clear-AI bank:</strong> Lynx plus First Eastern Counties are using the same professional AI player stored in <code>/tracker/admin/announcement-bank.js</code>. First routes use the full physical stop list discovered from live BusTimes journeys. The shared clear-AI bank now contains an expanded network recording pack and automatically queues any newly discovered First stop that still needs a recording. Browser/system voices are disabled.</div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
             <button id="demoWhitewayAlert" class="btn btn-light" type="button">▶ Whiteway Road passing-place message</button>
             <button id="demoLamseyAlert" class="btn btn-light" type="button">▶ Lamsey Lane diversion message</button>
           </div>
-          <div id="announcementDemoStatus" class="announcement-status">Choose a route and press a play button.</div>
+          <div id="announcementDemoStatus" class="announcement-status">Choose a route and press a play button.</div><div id="firstMissingAiStatus" class="announcement-status" style="display:none;background:#fff5f5;border-color:#f0b8b8;color:#8a2020"></div>
           <div id="announcementStopList" class="announcement-table"></div>
         </div>
       </section>
     </section>
   </main>
 
-  <script src="./announcement-bank.js?v=20260918-passenger-v3"></script>
+  <script src="./announcement-bank.js?v=20260920-first-bulk-1"></script>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
@@ -237,7 +238,7 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
     const $ = id => document.getElementById(id);
-    const els = Object.fromEntries(['loginCard','adminArea','loginForm','email','password','loginMessage','unknownCount','unknownList','mappingCount','mappingTable','suggestionsCount','suggestionsList','mappingForm','machineId','fleetNumber','registration','vehicleType','make','model','yearRegistered','livery','liveryColour','liveryColourHex','notes','formTitle','formMode','formMessage','saveBtn','clearBtn','refreshAll','logoutBtn','announcementRoute','announcementSearch','playRouteDemo','stopAnnouncementDemo','announcementCoverage','announcementRouteTitle','announcementRouteMeta','announcementDemoStatus','announcementStopList','demoWhitewayAlert','demoLamseyAlert','demoOnlyBtn'].map(id => [id,$(id)]));
+    const els = Object.fromEntries(['loginCard','adminArea','loginForm','email','password','loginMessage','unknownCount','unknownList','mappingCount','mappingTable','suggestionsCount','suggestionsList','mappingForm','machineId','fleetNumber','registration','vehicleType','make','model','yearRegistered','livery','liveryColour','liveryColourHex','notes','formTitle','formMode','formMessage','saveBtn','clearBtn','refreshAll','logoutBtn','announcementOperator','announcementRoute','announcementSearch','playRouteDemo','stopAnnouncementDemo','announcementCoverage','announcementRouteTitle','announcementRouteMeta','announcementDemoStatus','announcementStopList','firstMissingAiStatus','demoWhitewayAlert','demoLamseyAlert','demoOnlyBtn'].map(id => [id,$(id)]));
     let mappings = [];
     let liveVehicles = [];
     let suggestions = [];
@@ -275,6 +276,7 @@
     els.refreshAll.addEventListener('click', loadAll);
     els.clearBtn.addEventListener('click', () => clearForm(true));
 
+    els.announcementOperator.addEventListener('change',()=>{populateAnnouncementRoutes();renderAnnouncementDemo();});
     els.announcementRoute.addEventListener('change', renderAnnouncementDemo);
     els.announcementSearch.addEventListener('input', renderAnnouncementDemo);
     els.stopAnnouncementDemo.addEventListener('click', stopAnnouncementDemo);
@@ -553,15 +555,70 @@
     async function deleteMapping(machineId){const m=mappings.find(x=>x.machineId===machineId);const label=m?(m.fleetNumber?`fleet ${m.fleetNumber}`:(m.registration||machineId)):machineId;if(!confirm(`Delete the mapping for ${label}?`))return;try{await deleteDoc(doc(db,'vehicles',machineId));clearForm(false);await loadAll();}catch(error){console.error(error);alert('Could not delete mapping.');}}
     function clearForm(focus=false){els.mappingForm.reset();els.liveryColour.value='#D71920';els.liveryColourHex.value='#D71920';els.formTitle.textContent='Add vehicle';els.formMode.textContent='New mapping';els.formMessage.className='message';els.formMessage.textContent='';if(focus)els.machineId.focus();}
 
+    const FIRST_STOP_CATALOGUE_KEY='busbase_first_eastern_counties_stop_catalogue_v3';
+    const FIRST_ROUTE_CODES=["1","1A","1C","2","3","3B","4","7","8","11","11A","12","13","14","14A","15","15A","16","16A","17","20","21","21A","23","23A","24","24A","24B","25","26","26A","28","29","30","31","36","36A","36B","37","37B","38","38A","38B","39","40","40A","41","41A","59","64","66","66A","70","73","75","77","87","88","99","99A","100","101","102","105","106","107","109","111","116","122","510","511","800","901","902","915","916","917","918","921","923","935","963","972","975","978","979","980","981","982","985","987","989","994","998","A","B","C","D","PR1","UTC","X1","X2","X11","X13","X14","X21","X22","X29","X41"];
+
+    function readFirstStopCatalogue(){
+      try{return JSON.parse(localStorage.getItem(FIRST_STOP_CATALOGUE_KEY)||'{}')||{};}catch(_){return{};}
+    }
+
+    function selectedAnnouncementOperator(){return String(els.announcementOperator?.value||'LYNX').toUpperCase();}
+
+    function populateAnnouncementRoutes(){
+      const operator=selectedAnnouncementOperator();
+      const staticRoutes=[...new Set(ANNOUNCEMENT_STOPS.filter(stop=>String(stop.operator||'LYNX').toUpperCase()===operator).map(stop=>stop.route))];
+      const discovered=operator==='FECS'?Object.keys(readFirstStopCatalogue()):[];
+      const routes=[...new Set([...(operator==='FECS'?FIRST_ROUTE_CODES:[]),...staticRoutes,...discovered])].sort(collator.compare);
+      const previous=els.announcementRoute.value;
+      els.announcementRoute.innerHTML=routes.map(route=>`<option value="${escapeAttr(route)}">${escapeHtml(route)}</option>`).join('');
+      if(routes.includes(previous))els.announcementRoute.value=previous;
+      else if(operator==='LYNX'&&routes.includes('35'))els.announcementRoute.value='35';
+      else if(operator==='FECS'&&routes.includes('X1'))els.announcementRoute.value='X1';
+    }
+
+    function dynamicFirstStops(route){
+      const record=readFirstStopCatalogue()[String(route||'').toUpperCase()];
+      const raw=Array.isArray(record?.stops)?record.stops:[];
+      return raw.map((stop,index)=>{
+        const name=String(stop?.name||'').trim();
+        const locality=String(stop?.locality||'').trim();
+        return{
+          route:String(route),operator:'FECS',sequence:Number(stop?.sequence)||index+1,
+          stop:name,locality,
+          nextText:`Next stop, ${locality&& !name.toLowerCase().startsWith(locality.toLowerCase())?locality+' ':''}${name}.`.replace(/\s+/g,' '),
+          thisText:`This stop, ${name}.`,
+          discovered:true
+        };
+      }).filter(stop=>stop.stop);
+    }
+
+    function announcementStopsFor(operator,route){
+      const op=String(operator||'LYNX').toUpperCase();
+      const staticStops=ANNOUNCEMENT_STOPS.filter(stop=>String(stop.operator||'LYNX').toUpperCase()===op&&String(stop.route)===String(route));
+      if(op!=='FECS')return staticStops.sort((a,b)=>a.sequence-b.sequence);
+      const dynamic=dynamicFirstStops(route);
+      const merged=[]; const seen=new Set();
+      for(const stop of [...dynamic,...staticStops]){
+        const key=(String(stop.atco||'')||`${stop.stop}|${stop.locality}`).toLowerCase();
+        if(seen.has(key))continue; seen.add(key); merged.push(stop);
+      }
+      return merged.map((stop,index)=>({...stop,sequence:index+1}));
+    }
+
+    function renderFirstMissingAiStatus(){
+      if(!els.firstMissingAiStatus)return;
+      const missing=(window.BusBaseAI?.missingFirstStops?.()||[]).sort((a,b)=>String(a.route).localeCompare(String(b.route),undefined,{numeric:true})||String(a.stop).localeCompare(String(b.stop)));
+      if(selectedAnnouncementOperator()!=='FECS'||!missing.length){els.firstMissingAiStatus.style.display='none';els.firstMissingAiStatus.innerHTML='';return;}
+      els.firstMissingAiStatus.style.display='block';
+      const preview=missing.slice(0,12).map(x=>`<strong>${escapeHtml(x.route||'?')}</strong> ${escapeHtml(x.stop||'Unknown stop')}`).join(' • ');
+      els.firstMissingAiStatus.innerHTML=`<strong>${missing.length} First stop recording${missing.length===1?'':'s'} still needed on this browser.</strong> ${preview}${missing.length>12?' • …':''}<br><span style="font-size:12px">These were discovered from real First journeys and are queued for the clear-AI bank. No browser voice is substituted.</span>`;
+    }
+
     function setupAnnouncementDemo(){
-      const routes=[...new Set(ANNOUNCEMENT_STOPS.map(stop=>stop.route))].sort(collator.compare);
-      els.announcementRoute.innerHTML=routes.map(route=>{
-        const first=ANNOUNCEMENT_STOPS.find(stop=>stop.route===route);
-        return `<option value="${escapeAttr(route)}">${escapeHtml(route)}${first?.routeName?` — ${escapeHtml(first.routeName)}`:''}</option>`;
-      }).join('');
-      if(routes.includes('35'))els.announcementRoute.value='35';
+      populateAnnouncementRoutes();
       renderAnnouncementDemo();
       updateAnnouncementCoverage();
+      renderFirstMissingAiStatus();
     }
 
     function hasAiAnnouncement(text){
@@ -572,35 +629,42 @@
     }
 
     function updateAnnouncementCoverage(){
-      const route=els.announcementRoute.value;
-      const routeStops=ANNOUNCEMENT_STOPS.filter(stop=>stop.route===route);
-      const scripts=[...new Set(routeStops.flatMap(stop=>[stop.nextText,stop.thisText]))];
-      els.announcementCoverage.textContent=`${routeStops.length} stops • clear AI bank`;
-      els.announcementCoverage.style.background='#e9f7ee';
-      els.announcementCoverage.style.color='#176a3b';
+      const operator=selectedAnnouncementOperator(), route=els.announcementRoute.value;
+      const routeStops=announcementStopsFor(operator,route);
+      const ready=routeStops.filter(stop=>window.BusBaseAI?.pieceUrl?.(stop.stop,stop.locality)||hasAiAnnouncement(stop.nextText)||hasAiAnnouncement(stop.thisText)).length;
+      els.announcementCoverage.textContent=`${routeStops.length} physical stops • ${ready} clear-AI names ready`;
+      els.announcementCoverage.style.background=ready===routeStops.length&&routeStops.length?'#e9f7ee':'#fff6db';
+      els.announcementCoverage.style.color=ready===routeStops.length&&routeStops.length?'#176a3b':'#7a5900';
     }
 
     function renderAnnouncementDemo(){
-      const route=els.announcementRoute.value;
+      const operator=selectedAnnouncementOperator(), route=els.announcementRoute.value;
       const search=els.announcementSearch.value.trim().toLowerCase();
-      const all=ANNOUNCEMENT_STOPS.filter(stop=>stop.route===route).sort((a,b)=>a.sequence-b.sequence);
+      const all=announcementStopsFor(operator,route);
       const visible=all.filter(stop=>!search||`${stop.stop} ${stop.locality} ${stop.nextText} ${stop.thisText}`.toLowerCase().includes(search));
-      const routeName=all[0]?.routeName||'';
-      els.announcementRouteTitle.textContent=route?`Route ${route}${routeName?` — ${routeName}`:''}`:'Choose a route';
-      els.announcementRouteMeta.textContent=`${all.length} stops • ${all.length*2} announcement buttons`;
+      const operatorName=operator==='FECS'?'First Eastern Counties':'Lynx Bus';
+      els.announcementRouteTitle.textContent=route?`${operatorName} • Route ${route}`:'Choose a route';
+      const source=operator==='FECS'?'full BusTimes journey catalogue':'stored route bank';
+      els.announcementRouteMeta.textContent=`${all.length} physical stops • ${source}`;
       updateAnnouncementCoverage();
+      renderFirstMissingAiStatus();
 
-      if(!visible.length){els.announcementStopList.innerHTML='<div class="announcement-empty">No stops match this search.</div>';return;}
+      if(!visible.length){
+        els.announcementStopList.innerHTML=operator==='FECS'
+          ?'<div class="announcement-empty">No First stops have been cached for this route yet. Open the Next Stop screen for a live First bus on this route once; BusBase will save its full physical stop list here automatically.</div>'
+          :'<div class="announcement-empty">No stops match this search.</div>';
+        return;
+      }
 
       els.announcementStopList.innerHTML=visible.map(stop=>{
-        const nextAi=hasAiAnnouncement(stop.nextText), thisAi=hasAiAnnouncement(stop.thisText);
+        const ready=Boolean(window.BusBaseAI?.pieceUrl?.(stop.stop,stop.locality)||hasAiAnnouncement(stop.nextText)||hasAiAnnouncement(stop.thisText));
         return `<div class="announcement-row">
           <div class="announcement-seq">${escapeHtml(stop.sequence)}</div>
           <div class="announcement-stop"><strong>${escapeHtml(stop.stop)}</strong><span>${escapeHtml(stop.locality||'')}</span></div>
           <div class="announcement-script">
             <div class="announcement-line"><b>Next</b>${escapeHtml(stop.nextText)}</div>
             <div class="announcement-line"><b>This</b>${escapeHtml(stop.thisText)}</div>
-            <span class="voice-badge ${nextAi&&thisAi?'ai':''}">● Professional AI MP3</span>
+            <span class="voice-badge ${ready?'ai':''}">● ${ready?'Clear AI MP3 ready':'Clear AI clip still needed'}</span>
           </div>
           <button class="demo-play" type="button" data-demo-next="${stop.sequence}">▶ Next stop</button>
           <button class="demo-play" type="button" data-demo-this="${stop.sequence}">▶ This stop</button>
@@ -609,12 +673,39 @@
 
       els.announcementStopList.querySelectorAll('[data-demo-next]').forEach(button=>button.addEventListener('click',()=>{
         const stop=all.find(item=>item.sequence===Number(button.dataset.demoNext));
-        if(stop)playAnnouncementDemo(stop.nextText,`Route ${route} • ${stop.stop} • Next stop`,button);
+        if(stop)playStopAnnouncementDemo(stop,'next',button);
       }));
       els.announcementStopList.querySelectorAll('[data-demo-this]').forEach(button=>button.addEventListener('click',()=>{
         const stop=all.find(item=>item.sequence===Number(button.dataset.demoThis));
-        if(stop)playAnnouncementDemo(stop.thisText,`Route ${route} • ${stop.stop} • This stop`,button);
+        if(stop)playStopAnnouncementDemo(stop,'this',button);
       }));
+    }
+
+    async function playStopAnnouncementDemo(stop,mode,button=null,{queueToken=null}={}){
+      if(queueToken===null)stopAnnouncementDemo();
+      const token=queueToken??announcementDemoQueueToken;
+      if(token!==announcementDemoQueueToken)return false;
+      const operator=selectedAnnouncementOperator(), route=els.announcementRoute.value;
+      const label=`${operator==='FECS'?'First':'Lynx'} ${route} • ${stop.stop} • ${mode==='this'?'This stop':'Next stop'}`;
+      document.querySelectorAll('.demo-play.playing').forEach(item=>item.classList.remove('playing'));
+      if(button)button.classList.add('playing');
+      els.announcementDemoStatus.classList.add('playing');
+      els.announcementDemoStatus.textContent=`Playing clear AI • ${label}`;
+      try{
+        if(!window.BusBaseAI)throw new Error('Shared AI player not loaded');
+        await window.BusBaseAI.playStop(route,stop.stop,stop.locality,mode,{waitForEnd:true,operatorCode:operator});
+        if(token!==announcementDemoQueueToken)return false;
+        if(button)button.classList.remove('playing');
+        els.announcementDemoStatus.classList.remove('playing');
+        els.announcementDemoStatus.textContent=`Ready • ${label}`;
+        return true;
+      }catch(error){
+        console.warn('Clear AI stop recording unavailable:',error);
+        if(button)button.classList.remove('playing');
+        els.announcementDemoStatus.classList.remove('playing');
+        els.announcementDemoStatus.textContent=`Clear AI stop-name recording is still needed • ${label}`;
+        return false;
+      }
     }
 
     // Browser speech synthesis intentionally disabled: professional AI recordings only.
@@ -656,17 +747,17 @@
 
     async function playSelectedRouteDemo(){
       stopAnnouncementDemo();
-      const token=announcementDemoQueueToken, route=els.announcementRoute.value;
-      const stops=ANNOUNCEMENT_STOPS.filter(stop=>stop.route===route).sort((a,b)=>a.sequence-b.sequence);
+      const token=announcementDemoQueueToken, operator=selectedAnnouncementOperator(), route=els.announcementRoute.value;
+      const stops=announcementStopsFor(operator,route);
       if(!stops.length)return;
       els.playRouteDemo.disabled=true;
       for(const stop of stops){
         if(token!==announcementDemoQueueToken)break;
-        await playAnnouncementDemo(stop.nextText,`Route ${route} • ${stop.stop} • Next stop`,null,{queueToken:token});
+        await playStopAnnouncementDemo(stop,'next',null,{queueToken:token});
         if(token!==announcementDemoQueueToken)break;
         await new Promise(resolve=>setTimeout(resolve,500));
       }
-      if(token===announcementDemoQueueToken){els.announcementDemoStatus.classList.remove('playing');els.announcementDemoStatus.textContent=`Route ${route} Next stop demo finished.`;}
+      if(token===announcementDemoQueueToken){els.announcementDemoStatus.classList.remove('playing');els.announcementDemoStatus.textContent=`${operator==='FECS'?'First':'Lynx'} route ${route} Next stop demo finished.`;}
       els.playRouteDemo.disabled=false;
     }
 

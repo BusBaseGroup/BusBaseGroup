@@ -499,6 +499,59 @@
     .passenger-time-area span{
       display:block;margin-top:8px;color:#8ca5b9;font-size:clamp(11px,1.2vw,16px);font-weight:750
     }
+    /* First Eastern Counties passenger theme — inspired by First Bus' refreshed customer-facing brand. */
+    .passenger-display.first-style{
+      --first-navy:#151044;--first-purple:#4b2381;--first-magenta:#e5007d;--first-blue:#00a7d9;
+      background:
+        radial-gradient(circle at 90% 8%,rgba(0,167,217,.24),transparent 28%),
+        radial-gradient(circle at 8% 92%,rgba(229,0,125,.20),transparent 32%),
+        linear-gradient(145deg,#100b33 0%,#21104c 50%,#35165d 100%);
+      color:#fff
+    }
+    .passenger-display.first-style::before{
+      height:8px;background:linear-gradient(90deg,#e5007d 0 34%,#7b2cbf 34% 68%,#00a7d9 68% 100%)
+    }
+    .passenger-display.first-style .passenger-top{
+      background:rgba(17,10,50,.90);border-bottom-color:rgba(255,255,255,.15)
+    }
+    .passenger-display.first-style .passenger-brand{
+      color:#fff;text-transform:none;letter-spacing:-.01em;font-size:15px;font-weight:950
+    }
+    .passenger-display.first-style .passenger-brand::before{
+      content:"f";width:30px;height:30px;border-radius:50% 50% 46% 54%;
+      background:linear-gradient(145deg,#e5007d,#7b2cbf 62%,#00a7d9);
+      color:#fff;font-size:20px;font-weight:950;text-transform:lowercase
+    }
+    .passenger-display.first-style .passenger-vehicle span{color:#c7bddd}
+    .passenger-display.first-style .passenger-state-label{
+      color:#fff;background:rgba(229,0,125,.18);border-color:rgba(255,109,188,.50)
+    }
+    .passenger-display.first-style .passenger-primary{letter-spacing:-.045em}
+    .passenger-display.first-style .passenger-alight{
+      background:#fff;color:#21104c;box-shadow:0 10px 30px rgba(0,0,0,.15)
+    }
+    .passenger-display.first-style .passenger-secondary{color:#d8d0e7}
+    .passenger-display.first-style .passenger-following::before{color:#b9a9d4}
+    .passenger-display.first-style .passenger-following span{
+      background:rgba(255,255,255,.075);border-color:rgba(255,255,255,.16)
+    }
+    .passenger-display.first-style .passenger-following b{color:#64d9f2}
+    .passenger-display.first-style .passenger-bottom{
+      background:rgba(12,7,38,.94);border-top-color:rgba(255,255,255,.15)
+    }
+    .passenger-display.first-style .passenger-route{
+      background:linear-gradient(145deg,#e5007d,#8b2bbd);color:#fff;border-radius:18px;
+      box-shadow:0 8px 24px rgba(229,0,125,.24),inset 0 0 0 1px rgba(255,255,255,.20)
+    }
+    .passenger-display.first-style .passenger-route-destination::before{color:#a99ac7}
+    .passenger-display.first-style .passenger-time-area span{color:#afa2c8}
+    .passenger-display.first-style .passenger-sound-btn.active{
+      background:#fff;border-color:#fff;color:#2a1257
+    }
+    .passenger-display.first-style .passenger-running.ontime{background:#5b2c83}
+    .passenger-display.first-style .passenger-running.early{background:#147a64}
+    .passenger-display.first-style .passenger-running.late{background:#c9365f}
+
     body.passenger-open{overflow:hidden}
     @media(max-width:760px){
       .passenger-top{padding:15px 16px 13px;gap:10px}
@@ -765,7 +818,7 @@
   <section id="passengerDisplay" class="passenger-display" aria-label="Passenger next stop screen" aria-hidden="true">
     <header class="passenger-top">
       <div class="passenger-vehicle">
-        <div class="passenger-brand">BusBase live passenger information</div>
+        <div id="passengerBrand" class="passenger-brand">BusBase live passenger information</div>
         <strong id="passengerVehicleTitle">Vehicle</strong>
         <span id="passengerVehicleMeta">Loading vehicle details…</span>
       </div>
@@ -879,7 +932,7 @@
     </div>
   </div>
 
-  <script src="./admin/announcement-bank.js?v=20260918-nextstop-hardfix"></script>
+  <script src="./admin/announcement-bank.js?v=20260925-first-style-20s"></script>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
@@ -906,7 +959,7 @@
     ];
     const OPERATOR_INFO=Object.fromEntries(BUSTIMES_LIVE_FEEDS.map(feed=>[feed.code,feed]));
     const MAP_STYLE='https://tiles.openfreemap.org/styles/liberty';
-    const REFRESH_MS=7000;
+    const REFRESH_MS=20000;
     const MAPPING_REFRESH_MS=60000;
     const STALE_POSITION_MS=4*60*1000;
     const DEFAULT_CENTER={lat:52.72,lng:0.55};
@@ -973,7 +1026,7 @@
       'vehiclesNavBtn','accountBtn','adminLink','summary','livePill','livePillText','vehicleSearch','operatorFilter','routeFilter','refreshBtn','vehicleList',
       'fitBtn','mapRefreshBtn','mapStatus','mapPane','map','selectedCard','selectedRoute','selectedTitle','selectedSub','selectedDest','selectedRunning','selectedTime','selectedClose','selectedView',
       'vehicleBack','detailStatus','detailStatusText','detailRoute','detailTitle','detailReg','detailJourney','detailJourneyMeta','trackBtn','passengerBtn','suggestBtn',
-      'passengerDisplay','passengerClose','passengerAnnounceToggle','passengerReplay','passengerVehicleTitle','passengerVehicleMeta','passengerRunning','passengerMain','passengerStateLabel','passengerPrimary','passengerAlight','passengerSecondary','passengerNotice','passengerNoticeIcon','passengerNoticeTitle','passengerNoticeText','passengerFollowing','passengerRoute','passengerDestination','passengerClock','passengerDate',
+      'passengerDisplay','passengerBrand','passengerClose','passengerAnnounceToggle','passengerReplay','passengerVehicleTitle','passengerVehicleMeta','passengerRunning','passengerMain','passengerStateLabel','passengerPrimary','passengerAlight','passengerSecondary','passengerNotice','passengerNoticeIcon','passengerNoticeTitle','passengerNoticeText','passengerFollowing','passengerRoute','passengerDestination','passengerClock','passengerDate',
       'factFleet','factReg','factMake','factModel','factType','factYear','factLivery','factOperator','factRoute','factDestination','factDirection','factRunning','factGps','stopSequenceStatus','upcomingStops','historyCount','journeyList','gpsTitle','gpsMeta',
       'stopModal','stopTitle','stopCode','stopDepartures','stopBustimesLink',
       'suggestModal','suggestForm','sFleet','sReg','sMake','sModel','sType','sYear','sLivery','sColour','sColourHex','sReason','sEvidence','suggestMessage',
@@ -999,6 +1052,8 @@
     };
 
     const collator=new Intl.Collator('en-GB',{numeric:true,sensitivity:'base'});
+    if(els.livePill)els.livePill.title='Live vehicle positions refresh every 20 seconds';
+    if(els.refreshBtn)els.refreshBtn.title='Automatic refresh: every 20 seconds';
 
     initMap();
     setAuthMode('login');
@@ -1603,8 +1658,8 @@
       if(!els.passengerAnnounceToggle)return;
       els.passengerAnnounceToggle.classList.toggle('active',state.announcementsEnabled);
       els.passengerAnnounceToggle.setAttribute('aria-pressed',String(state.announcementsEnabled));
-      els.passengerAnnounceToggle.textContent=state.announcementsEnabled?'🔊 Clear AI announcements on':'🔇 AI announcements off';
-      els.passengerAnnounceToggle.title=state.announcementsEnabled?'Professional clear AI announcements are enabled':'Announcements are disabled';
+      els.passengerAnnounceToggle.textContent=state.announcementsEnabled?'🔊 Built-in clear AI on':'🔇 Built-in AI off';
+      els.passengerAnnounceToggle.title=state.announcementsEnabled?'Built-in clear AI passenger announcements are enabled':'AI passenger announcements are disabled';
       if(els.passengerReplay)els.passengerReplay.disabled=!state.announcementsEnabled;
     }
 
@@ -1962,6 +2017,12 @@
       const vehicle=passengerVehicleForDetails();
       if(!vehicle)return;
 
+      const isFirst=clean(vehicle.operatorCode).toUpperCase()==='FECS';
+      els.passengerDisplay.classList.toggle('first-style',isFirst);
+      if(els.passengerBrand){
+        els.passengerBrand.textContent=isFirst?'first bus · Eastern Counties':'BusBase live passenger information';
+      }
+
       const vehicleTitle=vehicle.fleetNumber
         ? `Fleet ${vehicle.fleetNumber}${vehicle.registration?` · ${vehicle.registration}`:''}`
         : (vehicle.registration||vehicle.machineLabel||'Vehicle');
@@ -1979,8 +2040,13 @@
 
       const route=active?clean(live.route):'—';
       els.passengerRoute.textContent=route||'—';
-      els.passengerRoute.style.background=active?markerColour(live):'#40556a';
-      els.passengerRoute.style.color=active?contrastText(markerColour(live)):'#fff';
+      if(active&&clean(live.operatorCode).toUpperCase()==='FECS'){
+        els.passengerRoute.style.background='linear-gradient(145deg,#e5007d,#8b2bbd)';
+        els.passengerRoute.style.color='#fff';
+      }else{
+        els.passengerRoute.style.background=active?markerColour(live):'#40556a';
+        els.passengerRoute.style.color=active?contrastText(markerColour(live)):'#fff';
+      }
       els.passengerDestination.textContent=active
         ? (live.destination?`to ${live.destination}`:'In service')
         : 'Not in service';
@@ -2791,6 +2857,35 @@
       return vehicle;
     }
 
+    const FIRST_STOP_CATALOGUE_KEY='busbase_first_eastern_counties_stop_catalogue_v3';
+    function cacheFirstStopCatalogue(vehicle,context){
+      try{
+        const route=clean(vehicle?.route).toUpperCase();
+        const all=Array.isArray(context?.allStops)?context.allStops:[];
+        if(!route||!all.length)return;
+        const stored=JSON.parse(localStorage.getItem(FIRST_STOP_CATALOGUE_KEY)||'{}')||{};
+        const existing=Array.isArray(stored[route]?.stops)?stored[route].stops:[];
+        const merged=[];
+        const seen=new Set();
+        for(const stop of [...existing,...all]){
+          const name=clean(stop?.name), locality=clean(stop?.locality), atco=clean(stop?.atco);
+          if(!name)continue;
+          const key=(atco||`${name}|${locality}`).toLowerCase();
+          if(seen.has(key))continue;
+          seen.add(key);
+          merged.push({sequence:Number(stop?.sequence)||merged.length+1,name,locality,atco,latitude:Number.isFinite(Number(stop?.latitude))?Number(stop.latitude):null,longitude:Number.isFinite(Number(stop?.longitude))?Number(stop.longitude):null});
+        }
+        stored[route]={
+          operator:'FECS',
+          route,
+          destination:clean(vehicle?.destination),
+          stops:merged,
+          updatedAt:new Date().toISOString()
+        };
+        localStorage.setItem(FIRST_STOP_CATALOGUE_KEY,JSON.stringify(stored));
+      }catch(error){console.debug('Could not cache First Eastern Counties stops:',error);}
+    }
+
     async function refreshJourneyContext(vehicle,force=false){
       if(!vehicle)return null;
       try{
@@ -2802,6 +2897,7 @@
         vehicle.journeyContext=context;
         if(context.runningSeconds!=null)vehicle.runningSeconds=context.runningSeconds;
         state.journeyContextCache.set(vehicle.machineId,{...context,fetchedAt:Date.now()});
+        if(String(vehicle.operatorCode||'').toUpperCase()==='FECS')cacheFirstStopCatalogue(vehicle,context);
         const stateVehicle=state.vehicles.find(v=>v.id===vehicle.id);
         if(stateVehicle&&stateVehicle!==vehicle){
           stateVehicle.journeyRef=vehicle.journeyRef;
@@ -2973,6 +3069,14 @@
         isLastStop:atLastStop,
         lastStopName:lastStop?.name||'',
         upcomingStops:upcoming,
+        allStops:stops.map((stop,index)=>({
+          sequence:index+1,
+          name:stop.name||'',
+          locality:stop.locality||'',
+          atco:stop.atco||'',
+          latitude:stop.latitude,
+          longitude:stop.longitude
+        })),
         runningSeconds:exactDelay,
         runningSource
       };
