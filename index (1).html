@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Supervisor | Vehicle Checks</title>
+  <style>
+    :root{
+      color-scheme:dark;
+      --bg:#0d1117;
+      --panel:#151b23;
+      --panel2:#1b2430;
+      --line:#2a3442;
+      --text:#eef3f8;
+      --muted:#9aa8b7;
+      --blue:#4da3ff;
+      --green:#35c97b;
+      --red:#ff6b68;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(circle at right top,#15304b44,transparent 500px),var(--bg);font:14px system-ui,-apple-system,'Segoe UI',sans-serif;color:var(--text)}
+    button,input,select{font:inherit}
+    button{cursor:pointer}
+    .bar{border-bottom:1px solid var(--line);background:#0d1117ec}
+    .bar-in{max-width:1250px;margin:auto;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;gap:15px}
+    .logo{display:flex;gap:12px;align-items:center}
+    .logo-mark{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:var(--blue);color:#071522;font-weight:900}
+    .logo strong{font-size:17px}
+    .sub{font-size:12px;color:var(--muted);margin-top:3px}
+    .wrap{max-width:1250px;margin:auto;padding:28px 22px 70px}
+    h1{font-size:29px;margin:0 0 6px}
+    h2{font-size:18px}
+    .muted{color:var(--muted)}
+    .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
+    .login{max-width:420px;margin:8vh auto}
+    .login h1{font-size:24px}
+    .field{display:block;font-size:12px;color:var(--muted);font-weight:700;margin:16px 0 6px}
+    input,select{background:#0e151f;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:11px 12px;min-width:0;width:100%}
+    button{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:9px;padding:10px 14px;font-weight:700}
+    button.primary{color:#09121c;background:var(--blue);border-color:var(--blue)}
+    button:hover{filter:brightness(1.12)}
+    button:disabled{opacity:.5;cursor:wait}
+    .error{color:#ff9694;min-height:20px}
+    .hidden{display:none!important}
+    .head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:22px}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+    .stat{background:var(--panel);padding:18px;border:1px solid var(--line);border-radius:13px}
+    .stat strong{display:block;font-size:30px;margin-top:8px}
+    .stat span{color:var(--muted);font-size:12px}
+    .filters{display:grid;grid-template-columns:1fr 180px 170px;gap:10px;margin-bottom:15px}
+    .tablebox{border:1px solid var(--line);border-radius:14px;overflow:auto;background:var(--panel)}
+    table{width:100%;border-collapse:collapse;min-width:740px}
+    th{text-align:left;background:#1a2430;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+    td,th{padding:15px 16px;border-bottom:1px solid var(--line)}
+    tr:last-child td{border-bottom:0}
+    td small{display:block;color:var(--muted);margin-top:4px}
+    .pill{display:inline-block;border-radius:30px;padding:5px 9px;font-size:11px;font-weight:800}
+    .pass{background:#173b2b;color:#95efbd}
+    .fail{background:#492324;color:#ffc5c3}
+    .empty{padding:45px;text-align:center;color:var(--muted)}
+    dialog{width:min(980px,calc(100vw - 22px));max-height:92vh;overflow:auto;background:var(--panel);color:var(--text);border:1px solid #455264;border-radius:15px;padding:25px}
+    dialog::backdrop{background:#000c}
+    .dialog-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;flex-wrap:wrap}
+    .notice{padding:12px 15px;border:1px solid var(--line);border-radius:10px;margin:12px 0;color:var(--muted)}
+    .users{margin-top:24px}
+    .users-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .invite-form{display:flex;gap:8px;flex-wrap:wrap}
+    .invite-form input{flex:1;min-width:220px}
+    .user-line{display:flex;gap:12px;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+    .danger{color:#ffaaa8;border-color:#713c3c;background:#341d20}
+    .greeting{font-size:29px;margin:0 0 5px}
+
+    /* London-bus-style report sheet */
+    .report-sheet{background:#f6f1e7;color:#111;border:2px solid #1b1b1b;border-radius:8px;overflow:hidden;font-family:Arial,Helvetica,sans-serif}
+    .sheet-head{background:#c8102e;color:#fff;padding:16px 18px;border-bottom:3px solid #111;display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+    .sheet-head h2{margin:0;font-size:24px;letter-spacing:.03em;text-transform:uppercase}
+    .sheet-head p{margin:6px 0 0;font-size:12px;color:#ffe7ec}
+    .sheet-badge{background:#fff;color:#111;border:2px solid #111;padding:9px 12px;font-weight:900;font-size:12px;line-height:1.2;min-width:130px;text-align:center}
+    .sheet-badge.fail{background:#ffe0e0;color:#8d1111}
+    .sheet-badge.pass{background:#e4f6e8;color:#155a28}
+    .sheet-body{padding:16px 18px 18px}
+    .sheet-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;border:2px solid #111;margin-bottom:14px}
+    .sheet-field{background:#fff;border-right:1px solid #111;border-bottom:1px solid #111;padding:10px 12px;min-height:62px}
+    .sheet-field:nth-child(2n){border-right:0}
+    .sheet-field:nth-last-child(-n+2){border-bottom:0}
+    .sheet-field span{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#555;margin-bottom:6px}
+    .sheet-field strong{display:block;font-size:14px;color:#111;overflow-wrap:anywhere}
+    .sheet-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+    .sheet-summary .sum{background:#fff;border:2px solid #111;padding:10px 12px;text-align:center}
+    .sheet-summary .sum span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#555;margin-bottom:5px}
+    .sheet-summary .sum strong{font-size:22px;color:#111}
+    .sheet-table{width:100%;border-collapse:collapse;background:#fff;border:2px solid #111;margin-top:14px}
+    .sheet-table th,.sheet-table td{border:1px solid #111;padding:8px 10px;vertical-align:top;text-align:left;font-size:12px;color:#111}
+    .sheet-table th{background:#dde7f2;font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+    .sheet-table .section-cell{font-weight:900;background:#f4efe6;width:24%}
+    .sheet-table .res{font-weight:900;text-align:center;width:90px}
+    .sheet-table .res.pass{background:#def4e4;color:#155a28}
+    .sheet-table .res.fail{background:#ffdede;color:#8d1111}
+    .sheet-table .res.na{background:#fff0c4;color:#7a5a00}
+    .sheet-table .res.unchecked{background:#ececec;color:#555}
+    .sheet-defects,.sheet-notes{margin-top:14px;border:2px solid #111;background:#fff}
+    .sheet-notes h3,.sheet-defects h3{margin:0;padding:10px 12px;background:#dde7f2;border-bottom:1px solid #111;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#111}
+    .sheet-notes .body,.sheet-defects .body{padding:12px;white-space:pre-wrap;min-height:76px;color:#111;font-size:12px;line-height:1.5}
+    .sheet-defects ul{margin:0;padding:12px 12px 12px 28px}
+    .sheet-signoff{margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .sheet-sign{background:#fff;border:2px solid #111;padding:12px;min-height:78px}
+    .sheet-sign span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#555;margin-bottom:6px}
+    .sheet-sign .line{height:26px;border-bottom:1px solid #111}
+    .sheet-sign small{display:block;margin-top:6px;color:#666}
+    .sheet-footer{display:flex;justify-content:space-between;gap:16px;margin-top:14px;font-size:11px;color:#333}
+
+    @media(max-width:800px){
+      .stats{grid-template-columns:1fr 1fr}
+      .filters{grid-template-columns:1fr}
+      .wrap{padding:20px 13px}
+    }
+    @media(max-width:700px){
+      .sheet-grid,.sheet-summary,.sheet-signoff{grid-template-columns:1fr}
+      .sheet-field:nth-child(2n){border-right:1px solid #111}
+      .sheet-field{border-right:0}
+      .sheet-field:nth-last-child(-n+2){border-bottom:1px solid #111}
+      .sheet-field:last-child{border-bottom:0}
+      .sheet-head{flex-direction:column}
+      .sheet-badge{min-width:0}
+    }
+    @media(max-width:600px){
+      .invite-form{display:block}
+      .invite-form button{margin-top:8px;width:100%}
+    }
+    @media print{
+      body>*:not(dialog){display:none!important}
+      dialog{position:static;border:0;width:100%;max-height:none;background:#fff;padding:0}
+      dialog .dialog-actions{display:none}
+      .report-sheet{border-radius:0;border:0}
+      .sheet-head,.sheet-badge,.sheet-table th,.sheet-notes h3,.sheet-defects h3{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    }
+  </style>
+</head>
+<body>
+  <header class="bar">
+    <div class="bar-in">
+      <div class="logo">
+        <div class="logo-mark">VC</div>
+        <div>
+          <strong>OMSI 2 Vehicle Checks</strong>
+          <div class="sub">Supervisor control panel</div>
+        </div>
+      </div>
+      <a href="../" style="color:var(--blue)">Driver page ↗</a>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="panel login" id="login">
+      <h1>Supervisor sign in</h1>
+      <p class="muted">Sign in with your supervisor email and password to view submitted vehicle checks.</p>
+      <form id="loginForm">
+        <label class="field" for="email">Email address</label>
+        <input id="email" type="email" autocomplete="username" required>
+        <label class="field" for="password">Password</label>
+        <input id="password" type="password" autocomplete="current-password" required>
+        <button class="primary" style="width:100%;margin-top:20px" id="signIn">Sign in</button>
+      </form>
+      <p class="error" id="loginError" role="alert"></p>
+      <p class="sub" id="setupNotice"></p>
+      <hr style="border:0;border-top:1px solid var(--line);margin:20px 0">
+      <details>
+        <summary>New supervisor? Create an invited account</summary>
+        <p class="sub">Your administrator must invite your real email address first. Email verification is required before access.</p>
+        <button type="button" id="register">Create account with the email and password above</button>
+        <button type="button" id="resendVerify">Resend verification email</button>
+        <p class="sub" id="registerStatus"></p>
+      </details>
+    </section>
+
+    <section id="dashboard" class="hidden">
+      <div class="head">
+        <div>
+          <h1 class="greeting" id="greeting">Welcome</h1>
+          <div class="muted" style="margin-bottom:10px">Supervisor dashboard · Completed vehicle checks <button id="editName" style="padding:4px 8px;margin-left:8px">Edit name</button></div>
+          <div class="muted" id="lastUpdate">Loading submitted inspections…</div>
+        </div>
+        <div class="actions">
+          <button id="refresh">Refresh</button>
+          <button id="csv">Export CSV</button>
+          <button id="logout">Sign out</button>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><span>Total submitted</span><strong id="total">0</strong></div>
+        <div class="stat"><span>Passed</span><strong id="passed" style="color:var(--green)">0</strong></div>
+        <div class="stat"><span>Defects reported</span><strong id="failed" style="color:var(--red)">0</strong></div>
+        <div class="stat"><span>Today</span><strong id="today">0</strong></div>
+      </div>
+
+      <div class="filters">
+        <input id="search" placeholder="Search driver, registration, vehicle or duty…" aria-label="Search checks">
+        <select id="status">
+          <option value="all">All results</option>
+          <option value="pass">Passed</option>
+          <option value="fail">Defects found</option>
+        </select>
+        <input id="day" type="date" aria-label="Filter by date">
+      </div>
+
+      <div class="tablebox">
+        <table>
+          <thead>
+            <tr>
+              <th>Date & time</th>
+              <th>Vehicle</th>
+              <th>Driver / duty</th>
+              <th>Result</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+        <div class="empty hidden" id="empty">No completed checks found.</div>
+      </div>
+
+      <p class="sub">Deleting from the shared database does not remove a driver's locally saved history.</p>
+
+      <section id="userPanel" class="panel users hidden">
+        <div class="users-head">
+          <div>
+            <h2>Manage supervisors</h2>
+            <p class="sub">Both original administrators can invite or revoke other supervisors without editing Firestore rules.</p>
+          </div>
+        </div>
+        <form id="inviteForm" class="invite-form">
+          <input id="inviteEmail" type="email" placeholder="new.supervisor@example.com" required>
+          <button class="primary" type="submit">Invite supervisor</button>
+        </form>
+        <p class="sub" id="inviteStatus"></p>
+        <div id="inviteList"></div>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="reportDialog">
+    <div id="reportContent"></div>
+    <div class="dialog-actions">
+      <button id="print">Print / Save PDF</button>
+      <button id="download">Download report</button>
+      <button class="danger" id="deleteReport">Delete report</button>
+      <button id="close">Close</button>
+    </div>
+  </dialog>
+
+  <script type="module">
+    import { firebaseConfig, configured } from '../firebase-config.js';
+
+    const $ = id => document.getElementById(id);
+    const esc = x => String(x ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const primaryAdmins = ['StEfeub22re18nW3SPXyFE1giFK2','1dddNJafxiNfZtRIqd8KDkFkTmv1'];
+
+    let auth, db, api = {}, records = [], selected = null, supervisor = false, owner = false, activeUser = null;
+
+    if(!configured){
+      $('setupNotice').textContent = 'Firebase not configured.';
+      $('signIn').disabled = true;
+    } else {
+      init();
+    }
+
+    function emailKey(email){
+      return String(email || '').trim().toLowerCase();
+    }
+
+    function greet(){
+      const hour = new Date().getHours();
+      const prefix = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+      const base = activeUser?.email?.split('@')[0] || 'Supervisor';
+      const name = localStorage.getItem('vc-name-' + activeUser?.uid) || base;
+      $('greeting').textContent = prefix + ', ' + name;
+    }
+
+    $('editName').onclick = () => {
+      const current = localStorage.getItem('vc-name-' + activeUser?.uid) || activeUser?.email?.split('@')[0] || '';
+      const name = prompt('Your display name', current);
+      if(name !== null && name.trim()){
+        localStorage.setItem('vc-name-' + activeUser.uid, name.trim().slice(0, 60));
+        greet();
+      }
+    };
+
+    async function init(){
+      try {
+        const [appMod, authMod, dbMod] = await Promise.all([
+          import('https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js'),
+          import('https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js'),
+          import('https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js')
+        ]);
+
+        auth = authMod.getAuth(appMod.initializeApp(firebaseConfig));
+        db = dbMod.getFirestore(auth.app);
+        api = { ...authMod, ...dbMod };
+
+        authMod.onAuthStateChanged(auth, async user => {
+          activeUser = user;
+          owner = !!user && primaryAdmins.includes(user.uid);
+          supervisor = false;
+          records = [];
+          draw();
+
+          if(user){
+            try {
+              if(owner){
+                supervisor = true;
+              } else {
+                const inviteDoc = await dbMod.getDoc(dbMod.doc(db, 'supervisorInvites', emailKey(user.email)));
+                supervisor = !!inviteDoc.exists() && user.emailVerified;
+              }
+            } catch (e) {
+              $('loginError').textContent = 'Cannot verify supervisor access: ' + e.message;
+            }
+          }
+
+          $('login').classList.toggle('hidden', supervisor);
+          $('dashboard').classList.toggle('hidden', !supervisor);
+          $('userPanel').classList.toggle('hidden', !owner);
+
+          if(supervisor){
+            $('loginError').textContent = '';
+            greet();
+            await refresh();
+            if(owner) await loadInvites();
+          } else if(user){
+            $('loginError').textContent = 'Account not authorised. If invited, verify your email, then sign out and sign back in.';
+          }
+        });
+      } catch (e) {
+        $('loginError').textContent = 'Cannot connect to Firebase: ' + e.message;
+      }
+    }
+
+    $('loginForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      $('loginError').textContent = '';
+      $('signIn').disabled = true;
+      try {
+        await api.signInWithEmailAndPassword(auth, $('email').value, $('password').value);
+        $('password').value = '';
+      } catch (e) {
+        $('loginError').textContent = 'Sign-in failed: ' + (e.code || e.message);
+      } finally {
+        $('signIn').disabled = false;
+      }
+    });
+
+    $('register').onclick = async () => {
+      const email = emailKey($('email').value);
+      const password = $('password').value;
+      if(!email || !password){
+        $('registerStatus').textContent = 'Enter the invited email and a new password above.';
+        return;
+      }
+      try {
+        const cred = await api.createUserWithEmailAndPassword(auth, email, password);
+        await api.sendEmailVerification(cred.user);
+        $('registerStatus').textContent = 'Verification email sent. Verify your email, then sign out and sign back in.';
+        $('password').value = '';
+      } catch (e) {
+        $('registerStatus').textContent = 'Could not create account: ' + (e.code || e.message);
+      }
+    };
+
+    $('resendVerify').onclick = async () => {
+      if(!auth?.currentUser){
+        $('registerStatus').textContent = 'Sign in first to resend verification.';
+        return;
+      }
+      try {
+        await api.sendEmailVerification(auth.currentUser);
+        $('registerStatus').textContent = 'Verification email sent.';
+      } catch (e) {
+        $('registerStatus').textContent = e.message;
+      }
+    };
+
+    $('logout').onclick = () => api.signOut(auth);
+
+    async function refresh(){
+      if(!supervisor) return;
+      $('lastUpdate').textContent = 'Refreshing…';
+      try {
+        const snap = await api.getDocs(api.query(api.collection(db, 'vehicleChecks'), api.orderBy('date', 'desc'), api.limit(500)));
+        records = snap.docs.map(d => ({ ...d.data(), documentId:d.id }));
+        draw();
+        $('lastUpdate').textContent = 'Updated ' + new Date().toLocaleString() + ' · latest 500 checks';
+      } catch (e) {
+        $('lastUpdate').textContent = 'Cannot load reports: ' + (e.code || e.message);
+      }
+    }
+
+    $('refresh').onclick = refresh;
+    ['search','status','day'].forEach(id => $(id).addEventListener('input', draw));
+
+    function filtered(){
+      const q = $('search').value.toLowerCase().trim();
+      return records.filter(r => {
+        const fail = r.overall !== 'PASS';
+        if($('status').value === 'pass' && fail) return false;
+        if($('status').value === 'fail' && !fail) return false;
+        if($('status').value === 'fail' && fail === false) return false;
+        if($('day').value && new Date(r.date).toLocaleDateString('en-CA') !== $('day').value) return false;
+        return [r.fleet, r.driver, r.duty, r.vehicleName, r.notes].some(v => String(v || '').toLowerCase().includes(q));
+      });
+    }
+
+    function draw(){
+      $('total').textContent = records.length;
+      $('passed').textContent = records.filter(r => r.overall === 'PASS').length;
+      $('failed').textContent = records.filter(r => r.overall !== 'PASS').length;
+      $('today').textContent = records.filter(r => new Date(r.date).toDateString() === new Date().toDateString()).length;
+
+      const items = filtered();
+      $('empty').classList.toggle('hidden', items.length > 0);
+      $('rows').innerHTML = items.map(r => `
+        <tr>
+          <td>${esc(new Date(r.date).toLocaleString())}</td>
+          <td><b>${esc(r.fleet || 'No fleet number')}</b><small>${esc(r.vehicleName)}</small></td>
+          <td>${esc(r.driver || 'Not entered')}<small>${esc(r.duty || 'No duty')}</small></td>
+          <td><span class="pill ${r.overall === 'PASS' ? 'pass' : 'fail'}">${r.overall === 'PASS' ? 'PASSED' : 'DEFECTS'}</span></td>
+          <td><button data-view="${esc(r.documentId)}">View</button> <button class="danger" data-delete="${esc(r.documentId)}">Delete</button></td>
+        </tr>
+      `).join('');
+
+      $('rows').querySelectorAll('[data-view]').forEach(b => {
+        b.onclick = () => openReport(records.find(r => r.documentId === b.dataset.view));
+      });
+      $('rows').querySelectorAll('[data-delete]').forEach(b => {
+        b.onclick = () => deleteOne(b.dataset.delete);
+      });
+    }
+
+    function resultLabel(value){
+      if(value === 'pass') return 'PASS';
+      if(value === 'fail') return 'FAIL';
+      if(value === 'na') return 'N/A';
+      return '—';
+    }
+
+    function buildLondonReport(report){
+      const checks = Array.isArray(report.checks) ? report.checks : [];
+      const grouped = {};
+      for(const check of checks){
+        const group = check.group || 'Checks';
+        (grouped[group] ??= []).push(check);
+      }
+
+      const passCount = checks.filter(c => c.result === 'pass').length;
+      const failCount = checks.filter(c => c.result === 'fail').length;
+      const naCount = checks.filter(c => c.result === 'na').length;
+      const totalCount = checks.length;
+      const defectList = checks.filter(c => c.result === 'fail');
+
+      return `
+        <section class="report-sheet">
+          <div class="sheet-head">
+            <div>
+              <h2>London Bus Style Vehicle Check Sheet</h2>
+              <p>Engineering / roadside inspection style presentation for completed vehicle checks</p>
+            </div>
+            <div class="sheet-badge ${report.overall === 'PASS' ? 'pass' : 'fail'}">
+              ${report.overall === 'PASS' ? 'VEHICLE PASSED' : 'DEFECTS FOUND'}<br>
+              <small style="font-weight:700">Report #${esc(report.id || '')}</small>
+            </div>
+          </div>
+          <div class="sheet-body">
+            <div class="sheet-grid">
+              <div class="sheet-field"><span>Fleet / Registration</span><strong>${esc(report.fleet || 'Not entered')}</strong></div>
+              <div class="sheet-field"><span>Vehicle Type</span><strong>${esc(report.vehicleName || 'Not entered')}</strong></div>
+              <div class="sheet-field"><span>Driver</span><strong>${esc(report.driver || 'Not entered')}</strong></div>
+              <div class="sheet-field"><span>Duty / Route</span><strong>${esc(report.duty || 'Not entered')}</strong></div>
+              <div class="sheet-field"><span>Inspection Date & Time</span><strong>${esc(new Date(report.date).toLocaleString())}</strong></div>
+              <div class="sheet-field"><span>Database Ref</span><strong>${esc(report.documentId || report.id || 'Not available')}</strong></div>
+            </div>
+
+            <div class="sheet-summary">
+              <div class="sum"><span>Total checks</span><strong>${totalCount}</strong></div>
+              <div class="sum"><span>Passed</span><strong>${passCount}</strong></div>
+              <div class="sum"><span>Failed</span><strong>${failCount}</strong></div>
+              <div class="sum"><span>N/A</span><strong>${naCount}</strong></div>
+            </div>
+
+            <table class="sheet-table">
+              <thead>
+                <tr>
+                  <th>Section</th>
+                  <th>Inspection item</th>
+                  <th>Result</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${Object.entries(grouped).map(([group, items]) => items.map((item, index) => `
+                  <tr>
+                    ${index === 0 ? `<td class="section-cell" rowspan="${items.length}">${esc(group)}</td>` : ''}
+                    <td>${esc(item.title || '')}</td>
+                    <td class="res ${esc(item.result || 'unchecked')}">${esc(resultLabel(item.result))}</td>
+                  </tr>
+                `).join('')).join('')}
+              </tbody>
+            </table>
+
+            <section class="sheet-defects">
+              <h3>Defect items requiring attention</h3>
+              <div class="body">${defectList.length ? `<ul>${defectList.map(item => `<li>${esc(item.title || '')}</li>`).join('')}</ul>` : 'No failed items recorded.'}</div>
+            </section>
+
+            <section class="sheet-notes">
+              <h3>Defects / additional notes</h3>
+              <div class="body">${esc(report.notes || 'No additional notes.').replaceAll('\n','<br>')}</div>
+            </section>
+
+            <div class="sheet-signoff">
+              <div class="sheet-sign">
+                <span>Driver / inspector signature</span>
+                <div class="line"></div>
+                <small>${esc(report.driver || 'Driver not entered')}</small>
+              </div>
+              <div class="sheet-sign">
+                <span>Supervisor review</span>
+                <div class="line"></div>
+                <small>Checked by supervisor</small>
+              </div>
+            </div>
+
+            <div class="sheet-footer">
+              <span>BusBase Vehicle Checks</span>
+              <span>${esc(report.overall === 'PASS' ? 'Vehicle fit for service' : 'Further attention required before service')}</span>
+            </div>
+          </div>
+        </section>
+      `;
+    }
+
+    function buildDownloadHtml(report){
+      const body = buildLondonReport(report);
+      return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vehicle Check Report - ${esc(report.fleet || report.vehicleName || 'Vehicle')}</title>
+<style>
+body{margin:0;background:#e6e6e6;padding:20px;font-family:Arial,Helvetica,sans-serif}
+*{box-sizing:border-box}
+.report-sheet{max-width:980px;margin:0 auto;background:#f6f1e7;color:#111;border:2px solid #1b1b1b}
+.sheet-head{background:#c8102e;color:#fff;padding:16px 18px;border-bottom:3px solid #111;display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+.sheet-head h2{margin:0;font-size:24px;letter-spacing:.03em;text-transform:uppercase}
+.sheet-head p{margin:6px 0 0;font-size:12px;color:#ffe7ec}
+.sheet-badge{background:#fff;color:#111;border:2px solid #111;padding:9px 12px;font-weight:900;font-size:12px;line-height:1.2;min-width:130px;text-align:center}
+.sheet-badge.fail{background:#ffe0e0;color:#8d1111}
+.sheet-badge.pass{background:#e4f6e8;color:#155a28}
+.sheet-body{padding:16px 18px 18px}
+.sheet-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;border:2px solid #111;margin-bottom:14px}
+.sheet-field{background:#fff;border-right:1px solid #111;border-bottom:1px solid #111;padding:10px 12px;min-height:62px}.sheet-field:nth-child(2n){border-right:0}.sheet-field:nth-last-child(-n+2){border-bottom:0}
+.sheet-field span{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#555;margin-bottom:6px}
+.sheet-field strong{display:block;font-size:14px;color:#111;overflow-wrap:anywhere}
+.sheet-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.sheet-summary .sum{background:#fff;border:2px solid #111;padding:10px 12px;text-align:center}
+.sheet-summary .sum span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#555;margin-bottom:5px}
+.sheet-summary .sum strong{font-size:22px;color:#111}
+.sheet-table{width:100%;border-collapse:collapse;background:#fff;border:2px solid #111;margin-top:14px}
+.sheet-table th,.sheet-table td{border:1px solid #111;padding:8px 10px;vertical-align:top;text-align:left;font-size:12px;color:#111}
+.sheet-table th{background:#dde7f2;font-size:11px;text-transform:uppercase;letter-spacing:.06em}.sheet-table .section-cell{font-weight:900;background:#f4efe6;width:24%}
+.sheet-table .res{font-weight:900;text-align:center;width:90px}.sheet-table .res.pass{background:#def4e4;color:#155a28}.sheet-table .res.fail{background:#ffdede;color:#8d1111}.sheet-table .res.na{background:#fff0c4;color:#7a5a00}.sheet-table .res.unchecked{background:#ececec;color:#555}
+.sheet-defects,.sheet-notes{margin-top:14px;border:2px solid #111;background:#fff}.sheet-notes h3,.sheet-defects h3{margin:0;padding:10px 12px;background:#dde7f2;border-bottom:1px solid #111;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#111}
+.sheet-notes .body,.sheet-defects .body{padding:12px;white-space:pre-wrap;min-height:76px;color:#111;font-size:12px;line-height:1.5}.sheet-defects ul{margin:0;padding:12px 12px 12px 28px}
+.sheet-signoff{margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:12px}.sheet-sign{background:#fff;border:2px solid #111;padding:12px;min-height:78px}.sheet-sign span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#555;margin-bottom:6px}.sheet-sign .line{height:26px;border-bottom:1px solid #111}.sheet-sign small{display:block;margin-top:6px;color:#666}
+.sheet-footer{display:flex;justify-content:space-between;gap:16px;margin-top:14px;font-size:11px;color:#333}
+.print-btn{display:block;margin:16px auto 0;border:0;background:#c8102e;color:#fff;padding:11px 18px;border-radius:8px;font-weight:700;cursor:pointer}
+@media(max-width:700px){body{padding:0}.sheet-grid,.sheet-summary,.sheet-signoff{grid-template-columns:1fr}.sheet-field:nth-child(2n){border-right:1px solid #111}.sheet-field{border-right:0}.sheet-field:nth-last-child(-n+2){border-bottom:1px solid #111}.sheet-field:last-child{border-bottom:0}.sheet-head{flex-direction:column}.sheet-badge{min-width:0}}
+@media print{body{background:#fff;padding:0}.print-btn{display:none}.report-sheet{max-width:none;border:0}.sheet-head,.sheet-badge,.sheet-table th,.sheet-notes h3,.sheet-defects h3{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+</head>
+<body>${body}<button class="print-btn" onclick="window.print()">Print / Save as PDF</button></body>
+</html>`;
+    }
+
+    function openReport(report){
+      if(!report) return;
+      selected = report;
+      $('reportContent').innerHTML = buildLondonReport(report);
+      $('reportDialog').showModal();
+    }
+
+    async function deleteOne(id){
+      if(!supervisor || !id) return;
+      const report = records.find(x => x.documentId === id);
+      if(!report) return;
+      if(!confirm('Permanently delete the shared report for ' + (report.fleet || report.vehicleName) + ' (' + (report.driver || 'unknown driver') + ')? This cannot be undone.')) return;
+      try {
+        await api.deleteDoc(api.doc(db, 'vehicleChecks', id));
+        if(selected?.documentId === id){
+          selected = null;
+          $('reportDialog').close();
+        }
+        await refresh();
+      } catch (e) {
+        alert('Delete failed: ' + (e.code || e.message));
+      }
+    }
+
+    $('deleteReport').onclick = () => {
+      if(selected) deleteOne(selected.documentId);
+    };
+    $('close').onclick = () => $('reportDialog').close();
+    $('print').onclick = () => window.print();
+    $('download').onclick = () => {
+      if(!selected) return;
+      const blob = new Blob([buildDownloadHtml(selected)], { type:'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'vehicle-check-' + String(selected.id || selected.documentId || 'report').replace(/[^a-zA-Z0-9_-]/g, '') + '.html';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
+
+    $('csv').onclick = () => {
+      const cols = ['date','vehicleName','fleet','driver','duty','overall','notes'];
+      const csv = [
+        cols.join(','),
+        ...filtered().map(r => cols.map(c => '"' + String(r[c] ?? '').replaceAll('"', '""') + '"').join(','))
+      ].join('\r\n');
+      const url = URL.createObjectURL(new Blob([csv], { type:'text/csv;charset=utf-8' }));
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'vehicle-checks.csv';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
+
+    async function loadInvites(){
+      if(!owner) return;
+      try {
+        const snap = await api.getDocs(api.collection(db, 'supervisorInvites'));
+        const emails = snap.docs.map(x => x.id).sort();
+        $('inviteList').innerHTML = emails.length
+          ? emails.map(email => `<div class="user-line"><span>${esc(email)}</span><button data-revoke="${esc(email)}" class="danger">Remove</button></div>`).join('')
+          : '<p class="sub">No additional supervisors invited yet.</p>';
+        $('inviteList').querySelectorAll('[data-revoke]').forEach(button => {
+          button.onclick = () => revoke(button.dataset.revoke);
+        });
+      } catch (e) {
+        $('inviteStatus').textContent = 'Cannot load users: ' + e.message;
+      }
+    }
+
+    $('inviteForm').onsubmit = async e => {
+      e.preventDefault();
+      if(!owner) return;
+      const email = emailKey($('inviteEmail').value);
+      if(!email) return;
+      try {
+        await api.setDoc(api.doc(db, 'supervisorInvites', email), {
+          email,
+          createdAt: api.serverTimestamp(),
+          createdBy: auth.currentUser.uid
+        });
+        $('inviteEmail').value = '';
+        $('inviteStatus').textContent = email + ' invited. Ask them to create an account using this exact email and verify it.';
+        await loadInvites();
+      } catch (e) {
+        $('inviteStatus').textContent = 'Invite failed: ' + e.message;
+      }
+    };
+
+    async function revoke(email){
+      if(!owner || !confirm('Remove supervisor access for ' + email + '?')) return;
+      try {
+        await api.deleteDoc(api.doc(db, 'supervisorInvites', email));
+        $('inviteStatus').textContent = 'Access removed for ' + email;
+        await loadInvites();
+      } catch (e) {
+        $('inviteStatus').textContent = 'Remove failed: ' + e.message;
+      }
+    }
+  </script>
+</body>
+</html>
