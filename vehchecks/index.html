@@ -1559,6 +1559,43 @@ document.getElementById("reportModal").addEventListener("click",e=>{
 renderHistory();
 loadDraft();
 updateSummary();
+
+// Shared supervisor-managed vehicle catalogue, layered over the original models.
+// If Firebase is temporarily unavailable, the original list stays usable.
+async function loadSupervisorVehicleTypes(){
+  try {
+    const { firebaseConfig, configured } = await import('./firebase-config.js');
+    if(!configured) return;
+    const [{initializeApp,getApps,getApp},{getFirestore,doc,getDoc}] = await Promise.all([
+      import('https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js'),
+      import('https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js')
+    ]);
+    const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+    const snapshot = await getDoc(doc(getFirestore(app),'settings','vehicleCatalog'));
+    if(!snapshot.exists()) return;
+    const config = snapshot.data();
+    const overrides = config.vehicles || {};
+    const hidden = Array.isArray(config.hidden) ? config.hidden : [];
+    for(const key of hidden) delete vehicles[key];
+    for(const [key,value] of Object.entries(overrides)){
+      if(hidden.includes(key)) continue;
+      if(!value || !Array.isArray(value.groups) || !value.groups.length) continue;
+      vehicles[key] = value;
+    }
+    const previous = vehicleSelect.value;
+    vehicleSelect.innerHTML = '<option value="">Choose a vehicle…</option>';
+    for(const [key,value] of Object.entries(vehicles)){
+      const option = document.createElement('option');
+      option.value=key; option.textContent=value.name;
+      vehicleSelect.appendChild(option);
+    }
+    if(previous && vehicles[previous]) vehicleSelect.value=previous;
+    if(previous && !vehicles[previous]) renderVehicle();
+    const saved=JSON.parse(localStorage.getItem('omsiVehicleCheckDraft')||'null');
+    if(!previous && saved?.state?.vehicleKey && vehicles[saved.state.vehicleKey]) loadDraft();
+  } catch(error) { console.warn('Using original vehicle list: catalogue unavailable',error); }
+}
+loadSupervisorVehicleTypes();
 </script>
 <script type="module" src="./submission-sync.js"></script>
 </body>
