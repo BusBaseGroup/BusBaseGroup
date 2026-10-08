@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Supervisor | Vehicle Checks</title>
+<style>
+:root{color-scheme:dark;--bg:#0d1117;--panel:#151b23;--panel2:#1b2430;--line:#2a3442;--text:#eef3f8;--muted:#9aa8b7;--blue:#4da3ff;--green:#35c97b;--red:#ff6b68}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at right top,#15304b44,transparent 500px),var(--bg);font:14px system-ui,-apple-system,'Segoe UI',sans-serif;color:var(--text)}button,input,select{font:inherit}button{cursor:pointer}.bar{border-bottom:1px solid var(--line);background:#0d1117ec}.bar-in{max-width:1250px;margin:auto;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;gap:15px}.logo{display:flex;gap:12px;align-items:center}.logo-mark{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:var(--blue);color:#071522;font-weight:900}.logo strong{font-size:17px}.sub{font-size:12px;color:var(--muted);margin-top:3px}.wrap{max-width:1250px;margin:auto;padding:28px 22px 70px}h1{font-size:29px;margin:0 0 6px}h2{font-size:18px}.muted{color:var(--muted)}.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}.login{max-width:420px;margin:8vh auto}.login h1{font-size:24px}.field{display:block;font-size:12px;color:var(--muted);font-weight:700;margin:16px 0 6px}input,select{background:#0e151f;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:11px 12px;min-width:0;width:100%}button{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:9px;padding:10px 14px;font-weight:700}button.primary{color:#09121c;background:var(--blue);border-color:var(--blue)}button:hover{filter:brightness(1.12)}button:disabled{opacity:.5;cursor:wait}.error{color:#ff9694;min-height:20px}.hidden{display:none!important}.head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:22px}.actions{display:flex;gap:8px;flex-wrap:wrap}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}.stat{background:var(--panel);padding:18px;border:1px solid var(--line);border-radius:13px}.stat strong{display:block;font-size:30px;margin-top:8px}.stat span{color:var(--muted);font-size:12px}.filters{display:grid;grid-template-columns:1fr 180px 170px;gap:10px;margin-bottom:15px}.tablebox{border:1px solid var(--line);border-radius:14px;overflow:auto;background:var(--panel)}table{width:100%;border-collapse:collapse;min-width:740px}th{text-align:left;background:#1a2430;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em}td,th{padding:15px 16px;border-bottom:1px solid var(--line)}tr:last-child td{border-bottom:0}td small{display:block;color:var(--muted);margin-top:4px}.pill{display:inline-block;border-radius:30px;padding:5px 9px;font-size:11px;font-weight:800}.pass{background:#173b2b;color:#95efbd}.fail{background:#492324;color:#ffc5c3}.empty{padding:45px;text-align:center;color:var(--muted)}dialog{width:min(760px,calc(100vw - 22px));max-height:90vh;overflow:auto;background:var(--panel);color:var(--text);border:1px solid #455264;border-radius:15px;padding:25px}dialog::backdrop{background:#000c}.details{display:grid;grid-template-columns:1fr 1fr;gap:10px}.detail{background:#0e151f;padding:12px;border-radius:9px}.detail span{font-size:11px;color:var(--muted);display:block}.detail strong{display:block;margin-top:5px;overflow-wrap:anywhere}.group{border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:18px}.group h3{margin:0;padding:11px 13px;background:#202a36;font-size:14px}.item{display:flex;justify-content:space-between;gap:20px;padding:10px 13px;border-top:1px solid var(--line)}.notes{white-space:pre-wrap;overflow-wrap:anywhere}.dialog-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:20px;flex-wrap:wrap}@media(max-width:800px){.stats{grid-template-columns:1fr 1fr}.filters{grid-template-columns:1fr}.wrap{padding:20px 13px}.details{grid-template-columns:1fr}}@media print{body>*:not(dialog){display:none!important}dialog{position:static;border:0;width:100%;max-height:none}dialog .dialog-actions{display:none}}
+</style></head>
+<body><header class="bar"><div class="bar-in"><div class="logo"><div class="logo-mark">VC</div><div><strong>OMSI 2 Vehicle Checks</strong><div class="sub">Supervisor control panel</div></div></div><a href="../" style="color:var(--blue)">Driver page ↗</a></div></header>
+<main class="wrap"><section class="panel login" id="login"><h1>Supervisor sign in</h1><p class="muted">Sign in with your supervisor email and password to view submitted vehicle checks.</p><form id="loginForm"><label class="field" for="email">Email address</label><input id="email" type="email" autocomplete="username" required><label class="field" for="password">Password</label><input id="password" type="password" autocomplete="current-password" required><button class="primary" style="width:100%;margin-top:20px" id="signIn">Sign in</button></form><p class="error" id="loginError" role="alert"></p><p class="sub" id="setupNotice"></p></section>
+<section id="dashboard" class="hidden"><div class="head"><div><h1>Completed vehicle checks</h1><div class="muted" id="lastUpdate">Loading submitted inspections…</div></div><div class="actions"><button id="refresh">Refresh</button><button id="csv">Export CSV</button><button id="logout">Sign out</button></div></div><div class="stats"><div class="stat"><span>Total submitted</span><strong id="total">0</strong></div><div class="stat"><span>Passed</span><strong id="passed" style="color:var(--green)">0</strong></div><div class="stat"><span>Defects reported</span><strong id="failed" style="color:var(--red)">0</strong></div><div class="stat"><span>Today</span><strong id="today">0</strong></div></div><div class="filters"><input id="search" placeholder="Search driver, registration, vehicle or duty…" aria-label="Search checks"><select id="status"><option value="all">All results</option><option value="pass">Passed</option><option value="fail">Defects found</option></select><input id="day" type="date" aria-label="Filter by date"></div><div class="tablebox"><table><thead><tr><th>Date & time</th><th>Vehicle</th><th>Driver / duty</th><th>Result</th><th>Report</th></tr></thead><tbody id="rows"></tbody></table><div class="empty hidden" id="empty">No completed checks found.</div></div><p class="sub">Reports are read-only. Driver's local history is not affected.</p></section></main>
+<dialog id="reportDialog"><div id="reportContent"></div><div class="dialog-actions"><button id="print">Print / Save PDF</button><button id="download">Download JSON</button><button id="close">Close</button></div></dialog>
+<script type="module">
+import {firebaseConfig,configured} from '../firebase-config.js';
+const $=id=>document.getElementById(id);const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let auth,db,functions,records=[],selected=null;
+if(!configured){$('setupNotice').textContent='Database not configured yet. Follow SETUP.txt in the download.';$('signIn').disabled=true;}
+else init();
+async function init(){
+ try{
+  const [a,b,c]=await Promise.all([import('https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js'),import('https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js'),import('https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js')]);
+  auth=b.getAuth(a.initializeApp(firebaseConfig));db=c.getFirestore(auth.app);functions={...b,...c};
+  b.onAuthStateChanged(auth,async user=>{
+    $('login').classList.toggle('hidden',!!user);$('dashboard').classList.toggle('hidden',!user);
+    if(user)await refresh();else{records=[];draw();}
+  });
+ }catch(e){$('loginError').textContent='Unable to connect to Firebase: '+e.message;}
+}
+$('loginForm').addEventListener('submit',async e=>{
+ e.preventDefault();$('loginError').textContent='';$('signIn').disabled=true;
+ try{await functions.signInWithEmailAndPassword(auth,$('email').value,$('password').value);$('password').value='';}
+ catch(e){$('loginError').textContent='Sign-in failed. Check your credentials and supervisor access.';}
+ finally{$('signIn').disabled=false;}
+});
+$('logout').onclick=()=>functions.signOut(auth);
+async function refresh(){
+ $('lastUpdate').textContent='Refreshing…';
+ try{
+  const snap=await functions.getDocs(functions.query(functions.collection(db,'vehicleChecks'),functions.orderBy('date','desc'),functions.limit(500)));
+  records=snap.docs.map(d=>({documentId:d.id,...d.data()}));draw();
+  $('lastUpdate').textContent=`Updated ${new Date().toLocaleString()} · latest 500 checks`;
+ }catch(e){$('lastUpdate').textContent=e.code==='permission-denied'?'Access denied. Add your supervisor UID to firestore.rules and publish them.':'Cannot load reports: '+e.message;}
+}
+$('refresh').onclick=refresh;
+['search','status','day'].forEach(id=>$(id).addEventListener('input',draw));
+function filtered(){const q=$('search').value.toLowerCase().trim();return records.filter(r=>{
+ const fail=r.overall!=='PASS';
+ if($('status').value==='pass'&&fail)return false;if($('status').value==='fail'&&!fail)return false;
+ if($('day').value&&new Date(r.date).toLocaleDateString('en-CA')!==$('day').value)return false;
+ return [r.fleet,r.driver,r.duty,r.vehicleName,r.notes].some(v=>String(v||'').toLowerCase().includes(q));
+});}
+function draw(){
+ $('total').textContent=records.length;$('passed').textContent=records.filter(r=>r.overall==='PASS').length;
+ $('failed').textContent=records.filter(r=>r.overall!=='PASS').length;
+ $('today').textContent=records.filter(r=>new Date(r.date).toDateString()===new Date().toDateString()).length;
+ const matches=filtered();$('empty').classList.toggle('hidden',matches.length>0);
+ $('rows').innerHTML=matches.map(r=>`<tr><td>${esc(new Date(r.date).toLocaleString())}</td><td><b>${esc(r.fleet||'No fleet number')}</b><small>${esc(r.vehicleName)}</small></td><td>${esc(r.driver||'Not entered')}<small>${esc(r.duty||'No duty')}</small></td><td><span class="pill ${r.overall==='PASS'?'pass':'fail'}">${r.overall==='PASS'?'PASSED':'DEFECTS'}</span></td><td><button data-id="${esc(r.documentId)}">View</button></td></tr>`).join('');
+ $('rows').querySelectorAll('button[data-id]').forEach(b=>b.onclick=()=>openReport(records.find(r=>r.documentId===b.dataset.id)));
+}
+function openReport(r){if(!r)return;selected=r;
+ const groups={};for(const c of r.checks||[]){const g=c.group||'Checks';(groups[g]??=[]).push(c);}
+ const grid=[['Date and time',new Date(r.date).toLocaleString()],['Vehicle',r.vehicleName],['Fleet / registration',r.fleet],['Driver',r.driver],['Duty / route',r.duty],['Result',r.overall]].map(([k,v])=>`<div class="detail"><span>${esc(k)}</span><strong>${esc(v||'Not entered')}</strong></div>`).join('');
+ $('reportContent').innerHTML=`<h2>Vehicle inspection report</h2><p class="muted">Report #${esc(r.id)}</p><div class="details">${grid}</div>${Object.entries(groups).map(([g,items])=>`<section class="group"><h3>${esc(g)}</h3>${items.map(c=>`<div class="item"><span>${esc(c.title)}</span><b style="color:${c.result==='fail'?'#ff9694':c.result==='pass'?'#95efbd':'#f3b73f'}">${esc(String(c.result||'').toUpperCase())}</b></div>`).join('')}</section>`).join('')}<h3>Defects / additional notes</h3><p class="notes">${esc(r.notes||'No additional notes.')}</p>`;
+ $('reportDialog').showModal();
+}
+$('close').onclick=()=>$('reportDialog').close();$('print').onclick=()=>window.print();
+$('download').onclick=()=>{if(!selected)return;const blob=new Blob([JSON.stringify(selected,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='vehicle-check-'+String(selected.id).replace(/[^0-9]/g,'')+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+$('csv').onclick=()=>{const cols=['date','vehicleName','fleet','driver','duty','overall','notes'];const csv=[cols.join(','),...filtered().map(r=>cols.map(c=>'"'+String(r[c]??'').replaceAll('"','""')+'"').join(','))].join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='vehicle-checks.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+</script></body></html>

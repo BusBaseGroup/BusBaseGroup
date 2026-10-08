@@ -1136,6 +1136,10 @@ function completeCheck(){
   history.unshift(report);
   localStorage.setItem("omsiVehicleCheckHistory",JSON.stringify(history.slice(0,50)));
 
+  // Additive supervisor sync; existing local reports continue to work unchanged.
+  report.checks = checks.map(c=>({id:c.id,group:c.group,title:c.title,help:c.help,result:state.results[c.id]}));
+  window.dispatchEvent(new CustomEvent("busbase-check-completed",{detail:report}));
+
   openReport(report);
 
   localStorage.removeItem("omsiVehicleCheckDraft");
@@ -1556,5 +1560,6 @@ renderHistory();
 loadDraft();
 updateSummary();
 </script>
+<script type="module" src="./submission-sync.js"></script>
 </body>
 </html>
