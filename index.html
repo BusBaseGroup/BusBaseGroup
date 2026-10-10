@@ -1,0 +1,1312 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BusBase | Fleet & Routes</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#eef3f8;
+  --panel:#ffffff;
+  --text:#172033;
+  --muted:#667085;
+  --border:#d8e0ea;
+  --primary:#0f766e;
+  --primary-dark:#115e59;
+  --primary-soft:#ccfbf1;
+  --accent:#f59e0b;
+  --shadow:0 18px 45px rgba(15,23,42,.08);
+  --radius:24px;
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+body {
+  font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+  background:linear-gradient(180deg,#f8fafc 0%,var(--bg) 100%);
+  color:var(--text);
+  min-height:100vh;
+}
+.site-header {
+  background:rgba(255,255,255,.88);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  position:sticky;
+  top:0;
+  z-index:20;
+}
+.header-inner {
+  max-width:1240px;
+  margin:auto;
+  padding:18px 24px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  flex-wrap:wrap;
+}
+.brand {
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+.brand img {
+  height:58px;
+  width:auto;
+  filter:brightness(0);
+}
+.brand-mark {
+  width:52px;
+  height:52px;
+  border-radius:16px;
+  background:linear-gradient(135deg,var(--primary),#14b8a6);
+  color:white;
+  display:grid;
+  place-items:center;
+  font-weight:900;
+  letter-spacing:-.04em;
+  box-shadow:0 12px 24px rgba(15,118,110,.22);
+}
+.brand h1 {
+  font-size:1.35rem;
+  font-weight:900;
+  letter-spacing:-.04em;
+}
+.brand p {
+  color:var(--muted);
+  font-size:.92rem;
+  font-weight:600;
+  margin-top:2px;
+}
+.header-actions {
+  display:flex;
+  gap:12px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.search {
+  width:min(380px,80vw);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:14px 16px;
+  font:600 15px/1 Inter,sans-serif;
+  outline:none;
+  background:#fff;
+  color:var(--text);
+}
+.search:focus {
+  border-color:var(--primary);
+  box-shadow:0 0 0 4px rgba(15,118,110,.12);
+}
+.select {
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:14px 16px;
+  font:700 15px/1 Inter,sans-serif;
+  outline:none;
+  background:#fff;
+  color:var(--text);
+}
+main {
+  max-width:1240px;
+  margin:auto;
+  padding:36px 24px 56px;
+}
+.hero {
+  display:grid;
+  grid-template-columns:1.5fr .8fr;
+  gap:22px;
+  align-items:stretch;
+  margin-bottom:24px;
+}
+.hero-card {
+  background:linear-gradient(135deg,var(--primary-dark),var(--primary));
+  color:white;
+  border-radius:32px;
+  padding:42px;
+  box-shadow:var(--shadow);
+  position:relative;
+  overflow:hidden;
+}
+.hero-card:after {
+  content:"";
+  position:absolute;
+  width:280px;
+  height:280px;
+  right:-90px;
+  top:-90px;
+  border-radius:50%;
+  background:rgba(255,255,255,.10);
+}
+.hero-card h2 {
+  font-size:clamp(2.2rem,5vw,4rem);
+  line-height:.95;
+  letter-spacing:-.07em;
+  font-weight:900;
+  margin-bottom:16px;
+  position:relative;
+}
+.hero-card p {
+  color:rgba(255,255,255,.88);
+  max-width:680px;
+  line-height:1.7;
+  font-weight:600;
+  position:relative;
+}
+.summary-card {
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:32px;
+  padding:28px;
+  box-shadow:var(--shadow);
+}
+.summary-card h3 {
+  font-size:1rem;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  margin-bottom:14px;
+}
+.summary-number {
+  font-size:3.2rem;
+  font-weight:900;
+  letter-spacing:-.06em;
+  color:var(--primary);
+}
+.summary-card p {
+  color:var(--muted);
+  line-height:1.6;
+  font-weight:600;
+  margin-top:8px;
+}
+.stats {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:16px;
+  margin-bottom:24px;
+}
+.stat {
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:22px;
+  box-shadow:var(--shadow);
+}
+.stat span {
+  color:var(--muted);
+  font-size:.84rem;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+.stat strong {
+  display:block;
+  margin-top:8px;
+  font-size:2rem;
+  letter-spacing:-.05em;
+}
+.fleet-panel {
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:32px;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.panel-top {
+  padding:24px 28px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  flex-wrap:wrap;
+}
+.panel-top h2 {
+  font-size:1.25rem;
+  letter-spacing:-.03em;
+}
+.panel-top p {
+  color:var(--muted);
+  font-weight:600;
+  margin-top:4px;
+}
+.count-pill {
+  background:var(--primary-soft);
+  color:var(--primary-dark);
+  border-radius:999px;
+  padding:9px 13px;
+  font-weight:900;
+  font-size:.86rem;
+}
+.table-wrap {
+  overflow-x:auto;
+}
+table {
+  width:100%;
+  min-width:980px;
+  border-collapse:collapse;
+}
+th {
+  background:#f8fafc;
+  color:var(--muted);
+  text-align:left;
+  font-size:.78rem;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  padding:16px 24px;
+}
+td {
+  padding:18px 24px;
+  border-top:1px solid var(--border);
+  font-weight:700;
+  vertical-align:middle;
+}
+
+.photo-cell{
+  width:138px;
+}
+.photo-frame{
+  position:relative;
+  overflow:hidden;
+  background:linear-gradient(135deg,#e7eef4,#d9e4ec);
+  border:1px solid var(--border);
+  color:var(--muted);
+}
+.photo-frame.thumb{
+  width:112px;
+  height:72px;
+  border-radius:14px;
+}
+.photo-frame.large{
+  width:100%;
+  aspect-ratio:16/10;
+  min-height:220px;
+  border-radius:20px;
+}
+.photo-frame img{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+.photo-placeholder{
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  text-align:center;
+  padding:10px;
+  font-size:.72rem;
+  line-height:1.35;
+  font-weight:900;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+}
+.details-layout{
+  display:grid;
+  grid-template-columns:minmax(260px,360px) minmax(0,1fr);
+  gap:22px;
+  align-items:start;
+}
+.details-main{
+  min-width:0;
+}
+.photo-note{
+  color:var(--muted);
+  font-size:.78rem;
+  font-weight:700;
+  margin-top:8px;
+}
+.photo-credit{
+  margin-top:7px;
+  color:var(--muted);
+  font-size:.74rem;
+  font-weight:700;
+  line-height:1.35;
+}
+.photo-credit a{
+  color:var(--primary-dark);
+  text-decoration:none;
+  font-weight:900;
+}
+.photo-credit a:hover{
+  text-decoration:underline;
+}
+.photo-credit.thumb-credit{
+  width:112px;
+  margin-top:6px;
+  font-size:.68rem;
+}
+@media(max-width:760px){
+  .details-layout{
+    grid-template-columns:1fr;
+  }
+  .photo-frame.large{
+    max-width:520px;
+  }
+}
+
+.vehicle-row {
+  transition:.16s ease;
+}
+.vehicle-row:hover {
+  background:#f8fbfb;
+  cursor:pointer;
+}
+.badge {
+  display:inline-flex;
+  align-items:center;
+  border-radius:999px;
+  padding:7px 11px;
+  background:#eef2ff;
+  color:#3730a3;
+  font-size:.82rem;
+  font-weight:900;
+}
+.vehicle-type {
+  color:#344054;
+}
+.chev {
+  text-align:right;
+  color:var(--muted);
+  font-size:1.35rem;
+}
+.details-row {
+  display:none;
+  background:#fbfdff;
+}
+.details-box {
+  padding:8px 0 12px;
+}
+.details-title {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:16px;
+  flex-wrap:wrap;
+}
+.details-title h3 {
+  font-size:1.05rem;
+}
+.feature-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+  gap:12px;
+}
+.feature {
+  border:1px solid var(--border);
+  background:white;
+  border-radius:16px;
+  padding:14px;
+}
+.feature small {
+  display:block;
+  color:var(--muted);
+  font-weight:800;
+  margin-bottom:7px;
+}
+.feature strong {
+  font-size:.95rem;
+}
+.yes { color:#047857; }
+.no { color:#b42318; }
+.empty {
+  padding:34px 24px;
+  color:var(--muted);
+  font-weight:700;
+  text-align:center;
+}
+footer {
+  text-align:center;
+  color:var(--muted);
+  font-weight:700;
+  padding:34px 20px 0;
+}
+@media(max-width:900px) {
+  .hero { grid-template-columns:1fr; }
+  .stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media(max-width:620px) {
+  .header-inner, main { padding-left:16px; padding-right:16px; }
+  .hero-card { padding:30px; }
+  .stats { grid-template-columns:1fr; }
+  .search { width:100%; }
+  .header-actions { width:100%; }
+  .select { width:100%; }
+}
+
+.nav-buttons{
+  display:flex;
+  gap:14px;
+  flex-wrap:wrap;
+  margin-top:24px;
+}
+.nav-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:14px 20px;
+  border-radius:16px;
+  background:white;
+  color:var(--text);
+  text-decoration:none;
+  font-weight:800;
+  border:1px solid var(--border);
+  box-shadow:var(--shadow);
+  transition:.2s ease;
+}
+.nav-btn:hover{
+  background:var(--primary);
+  color:white;
+  transform:translateY(-2px);
+}
+
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="header-inner">
+    <div class="brand">
+      <img src="busbase-logo-removebg-preview.png" alt="BusBase Logo">
+      <div>
+        <h1>BusBase | Fleet & Routes</h1>
+        <p>Built by enthusiasts, for enthusiasts (and others)</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <input id="search" class="search" type="search" placeholder="Search fleet number, type or route..." />
+      <select id="routeFilter" class="select">
+        <option value="all">All routes</option>
+      </select>
+      <select id="sortOrder" class="select" aria-label="Sort fleet list">
+        <option value="fleet">Fleet number</option>
+        <option value="registration">Registration A–Z</option>
+        <option value="vehicle">Vehicle type A–Z</option>
+        <option value="route">Route branding A–Z</option>
+      </select>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="hero-card">
+      <h2>Fleet List</h2>
+      <p>Browse BusBase vehicles by fleet number, registration, type, branding and onboard equipment. Select a row to view detailed features.</p>
+    </div>
+    <aside class="summary-card">
+      <h3>Total vehicles</h3>
+      <div class="summary-number" id="totalVehicles">0</div>
+      <p>Updated vehicle data loaded directly from your fleet list.</p>
+    </aside>
+  </section>
+
+
+
+  <section class="stats">
+    <div class="stat"><span>MMC vehicles</span><strong id="mmcCount">0</strong></div>
+    <div class="stat"><span>Double deckers</span><strong id="deckCount">0</strong></div>
+    <div class="stat"><span>USB A fitted</span><strong id="usbCount">0</strong></div>
+    <div class="stat"><span>Luggage racks</span><strong id="luggageCount">0</strong></div>
+  </section>
+
+  
+<div class="nav-buttons">
+  <a href="index.html" class="nav-btn">Fleet List</a>
+  <a href="routes.html" class="nav-btn">View Routes</a>
+  <a href="stats.html" class="nav-btn">Statistics</a>
+  <a href="upcoming.html" class="nav-btn">Upcoming Changes</a>
+  <a href="updates.html" class="nav-btn">Site Updates</a>
+  <a href="https://busbase.co.uk/lynx/photos.html" class="nav-btn">Lynx Photography</a>
+  <a href="downloads/BusBase-Fleet-List.pdf" class="nav-btn download-btn" download>⇩ Download Fleet List</a>
+  <a href="disclaimer.html" class="nav-btn">Disclaimer</a>
+</div>
+
+<section class="fleet-panel">
+    <div class="panel-top">
+      <div>
+        <h2>Vehicles</h2>
+        <p>Click a vehicle to open its feature list.</p>
+      </div>
+      <div class="count-pill" id="visibleCount">0 shown</div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Photo</th>
+            <th>Fleet / Registration</th>
+            <th>Vehicle type</th>
+            <th>Route branding</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="fleet-list"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>BusBase | Fleet & Routes</footer>
+</main>
+
+<script>
+const fleet = [
+  {
+    number: "2 / AE12 JWJ",
+    photo: "https://live.staticflickr.com/65535/55415387065_f1028bd3ef.jpg",
+    photoCredit: "southlancs",
+    photoSource: "https://www.flickr.com/photos/southlancs/55415387065/",
+    description: "Mercedes-Benz Citaro O530",
+    route: "No Branding / Red",
+    features: { USB_A:false, USB_C:false, Power_Outlets:false, Handrails:true, Route_Display:true, Emergency_Exits:true, CCTV:true, WiFi:false, Luggage_Racks:false, Seat_Belts:false }
+  },
+  {
+    number: "4 / FX12 MUB",
+    photo: "https://live.staticflickr.com/65535/55420012312_7dd2c71dca.jpg",
+    photoCredit: "southlancs",
+    photoSource: "https://www.flickr.com/photos/southlancs/55420012312/",
+    description: "Mercedes-Benz Citaro O530",
+    route: "the loop (44)",
+    features: { USB_A:false, USB_C:false, Power_Outlets:false, Handrails:true, Route_Display:true, Emergency_Exits:true, CCTV:true, WiFi:false, Luggage_Racks:false, Seat_Belts:false }
+  },
+  {
+    number: "7 / AF63 XKU",
+    photo: "https://live.staticflickr.com/65535/55479145532_938814b516.jpg",
+    photoCredit: "Jim Morrissey",
+    photoSource: "https://www.flickr.com/photos/163766820@N04/55479145532/",
+    description: "Mercedes-Benz Citaro O530",
+    route: "all the threes 33",
+    features: { USB_A:false, USB_C:false, Power_Outlets:false, Handrails:true, Route_Display:true, Emergency_Exits:true, CCTV:true, WiFi:false, Luggage_Racks:false, Seat_Belts:false }
+  },
+  {
+    number: "8 / AF63 XKM",
+    photo: "https://live.staticflickr.com/65535/55458295867_11f4f51ea1.jpg",
+    photoCredit: "Kevin Smith",
+    photoSource: "https://www.flickr.com/photos/kjs251/55458295867/",
+    description: "Mercedes-Benz Citaro O530",
+    route: "all the threes 33",
+    features: { USB_A:false, USB_C:false, Power_Outlets:false, Handrails:true, Route_Display:true, Emergency_Exits:true, CCTV:true, WiFi:false, Luggage_Racks:false, Seat_Belts:false }
+  },
+  {
+    number: "12 / YJ07 VSL",
+    photo: "https://live.staticflickr.com/65535/54598550906_f865dd9d64.jpg",
+    photoCredit: "Solenteer",
+    photoSource: "https://www.flickr.com/photos/solenteer/54598550906/",
+    description: "Optare Tempo",
+    route: "No Branding / Red",
+    features: { USB_A:false, USB_C:false, Power_Outlets:false, Handrails:true, Route_Display:false, Emergency_Exits:true, CCTV:true, WiFi:false, Luggage_Racks:false, Seat_Belts:false }
+  },
+  {
+    number: "13 / YJ07 VSM",
+    photo: "https://live.staticflickr.com/65535/54765782632_28f8d23aa8.jpg",
+    photoCredit: "David Beardmore",
+    photoSource: "https://www.flickr.com/photos/45726467@N02/54765782632/",
+    description: "Optare Tempo",
+    route: "No Branding / Red",
+    features: { USB_A:false, USB_C:false, Power_Outlets:false, Handrails:true, Route_Display:false, Emergency_Exits:true, CCTV:true, WiFi:false, Luggage_Racks:false, Seat_Belts:false }
+  },
+  {
+    number: "15 / FD54 JYA",
+    photo: "https://live.staticflickr.com/65535/55442712711_c4a4eac8e6.jpg",
+    photoCredit: "CSDS",
+    photoSource: "https://www.flickr.com/photos/gbcss/55442712711/",
+    description: "Optare Tempo",
+    route: "No Branding / Red",
+    features: { USB_A:false, USB_C:false, Power_Outlets:false, Handrails:true, Route_Display:false, Emergency_Exits:true, CCTV:true, WiFi:false, Luggage_Racks:false, Seat_Belts:false }
+  },
+  {
+    number: "21 / YJ60 KAA",
+    photo: "https://live.staticflickr.com/65535/54838726724_6080855199.jpg",
+    photoCredit: "bus peterborough",
+    photoSource: "https://www.flickr.com/photos/154017143@N08/54838726724/",
+    description: "Optare Tempo",
+    route: "No Branding / Red",
+    features: { USB_A:false, USB_C:false, Power_Outlets:false, Handrails:true, Route_Display:false, Emergency_Exits:true, CCTV:true, WiFi:false, Luggage_Racks:false, Seat_Belts:true }
+  },
+  {
+    number: "23 / YJ60 KAK",
+    photo: "https://live.staticflickr.com/65535/55464675644_c9b88beb71.jpg",
+    photoCredit: "Jim Morrissey",
+    photoSource: "https://www.flickr.com/photos/163766820@N04/55464675644/",
+    description: "Optare Tempo",
+    route: "No Branding / Red",
+    features: { USB_A:false, USB_C:false, Power_Outlets:false, Handrails:true, Route_Display:false, Emergency_Exits:true, CCTV:true, WiFi:false, Luggage_Racks:false, Seat_Belts:false }
+  },
+  {
+    number: "24 / YJ60 KAO",
+    photo: "https://live.staticflickr.com/65535/55366353865_d2ba73be8c.jpg",
+    photoCredit: "Ainsley Stevens",
+    photoSource: "https://www.flickr.com/photos/144626821@N02/55366353865/",
+    description: "Optare Tempo",
+    route: "No Branding / Red",
+    features: { USB_A:false, USB_C:false, Power_Outlets:false, Handrails:true, Route_Display:false, Emergency_Exits:true, CCTV:true, WiFi:false, Luggage_Racks:false, Seat_Belts:false }
+  },
+  {
+    number: "25 / YJ60 KAU",
+    photo: "https://live.staticflickr.com/65535/55365016482_942e9f90fe.jpg",
+    photoCredit: "Ainsley Stevens",
+    photoSource: "https://www.flickr.com/photos/144626821@N02/55365016482/",
+    description: "Optare Tempo",
+    route: "No Branding / Red",
+    features: { USB_A:false, USB_C:false, Power_Outlets:false, Handrails:true, Route_Display:false, Emergency_Exits:true, CCTV:true, WiFi:false, Luggage_Racks:false, Seat_Belts:false }
+  },
+  {
+    number: "26 / YJ60 KAX",
+    photo: "https://live.staticflickr.com/65535/54901896251_8c2c1669df.jpg",
+    photoCredit: "David Beardmore",
+    photoSource: "https://www.flickr.com/photos/45726467@N02/54901896251/",
+    description: "Optare Tempo",
+    route: "No Branding / Red",
+    features: { USB_A:false, USB_C:false, Power_Outlets:false, Handrails:true, Route_Display:false, Emergency_Exits:true, CCTV:true, WiFi:false, Luggage_Racks:false, Seat_Belts:false }
+  },
+  {
+    number: "27 / YJ60 KBF",
+    photo: "https://live.staticflickr.com/65535/55306814092_b0a76ee83a.jpg",
+    photoCredit: "Kevin Smith",
+    photoSource: "https://www.flickr.com/photos/kjs251/55306814092/",
+    description: "Optare Tempo",
+    route: "No Branding / Red",
+    features: { USB_A:false, USB_C:false, Power_Outlets:false, Handrails:true, Route_Display:false, Emergency_Exits:true, CCTV:true, WiFi:false, Luggage_Racks:false, Seat_Belts:false }
+  },
+  {
+    number: "28 / T28 KLN",
+    photo: "https://live.staticflickr.com/65535/55367095410_2815d3b924.jpg",
+    photoCredit: "Ainsley Stevens",
+    photoSource: "https://www.flickr.com/photos/144626821@N02/55367095410/",
+    description: "Optare Tempo",
+    route: "No Branding / Red",
+    features: { USB_A:false, USB_C:false, Power_Outlets:false, Handrails:true, Route_Display:false, Emergency_Exits:true, CCTV:true, WiFi:false, Luggage_Racks:false, Seat_Belts:false }
+  },
+  {
+    number: "29 / T29 KLN",
+    photo: "https://live.staticflickr.com/65535/53246132801_3c4d3734a1.jpg",
+    photoCredit: "David Beardmore",
+    photoSource: "https://www.flickr.com/photos/45726467@N02/53246132801/",
+    description: "Optare Tempo",
+    route: "No Branding / Red",
+    features: { USB_A:false, USB_C:false, Power_Outlets:false, Handrails:true, Route_Display:false, Emergency_Exits:true, CCTV:true, WiFi:false, Luggage_Racks:false, Seat_Belts:false }
+  },
+ {
+    number: "31 / YY24 EKZ",
+    photo: "https://live.staticflickr.com/65535/55365004607_7a4ef7cfa4.jpg",
+    photoCredit: "Ainsley Stevens",
+    photoSource: "https://www.flickr.com/photos/144626821@N02/55365004607/",
+    description: "ADL Enviro200 MMC",
+    route: "34/35/36",
+    features: {
+      USB_A: true,
+      USB_C: false,
+      Power_Outlets: false,
+      Handrails: true,
+      Route_Display: true,
+      Emergency_Exits: true,
+      CCTV: true,
+      WiFi: false,
+      Luggage_Racks: false,
+      Seat_Belts: false
+    }
+  },
+  {
+    number: "32 / YY24 ELC",
+    photo: "https://live.staticflickr.com/65535/55459388158_9e9dafb945.jpg",
+    photoCredit: "Kevin Smith",
+    photoSource: "https://www.flickr.com/photos/kjs251/55459388158/",
+    description: "ADL Enviro200 MMC",
+    route: "34/35/36",
+    features: {
+      USB_A: true,
+      USB_C: false,
+      Power_Outlets: false,
+      Handrails: true,
+      Route_Display: true,
+      Emergency_Exits: true,
+      CCTV: true,
+      WiFi: false,
+      Luggage_Racks: false,
+      Seat_Belts: false
+    }
+  },
+  {
+    number: "33 / YY24 ELH",
+    photo: "https://live.staticflickr.com/65535/55153671307_f2b9053d40.jpg",
+    photoCredit: "bus peterborough",
+    photoSource: "https://www.flickr.com/photos/154017143@N08/55153671307/",
+    description: "ADL Enviro200 MMC",
+    route: "34/35/36",
+    features: {
+      USB_A: true,
+      USB_C: false,
+      Power_Outlets: false,
+      Handrails: true,
+      Route_Display: true,
+      Emergency_Exits: true,
+      CCTV: true,
+      WiFi: false,
+      Luggage_Racks: false,
+      Seat_Belts: false
+    }
+  },
+  {
+    number: "34 / YY24 ELJ",
+    photo: "https://live.staticflickr.com/65535/55366557960_59bbeecfcb.jpg",
+    photoCredit: "Ainsley Stevens",
+    photoSource: "https://www.flickr.com/photos/144626821@N02/55366557960/",
+    description: "ADL Enviro200 MMC",
+    route: "34/35/36",
+    features: {
+      USB_A: true,
+      USB_C: false,
+      Power_Outlets: false,
+      Handrails: true,
+      Route_Display: true,
+      Emergency_Exits: true,
+      CCTV: true,
+      WiFi: false,
+      Luggage_Racks: false,
+      Seat_Belts: false
+    }
+  },
+  {
+    number: "35 / YX75 LCL",
+    photo: "https://live.staticflickr.com/65535/54960782861_a4bdda7c51.jpg",
+    photoCredit: "Andrew Stopford",
+    photoSource: "https://www.flickr.com/photos/thespian/54960782861/",
+    description: "ADL Enviro200 MMC",
+    route: "34/35/36",
+    features: {
+      USB_A: true,
+      USB_C: false,
+      Power_Outlets: false,
+      Handrails: true,
+      Route_Display: true,
+      Emergency_Exits: true,
+      CCTV: true,
+      WiFi: false,
+      Luggage_Racks: false,
+      Seat_Belts: false
+    }
+  },
+  {
+    number: "36 / YX75 KVF",
+    photo: "https://live.staticflickr.com/65535/54914302149_1f15240f65.jpg",
+    photoCredit: "Andrew Stopford",
+    photoSource: "https://www.flickr.com/photos/thespian/54914302149/",
+    description: "ADL Enviro200 MMC",
+    route: "Fairstead 42",
+    features: {
+      USB_A: true,
+      USB_C: false,
+      Power_Outlets: false,
+      Handrails: true,
+      Route_Display: true,
+      Emergency_Exits: true,
+      CCTV: true,
+      WiFi: false,
+      Luggage_Racks: false,
+      Seat_Belts: false
+    }
+  },
+  {
+    number: "37 / YX75 KVG",
+    photo: "https://live.staticflickr.com/65535/55019888660_a80e6f61fe.jpg",
+    photoCredit: "Chris Hinds",
+    photoSource: "https://www.flickr.com/photos/62607125@N08/55019888660/",
+    description: "ADL Enviro200 MMC",
+    route: "Fairstead 42",
+    features: {
+      USB_A: true,
+      USB_C: false,
+      Power_Outlets: false,
+      Handrails: true,
+      Route_Display: true,
+      Emergency_Exits: true,
+      CCTV: true,
+      WiFi: false,
+      Luggage_Racks: false,
+      Seat_Belts: false
+    }
+  },
+    {
+    number: "38 / YX76 KNG",
+    photo: "fleet-photos/YX76-KLM.jpg",
+    photoMessage: "New vehicle — branded photo coming soon",
+    description: "ADL Enviro200 MMC",
+    route: "Unknown",
+    features: {
+      USB_A: false,
+      USB_C: false,
+      Power_Outlets: false,
+      Handrails: false,
+      Route_Display: false,
+      Emergency_Exits: false,
+      CCTV: false,
+      WiFi: false,
+      Luggage_Racks: false,
+      Seat_Belts: false
+    }
+  },
+  {
+    number: "52 / LJ53 BFU",
+    photo: "https://live.staticflickr.com/65535/54672409813_742099b51b.jpg",
+    photoCredit: "Jacob Peatfield",
+    photoSource: "https://www.flickr.com/photos/127786776@N04/54672409813/",
+    description: "VDL DB250 Gemini",
+    route: "No Branding / Grey",
+    features: {
+      USB_A: false,
+      USB_C: false,
+      Power_Outlets: false,
+      Handrails: true,
+      Route_Display: false,
+      Emergency_Exits: true,
+      CCTV: true,
+      WiFi: false,
+      Luggage_Racks: false,
+      Seat_Belts: false
+    }
+  },
+  {
+    number: "53 / LJ53 BGU",
+    photo: "https://live.staticflickr.com/65535/54980386627_a35bece3b4.jpg",
+    photoCredit: "Blake 135",
+    photoSource: "https://www.flickr.com/photos/187333075@N04/54980386627/",
+    description: "VDL DB250 Gemini",
+    route: "No Branding / Grey",
+    features: {
+      USB_A: false,
+      USB_C: false,
+      Power_Outlets: false,
+      Handrails: true,
+      Route_Display: false,
+      Emergency_Exits: true,
+      CCTV: true,
+      WiFi: false,
+      Luggage_Racks: false,
+      Seat_Belts: false
+    }
+  },
+  {
+    number: "56 / LJ04 LDL",
+    photo: "https://live.staticflickr.com/65535/55365986241_144ed4c468.jpg",
+    photoCredit: "Ainsley Stevens",
+    photoSource: "https://www.flickr.com/photos/144626821@N02/55365986241/",
+    description: "VDL DB250 Gemini",
+    route: "No Branding / Grey",
+    features: {
+      USB_A: false,
+      USB_C: false,
+      Power_Outlets: false,
+      Handrails: true,
+      Route_Display: false,
+      Emergency_Exits: true,
+      CCTV: true,
+      WiFi: false,
+      Luggage_Racks: false,
+      Seat_Belts: false
+    }
+  },
+  {
+    number: "61 / SK21 FNG",
+    photo: "https://live.staticflickr.com/65535/54566081838_46fc9a98f2.jpg",
+    photoCredit: "Solenteer",
+    photoSource: "https://www.flickr.com/photos/solenteer/54566081838/",
+    description: "Enviro400 MMC",
+    route: "Coastliner 36",
+    features: {
+      USB_A: true,
+      USB_C: false,
+      Power_Outlets: false,
+      Handrails: true,
+      Route_Display: true,
+      Emergency_Exits: true,
+      CCTV: true,
+      WiFi: false,
+      Luggage_Racks: true,
+      Seat_Belts: false
+    }
+  },
+  {
+    number: "62 / SK21 FNH",
+    photo: "https://live.staticflickr.com/65535/55208212407_211ff32515.jpg",
+    photoCredit: "Kevin Smith",
+    photoSource: "https://www.flickr.com/photos/kjs251/55208212407/",
+    description: "Enviro400 MMC",
+    route: "Coastliner 36",
+   features: {
+      USB_A: true,
+      USB_C: false,
+      Power_Outlets: false,
+      Handrails: true,
+      Route_Display: true,
+      Emergency_Exits: true,
+      CCTV: true,
+      WiFi: false,
+      Luggage_Racks: true,
+      Seat_Belts: false
+    }
+  },
+  {
+    number: "63 / YX22 OLN",
+    photo: "https://live.staticflickr.com/65535/54270092894_95c8319384.jpg",
+    photoCredit: "404BrainNotFound",
+    photoSource: "https://www.flickr.com/photos/199489014@N02/54270092894/",
+    description: "Enviro400 MMC",
+    route: "Coastliner 36",
+   features: {
+      USB_A: true,
+      USB_C: false,
+      Power_Outlets: false,
+      Handrails: true,
+      Route_Display: true,
+      Emergency_Exits: true,
+      CCTV: true,
+      WiFi: false,
+      Luggage_Racks: true,
+      Seat_Belts: false
+    }
+  },
+  {
+    number: "64 / YX72 OLO",
+    photo: "https://live.staticflickr.com/65535/54939034283_c535677715.jpg",
+    photoCredit: "Tim Squires",
+    photoSource: "https://www.flickr.com/photos/transporttim/54939034283/",
+    description: "Enviro400 MMC",
+    route: "Coastliner 36",
+   features: {
+      USB_A: true,
+      USB_C: false,
+      Power_Outlets: false,
+      Handrails: true,
+      Route_Display: true,
+      Emergency_Exits: true,
+      CCTV: true,
+      WiFi: false,
+      Luggage_Racks: true,
+      Seat_Belts: false
+    }
+  },
+  {
+    number: "65 / YX72 OLP",
+    photo: "https://live.staticflickr.com/65535/55379489696_b840c91ac5.jpg",
+    photoCredit: "bus peterborough",
+    photoSource: "https://www.flickr.com/photos/154017143@N08/55379489696/",
+    description: "Enviro400 MMC",
+    route: "Coastliner 36",
+   features: {
+      USB_A: true,
+      USB_C: false,
+      Power_Outlets: false,
+      Handrails: true,
+      Route_Display: true,
+      Emergency_Exits: true,
+      CCTV: true,
+      WiFi: false,
+      Luggage_Racks: true,
+      Seat_Belts: false
+    }
+  },
+  {
+    number: "66 / YX23 OSE",
+    photo: "https://live.staticflickr.com/65535/55367133888_1243d6f69b.jpg",
+    photoCredit: "Ainsley Stevens",
+    photoSource: "https://www.flickr.com/photos/144626821@N02/55367133888/",
+    description: "Enviro400 MMC",
+    route: "Coastliner 36",
+   features: {
+      USB_A: true,
+      USB_C: false,
+      Power_Outlets: false,
+      Handrails: true,
+      Route_Display: true,
+      Emergency_Exits: true,
+      CCTV: true,
+      WiFi: false,
+      Luggage_Racks: true,
+      Seat_Belts: false
+    }
+  },
+  {
+    number: "67 / YX73 PHJ",
+    photo: "https://live.staticflickr.com/65535/55379663954_a68a8d0edc.jpg",
+    photoCredit: "bus peterborough",
+    photoSource: "https://www.flickr.com/photos/154017143@N08/55379663954/",
+    description: "Enviro400 MMC",
+    route: "34/35/36",
+   features: {
+      USB_A: true,
+      USB_C: false,
+      Power_Outlets: false,
+      Handrails: true,
+      Route_Display: true,
+      Emergency_Exits: true,
+      CCTV: true,
+      WiFi: false,
+      Luggage_Racks: true,
+      Seat_Belts: false
+    }
+  },
+  {
+    number: "68 / YX76 KLM",
+    photo: "fleet-photos/YX76-KLM.jpg",
+    photoMessage: "New vehicle — branded photo coming soon",
+    description: "Enviro400 MMC",
+    route: "we're all about West Norfolk",
+    features: {
+      USB_A: true,
+      USB_C: false,
+      Power_Outlets: false,
+      Handrails: true,
+      Route_Display: true,
+      Emergency_Exits: true,
+      CCTV: true,
+      WiFi: false,
+      Luggage_Racks: true,
+      Seat_Belts: false
+    }
+  },
+  {
+    number: "69 / YX76 KLO",
+    photo: "fleet-photos/YX76-KLO.jpg",
+    photoMessage: "New vehicle — branded photo coming soon",
+    description: "Enviro400 MMC",
+    route: "Coastliner",
+    features: {
+      USB_A: false,
+      USB_C: false,
+      Power_Outlets: false,
+      Handrails: true,
+      Route_Display: true,
+      Emergency_Exits: true,
+      CCTV: true,
+      WiFi: false,
+      Luggage_Racks: true,
+      Seat_Belts: false
+    }
+  },
+  {
+    number: "81 / DU61 FVY",
+    photo: "https://live.staticflickr.com/65535/55366644248_d2880e0482.jpg",
+    photoCredit: "Ainsley Stevens",
+    photoSource: "https://www.flickr.com/photos/144626821@N02/55366644248/",
+    description: "Enviro400",
+    route: "No Branding / Red",
+   features: {
+      USB_A: false,
+      USB_C: false,
+      Power_Outlets: false,
+      Handrails: true,
+      Route_Display: true,
+      Emergency_Exits: true,
+      CCTV: true,
+      WiFi: false,
+      Luggage_Racks: false,
+      Seat_Belts: false
+    }
+  },
+  {
+    number: "82 / DU62 FHK",
+    photo: "https://live.staticflickr.com/65535/55443100890_38a176dfa6.jpg",
+    photoCredit: "CSDS",
+    photoSource: "https://www.flickr.com/photos/gbcss/55443100890/",
+    description: "Enviro400",
+    route: "No Branding / Red",
+   features: {
+      USB_A: false,
+      USB_C: false,
+      Power_Outlets: false,
+      Handrails: true,
+      Route_Display: true,
+      Emergency_Exits: true,
+      CCTV: true,
+      WiFi: false,
+      Luggage_Racks: false,
+      Seat_Belts: false
+    }
+  }
+];
+
+const tbody = document.getElementById("fleet-list");
+const searchInput = document.getElementById("search");
+const routeFilter = document.getElementById("routeFilter");
+const sortOrder = document.getElementById("sortOrder");
+
+const featureNames = [
+  ["USB_A", "USB A"],
+  ["USB_C", "USB C"],
+  ["Power_Outlets", "Power Outlets"],
+  ["Handrails", "Handrails"],
+  ["Route_Display", "Route Display"],
+  ["Emergency_Exits", "Emergency Exits"],
+  ["CCTV", "CCTV"],
+  ["WiFi", "WiFi"],
+  ["Luggage_Racks", "Luggage Racks"],
+  ["Seat_Belts", "Seat Belts"]
+];
+
+function hasFeature(bus, key) {
+  return Boolean(bus.features && bus.features[key]);
+}
+
+function renderStats() {
+  document.getElementById("totalVehicles").textContent = fleet.length;
+  document.getElementById("mmcCount").textContent = fleet.filter(bus => bus.description.includes("MMC")).length;
+  document.getElementById("deckCount").textContent = fleet.filter(bus => bus.description.includes("400") || bus.description.includes("DB250")).length;
+  document.getElementById("usbCount").textContent = fleet.filter(bus => hasFeature(bus, "USB_A") || hasFeature(bus, "USB_C")).length;
+  document.getElementById("luggageCount").textContent = fleet.filter(bus => hasFeature(bus, "Luggage_Racks")).length;
+}
+
+function setupRouteFilter() {
+  const routes = [...new Set(fleet.map(bus => bus.route))].sort();
+  routes.forEach(route => {
+    const option = document.createElement("option");
+    option.value = route;
+    option.textContent = route;
+    routeFilter.appendChild(option);
+  });
+}
+
+function photoCreditHTML(bus, small = false) {
+  if (!bus.photoCredit) return "";
+  const label = `Photo by ${bus.photoCredit}`;
+  if (bus.photoSource) {
+    return `<div class="photo-credit${small ? " thumb-credit" : ""}">
+      <a href="${bus.photoSource}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">${label}</a>
+    </div>`;
+  }
+  return `<div class="photo-credit${small ? " thumb-credit" : ""}">${label}</div>`;
+}
+
+function renderFleet(data) {
+  tbody.innerHTML = "";
+
+  if (!data.length) {
+    const empty = document.createElement("tr");
+    empty.innerHTML = `<td class="empty" colspan="5">No vehicles match your search.</td>`;
+    tbody.appendChild(empty);
+    document.getElementById("visibleCount").textContent = "0 shown";
+    return;
+  }
+
+  data.forEach(bus => {
+    const row = document.createElement("tr");
+    row.className = "vehicle-row";
+    row.innerHTML = `
+      <td class="photo-cell">
+        <div class="photo-frame thumb">
+          <div class="photo-placeholder">${bus.photoMessage || "No photo"}</div>
+          <img src="${bus.photo}" alt="${bus.number} ${bus.description}" loading="lazy" onerror="this.style.display='none'">
+        </div>
+        ${photoCreditHTML(bus, true)}
+      </td>
+      <td>${bus.number}</td>
+      <td class="vehicle-type">${bus.description}</td>
+      <td><span class="badge">${bus.route}</span></td>
+      <td class="chev">›</td>
+    `;
+
+    const details = document.createElement("tr");
+    details.className = "details-row";
+
+    const featureHTML = featureNames.map(([key, label]) => {
+      const yes = hasFeature(bus, key);
+      return `
+        <div class="feature">
+          <small>${label}</small>
+          <strong class="${yes ? "yes" : "no"}">${yes ? "Available" : "Not available"}</strong>
+        </div>
+      `;
+    }).join("");
+
+    details.innerHTML = `
+      <td colspan="5">
+        <div class="details-box">
+          <div class="details-layout">
+            <div>
+              <div class="photo-frame large">
+                <div class="photo-placeholder">${bus.photoMessage || "Photo not added yet"}</div>
+                <img src="${bus.photo}" alt="${bus.number} ${bus.description}" loading="lazy" onerror="this.style.display='none'">
+              </div>
+              ${photoCreditHTML(bus)}
+            </div>
+            <div class="details-main">
+              <div class="details-title">
+                <h3>${bus.number} — ${bus.description}</h3>
+                <span class="badge">${bus.route}</span>
+              </div>
+              <div class="feature-grid">${featureHTML}</div>
+            </div>
+          </div>
+        </div>
+      </td>
+    `;
+
+    row.addEventListener("click", () => {
+      details.style.display = details.style.display === "table-row" ? "none" : "table-row";
+    });
+
+    tbody.appendChild(row);
+    tbody.appendChild(details);
+  });
+
+  document.getElementById("visibleCount").textContent = `${data.length} shown`;
+}
+
+function getRegistration(bus) {
+  const parts = bus.number.split("/");
+  return (parts[1] || bus.number).trim().replace("?", "ZZZ");
+}
+
+function getFleetNumber(bus) {
+  const first = bus.number.split("/")[0].trim();
+  const n = Number.parseInt(first, 10);
+  return Number.isFinite(n) ? n : Number.MAX_SAFE_INTEGER;
+}
+
+function sortFleet(data) {
+  return [...data].sort((a, b) => {
+    switch (sortOrder.value) {
+      case "registration":
+        return getRegistration(a).localeCompare(getRegistration(b), "en", { numeric:true });
+      case "vehicle":
+        return a.description.localeCompare(b.description, "en", { numeric:true }) || getFleetNumber(a) - getFleetNumber(b);
+      case "route":
+        return a.route.localeCompare(b.route, "en", { numeric:true }) || getFleetNumber(a) - getFleetNumber(b);
+      case "fleet":
+      default:
+        return getFleetNumber(a) - getFleetNumber(b) || getRegistration(a).localeCompare(getRegistration(b), "en", { numeric:true });
+    }
+  });
+}
+
+function applyFilters() {
+  const term = searchInput.value.trim().toLowerCase();
+  const route = routeFilter.value;
+
+  const filtered = fleet.filter(bus => {
+    const matchesText =
+      bus.number.toLowerCase().includes(term) ||
+      bus.description.toLowerCase().includes(term) ||
+      bus.route.toLowerCase().includes(term);
+
+    const matchesRoute = route === "all" || bus.route === route;
+
+    return matchesText && matchesRoute;
+  });
+
+  renderFleet(sortFleet(filtered));
+}
+
+searchInput.addEventListener("input", applyFilters);
+routeFilter.addEventListener("change", applyFilters);
+sortOrder.addEventListener("change", applyFilters);
+
+renderStats();
+setupRouteFilter();
+renderFleet(sortFleet(fleet));
+</script>
+</body>
+</html>
