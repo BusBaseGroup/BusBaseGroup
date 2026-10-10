@@ -1,0 +1,34 @@
+// Copy the helper functions and match blocks INSIDE your existing
+// rules_version = '2'; service cloud.firestore { match /databases/{database}/documents { ... } }
+// DO NOT replace the existing vehicleChecks, supervisorInvites, or settings rules.
+function allocationOwner() {
+  return request.auth != null && request.auth.uid in [
+    'StEfeub22re18nW3SPXyFE1giFK2',
+    '1dddNJafxiNfZtRIqd8KDkFkTmv1'
+  ];
+}
+function allocationSupervisor() {
+  return request.auth != null && (
+    allocationOwner() ||
+    request.auth.uid == '9drpa8YLFzfSez79mb5sTMJtD7G3' ||
+    (request.auth.token.email_verified == true &&
+     request.auth.token.email is string &&
+     exists(/databases/$(database)/documents/supervisorInvites/$(request.auth.token.email)))
+  );
+}
+match /allocations/{allocationId} {
+  allow read: if allocationSupervisor();
+  allow create, update: if allocationSupervisor() &&
+    request.resource.data.date is string && request.resource.data.route is string &&
+    request.resource.data.duty is string && request.resource.data.fleet is string &&
+    request.resource.data.vehicleId is string &&
+    (!exists(/databases/$(database)/documents/vehicles/$(request.resource.data.vehicleId)) ||
+     get(/databases/$(database)/documents/vehicles/$(request.resource.data.vehicleId)).data.status != 'vor');
+  allow delete: if allocationSupervisor();
+}
+match /vehicles/{vehicleId} {
+  allow read, create, update, delete: if allocationSupervisor();
+}
+match /vehicleTypes/{typeId} {
+  allow read, create, update, delete: if allocationSupervisor();
+}
