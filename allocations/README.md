@@ -24,3 +24,7 @@ It uses the existing original administrator IDs, additional supervisor ID, and t
 The website uses Firestore listeners, but live end-to-end functionality cannot be verified without Firebase rules, suitable user accounts and real Firestore records. Do not claim deployment is complete until both the GitHub file AND actual Firebase rules have been published/tested.
 
 This is an OpenOMSI roleplay tool, not official Go-Ahead London software.
+
+
+## London vehicle types
+Sign in as a supervisor and open Management → Fleet & VOR → Add London bus types. This imports 80 curated vehicle types to Firestore without overwriting existing records. Includes 4 stock Addon London vehicles, modern, and historic types. Additional subtypes may be added manually.

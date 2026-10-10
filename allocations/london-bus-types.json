@@ -1,0 +1,402 @@
+[
+  {
+    "code": "NRM",
+    "name": "Wright New Routemaster",
+    "group": "Addon London (included)"
+  },
+  {
+    "code": "CB400",
+    "name": "Citybus 400 (Addon London)",
+    "group": "Addon London (included)"
+  },
+  {
+    "code": "CB200",
+    "name": "Citybus 200 (Addon London)",
+    "group": "Addon London (included)"
+  },
+  {
+    "code": "B5LH-EVOCITI",
+    "name": "Volvo B5LH / MCV EvoCiti (Addon London)",
+    "group": "Addon London (included)"
+  },
+  {
+    "code": "E100EV",
+    "name": "ADL Enviro100EV",
+    "group": "Alexander Dennis / Dennis"
+  },
+  {
+    "code": "E200",
+    "name": "ADL Enviro200",
+    "group": "Alexander Dennis / Dennis"
+  },
+  {
+    "code": "E200MMC",
+    "name": "ADL Enviro200 MMC",
+    "group": "Alexander Dennis / Dennis"
+  },
+  {
+    "code": "E200EV",
+    "name": "ADL Enviro200EV / BYD ADL",
+    "group": "Alexander Dennis / Dennis"
+  },
+  {
+    "code": "E400",
+    "name": "ADL Enviro400",
+    "group": "Alexander Dennis / Dennis"
+  },
+  {
+    "code": "E400H",
+    "name": "ADL Enviro400 Hybrid",
+    "group": "Alexander Dennis / Dennis"
+  },
+  {
+    "code": "E400MMC",
+    "name": "ADL Enviro400 MMC",
+    "group": "Alexander Dennis / Dennis"
+  },
+  {
+    "code": "E400HMMC",
+    "name": "ADL Enviro400 MMC Hybrid",
+    "group": "Alexander Dennis / Dennis"
+  },
+  {
+    "code": "E400CITY",
+    "name": "ADL Enviro400 City",
+    "group": "Alexander Dennis / Dennis"
+  },
+  {
+    "code": "E400CITYH",
+    "name": "ADL Enviro400 City Hybrid",
+    "group": "Alexander Dennis / Dennis"
+  },
+  {
+    "code": "E400EV",
+    "name": "ADL Enviro400EV / BYD ADL",
+    "group": "Alexander Dennis / Dennis"
+  },
+  {
+    "code": "E400EV-CITY",
+    "name": "ADL Enviro400EV City",
+    "group": "Alexander Dennis / Dennis"
+  },
+  {
+    "code": "DART",
+    "name": "Dennis Dart",
+    "group": "Alexander Dennis / Dennis"
+  },
+  {
+    "code": "DARTSLF",
+    "name": "Dennis Dart SLF",
+    "group": "Alexander Dennis / Dennis"
+  },
+  {
+    "code": "POINTER",
+    "name": "Dennis Dart / Plaxton Pointer",
+    "group": "Alexander Dennis / Dennis"
+  },
+  {
+    "code": "ALX200",
+    "name": "Dennis Dart / Alexander ALX200",
+    "group": "Alexander Dennis / Dennis"
+  },
+  {
+    "code": "ALX400",
+    "name": "Dennis Trident / Alexander ALX400",
+    "group": "Alexander Dennis / Dennis"
+  },
+  {
+    "code": "TRIDENT",
+    "name": "Dennis Trident 2",
+    "group": "Alexander Dennis / Dennis"
+  },
+  {
+    "code": "PRESIDENT",
+    "name": "Dennis Trident / Plaxton President",
+    "group": "Alexander Dennis / Dennis"
+  },
+  {
+    "code": "LANCE",
+    "name": "Dennis Lance / Lance SLF",
+    "group": "Alexander Dennis / Dennis"
+  },
+  {
+    "code": "STREETLITE",
+    "name": "Wright StreetLite",
+    "group": "Wrightbus / Volvo / VDL"
+  },
+  {
+    "code": "STREETDECK",
+    "name": "Wright StreetDeck",
+    "group": "Wrightbus / Volvo / VDL"
+  },
+  {
+    "code": "STREETDECK-HEV",
+    "name": "Wright StreetDeck HEV",
+    "group": "Wrightbus / Volvo / VDL"
+  },
+  {
+    "code": "STREETDECK-EV",
+    "name": "Wright StreetDeck Electroliner",
+    "group": "Wrightbus / Volvo / VDL"
+  },
+  {
+    "code": "STREETDECK-H2",
+    "name": "Wright StreetDeck Hydroliner",
+    "group": "Wrightbus / Volvo / VDL"
+  },
+  {
+    "code": "GB-KITE",
+    "name": "Wright GB Kite Electroliner",
+    "group": "Wrightbus / Volvo / VDL"
+  },
+  {
+    "code": "SRM",
+    "name": "Wright SRM",
+    "group": "Wrightbus / Volvo / VDL"
+  },
+  {
+    "code": "GEMINI",
+    "name": "Wright Eclipse Gemini",
+    "group": "Wrightbus / Volvo / VDL"
+  },
+  {
+    "code": "GEMINI2",
+    "name": "Wright Eclipse Gemini 2",
+    "group": "Wrightbus / Volvo / VDL"
+  },
+  {
+    "code": "GEMINI3",
+    "name": "Wright Eclipse Gemini 3",
+    "group": "Wrightbus / Volvo / VDL"
+  },
+  {
+    "code": "B7TL",
+    "name": "Volvo B7TL / Wright Eclipse Gemini",
+    "group": "Wrightbus / Volvo / VDL"
+  },
+  {
+    "code": "B9TL",
+    "name": "Volvo B9TL / Wright Gemini",
+    "group": "Wrightbus / Volvo / VDL"
+  },
+  {
+    "code": "B5LH",
+    "name": "Volvo B5LH Hybrid",
+    "group": "Wrightbus / Volvo / VDL"
+  },
+  {
+    "code": "B5LH-GEMINI2",
+    "name": "Volvo B5LH / Wright Gemini 2",
+    "group": "Wrightbus / Volvo / VDL"
+  },
+  {
+    "code": "B5LH-GEMINI3",
+    "name": "Volvo B5LH / Wright Gemini 3",
+    "group": "Wrightbus / Volvo / VDL"
+  },
+  {
+    "code": "B5LH-EVOSETI",
+    "name": "Volvo B5LH / MCV EvoSeti",
+    "group": "Wrightbus / Volvo / VDL"
+  },
+  {
+    "code": "BZL",
+    "name": "Volvo BZL electric single-decker",
+    "group": "Wrightbus / Volvo / VDL"
+  },
+  {
+    "code": "BZLDD",
+    "name": "Volvo BZL DD electric double-decker",
+    "group": "Wrightbus / Volvo / VDL"
+  },
+  {
+    "code": "DB300",
+    "name": "VDL DB300 / Wright Gemini 2",
+    "group": "Wrightbus / Volvo / VDL"
+  },
+  {
+    "code": "OLYMPIAN",
+    "name": "Volvo Olympian",
+    "group": "Wrightbus / Volvo / VDL"
+  },
+  {
+    "code": "B7RLE",
+    "name": "Volvo B7RLE / Wright Eclipse",
+    "group": "Wrightbus / Volvo / VDL"
+  },
+  {
+    "code": "METROCITY",
+    "name": "Optare MetroCity",
+    "group": "Optare / Switch / MCV"
+  },
+  {
+    "code": "METROCITY-EV",
+    "name": "Switch Metrocity EV",
+    "group": "Optare / Switch / MCV"
+  },
+  {
+    "code": "METRODECKER",
+    "name": "Optare MetroDecker",
+    "group": "Optare / Switch / MCV"
+  },
+  {
+    "code": "METRODECKER-EV",
+    "name": "Optare MetroDecker EV",
+    "group": "Optare / Switch / MCV"
+  },
+  {
+    "code": "SOLO",
+    "name": "Optare Solo",
+    "group": "Optare / Switch / MCV"
+  },
+  {
+    "code": "SOLO-SR",
+    "name": "Optare Solo SR",
+    "group": "Optare / Switch / MCV"
+  },
+  {
+    "code": "VERSA",
+    "name": "Optare Versa",
+    "group": "Optare / Switch / MCV"
+  },
+  {
+    "code": "EVOSETI",
+    "name": "MCV EvoSeti",
+    "group": "Optare / Switch / MCV"
+  },
+  {
+    "code": "MCV-C093EV",
+    "name": "MCV C093 EV",
+    "group": "Optare / Switch / MCV"
+  },
+  {
+    "code": "MCV-C103EV",
+    "name": "MCV C103 EV",
+    "group": "Optare / Switch / MCV"
+  },
+  {
+    "code": "MCV-D113EV",
+    "name": "MCV D113 EV",
+    "group": "Optare / Switch / MCV"
+  },
+  {
+    "code": "MCV-EVOLUTION",
+    "name": "MCV Evolution",
+    "group": "Optare / Switch / MCV"
+  },
+  {
+    "code": "BYD-K8SR",
+    "name": "BYD K8SR",
+    "group": "BYD / other modern"
+  },
+  {
+    "code": "BYD-BD11",
+    "name": "BYD BD11",
+    "group": "BYD / other modern"
+  },
+  {
+    "code": "BYD-B12",
+    "name": "BYD B12",
+    "group": "BYD / other modern"
+  },
+  {
+    "code": "BYD-D8UR",
+    "name": "BYD D8UR / ADL Enviro200EV",
+    "group": "BYD / other modern"
+  },
+  {
+    "code": "BYD-D8URDD",
+    "name": "BYD D8UR-DD / ADL Enviro400EV",
+    "group": "BYD / other modern"
+  },
+  {
+    "code": "CITARO",
+    "name": "Mercedes-Benz Citaro O530",
+    "group": "BYD / other modern"
+  },
+  {
+    "code": "CITARO-G",
+    "name": "Mercedes-Benz Citaro G articulated",
+    "group": "BYD / other modern"
+  },
+  {
+    "code": "ECITYGOLD",
+    "name": "Caetano e.City Gold",
+    "group": "BYD / other modern"
+  },
+  {
+    "code": "IRIZAR-IE",
+    "name": "Irizar ie tram",
+    "group": "BYD / other modern"
+  },
+  {
+    "code": "OMNICITY",
+    "name": "Scania OmniCity",
+    "group": "BYD / other modern"
+  },
+  {
+    "code": "OMNIDEKKA",
+    "name": "Scania OmniDekka",
+    "group": "BYD / other modern"
+  },
+  {
+    "code": "OMNILINK",
+    "name": "Scania OmniLink",
+    "group": "BYD / other modern"
+  },
+  {
+    "code": "ROUTEMASTER",
+    "name": "AEC Routemaster",
+    "group": "Heritage / withdrawn"
+  },
+  {
+    "code": "RT",
+    "name": "AEC Regent III RT",
+    "group": "Heritage / withdrawn"
+  },
+  {
+    "code": "RML",
+    "name": "AEC Routemaster RML",
+    "group": "Heritage / withdrawn"
+  },
+  {
+    "code": "LEYLAND-TITAN",
+    "name": "Leyland Titan B15",
+    "group": "Heritage / withdrawn"
+  },
+  {
+    "code": "LEYLAND-OLYMPIAN",
+    "name": "Leyland Olympian",
+    "group": "Heritage / withdrawn"
+  },
+  {
+    "code": "MCW-METROBUS",
+    "name": "MCW Metrobus",
+    "group": "Heritage / withdrawn"
+  },
+  {
+    "code": "DAF-SB220",
+    "name": "DAF SB220",
+    "group": "Heritage / withdrawn"
+  },
+  {
+    "code": "DAF-DB250",
+    "name": "DAF DB250 / Optare Spectra",
+    "group": "Heritage / withdrawn"
+  },
+  {
+    "code": "EAST-LANCS",
+    "name": "East Lancs Myllennium",
+    "group": "Heritage / withdrawn"
+  },
+  {
+    "code": "OLYMPUS",
+    "name": "East Lancs Olympus",
+    "group": "Heritage / withdrawn"
+  },
+  {
+    "code": "MARSHALL",
+    "name": "Dennis Dart / Marshall Capital",
+    "group": "Heritage / withdrawn"
+  }
+]
