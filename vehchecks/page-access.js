@@ -1,7 +1,7 @@
 import {features} from './team-definitions.js';
 export const staffRoles=['general_manager','supervisor','lead_controller','controller','junior_controller','scheduler','lead_driver','driver'];
 export const pageAccess={
- dashboard:staffRoles,
+ dashboard:staffRoles.filter(role=>role!=='driver'),
  reports:staffRoles.filter(role=>role!=='driver'),
  staff:['general_manager','supervisor','lead_controller'],
  catalogue:['general_manager','supervisor'],
